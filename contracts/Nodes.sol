@@ -77,6 +77,8 @@ contract Nodes {
       toRegisterCount = 0;
       toDeregisterCount = 0;
 
+      // TODO: Would zeroing deregistered nodes return gas?
+
       Epoch();
     }
   }
@@ -191,6 +193,8 @@ contract Nodes {
 
     // store bond amount first
     uint256 nodeBond = node.bond;
+
+    // TODO: If node is in toRegister, put at end of toRegister and delete, instead
 
     // Swap node into toDeregister
     uint256 registeredOffset = deregisteredCount + toDeregisterCount;
