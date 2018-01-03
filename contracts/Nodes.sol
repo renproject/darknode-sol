@@ -25,7 +25,7 @@ contract Nodes {
     uint256 index;
   }
 
-  // Ep
+  // Epoch
   struct CurrentEpoch {
     uint256 time;
     bytes32 blockhash;
@@ -33,17 +33,19 @@ contract Nodes {
   CurrentEpoch currentEpoch;
 
   // CONFIGURATION
-  uint256 shuffleTime;
+  uint256 epochInterval;
   uint256 bondMinimum;
 
   // Map from Republic IDs to node structs
   mapping(bytes20 => Node) private nodes;
 
+  // Map from ethereum public addresses to miner IDs
+  mapping(address => bytes20) private addressIds;
+
   // Layout:
   // [deregistered..., toDeregister..., registered..., toRegister...]
   bytes20[] nodeList;
 
-  // (Optimisation?: With array length, only need to store three)
   uint256 deregisteredCount;
   uint256 toDeregisterCount;
   uint256 registeredCount;
@@ -53,9 +55,9 @@ contract Nodes {
 
   /*** Initialisation code ***/
 
-  function Nodes(address renAddress, uint256 _shuffleTime, uint256 _bondMinimum) public {
+  function Nodes(address renAddress, uint256 _epochInterval, uint256 _bondMinimum) public {
     ren = Token(renAddress);
-    shuffleTime = _shuffleTime;
+    epochInterval = _epochInterval;
     bondMinimum = _bondMinimum;
     checkEpoch();
   }
@@ -64,8 +66,8 @@ contract Nodes {
   /*** Public functions */
   
   function checkEpoch() public {
-    // NOTE: Requires `shuffleTime` < `now`
-    if (now > currentEpoch.time + shuffleTime) {
+    // NOTE: Requires `epochInterval` < `now`
+    if (now > currentEpoch.time + epochInterval) {
       currentEpoch = CurrentEpoch({
         time: now,
         blockhash: block.blockhash(block.number - 1)
@@ -91,7 +93,7 @@ contract Nodes {
   // or a combination, where the whole amount is taken if not specified
   function register(bytes pubkey) payable public {
 
-    // an outside entity will be calling this after each shuffleTime has passed
+    // an outside entity will be calling this after each epochInterval has passed
     // if that has not happened yet, the next miner to register will trigger the update instead
     checkEpoch(); // <1k gas if no update needed, >40k gas if update needed
 
@@ -122,13 +124,15 @@ contract Nodes {
 
     var node = Node({
       pubkey: pubkey,
-      owner: nodeAddress,
+      owner: msg.sender,
       bond: bond,
       seed: seed,
       index: index
     });
 
     nodes[nodeId] = node;
+
+    addressIds[nodeAddress] = nodeId;
 
     // Emit event to logs
     NodeRegistered(nodeId, bond);
@@ -196,18 +200,36 @@ contract Nodes {
     // store bond amount first
     uint256 nodeBond = node.bond;
 
-    // TODO: If node is in toRegister, put at end of toRegister and delete, instead
+    // Swap nodes around
+    uint256 destinationIndex;
 
-    // Swap node into toDeregister
+    // TODO: If node is in toRegister, put at end of toRegister and delete, instead
     uint256 registeredOffset = deregisteredCount + toDeregisterCount;
-    nodeList[node.index] = nodeList[registeredOffset];
-    nodeList[registeredOffset] = nodeId;
+    uint256 toRegisterOffset = registeredOffset + registeredCount;
+    if (nodes[nodeId].index > toRegisterOffset) {
+      // still in toRegister
+
+      // last in toRegister
+      destinationIndex = toRegisterOffset + registeredCount - 1;
+
+      // Update count
+      toRegisterCount -= 1;
+    } else {
+      // already registered, so swap into toDeregister
+
+      // first in registered
+      destinationIndex = registeredOffset;
+
+      // Update count
+      toDeregisterCount += 1;
+    }
+
+    // Swap two nodes in nodeList
+    nodeList[node.index] = nodeList[destinationIndex];
+    nodeList[destinationIndex] = nodeId;
     // Update their indexes
     nodes[nodeList[node.index]].index = node.index;
-    nodes[nodeList[registeredOffset]].index = registeredOffset;
-
-    // Update count
-    toDeregisterCount += 1;
+    nodes[nodeList[destinationIndex]].index = destinationIndex;
 
     // Transfer Ren (ERC20 token)
     bool success = ren.transfer(msg.sender, nodeBond);
@@ -221,7 +243,10 @@ contract Nodes {
 
 
 
-  /*** Getters ***/
+
+
+
+  /*** General getters ***/
 
   function getCurrentNodes() public view returns (bytes20[]) {
 
@@ -236,8 +261,11 @@ contract Nodes {
     return currentNodes;
   }
   
-  function getPoolCount() public view returns (uint256) {
-    return Utils.logtwo(registeredCount);
+  function getPoolSize() public view returns (uint256) {
+    uint256 log = Utils.logtwo(registeredCount);
+    
+    // If odd, add 1 to become even
+    return log + (log % 2);
   }
 
   function getCurrentNodeCount() public view returns (uint256) {
@@ -247,6 +275,9 @@ contract Nodes {
   function getNextNodeCount() public view returns (uint256) {
     return registeredCount - toDeregisterCount + toRegisterCount;
   }
+
+
+  /*** Miner specific getters ***/
 
   // Getter for node bonds, accessible by node ID
   function getBond(bytes20 nodeId) public view returns (uint256) {
@@ -267,5 +298,12 @@ contract Nodes {
     return nodes[nodeId].pubkey;
   }
 
-  // function isNode()
+  function getAddress(bytes20 nodeId) public view returns (address) {
+    return Utils.addressFromPubKey(nodes[nodeId].pubkey);
+  }
+
+  function getMinerId(address addr) public view returns (bytes20) {
+    return addressIds[addr];
+  }
+
 }

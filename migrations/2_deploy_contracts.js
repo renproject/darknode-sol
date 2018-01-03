@@ -15,6 +15,6 @@ module.exports = async function (deployer) {
 
   deployer.deploy(Token).then(function () {
     deployer.link(Token, [Nodes]);
-    return deployer.deploy(Nodes, Token.address, Config.shuffleTime, Config.bondMinimum);
+    return deployer.deploy(Nodes, Token.address, Config.epochInterval, Config.bondMinimum);
   });
 };

@@ -9,6 +9,6 @@
 // bignumber.js
 
 module.exports = {
-  shuffleTime: 1,
+  epochInterval: 1,
   bondMinimum: 0,
 }
