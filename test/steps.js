@@ -20,7 +20,7 @@ const steps = {
       registrar.register(account.public, { from: account.address })
     );
 
-    // shuffleTime = shuffleTime || 1 * utils.days;
+    // epochInterval = epochInterval || 1 * utils.days;
 
     // Verify event
     utils.assertEventsEqual(tx.logs[tx.logs.length - 1],
@@ -42,8 +42,8 @@ const steps = {
     }));
   },
 
-  AwaitShuffleTime: async () => {
-    return await utils.sleep(config.shuffleTime * 1.1);
+  SleepEpochInterval: async () => {
+    return await utils.sleep(config.epochInterval * 2);
   },
 
   CheckEpoch: async () => {
@@ -51,7 +51,7 @@ const steps = {
   },
 
   WaitForEpoch: async () => {
-    await steps.AwaitShuffleTime();
+    await steps.SleepEpochInterval();
     return await steps.CheckEpoch();
   },
 
@@ -93,8 +93,8 @@ const steps = {
   },
 
   /** GetPoolCount */
-  GetPoolCount: async () => {
-    return await registrar.getPoolCount.call();
+  GetPoolSize: async () => {
+    return await registrar.getPoolSize.call();
   },
 
   /*** Expected Pool Count ***/
