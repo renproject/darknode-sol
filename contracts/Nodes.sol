@@ -21,7 +21,7 @@ contract Nodes {
     bytes pubkey;
     address owner;
     uint256 bond;
-    uint256 time;
+    bytes32 seed;
     uint256 index;
   }
 
@@ -118,11 +118,13 @@ contract Nodes {
     uint256 index = nodeList.push(nodeId) - 1;
     toRegisterCount += 1;
 
+    bytes32 seed = keccak256(now, block.blockhash(block.number - 1), nodeId);
+
     var node = Node({
       pubkey: pubkey,
       owner: nodeAddress,
       bond: bond,
-      time: now,
+      seed: seed,
       index: index
     });
 
@@ -249,6 +251,10 @@ contract Nodes {
   // Getter for node bonds, accessible by node ID
   function getBond(bytes20 nodeId) public view returns (uint256) {
     return nodes[nodeId].bond;
+  }
+
+  function getSeed(bytes20 nodeId) public view returns (bytes32) {
+    return nodes[nodeId].seed;
   }
 
   // Getter for node registration, accessible by node ID
