@@ -47,7 +47,9 @@ const steps = {
   },
 
   CheckEpoch: async () => {
-    return await registrar.checkEpoch();
+    if (registrar.checkEpoch.call()) {
+      return await utils.logTx('Checking epoch', registrar.checkEpoch());
+    }
   },
 
   WaitForEpoch: async () => {
@@ -61,6 +63,10 @@ const steps = {
 
   GetRegisteredNodes: async (accounts) => {
     return (await registrar.getCurrentNodes());
+  },
+
+  GetAllNodes: async (accounts) => {
+    return (await registrar.getAllNodes());
   },
 
   GetAllPools: async (accounts) => {

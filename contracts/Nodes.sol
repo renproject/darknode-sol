@@ -65,7 +65,7 @@ contract Nodes {
 
   /*** Public functions */
   
-  function checkEpoch() public {
+  function checkEpoch() public returns (bool) {
     // NOTE: Requires `epochInterval` < `now`
     if (now > currentEpoch.time + epochInterval) {
       currentEpoch = CurrentEpoch({
@@ -73,15 +73,22 @@ contract Nodes {
         blockhash: block.blockhash(block.number - 1)
       });
 
+      // TODO: Would zeroing deregistered nodes return gas?
+      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
+        delete nodeList[i];
+      }
+
       // Update counts
       deregisteredCount = deregisteredCount + toDeregisterCount;
       registeredCount = registeredCount + toRegisterCount - toDeregisterCount;
       toRegisterCount = 0;
       toDeregisterCount = 0;
 
-      // TODO: Would zeroing deregistered nodes return gas?
-
       Epoch();
+
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -95,7 +102,7 @@ contract Nodes {
 
     // an outside entity will be calling this after each epochInterval has passed
     // if that has not happened yet, the next miner to register will trigger the update instead
-    checkEpoch(); // <1k gas if no update needed, >40k gas if update needed
+    // checkEpoch(); // <1k gas if no update needed, >40k gas if update needed
 
     address nodeAddress = Utils.addressFromPubKey(pubkey);
     bytes20 nodeId = Utils.idFromPubKey(pubkey);
@@ -203,17 +210,22 @@ contract Nodes {
     // Swap nodes around
     uint256 destinationIndex;
 
+    bool decreaseLength = false;
+
     // TODO: If node is in toRegister, put at end of toRegister and delete, instead
     uint256 registeredOffset = deregisteredCount + toDeregisterCount;
     uint256 toRegisterOffset = registeredOffset + registeredCount;
-    if (nodes[nodeId].index > toRegisterOffset) {
+    if (nodes[nodeId].index >= toRegisterOffset) {
       // still in toRegister
 
       // last in toRegister
-      destinationIndex = toRegisterOffset + registeredCount - 1;
+      destinationIndex = toRegisterOffset + toRegisterCount - 1;
 
       // Update count
       toRegisterCount -= 1;
+
+      decreaseLength = true;
+
     } else {
       // already registered, so swap into toDeregister
 
@@ -230,6 +242,11 @@ contract Nodes {
     // Update their indexes
     nodes[nodeList[node.index]].index = node.index;
     nodes[nodeList[destinationIndex]].index = destinationIndex;
+
+    if (decreaseLength) {
+      delete nodeList[destinationIndex]; // Never registered, so safe to delete
+      nodeList.length = nodeList.length - 1;
+    }
 
     // Transfer Ren (ERC20 token)
     bool success = ren.transfer(msg.sender, nodeBond);
@@ -259,6 +276,14 @@ contract Nodes {
       currentNodes[i] = nodeList[i + registeredStart];
     }
     return currentNodes;
+  }
+
+  function getAllNodes() public view returns (bytes20[]) {
+    return nodeList;
+  }
+
+  function getPoolCount() public view returns (uint256) {
+    return registeredCount / getPoolSize();
   }
   
   function getPoolSize() public view returns (uint256) {
