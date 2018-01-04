@@ -43,13 +43,42 @@ contract Nodes {
   mapping(address => bytes20) private addressIds;
 
   // Layout:
-  // [deregistered..., toDeregister..., registered..., toRegister...]
+  // [0, deregistered..., toDeregister..., registered..., toRegister...]
+  // Since an index of 0 could be either uninitialized or 0, the first element is reserved
   bytes20[] nodeList;
 
   uint256 deregisteredCount;
   uint256 toDeregisterCount;
-  uint256 registeredCount;
+  uint256 toStayRegisteredCount;
   uint256 toRegisterCount;
+
+
+  function toDeregisterOffset() view private returns (uint256) {return deregisteredCount + 1;}
+  function toStayregisteredOffset() view private returns (uint256) {return toDeregisterOffset() + toDeregisterCount;}
+  function toRegisterOffset() view private returns (uint256) {return toStayregisteredOffset() + toStayRegisteredCount;}
+
+  function isRegistered(bytes20 nodeId) public view returns (bool) {
+    uint256 index = nodes[nodeId].index;
+
+    // In [toDeregister..., registered...]
+    return index >= toDeregisterOffset() && index < toRegisterOffset();
+  }
+
+  function isPendingRegistration(bytes20 nodeId) public view returns (bool) {
+    uint256 index = nodes[nodeId].index;
+
+    // In [toRegister...]
+    return index >= toRegisterOffset() && index < (toRegisterOffset() + toRegisterCount);
+  }
+
+  function canRegister(bytes20 nodeId) private view returns (bool) {
+    return !isRegistered(nodeId) && !isPendingRegistration(nodeId);
+  }
+
+
+
+
+
 
 
 
@@ -59,6 +88,7 @@ contract Nodes {
     ren = Token(renAddress);
     epochInterval = _epochInterval;
     bondMinimum = _bondMinimum;
+    nodeList.push(0x0);
     checkEpoch();
   }
 
@@ -80,7 +110,7 @@ contract Nodes {
 
       // Update counts
       deregisteredCount = deregisteredCount + toDeregisterCount;
-      registeredCount = registeredCount + toRegisterCount - toDeregisterCount;
+      toStayRegisteredCount = toStayRegisteredCount + toRegisterCount;
       toRegisterCount = 0;
       toDeregisterCount = 0;
 
@@ -110,8 +140,8 @@ contract Nodes {
     // Verify that the node has provided the correct public key
     require(msg.sender == nodeAddress);
 
-    // Node should not already be registered
-    require (nodes[nodeId].bond == 0);
+    // Node should not already be registered or awaiting registration
+    require(canRegister(nodeId));
 
     // Set bond to be allowance
     uint256 bond = ren.allowance(msg.sender, this);
@@ -213,13 +243,11 @@ contract Nodes {
     bool decreaseLength = false;
 
     // TODO: If node is in toRegister, put at end of toRegister and delete, instead
-    uint256 registeredOffset = deregisteredCount + toDeregisterCount;
-    uint256 toRegisterOffset = registeredOffset + registeredCount;
-    if (nodes[nodeId].index >= toRegisterOffset) {
+    if (nodes[nodeId].index >= toRegisterOffset()) {
       // still in toRegister
 
       // last in toRegister
-      destinationIndex = toRegisterOffset + toRegisterCount - 1;
+      destinationIndex = toRegisterOffset() + toRegisterCount - 1;
 
       // Update count
       toRegisterCount -= 1;
@@ -230,7 +258,7 @@ contract Nodes {
       // already registered, so swap into toDeregister
 
       // first in registered
-      destinationIndex = registeredOffset;
+      destinationIndex = toStayregisteredOffset();
 
       // Update count
       toDeregisterCount += 1;
@@ -267,10 +295,10 @@ contract Nodes {
 
   function getCurrentNodes() public view returns (bytes20[]) {
 
-    var registeredStart = deregisteredCount;
-    var registeredEnd = registeredStart + registeredCount;
+    var registeredStart = toDeregisterOffset();
+    var registeredEnd = registeredStart + toDeregisterCount + toStayRegisteredCount;
 
-    bytes20[] memory currentNodes = new bytes20[](registeredCount);
+    bytes20[] memory currentNodes = new bytes20[](toDeregisterCount + toStayRegisteredCount);
 
     for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
       currentNodes[i] = nodeList[i + registeredStart];
@@ -283,22 +311,22 @@ contract Nodes {
   }
 
   function getPoolCount() public view returns (uint256) {
-    return registeredCount / getPoolSize();
+    return (toDeregisterCount + toStayRegisteredCount) / getPoolSize();
   }
   
   function getPoolSize() public view returns (uint256) {
-    uint256 log = Utils.logtwo(registeredCount);
+    uint256 log = Utils.logtwo(toDeregisterCount + toStayRegisteredCount);
     
     // If odd, add 1 to become even
     return log + (log % 2);
   }
 
   function getCurrentNodeCount() public view returns (uint256) {
-    return registeredCount;
+    return (toDeregisterCount + toStayRegisteredCount);
   }
 
   function getNextNodeCount() public view returns (uint256) {
-    return registeredCount - toDeregisterCount + toRegisterCount;
+    return (toDeregisterCount + toStayRegisteredCount) - toDeregisterCount + toRegisterCount;
   }
 
 
@@ -312,12 +340,7 @@ contract Nodes {
   function getSeed(bytes20 nodeId) public view returns (bytes32) {
     return nodes[nodeId].seed;
   }
-
-  // Getter for node registration, accessible by node ID
-  function isRegistered(bytes20 nodeId) public view returns (bool) {
-    return nodes[nodeId].bond > 0;
-  }
-
+  
   // Allow anyone to see a Republic ID's public key
   function getPublicKey(bytes20 nodeId) public view returns (bytes) {
     return nodes[nodeId].pubkey;
