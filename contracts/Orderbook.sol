@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "./Ren.sol";
+import "./Nodes.sol";
 
 contract OrderBook {
 	uint8 public orderLimit = 100;
@@ -9,8 +10,9 @@ contract OrderBook {
   uint8 public tax = 10; // Percentange
 
   RepublicToken republicToken;
+  Nodes minerContract;
   address taxMan;
-  uint poolCount = 10;
+  uint poolCount;
   uint kValue = 5;
 
 	uint8 constant statusOpen = 1;
@@ -27,6 +29,7 @@ contract OrderBook {
 	struct Order {
 		uint8 status;
     uint fee;
+    uint256 fragmentCount;
     mapping (address => bool) authorized; 
     mapping (bytes32 => bytes20) miners;
     mapping (bytes32 => bytes20) minerLeaders;
@@ -48,8 +51,9 @@ contract OrderBook {
 
   /// @notice Constructor of the contract OrderBook
 	/// @param _republicToken The address of the REN token contract
-  function OrderBook(address _republicToken, address _taxMan) public {
+  function OrderBook(address _republicToken, address _minerContract, address _taxMan) public {
     republicToken = RepublicToken(_republicToken);
+    minerContract = Nodes(_minerContract);
     taxMan = _taxMan;
   }
 
@@ -57,11 +61,14 @@ contract OrderBook {
 	/// @param _orderID The hash of the order
   /// @param _fragments The list of hashes of the fragments
 	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
-
-    require(_orderFragmentIDs.length == _miners.length && _miners.length == poolCount);
+    uint fragmentCount = minerContract.getPoolCount();
+    require(_orderFragmentIDs.length == _miners.length);
+    require(_miners.length == fragmentCount);
     require(verifyMiners(_miners));
+    require(verifyMiners(_minerLeaders));
     require(orderCount[msg.sender] < orderLimit);
 
+    
     uint orderFee = republicToken.allowance(msg.sender, address(this)) * ((100 - tax)/100);
     orders[_orderID].status = statusOpen;
     orders[_orderID].fee = orderFee;
@@ -71,6 +78,7 @@ contract OrderBook {
     }
 
     orders[_orderID].registrationTime = now;
+    orders[_orderID].fragmentCount = fragmentCount;
     orderCount[msg.sender]++;
     owner[_orderID] = msg.sender;
 		OrderPlaced(_orderID);
@@ -79,13 +87,9 @@ contract OrderBook {
   function verifyMiners(bytes32[] _miners) returns (bool) {
     bool status = true;
     for (uint i = 0; i < _miners.length && status ; i++) {
-      status = status && isRegistered(_miners[i]); 
+      status = status && minerContract.isRegistered(_miners[i]); 
     }
     return status;
-  }
-
-  function isRegistered(bytes32 _miner) internal returns (bool) {
-    return true;
   }
 
   function checkOrder(bytes32 _orderID, bytes32 _orderFragmentID, bytes32 _minerID) public pure returns(bool) {

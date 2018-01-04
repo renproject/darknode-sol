@@ -263,9 +263,12 @@ contract Nodes {
   
   function getPoolSize() public view returns (uint256) {
     uint256 log = Utils.logtwo(registeredCount);
-    
     // If odd, add 1 to become even
     return log + (log % 2);
+  }
+
+  function getPoolCount() public view returns (uint256) {
+    return registeredCount/(getPoolSize());
   }
 
   function getCurrentNodeCount() public view returns (uint256) {
