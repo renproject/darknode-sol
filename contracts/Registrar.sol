@@ -6,6 +6,8 @@ import "./RepublicToken.sol";
 
 contract Registrar {
 
+  // TODO: Use SafeMath library
+
   RepublicToken ren;
 
   /*** Events ***/
@@ -148,7 +150,6 @@ contract Registrar {
   // another option is to allow miners to provide a bond amount as a parameter
   // or a combination, where the whole amount is taken if not specified
   function register(bytes pubkey) payable public {
-    Debug("Registering...");
 
     // an outside entity will be calling this after each epochInterval has passed
     // if that has not happened yet, the next miner to register will trigger the update instead
@@ -165,6 +166,7 @@ contract Registrar {
 
     // Set bond to be allowance plus any remaining bond from previous registration
     uint256 allowance = ren.allowance(msg.sender, this);
+    // TODO: Use safe maths
     uint256 bond = allowance + miners[minerId].bondPendingRelease;
 
     // Bond should be greater than minumum
@@ -250,8 +252,6 @@ contract Registrar {
 
   function updateBondRelease(bytes20 minerId, uint256 amount) private {
 
-    Debug("Entering updateBondRelease");
-
     miners[minerId].bond -= amount;
 
     if (miners[minerId].bondPendingRelease > 0 && 
@@ -298,7 +298,6 @@ contract Registrar {
 
     // TODO: If miner is in toRegister, put at end of toRegister and delete, instead
     if (isPendingRegistration(minerId)) {
-      Debug("Removing from toRegister!");
       // still in toRegister
 
       // last in toRegister
@@ -310,7 +309,6 @@ contract Registrar {
       decreaseLength = true;
 
     } else {
-      Debug("Removing from registered!");
 
       // already registered, so swap into toDeregister
 

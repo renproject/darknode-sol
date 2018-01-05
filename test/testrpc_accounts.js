@@ -134,6 +134,8 @@ const accounts = (keys) => {
   const addresses = pubs.map(pub => publicToAddress(pub));
   const repIds = pubs.map(pub => publicToRepublic(pub));
 
+  const indexMap = {};
+
   const ret = [];
   for (let i = 0; i < priv.length; i++) {
     ret.push({
@@ -142,9 +144,13 @@ const accounts = (keys) => {
       address: addresses[i],
       republic: repIds[i],
     })
+    indexMap[repIds[i]] = i;
   }
 
-  return ret;
+  return {
+    accounts: ret,
+    indexMap: indexMap,
+  };
 }
 
 

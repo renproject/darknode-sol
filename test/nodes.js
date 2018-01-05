@@ -4,7 +4,7 @@ chai.use(require('chai-bignumber')());
 chai.should();
 
 const utils = require("./test_utils");
-const accounts = require("./testrpc_accounts");
+const { accounts } = require("./testrpc_accounts");
 const steps = require("./steps");
 
 contract('A miner', function () {
@@ -188,35 +188,45 @@ contract('A miner', function () {
   it("can retrieve a list of all miners", async function () {
     await steps.Register(accounts[0], 1000);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredMiners());
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
 
     await steps.Register(accounts[1], 1000);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredMiners());
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 1]);
 
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredMiners());
+    (await steps.GetRegisteredAccounts()).should.deep.equal([1]);
 
     await steps.Deregister(accounts[1]);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredMiners());
+    (await steps.GetRegisteredAccounts()).should.deep.equal([]);
   })
 
-  it("can deregister a miner with a pending registration", async function () {
+  it("can manage several miners registering and deregistering", async function () {
     await steps.Register(accounts[0], 1000);
     await steps.Register(accounts[3], 1000);
     await steps.WaitForEpoch();
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 3]);
+
     await steps.Deregister(accounts[3]);
     await steps.WaitForEpoch();
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
+
     await steps.Register(accounts[1], 1000);
     await steps.Register(accounts[2], 1000);
     await steps.Deregister(accounts[1]);
     await steps.WaitForEpoch();
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 2]);
+
     await steps.Deregister(accounts[2]);
     await steps.WaitForEpoch();
+    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
+
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
+    (await steps.GetRegisteredAccounts()).should.deep.equal([]);
+
   })
 
   // /*** Pool shuffling ***/

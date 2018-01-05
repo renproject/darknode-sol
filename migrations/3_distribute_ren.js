@@ -1,5 +1,5 @@
 
-const accounts = require("../test/testrpc_accounts.js");
+const { accounts } = require("../test/testrpc_accounts.js");
 
 module.exports = async function (deployer) {
   ren = await artifacts.require("RepublicToken").deployed();

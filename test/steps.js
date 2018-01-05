@@ -1,6 +1,6 @@
 
 const utils = require("./test_utils");
-const accounts = require("./testrpc_accounts");
+const { accounts, indexMap } = require("./testrpc_accounts");
 var config = require("../republic-config");
 
 // Initialise:
@@ -32,7 +32,7 @@ const steps = {
   RegisterAll: async (accounts, bond) => {
     await Promise.all(accounts.map(async account => {
       await ren.approve(registrar.address, bond, { from: account.address });
-      await registrar.register(account.public, { from: account.address });
+      utils.logTx('Registering', await registrar.register(account.public, { from: account.address }));
     }));
   },
 
@@ -58,12 +58,17 @@ const steps = {
     return await registrar.getMinerCount.call();
   },
 
-  GetRegisteredMiners: async (accounts) => {
+  GetRegisteredMiners: async () => {
     return (await registrar.getCurrentMiners());
   },
 
-  GetAllMiners: async (accounts) => {
+  GetAllMiners: async () => {
     return (await registrar.getAllMiners());
+  },
+
+  GetRegisteredAccounts: async () => {
+    const miners = await steps.GetRegisteredMiners();
+    return miners.map(miner => indexMap[miner]);
   },
 
   GetAllPools: async (accounts) => {

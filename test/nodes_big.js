@@ -4,7 +4,7 @@ chai.use(require('chai-bignumber')());
 chai.should();
 
 const utils = require("./test_utils");
-const accounts = require("./testrpc_accounts");
+const { accounts } = require("./testrpc_accounts");
 const steps = require("./steps");
 
 contract('Registrar (big)', function () {
@@ -30,6 +30,13 @@ contract('Registrar (big)', function () {
     // await steps.AssertPoolDistribution(accounts);
 
     await steps.DeregisterAll(accounts);
+  });
+
+
+
+  // Log costs
+  after("log costs", () => {
+    utils.printCosts();
   });
 
 });
