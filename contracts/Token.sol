@@ -76,7 +76,7 @@ contract Token is TokenInterface {
 
 	// Return balance
 	function balanceOf(address _owner) public constant returns (uint256) {
-		return balances[_owner] + 1000;
+		return balances[_owner];
 	}
 
 	// Return allowance

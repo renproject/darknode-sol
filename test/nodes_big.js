@@ -7,12 +7,12 @@ const utils = require("./test_utils");
 const accounts = require("./testrpc_accounts");
 const steps = require("./steps");
 
-contract('Nodes (big)', function () {
+contract('Registrar (big)', function () {
 
   // it("can get all pools", async function () {
   //   // Register and deregister
   //   await steps.Register(accounts[0], 1000);
-  //   // console.log(await steps.GetAllNodes());
+  //   // console.log(await steps.GetAllMiners());
   //   await steps.Deregister(accounts[0]);
   // });
 
