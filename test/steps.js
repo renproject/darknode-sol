@@ -6,8 +6,8 @@ var config = require("../republic-config");
 // Initialise:
 let ren, registrar;
 (async () => {
-  ren = await artifacts.require("Token").deployed();
-  registrar = await artifacts.require("Nodes").deployed();
+  ren = await artifacts.require("RepublicToken").deployed();
+  registrar = await artifacts.require("Registrar").deployed();
 })();
 
 
@@ -15,16 +15,17 @@ const steps = {
 
   /** Register */
   Register: async (account, bond) => {
-    const tx = await utils.logTx('Registering',
-      ren.approve(registrar.address, bond, { from: account.address }),
-      registrar.register(account.public, { from: account.address })
-    );
+    const difference = bond - (await registrar.getBondPendingRelease(account.republic));
+    if (difference) {
+      await ren.approve(registrar.address, difference, { from: account.address });
+    }
+    const tx = await utils.logTx('Registering', registrar.register(account.public, { from: account.address }));
 
     // epochInterval = epochInterval || 1 * utils.days;
 
     // Verify event
     utils.assertEventsEqual(tx.logs[tx.logs.length - 1],
-      { event: 'NodeRegistered', nodeId: account.republic, bond: bond });
+      { event: 'MinerRegistered', minerId: account.republic, bond: bond });
   },
 
   /** Register all accounts */
@@ -42,31 +43,27 @@ const steps = {
     }));
   },
 
-  SleepEpochInterval: async () => {
-    return await utils.sleep(config.epochInterval * 2);
-  },
+  WaitForEpoch: async () => {
+    while (true) {
+      // Must be an on-chain call, or the time won't be updated
+      const tx = await utils.logTx('Checking epoch', registrar.checkEpoch());
+      // If epoch happened, return
+      if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "Epoch") { return; }
 
-  CheckEpoch: async () => {
-    if (registrar.checkEpoch.call()) {
-      return await utils.logTx('Checking epoch', registrar.checkEpoch());
+      await utils.sleep(config.epochInterval * 0.1);
     }
   },
 
-  WaitForEpoch: async () => {
-    await steps.SleepEpochInterval();
-    return await steps.CheckEpoch();
+  GetMinerCount: async () => {
+    return await registrar.getMinerCount.call();
   },
 
-  GetNodeCount: async () => {
-    return await registrar.getNodeCount.call();
+  GetRegisteredMiners: async (accounts) => {
+    return (await registrar.getCurrentMiners());
   },
 
-  GetRegisteredNodes: async (accounts) => {
-    return (await registrar.getCurrentNodes());
-  },
-
-  GetAllNodes: async (accounts) => {
-    return (await registrar.getAllNodes());
+  GetAllMiners: async (accounts) => {
+    return (await registrar.getAllMiners());
   },
 
   GetAllPools: async (accounts) => {
@@ -77,9 +74,9 @@ const steps = {
   Deregister: async (account) => {
     const tx = await utils.logTx('Deregistering', registrar.deregister(account.republic, { from: account.address }));
     // Verify event
-    const log = tx.logs[0];
-    assert(log.event == 'NodeDeregistered');
-    assert(log.args["nodeId"] == account.republic);
+    // const log = tx.logs[0];
+    // assert(log.event == 'MinerDeregistered');
+    // assert(log.args["minerId"] == account.republic);
   },
 
   /** GetBond */
@@ -94,8 +91,8 @@ const steps = {
     return await registrar.getPool(account.republic, { from: account.address });
   },
 
-  GetAllNodes: async () => {
-    return await registrar.getAllNodes.call();
+  GetAllMiners: async () => {
+    return await registrar.getAllMiners.call();
   },
 
   /** GetPoolCount */
@@ -125,8 +122,12 @@ const steps = {
     tx = await utils.logTx('Updating bond', registrar.updateBond(account.republic, newBond, { from: account.address }));
 
     // Verify event
-    utils.assertEventsEqual(tx.logs[0],
-      { event: 'NodeBondUpdated', nodeId: account.republic, newBond: newBond });
+    // utils.assertEventsEqual(tx.logs[0],
+    //   { event: 'MinerBondUpdated', minerId: account.republic, newBond: newBond });
+  },
+
+  ReleaseBond: async (account) => {
+    return await utils.logTx('Releasing bond', registrar.releaseBond(account.republic, { from: account.address }));
   },
 
   /** GetPublicKey */

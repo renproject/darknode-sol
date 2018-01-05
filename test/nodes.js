@@ -7,12 +7,13 @@ const utils = require("./test_utils");
 const accounts = require("./testrpc_accounts");
 const steps = require("./steps");
 
-contract('Nodes', function () {
+contract('A miner', function () {
 
-  afterEach("ensure node is deregistered", async function () {
-    // After each test, make sure that the node is not registered
+  afterEach("ensure miner is deregistered", async function () {
+    // After each test, make sure that the miner is not registered
     try { await steps.Deregister(accounts[0]); } catch (err) { }
     await steps.WaitForEpoch();
+    await steps.ReleaseBond(accounts[0]);
   });
 
   it("can't deregister without first registering", async function () {
@@ -47,10 +48,15 @@ contract('Nodes', function () {
     await steps.Deregister(accounts[0]);
   });
 
-  it("should not have a bond after deregistering", async function () {
+  it("should only refund bond after epoch", async function () {
     await steps.Register(accounts[0], 1000);
-    await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
+    await steps.Deregister(accounts[0]);
+    await steps.ReleaseBond(accounts[0]);
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(1000);
+    await steps.WaitForEpoch();
+    await steps.ReleaseBond(accounts[0]);
 
     // Bond should now be 0
     (await steps.GetBond(accounts[0]))
@@ -64,6 +70,7 @@ contract('Nodes', function () {
     const balanceMiddle = (await steps.GetRenBalance(accounts[0]));
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
+    await steps.ReleaseBond(accounts[0]);
     const balanceAfter = (await steps.GetRenBalance(accounts[0]));
 
     // Balances and bond should match up
@@ -106,10 +113,13 @@ contract('Nodes', function () {
     // Decrease bond
     const newBond = 100;
     await steps.UpdateBond(accounts[0], newBond);
+    await steps.WaitForEpoch();
 
     // Bond should now be 100
     (await steps.GetBond(accounts[0]))
       .should.be.bignumber.equal(newBond);
+
+    await steps.ReleaseBond(accounts[0]);
 
     // Bond difference should be returned
     (await steps.GetRenBalance(accounts[0]))
@@ -163,7 +173,6 @@ contract('Nodes', function () {
 
   it("can't deregister twice for the same registration", async function () {
     await steps.Register(accounts[0], 1000);
-    await steps.WaitForEpoch();
     await steps.Deregister(accounts[0]);
 
     // Deregistering again should throw an error
@@ -171,57 +180,27 @@ contract('Nodes', function () {
       .should.be.rejectedWith(Error);
   });
 
-  it("can't deregister twice for the same registration", async function () {
-    await steps.Register(accounts[0], 1000);
-    await steps.WaitForEpoch();
-    await steps.Deregister(accounts[0]);
-    await steps.WaitForEpoch();
-
-    // Deregistering again should throw an error
-    await steps.Deregister(accounts[0])
-      .should.be.rejectedWith(Error);
-  });
-
-  it("can't deregister twice for the same registration", async function () {
-    await steps.Register(accounts[0], 1000);
-    await steps.Deregister(accounts[0]);
-
-    // Deregistering again should throw an error
-    await steps.Deregister(accounts[0])
-      .should.be.rejectedWith(Error);
-  });
-
-  it("can't deregister twice for the same registration", async function () {
-    await steps.Register(accounts[0], 1000);
-    await steps.Deregister(accounts[0]);
-    await steps.WaitForEpoch();
-
-    // Deregistering again should throw an error
-    await steps.Deregister(accounts[0])
-      .should.be.rejectedWith(Error);
-  });
-
-  it("can retrieve a node's public key from its address", async function () {
+  it("can retrieve a miner's public key from its address", async function () {
     (await steps.GetPublicKey(accounts[0].republic))
       .should.equal(accounts[0].public);
   });
 
-  it("can retrieve a list of all nodes", async function () {
+  it("can retrieve a list of all miners", async function () {
     await steps.Register(accounts[0], 1000);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredNodes());
+    console.log(await steps.GetRegisteredMiners());
 
     await steps.Register(accounts[1], 1000);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredNodes());
+    console.log(await steps.GetRegisteredMiners());
 
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredNodes());
+    console.log(await steps.GetRegisteredMiners());
 
     await steps.Deregister(accounts[1]);
     await steps.WaitForEpoch();
-    console.log(await steps.GetRegisteredNodes());
+    console.log(await steps.GetRegisteredMiners());
   })
 
   it("can deregister a miner with a pending registration", async function () {
@@ -230,31 +209,14 @@ contract('Nodes', function () {
     await steps.WaitForEpoch();
     await steps.Deregister(accounts[3]);
     await steps.WaitForEpoch();
-    console.log("[_||0|]");
-    console.log(await steps.GetAllNodes());
-
     await steps.Register(accounts[1], 1000);
-    console.log("[_||0|1]");
-    console.log(await steps.GetAllNodes());
     await steps.Register(accounts[2], 1000);
-    console.log("[_||0|12]");
-    console.log(await steps.GetAllNodes());
-
     await steps.Deregister(accounts[1]);
     await steps.WaitForEpoch();
-    console.log("[_||02|]");
-    console.log(await steps.GetAllNodes());
-
     await steps.Deregister(accounts[2]);
-    console.log("[_|2|0|]");
-    console.log(await steps.GetAllNodes());
     await steps.WaitForEpoch();
-    console.log("[__||0|]");
-    console.log(await steps.GetAllNodes());
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
-    console.log("[___|||]");
-    console.log(await steps.GetAllNodes());
   })
 
   // /*** Pool shuffling ***/
