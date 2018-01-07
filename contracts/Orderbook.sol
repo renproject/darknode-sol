@@ -56,35 +56,41 @@ contract OrderBook {
     minerContract = Nodes(_minerContract);
     taxMan = _taxMan;
   }
+  /// @notice Open an order
 
 	/// @notice Function that is called by the trader to submit an order
 	/// @param _orderID The hash of the order
   /// @param _fragments The list of hashes of the fragments
 	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
+    
     uint fragmentCount = minerContract.getPoolCount();
     require(_orderFragmentIDs.length == _miners.length);
     require(_miners.length == fragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
     require(orderCount[msg.sender] < orderLimit);
-
     
-    uint orderFee = republicToken.allowance(msg.sender, address(this)) * ((100 - tax)/100);
+    uint orderFee = republicToken.allowance(msg.sender, address(this));
+    require(republicToken.transferFrom(msg.sender, address(this),orderFee));
+    
     orders[_orderID].status = statusOpen;
-    orders[_orderID].fee = orderFee;
+    orders[_orderID].fee = orderFee * ((100 - tax)/100);
 
     for (var i = 0; i < poolCount; i++ ) {
-      orders[_orderID].delegates[_fragments[i]] = _miners[i];
+      orders[_orderID].miners[_orderFragmentIDs[i]] = _miners[i];
+      orders[_orderID].minerLeaders[_orderFragmentIDs[i]] = _minerLeaders[i];
     }
 
     orders[_orderID].registrationTime = now;
     orders[_orderID].fragmentCount = fragmentCount;
+
     orderCount[msg.sender]++;
     owner[_orderID] = msg.sender;
-		OrderPlaced(_orderID);
+
+		OrderPlaced(_orderID, msg.sender);
 	}
 
-  function verifyMiners(bytes32[] _miners) returns (bool) {
+  function verifyMiners(bytes20[] _miners) returns (bool) {
     bool status = true;
     for (uint i = 0; i < _miners.length && status ; i++) {
       status = status && minerContract.isRegistered(_miners[i]); 
@@ -92,8 +98,15 @@ contract OrderBook {
     return status;
   }
 
+
+
+
+
+
+
+
   function checkOrder(bytes32 _orderID, bytes32 _orderFragmentID, bytes32 _minerID) public pure returns(bool) {
-    return (orders[_orderID].delegates[_orderFragmentID] == _minerID && orders[_orderID].status == statusOpen);
+    return (orders[_orderID].status == statusOpen && (orders[_orderID].miners[_orderFragmentID] == _minerID || orders[_orderID].minerLeaders[_orderFragmentID] == _minerID));
   }
 
 
@@ -171,7 +184,7 @@ contract OrderBook {
     return zkCommitments;
   }
 
-	event OrderPlaced(bytes32 _hash);
+	event OrderPlaced(bytes32 _hash, address _trader);
   event OrderExpired(bytes32 _hash);
 	event OrderClosed(bytes32 _hash);
 }
