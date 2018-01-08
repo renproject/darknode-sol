@@ -18,8 +18,6 @@ const steps = {
     await ren.approve(traderRegistrar.address, bond, { from: account.address });
     const tx = await utils.logTx('Registering', traderRegistrar.register(account.public, { from: account.address }));
 
-    // epochInterval = epochInterval || 1 * utils.days;
-
     // // Verify event
     // utils.assertEventsEqual(tx.logs[tx.logs.length - 1],
     //   { event: 'TraderRegistered', traderId: account.republic, bond: bond });

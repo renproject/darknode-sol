@@ -203,7 +203,7 @@ contract TraderRegistrar {
   /*** Trader specific getters ***/
 
   // Getter for trader bonds, accessible by trader ID
-  function refundBond(bytes20 traderId) public view returns (uint256) {
+  function getBond(bytes20 traderId) public view returns (uint256) {
     return traders[traderId].bond;
   }
  

@@ -17,173 +17,149 @@ const steps = require('./steps');
 
 contract('Traders', function () {
 
+  afterEach("ensure node is deregistered", async function () {
+    // After each test, make sure that the node is not registered
+    try { await steps.Deregister(accounts[0]); } catch (err) { }
+  });
 
   it("can register and deregister", async function () {
     await steps.Register(accounts[0], 1000);
     await steps.Deregister(accounts[0]);
+  });
 
+  it("can register again", async function () {
+    // Register and deregister, again
+    await steps.Register(accounts[0], 1100);
+    await steps.Deregister(accounts[0]);
   });
 
 
-  // it("can access a bond from a republic ID", async function () {
-  //   const traderRegistrar = await Traders.deployed();
-
-  //   const bond = parseInt(web3.toWei(0.0013, 'ether')); // TODO: Randomise
-  //   await traderRegistrar.register(accounts[0].public, { value: bond });
-
-  //   const actualBond = (await traderRegistrar.getBond(accounts[0].republic)).toNumber();
-  //   assert(actualBond == bond, `bond was ${actualBond} instead of ${bond}`);
-  //   await traderRegistrar.deregister(accounts[0].republic);
-  // });
+  it("can't deregister without first registering", async function () {
+    // Deregistering without first registering should throw an error
+    await steps.Deregister(accounts[0])
+      .should.be.rejectedWith(Error);
+  });
 
 
-  // it("can get their bond refunded", async function () {
-  //   const traderRegistrar = await Traders.deployed();
+  it("can access a bond from a republic ID", async function () {
+    const bond = 1111;
+    await steps.Register(accounts[0], bond);
 
-  //   const bond = parseInt(web3.toWei(0.001, 'ether'));
-  //   await traderRegistrar.register(accounts[0].public, { value: bond });
+    // Bond should be 1111
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(bond);
 
-  //   let actualBond = (await traderRegistrar.getBond(accounts[0].republic)).toNumber();
-  //   assert(actualBond > 0, `bond was not positive`);
-
-  //   const balanceBefore = (await web3.eth.getBalance(addr));
-  //   const tx = (await traderRegistrar.deregister(accounts[0].republic));
-
-  //   // Fee
-  //   const fee = await utils.transactionFee(tx);
-
-  //   const balanceNow = (await web3.eth.getBalance(addr));
-
-  //   // Check that the bond has been returned
-  //   assert(balanceNow.equals(balanceBefore.add(bond).minus(fee)), `comparing: ${balanceNow} to ${balanceBefore.add(bond).minus(fee)}`);
-
-  //   // Check that bond is now 0
-  //   actualBond = (await traderRegistrar.getBond(accounts[0].republic)).toNumber();
-  //   assert(actualBond == 0, `bond was ${actualBond} instead of ${0}`);
-  // });
+    await steps.Deregister(accounts[0]);
+  });
 
 
-  // it("can't register twice without deregistering", async function () {
-  //   const traderRegistrar = await Traders.deployed();
+  it("should not have a bond after deregistering", async function () {
+    await steps.Register(accounts[0], 1000);
+    await steps.Deregister(accounts[0]);
 
-  //   // Register
-  //   const bond = parseInt(web3.toWei(0.001, 'ether'));
-  //   await traderRegistrar.register(accounts[0].public, { value: bond });
+    // Bond should now be 0
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(0);
+  });
 
-  //   try {
-  //     // Try to register again
-  //     await traderRegistrar.register(accounts[0].public, { value: bond });
-  //     assert(false, "Contract did not prevent trader from registering twice");
-  //   } catch (err) {
-  //     assert(true);
-  //   }
+  it("can get their bond refunded", async function () {
+    const bond = 1000;
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    await steps.Register(accounts[0], bond);
+    const balanceMiddle = (await steps.GetRenBalance(accounts[0]));
+    await steps.Deregister(accounts[0]);
+    const balanceAfter = (await steps.GetRenBalance(accounts[0]));
 
-  //   // Deregister
-  //   await traderRegistrar.deregister(accounts[0].republic);
-  // });
+    // Balances and bond should match up
+    balanceAfter
+      .should.be.bignumber.equal(balanceBefore);
+    balanceAfter
+      .should.be.bignumber.equal(balanceMiddle.add(bond));
+  });
 
+  it("can't register twice without deregistering", async function () {
+    await steps.Register(accounts[0], 1000);
 
-  // it("can increase their bond", async function () {
-  //   const traderRegistrar = await Traders.deployed();
+    // Registering again should throw an Error
+    await steps.Register(accounts[0], 1000)
+      .should.be.rejectedWith(Error);
+    await steps.Deregister(accounts[0]);
+  });
 
-  //   // Register
-  //   const bond = parseInt(web3.toWei(0.001, 'ether'));
-  //   await traderRegistrar.register(accounts[0].public, { value: bond });
+  it("can decrease their bond", async function () {
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    await steps.Register(accounts[0], 1000);
 
-  //   // Increase bond
-  //   const newBond = parseInt(web3.toWei(0.00125, 'ether'));
-  //   const tx = await utils.logTx('Increasing bond', traderRegistrar.increaseBond(accounts[0].republic, { value: newBond - bond }));
+    // Decrease bond
+    const newBond = 100;
+    await steps.UpdateBond(accounts[0], newBond);
 
-  //   // Check bond
-  //   let actualBond = (await traderRegistrar.getBond(accounts[0].republic)).toNumber();
-  //   assert(actualBond == newBond, `bond was ${actualBond} instead of ${newBond}`);
+    // Bond should now be 100
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(newBond);
 
-  //   // Verify event
-  //   const log = tx.logs[0];
-  //   assert(log.event == 'TraderBondUpdated', `Unexpected event name`);
-  //   assert(log.args["traderId"] == accounts[0].republic, `Unexpected event details`);
-  //   assert(log.args["newBond"].toNumber() == newBond, `Unexpected event details`);
+    // Bond difference should be returned
+    (await steps.GetRenBalance(accounts[0]))
+      .should.be.bignumber.equal(balanceBefore.minus(newBond));
 
-  //   await traderRegistrar.deregister(accounts[0].republic);
-  // });
+    await steps.Deregister(accounts[0]);
+  });
 
+  it("can increase their bond", async function () {
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    const oldBond = 1000;
+    await steps.Register(accounts[0], oldBond);
 
-  // it("can decrease their bond", async function () {
-  //   const traderRegistrar = await Traders.deployed();
+    // Increase bond
+    const newBond = 1500;
+    await steps.ApproveRen(newBond - oldBond, accounts[0])
+    await steps.UpdateBond(accounts[0], newBond);
 
-  //   // Register
-  //   const bondBefore = parseInt(web3.toWei(0.001, 'ether'));
-  //   await traderRegistrar.register(accounts[0].public, { value: bondBefore });
+    // Bond should now be 1500
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(newBond);
 
-  //   // Get balance before
-  //   const balanceBefore = (await web3.eth.getBalance(addr));
+    // Bond difference should have been withdrawn
+    (await steps.GetRenBalance(accounts[0]))
+      .should.be.bignumber.equal(balanceBefore.minus(newBond));
 
-  //   // Increase bond
-  //   const newBond = parseInt(web3.toWei(0.0001, 'ether'));
-  //   const bondDifference = bondBefore - newBond;
-  //   const tx = await utils.logTx('Decreasing bond', traderRegistrar.decreaseBond(accounts[0].republic, newBond));
+    await steps.Deregister(accounts[0]);
+  });
 
-  //   // Calculate fee and current balance
-  //   const fee = await utils.transactionFee(tx);
-  //   const balanceNow = (await web3.eth.getBalance(addr));
+  it("can't increase their bond without first approving ren", async function () {
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    const oldBond = 1000;
+    await steps.Register(accounts[0], oldBond);
 
-  //   // Check new bond
-  //   let actualBond = (await traderRegistrar.getBond(accounts[0].republic)).toNumber();
-  //   assert(actualBond == newBond, `bond was ${actualBond} instead of ${newBond}`);
+    // Increasing bond without approving should throw an error
+    const newBond = 1500;
+    await steps.ApproveRen(0, accounts[0]);
+    await steps.UpdateBond(accounts[0], newBond)
+      .should.be.rejectedWith(Error);
 
-  //   // Check that the bond difference has been returned
-  //   assert(balanceNow.equals(balanceBefore.add(bondDifference).minus(fee)), `comparing: ${balanceNow} to ${balanceBefore.add(bondDifference).minus(fee)}`);
+    // Bond should still be 1000
+    (await steps.GetBond(accounts[0]))
+      .should.be.bignumber.equal(oldBond);
 
-  //   // Verify event
-  //   const log = tx.logs[0];
-  //   assert(log.event == 'TraderBondUpdated', `Unexpected event name`);
-  //   assert(log.args["traderId"] == accounts[0].republic, `Unexpected event details`);
-  //   assert(log.args["newBond"].toNumber() == newBond, `Unexpected event details`);
+    // Bond difference should not have been withdrawn
+    const balanceAfter = await steps.GetRenBalance(accounts[0]);
+    balanceAfter.should.be.bignumber.equal(balanceBefore.minus(oldBond));
 
-  //   await traderRegistrar.deregister(accounts[0].republic);
-  // });
+    await steps.Deregister(accounts[0]);
+  });
 
+  it("can't deregister twice for the same registration", async function () {
+    await steps.Register(accounts[0], 1000);
+    await steps.Deregister(accounts[0]);
 
-  // it("can't deregister without first registering", async function () {
-  //   const traderRegistrar = await Traders.deployed();
+    // Deregistering again should throw an error
+    await steps.Deregister(accounts[0])
+      .should.be.rejectedWith(Error);
+  });
 
-  //   // Deregister a different account
-  //   try {
-  //     await traderRegistrar.deregister("0x1234");
-  //     assert(false, "Contract did not prevent an unregistered trader from deregistering");
-  //   } catch (err) {
-  //     assert(true);
-  //   }
-
-  //   // Register and deregister
-  //   await traderRegistrar.register(accounts[0].public, { value: parseInt(web3.toWei(0.001, 'ether')) });
-  //   await traderRegistrar.deregister(accounts[0].republic);
-
-  //   // Deregister again
-  //   try {
-  //     await traderRegistrar.deregister(accounts[0].republic);
-  //     assert(false, "Contract did not prevent trader from deregistering twice");
-  //   } catch (err) {
-  //     assert(true);
-  //   }
-  // });
-
-  // it("can register again after deregistering", async function () {
-  //   const traderRegistrar = await Traders.deployed();
-
-  //   // Register
-  //   const bond = parseInt(web3.toWei(0.001, 'ether'));
-  //   let tx = await utils.logTx('Registering again', traderRegistrar.register(accounts[0].public, { value: bond }));
-
-  //   // Deregister
-  //   tx = await utils.logTx('Deregistering again', traderRegistrar.deregister(accounts[0].republic));
-  // });
-
-  // it("can retrieve a trader's public key from its address", async function () {
-  //   const traderRegistrar = await Traders.deployed();
-
-  //   pubkey = (await traderRegistrar.getPublicKey(accounts[0].republic));
-  //   assert(pubkey == accounts[0].public, `pubkey was ${pubkey} instead of ${accounts[0].public}`);
-  // });
+  it("can retrieve a node's public key from its address", async function () {
+    (await steps.GetPublicKey(accounts[0].republic))
+      .should.equal(accounts[0].public);
+  });
 
 });
