@@ -3,4 +3,4 @@
 accountNumber=$(grep 'accountNumber: \d*' republic-config.js | grep -o '\d')
 echo $accountNumber
 
-ganache-cli -a $accountNumber -s republic
+$(npm bin)/ganache-cli -a $accountNumber -s republic

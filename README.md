@@ -13,9 +13,30 @@ The Ethereum Republic library is made up of several different smart contracts th
 
 None of the contract expose orders, including the Order Book, which only holds order IDs. Orders are never passed to the Republic network under any circumstances, and order fragments are never passed to the blockchain.
 
+## Tests
+
+Install all NPM modules and Truffle as a global command.
+
+```
+npm install
+npm install --global truffle
+```
+
+Run the `start-ganache` script.
+
+```sh
+./start-ganache
+```
+
+Run the Truffle test suite.
+
+```sh
+truffle test
+```
+
 ## Republic
 
-The Ethereum Republic library was developed by the Republic Protocol team and is available under the MIT license. For more information, see our website https://republicprotocol.com. 
+The Ethereum Republic library was developed by the Republic Protocol team and is available under the MIT license. For more information, see our website https://republicprotocol.com.
 
 ## Contributors
 
