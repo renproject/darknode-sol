@@ -1,18 +1,21 @@
-# Republic
+# Ethereum Republic
 
-The Ethereum Republic smart contracts are the official reference implementations of the Republic Protocol, written in Solidity.
+The Ethereum Republic library is the official reference implementation of the Republic Protocol on Ethereum, written in Solidity. The Republic Protocol does not explicitly require an Ethereum implementation, and future implementations may be developed on other blockchains. For now, Ethereum is used because it is the biggest and most reputable smart contract platform available.
 
-The main components are:
+## Smart contracts
 
-1. Ren ERC20 Contract
-2. Miner Registrar Contract
-3. Trader Registrar Contract
-4. Orderbook Contract
+The Ethereum Republic library is made up of several different smart contracts that work together to implement the required on-chain functionality. These smart contracts are used by off-chain miners and traders to provide secure decentralized order matching computations.
 
+1. The Ren ERC20 contract implements the Republic Token, used to provide economic incentives.
+2. The Miner Registrar contract implements miner registrations and epochs.
+3. The Trader Registrar contract implements trader registrations.
+4. The Order Book contract implements the opening, closing, and expiration of orders.
+
+None of the contract expose orders, including the Order Book, which only holds order IDs. Orders are never passed to the Republic network under any circumstances, and order fragments are never passed to the blockchain.
 
 ## Republic
 
-The Identity library was developed by the Republic Protocol team and is available under the MIT license. For more information, see our website https://republicprotocol.com. 
+The Ethereum Republic library was developed by the Republic Protocol team and is available under the MIT license. For more information, see our website https://republicprotocol.com. 
 
 ## Contributors
 
