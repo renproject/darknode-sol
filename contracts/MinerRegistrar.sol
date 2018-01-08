@@ -248,7 +248,7 @@ contract MinerRegistrar {
   */
   function updateBond(bytes20 minerId, uint256 newBond) payable public {
     // Ensure miner is already registered
-    require(isStayingRegistered(minerId));
+    require(isPendingRegistration(minerId) || isStayingRegistered(minerId));
     
     // Only allow owner to modify bond
     address owner = Utils.addressFromPubKey(miners[minerId].publicKey);
