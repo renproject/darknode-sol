@@ -11,4 +11,5 @@
 module.exports = {
   epochInterval: 1,
   bondMinimum: 0,
+  accountNumber: 12,
 }

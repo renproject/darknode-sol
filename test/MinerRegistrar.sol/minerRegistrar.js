@@ -3,8 +3,8 @@ chai.use(require('chai-as-promised'));
 chai.use(require('chai-bignumber')());
 chai.should();
 
-const utils = require("./test_utils");
-const { accounts } = require("./testrpc_accounts");
+const utils = require("../test_utils");
+const { accounts } = require("../accounts");
 const steps = require("./steps");
 
 contract('A miner', function () {
@@ -13,7 +13,7 @@ contract('A miner', function () {
     // After each test, make sure that the miner is not registered
     try { await steps.Deregister(accounts[0]); } catch (err) { }
     await steps.WaitForEpoch();
-    await steps.ReleaseBond(accounts[0]);
+    await steps.WithdrawBond(accounts[0]);
   });
 
   it("can't deregister without first registering", async function () {
@@ -52,11 +52,11 @@ contract('A miner', function () {
     await steps.Register(accounts[0], 1000);
     await steps.WaitForEpoch();
     await steps.Deregister(accounts[0]);
-    await steps.ReleaseBond(accounts[0]);
+    await steps.WithdrawBond(accounts[0]);
     (await steps.GetBond(accounts[0]))
       .should.be.bignumber.equal(1000);
     await steps.WaitForEpoch();
-    await steps.ReleaseBond(accounts[0]);
+    await steps.WithdrawBond(accounts[0]);
 
     // Bond should now be 0
     (await steps.GetBond(accounts[0]))
@@ -70,7 +70,7 @@ contract('A miner', function () {
     const balanceMiddle = (await steps.GetRenBalance(accounts[0]));
     await steps.Deregister(accounts[0]);
     await steps.WaitForEpoch();
-    await steps.ReleaseBond(accounts[0]);
+    await steps.WithdrawBond(accounts[0]);
     const balanceAfter = (await steps.GetRenBalance(accounts[0]));
 
     // Balances and bond should match up
@@ -119,7 +119,7 @@ contract('A miner', function () {
     (await steps.GetBond(accounts[0]))
       .should.be.bignumber.equal(newBond);
 
-    await steps.ReleaseBond(accounts[0]);
+    await steps.WithdrawBond(accounts[0]);
 
     // Bond difference should be returned
     (await steps.GetRenBalance(accounts[0]))

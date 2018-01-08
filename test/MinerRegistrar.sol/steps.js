@@ -1,7 +1,7 @@
 
-const utils = require("./test_utils");
-const { accounts, indexMap } = require("./testrpc_accounts");
-var config = require("../republic-config");
+const utils = require("../test_utils");
+const { accounts, indexMap } = require("../accounts");
+var config = require("../../republic-config");
 
 // Initialise:
 let ren, registrar;
@@ -15,7 +15,7 @@ const steps = {
 
   /** Register */
   Register: async (account, bond) => {
-    const difference = bond - (await registrar.getBondPendingRelease(account.republic));
+    const difference = bond - (await registrar.getBondPendingWithdrawal(account.republic));
     if (difference) {
       await ren.approve(registrar.address, difference, { from: account.address });
     }
@@ -131,8 +131,8 @@ const steps = {
     //   { event: 'MinerBondUpdated', minerId: account.republic, newBond: newBond });
   },
 
-  ReleaseBond: async (account) => {
-    return await utils.logTx('Releasing bond', registrar.releaseBond(account.republic, { from: account.address }));
+  WithdrawBond: async (account) => {
+    return await utils.logTx('Releasing bond', registrar.withdrawBond(account.republic, { from: account.address }));
   },
 
   /** GetPublicKey */

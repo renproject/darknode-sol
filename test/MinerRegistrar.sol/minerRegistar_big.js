@@ -3,11 +3,11 @@ chai.use(require('chai-as-promised'));
 chai.use(require('chai-bignumber')());
 chai.should();
 
-const utils = require("./test_utils");
-const { accounts } = require("./testrpc_accounts");
+const utils = require("../test_utils");
+const { accounts } = require("../accounts");
 const steps = require("./steps");
 
-contract('Registrar (big)', function () {
+contract('MinerRegistrar (big)', function () {
 
   // it("can get all pools", async function () {
   //   // Register and deregister
