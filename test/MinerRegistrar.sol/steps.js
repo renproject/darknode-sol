@@ -4,10 +4,10 @@ const { accounts, indexMap } = require("../accounts");
 var config = require("../../republic-config");
 
 // Initialise:
-let ren, registrar;
+let ren, minerRegistrar;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
-  registrar = await artifacts.require("Registrar").deployed();
+  minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
 })();
 
 
@@ -15,11 +15,11 @@ const steps = {
 
   /** Register */
   Register: async (account, bond) => {
-    const difference = bond - (await registrar.getBondPendingWithdrawal(account.republic));
+    const difference = bond - (await minerRegistrar.getBondPendingWithdrawal(account.republic));
     if (difference) {
-      await ren.approve(registrar.address, difference, { from: account.address });
+      await ren.approve(minerRegistrar.address, difference, { from: account.address });
     }
-    const tx = await utils.logTx('Registering', registrar.register(account.public, { from: account.address }));
+    const tx = await utils.logTx('Registering', minerRegistrar.register(account.public, { from: account.address }));
 
     // epochInterval = epochInterval || 1 * utils.days;
 
@@ -31,22 +31,22 @@ const steps = {
   /** Register all accounts */
   RegisterAll: async (accounts, bond) => {
     await Promise.all(accounts.map(async account => {
-      await ren.approve(registrar.address, bond, { from: account.address });
-      utils.logTx('Registering', await registrar.register(account.public, { from: account.address }));
+      await ren.approve(minerRegistrar.address, bond, { from: account.address });
+      utils.logTx('Registering', await minerRegistrar.register(account.public, { from: account.address }));
     }));
   },
 
   /** Deregister all accounts */
   DeregisterAll: async (accounts) => {
     await Promise.all(accounts.map(async account => {
-      await registrar.deregister(account.republic, { from: account.address })
+      await minerRegistrar.deregister(account.republic, { from: account.address })
     }));
   },
 
   WaitForEpoch: async () => {
     while (true) {
       // Must be an on-chain call, or the time won't be updated
-      const tx = await utils.logTx('Checking epoch', registrar.checkEpoch());
+      const tx = await utils.logTx('Checking epoch', minerRegistrar.checkEpoch());
       // If epoch happened, return
       if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "Epoch") { return; }
 
@@ -55,15 +55,15 @@ const steps = {
   },
 
   GetMinerCount: async () => {
-    return await registrar.getMinerCount.call();
+    return await minerRegistrar.getMinerCount.call();
   },
 
   GetRegisteredMiners: async () => {
-    return (await registrar.getCurrentMiners());
+    return (await minerRegistrar.getCurrentMiners());
   },
 
   GetAllMiners: async () => {
-    return (await registrar.getAllMiners());
+    return (await minerRegistrar.getAllMiners());
   },
 
   GetRegisteredAccounts: async () => {
@@ -72,12 +72,12 @@ const steps = {
   },
 
   GetAllPools: async (accounts) => {
-    return Promise.all(accounts.map(async account => (await registrar.getPool(account.republic, { from: account.address })).toNumber()));
+    return Promise.all(accounts.map(async account => (await minerRegistrar.getPool(account.republic, { from: account.address })).toNumber()));
   },
 
   /** Deregister */
   Deregister: async (account) => {
-    const tx = await utils.logTx('Deregistering', registrar.deregister(account.republic, { from: account.address }));
+    const tx = await utils.logTx('Deregistering', minerRegistrar.deregister(account.republic, { from: account.address }));
     // Verify event
     // const log = tx.logs[0];
     // assert(log.event == 'MinerDeregistered');
@@ -87,22 +87,22 @@ const steps = {
   /** GetBond */
   GetBond: async (account) => {
     // TODO: CHange to call
-    return await registrar.getBond(account.republic, { from: account.address });
+    return await minerRegistrar.getBond(account.republic, { from: account.address });
   },
 
   /** GetPool */
   GetPool: async (account) => {
     // TODO: CHange to call
-    return await registrar.getPool(account.republic, { from: account.address });
+    return await minerRegistrar.getPool(account.republic, { from: account.address });
   },
 
   GetAllMiners: async () => {
-    return await registrar.getAllMiners.call();
+    return await minerRegistrar.getAllMiners.call();
   },
 
   /** GetPoolCount */
   GetPoolSize: async () => {
-    return await registrar.getPoolSize.call();
+    return await minerRegistrar.getPoolSize.call();
   },
 
   /*** Expected Pool Count ***/
@@ -119,12 +119,12 @@ const steps = {
 
   /** ApproveRen */
   ApproveRen: async (amount, account) => {
-    ren.approve(registrar.address, amount, { from: account.address });
+    ren.approve(minerRegistrar.address, amount, { from: account.address });
   },
 
   /** UpdateBond */
   UpdateBond: async (account, newBond) => {
-    tx = await utils.logTx('Updating bond', registrar.updateBond(account.republic, newBond, { from: account.address }));
+    tx = await utils.logTx('Updating bond', minerRegistrar.updateBond(account.republic, newBond, { from: account.address }));
 
     // Verify event
     // utils.assertEventsEqual(tx.logs[0],
@@ -132,12 +132,12 @@ const steps = {
   },
 
   WithdrawBond: async (account) => {
-    return await utils.logTx('Releasing bond', registrar.withdrawBond(account.republic, { from: account.address }));
+    return await utils.logTx('Releasing bond', minerRegistrar.withdrawBond(account.republic, { from: account.address }));
   },
 
   /** GetPublicKey */
   GetPublicKey: async (republicAddr) => {
-    return await registrar.getPublicKey(republicAddr);
+    return await minerRegistrar.getPublicKey(republicAddr);
   },
 }
 

@@ -7,6 +7,15 @@ const utils = require("../test_utils");
 const { accounts } = require("../accounts");
 const steps = require("./steps");
 
+
+
+/**
+ * 
+ * CONFIGURE NUMBER OF MINERS IN republic-config.js
+ * 
+ * 
+ */
+
 contract('MinerRegistrar (big)', function () {
 
   // it("can get all pools", async function () {
