@@ -25,7 +25,7 @@ contract TraderRegistrar {
   }
 
   // CONFIGURATION
-  uint256 bondMinimum;
+  uint256 minimumBond;
 
   // Map from Republic IDs to trader structs
   mapping(bytes20 => Trader) private traders;
@@ -55,12 +55,12 @@ contract TraderRegistrar {
   * Should be called at the end of a function
   *
   * @param traderId The Republic ID of the trader
-  * @param toReturn The bond amount to return
+  * @param toRefund The bond amount to return
   */
-  function returnBond(bytes20 traderId, uint256 toReturn) private {
-    require(toReturn > traders[traderId].bond);
-    traders[traderId].bond -= toReturn;
-    bool success = ren.transfer(msg.sender, toReturn);
+  function refundBond(bytes20 traderId, uint256 toRefund) private {
+    require(toRefund <= traders[traderId].bond);
+    traders[traderId].bond -= toRefund;
+    bool success = ren.transfer(msg.sender, toRefund);
     require(success);
   }
 
@@ -68,9 +68,9 @@ contract TraderRegistrar {
 
   /** Initialisation code */
 
-  function TraderRegistrar(address renAddress, uint256 _bondMinimum) public {
+  function TraderRegistrar(address renAddress, uint256 _minimumBond) public {
     ren = RepublicToken(renAddress);
-    bondMinimum = _bondMinimum;
+    minimumBond = _minimumBond;
   }
 
 
@@ -89,8 +89,8 @@ contract TraderRegistrar {
   */
   function register(bytes publicKey) payable public {
 
-    address traderAddress = Utils.addressFromPubKey(publicKey);
-    bytes20 traderId = Utils.idFromPubKey(publicKey);
+    address traderAddress = Utils.ethereumAddressFromPublicKey(publicKey);
+    bytes20 traderId = Utils.republicIDFromPublicKey(publicKey);
 
     // Trader should not be already registered or awaiting registration
     require(canRegister(traderId));
@@ -102,11 +102,11 @@ contract TraderRegistrar {
     uint256 bond = ren.allowance(msg.sender, this);
 
     // Bond should be greater than minumum
-    require (bond > bondMinimum);
+    require (bond > minimumBond);
 
     // Transfer Ren (ERC20 token)
     bool success = ren.transferFrom(msg.sender, this, bond);
-    assert(success);
+    require(success);
 
     var trader = Trader({
       publicKey: publicKey,
@@ -117,8 +117,6 @@ contract TraderRegistrar {
     traders[traderId] = trader;
     
     traderCount += 1;
-
-    // addressIds[traderAddress] = traderId;
 
     // Emit event to logs
     TraderRegistered(traderId, bond);
@@ -132,27 +130,28 @@ contract TraderRegistrar {
   function updateBond(bytes20 traderId, uint256 newBond) onlyRegistered(traderId) payable public {
     
     // Only allow owner to modify bond
-    address owner = Utils.addressFromPubKey(traders[traderId].publicKey);
+    address owner = Utils.ethereumAddressFromPublicKey(traders[traderId].publicKey);
     require(owner == msg.sender);
 
     // Set new bond
     require(newBond > 0);
     uint256 oldBond = traders[traderId].bond;
-    if (newBond == oldBond) {return;} // could be require
-
-    bool success;
+    if (newBond == oldBond) {
+      return;
+    }
 
     if (newBond > oldBond) {
       // Increasing bond
 
       uint256 toAdd = newBond - oldBond;
 
-      // Sanity check
+      // Sanity checks
       assert(toAdd < newBond);
+      assert(toAdd > 0);
 
       // Transfer Ren (ERC20 token)
       require(ren.allowance(msg.sender, this) >= toAdd);
-      success = ren.transferFrom(msg.sender, this, toAdd);
+      bool success = ren.transferFrom(msg.sender, this, toAdd);
       require(success);
 
       traders[traderId].bond = newBond;
@@ -161,12 +160,12 @@ contract TraderRegistrar {
     } else if (newBond < oldBond) {
       // Decreasing bond
 
-      uint256 toReturn = oldBond - newBond;
+      uint256 toRefund = oldBond - newBond;
 
       // Sanity check
-      assert(toReturn < oldBond);
+      assert(toRefund < oldBond);
 
-      returnBond(traderId, toReturn);
+      refundBond(traderId, toRefund);
     }
 
     // Emit event to logs
@@ -180,14 +179,14 @@ contract TraderRegistrar {
   function deregister(bytes20 traderId) onlyRegistered(traderId) public {
 
     // Check that the msg.sender owns the trader
-    address owner = Utils.addressFromPubKey(traders[traderId].publicKey); // store address
+    address owner = Utils.ethereumAddressFromPublicKey(traders[traderId].publicKey); // store address
     require(owner == msg.sender);
 
     traderCount -= 1;
 
     // Return Ren
-    uint256 toReturn = traders[traderId].bond;
-    returnBond(traderId, toReturn);
+    uint256 toRefund = traders[traderId].bond;
+    refundBond(traderId, toRefund);
 
     // Emit event to logs
     TraderDeregistered(traderId);
@@ -204,7 +203,7 @@ contract TraderRegistrar {
   /*** Trader specific getters ***/
 
   // Getter for trader bonds, accessible by trader ID
-  function getBond(bytes20 traderId) public view returns (uint256) {
+  function refundBond(bytes20 traderId) public view returns (uint256) {
     return traders[traderId].bond;
   }
  
@@ -214,7 +213,7 @@ contract TraderRegistrar {
   }
 
   function getAddress(bytes20 traderId) public view returns (address) {
-    return Utils.addressFromPubKey(traders[traderId].publicKey);
+    return Utils.ethereumAddressFromPublicKey(traders[traderId].publicKey);
   }
 
 }
