@@ -398,11 +398,11 @@ contract MinerRegistrar {
     return minerList;
   }
 
-  function getPoolCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) / getPoolSize();
+  function getMNetworkCount() public view returns (uint256) {
+    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
   }
   
-  function getPoolSize() public view returns (uint256) {
+  function getMNetworkSize() public view returns (uint256) {
     uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
     
     // If odd, add 1 to become even
