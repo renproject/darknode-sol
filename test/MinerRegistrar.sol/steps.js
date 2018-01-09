@@ -82,9 +82,9 @@ const steps = {
     return await minerRegistrar.getAllMiners.call();
   },
 
-  /** GetPoolCount */
-  GetPoolSize: async () => {
-    return await minerRegistrar.getPoolSize.call();
+  /** getMNetworkSize */
+  GetMNetworkSize: async () => {
+    return await minerRegistrar.getMNetworkSize.call();
   },
 
   /*** Expected Pool Count ***/
