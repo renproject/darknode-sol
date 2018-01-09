@@ -206,6 +206,7 @@ contract MinerRegistrar {
     bytes20 minerId = Utils.republicIDFromPublicKey(publicKey);
 
     // Verify that the miner has provided the correct public key
+    // TODO: Check a signature instead
     require(msg.sender == minerAddress);
 
     // Miner should not be already registered or awaiting registration

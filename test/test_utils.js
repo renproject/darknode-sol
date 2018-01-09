@@ -1,4 +1,10 @@
 
+/** USD/ETH ESTIMATE (for logging only) */
+// Grab from https://api.coinmarketcap.com/v1/ticker/ethereum/
+const ethPriceEstimate = 1170.11 // (as of 09/01/2018)
+
+
+
 const transactionFee = async (tx) => {
   const gasUsed = tx.receipt.gasUsed;
   let gasPrice = (await web3.eth.getTransaction(tx.tx)).gasPrice;
@@ -21,24 +27,29 @@ const logTx = async (description, ...promises) => {
     gas += latestTx.receipt.gasUsed;
   }
   // Not very nice code:
-  logs.add(JSON.stringify({ description: description, gas: gas, fee: fee }));
+  if (!logs[description]) {
+    logs[description] = [];
+  }
+  logs[description].push(fee);
+  // logs.add(JSON.stringify({ description: description, gas: gas, fee: fee }));
   return latestTx;
 }
 
-const ethPriceEstimate = 806.13 // (as of 15/12/2017)
+
 
 const printCosts = () => {
   // Colours
   const green = "\x1b[32m";
-  const blue = "\x1b[34m";
-  const cyan = "\x1b[36m";
+  const red = "\x1b[31m";
   const reset = "\x1b[0m";
 
-  for (var log of logs) {
-    let { description, fee, gas } = JSON.parse(log);
-    const usd = Number(fee * ethPriceEstimate).toFixed(2);
-    fee = Number(fee).toFixed(6);
-    console.log(`${description} used ${green}${gas} gas${reset} / ${blue}${fee} ETH${reset} / ${cyan}${usd} USD${reset}`);
+  console.log("\nCost estimates:");
+  for (var description in logs) {
+    const min = Math.min(...logs[description]);
+    const max = Math.max(...logs[description]);
+    const min_usd = Number(min * ethPriceEstimate).toFixed(2);
+    const max_usd = Number(max * ethPriceEstimate).toFixed(2);
+    console.log(`${description} used between ${green}${min_usd} USD${reset} and ${red}${max_usd} USD${reset}`);
   }
 }
 

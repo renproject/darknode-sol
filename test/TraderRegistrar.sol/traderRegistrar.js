@@ -162,4 +162,10 @@ contract('Traders', function () {
       .should.equal(accounts[0].public);
   });
 
+
+  // Log costs
+  after("log costs", () => {
+    utils.printCosts();
+  });
+
 });
