@@ -354,7 +354,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
     address public wallet;
     RefundVault public vault;
-    SingularityNetToken public token;
+    RepublicToken public token;
 
     uint256 public startTime;
     uint256 public endTime;
@@ -390,7 +390,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
         require(_wallet != 0x0);
 
         vault = new RefundVault(_wallet);
-        token = SingularityNetToken(_token);
+        token = RepublicToken(_token);
         wallet = _wallet;
         startTime = _startTime;
         endTime = _endTime;
