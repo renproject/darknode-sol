@@ -17,14 +17,14 @@ library Utils {
   }
 
   // Generate Ethereum address from Ethereum public key
-  function addressFromPubKey(bytes pubkey) public pure returns (address) {
+  function ethereumAddressFromPublicKey(bytes pubkey) public pure returns (address) {
     // An ethereum public key is 65 bytes (1 byte 0x04, 32 bytes x value, 32 bytes y value)
     // The address is taken from only the last 64 bytes
     return address(keccak256(lastNBytes(pubkey, 64)));
   }
 
-  // Generate Republic address from Ethereum public key
-  function idFromPubKey(bytes pubkey) public pure returns (bytes20) {
+  // Generate Republic ID from Ethereum public key
+  function republicIDFromPublicKey(bytes pubkey) public pure returns (bytes20) {
     // A Republic address is the last 20 bytes of the hash of the full 65 bytes of the public key
     return bytes20(uint(keccak256(pubkey)) >> (8 * 12));
   }
