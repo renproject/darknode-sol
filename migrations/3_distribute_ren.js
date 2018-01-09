@@ -1,5 +1,5 @@
 
-const { accounts } = require("../test/accounts.js");
+const { accounts } = require("../test/accounts");
 
 module.exports = async function (deployer) {
   ren = await artifacts.require("RepublicToken").deployed();
