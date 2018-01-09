@@ -8,7 +8,7 @@ const transactionFee = async (tx) => {
 }
 
 
-const logs = new Set();
+const logs = {};
 // logTx logs the gas price of a series of contract calls, returning the tx object the last one
 const logTx = async (description, ...promises) => {
   let fee = 0;

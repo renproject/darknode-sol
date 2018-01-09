@@ -13,36 +13,6 @@ let ren, minerRegistrar;
 
 const steps = {
 
-  /** Register */
-  Register: async (account, bond) => {
-    const difference = bond - (await minerRegistrar.getBondPendingWithdrawal(account.republic));
-    if (difference) {
-      await ren.approve(minerRegistrar.address, difference, { from: account.address });
-    }
-    const tx = await utils.logTx('Registering', minerRegistrar.register(account.public, { from: account.address }));
-
-    // epochInterval = epochInterval || 1 * utils.days;
-
-    // Verify event
-    utils.assertEventsEqual(tx.logs[tx.logs.length - 1],
-      { event: 'MinerRegistered', minerId: account.republic, bond: bond });
-  },
-
-  /** Register all accounts */
-  RegisterAll: async (accounts, bond) => {
-    await Promise.all(accounts.map(async account => {
-      await ren.approve(minerRegistrar.address, bond, { from: account.address });
-      utils.logTx('Registering', await minerRegistrar.register(account.public, { from: account.address }));
-    }));
-  },
-
-  /** Deregister all accounts */
-  DeregisterAll: async (accounts) => {
-    await Promise.all(accounts.map(async account => {
-      await minerRegistrar.deregister(account.republic, { from: account.address })
-    }));
-  },
-
   WaitForEpoch: async () => {
     while (true) {
       // Must be an on-chain call, or the time won't be updated
@@ -66,13 +36,25 @@ const steps = {
     return (await minerRegistrar.getAllMiners());
   },
 
-  GetRegisteredAccounts: async () => {
+  GetRegisteredAccountIndexes: async () => {
     const miners = await steps.GetRegisteredMiners();
     return miners.map(miner => indexMap[miner]);
   },
 
-  GetAllPools: async (accounts) => {
-    return Promise.all(accounts.map(async account => (await minerRegistrar.getPool(account.republic, { from: account.address })).toNumber()));
+
+  /** MINER SPECIFIC FUNCTIONS */
+
+  /** Register */
+  Register: async (account, bond) => {
+    const difference = bond - (await minerRegistrar.getBondPendingWithdrawal(account.republic));
+    if (difference) {
+      await ren.approve(minerRegistrar.address, difference, { from: account.address });
+    }
+    const tx = await utils.logTx('Registering', minerRegistrar.register(account.public, { from: account.address }));
+
+    // Verify event
+    // utils.assertEventsEqual(tx.logs[tx.logs.length - 1],
+    //   { event: 'MinerRegistered', minerId: account.republic, bond: bond });
   },
 
   /** Deregister */
@@ -139,6 +121,31 @@ const steps = {
   GetPublicKey: async (republicAddr) => {
     return await minerRegistrar.getPublicKey(republicAddr);
   },
+
+
+
+  /** FUNCTIONS FOR ALL ACCOUNTS */
+
+  WithdrawBondAll: async (accounts) => {
+    await Promise.all(accounts.map(async account => {
+      await steps.WithdrawBond(account);
+    }));
+  },
+
+  /** Register all accounts */
+  RegisterAll: async (accounts, bond) => {
+    await Promise.all(accounts.map(async account => {
+      await steps.Register(account, bond);
+    }));
+  },
+
+  /** Deregister all accounts */
+  DeregisterAll: async (accounts) => {
+    await Promise.all(accounts.map(async account => {
+      await steps.Deregister(account);
+    }));
+  },
+
 }
 
 module.exports = steps;
