@@ -5,94 +5,98 @@ import "./Nodes.sol";
 
 contract OrderBook {
 	uint8 public orderLimit = 100;
-	uint32 public orderFee = 100000;
-
-  uint8 public tax = 10; // Percentange
+	uint32 public minimumOrderFee = 100000;
 
   RepublicToken republicToken;
   Nodes minerContract;
-  address taxMan;
   uint poolCount;
   uint kValue = 5;
 
-	uint8 constant statusOpen = 1;
-	uint8 constant statusExpired = 2;
-	uint8 constant statusClosed = 3;
+	uint8 constant STATUS_OPEN = 1;
+	uint8 constant STATUS_EXPIRED = 2;
+	uint8 constant STATUS_CLOSED = 3;
 
   struct MatchFragment {
-    uint outputFragment;
-    uint orderFragmentID;
+    bytes20 minerID;
+
+    uint256 orderFragmentID1;
+    uint256 orderFragmentID2;
+    uint256 outputFragment;
+
     bytes zkCommitment;
-    bytes32 minerID;
   }
 
 	struct Order {
+    bytes20 orderID;
+    bytes20 traderID;
+
 		uint8 status;
-    uint fee;
-    uint256 fragmentCount;
-    mapping (address => bool) authorized; 
-    mapping (bytes32 => bytes20) miners;
-    mapping (bytes32 => bytes20) minerLeaders;
+    uint256 fee;
+    uint256 timestamp;
+
+    uint256 orderFragmentCount;
+    mapping (bytes20 => bytes20) minersToOrderFragmentIDs;
     MatchFragment[] matchFragments;
-    bytes32 matchID;
-    uint registrationTime;
 	}
 
 	mapping (bytes32 => Order) public orders;
 	mapping (bytes32 => address) owner; // orderID to owner
   mapping (address => uint) orderCount;
-  mapping (address => bool) registered;
   mapping (bytes32 => uint) reward;
-
-  modifier onlyRegistered() {
-    require(registered[msg.sender]);
-    _;
-  }
 
   /// @notice Constructor of the contract OrderBook
 	/// @param _republicToken The address of the REN token contract
-  function OrderBook(address _republicToken, address _minerContract, address _taxMan) public {
+  function OrderBook(address _republicToken, address _minerContract) public {
     republicToken = RepublicToken(_republicToken);
     minerContract = Nodes(_minerContract);
-    taxMan = _taxMan;
   }
+
   /// @notice Open an order
 
 	/// @notice Function that is called by the trader to submit an order
 	/// @param _orderID The hash of the order
   /// @param _fragments The list of hashes of the fragments
 	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
+
+    bytes20 traderID = 9; /* FIXME */
     
-    uint fragmentCount = minerContract.getPoolCount();
+    uint256 orderFragmentCount = minerContract.getPoolCount();
     require(_orderFragmentIDs.length == _miners.length);
-    require(_miners.length == fragmentCount);
+    require(_miners.length == orderFragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
-    require(orderCount[msg.sender] < orderLimit);
+    require(orderCount[traderID] < orderLimit);
     
-    uint orderFee = republicToken.allowance(msg.sender, address(this));
-    require(republicToken.transferFrom(msg.sender, address(this),orderFee));
+    uint256 fee = republicToken.allowance(msg.sender, address(this));
+    require(fee >= minimumOrderFee);
+    require(republicToken.transferFrom(msg.sender, address(this), fee));
     
-    orders[_orderID].status = statusOpen;
-    orders[_orderID].fee = orderFee * ((100 - tax)/100);
+    orders[_orderID] = new Order({
+      orderID: _orderID,
+      traderID: traderID,
+      
+      status: STATUS_OPEN,
+      fee: fee,
+      timestamp: now,
 
-    for (var i = 0; i < poolCount; i++ ) {
-      orders[_orderID].miners[_orderFragmentIDs[i]] = _miners[i];
-      orders[_orderID].minerLeaders[_orderFragmentIDs[i]] = _minerLeaders[i];
+      orderFragmentCount: orderFragmentCount,
+      minersToOrderFragmentIDs: new mapping(bytes20 => bytes20)[],
+      matchFragments: [],
+    });
+
+    for (uint256 i = 0; i < poolCount; i++ ) {
+      orders[_orderID].minersToOrderFragmentIDs[_miners[i]] = _orderFragmentIDs[i];
     }
 
-    orders[_orderID].registrationTime = now;
-    orders[_orderID].fragmentCount = fragmentCount;
+    orderCount[traderID]++;
+    owner[_orderID] = traderID;
 
-    orderCount[msg.sender]++;
-    owner[_orderID] = msg.sender;
-
-		OrderPlaced(_orderID, msg.sender);
+		OrderPlaced(_orderID, traderID);
 	}
 
   function verifyMiners(bytes20[] _miners) returns (bool) {
     bool status = true;
-    for (uint i = 0; i < _miners.length && status ; i++) {
+    for (uint i = 0; i < _miners.length && status; i++) {
       status = status && minerContract.isRegistered(_miners[i]); 
     }
     return status;
@@ -104,9 +108,9 @@ contract OrderBook {
 
 
 
-
-  function checkOrder(bytes32 _orderID, bytes32 _orderFragmentID, bytes32 _minerID) public pure returns(bool) {
-    return (orders[_orderID].status == statusOpen && (orders[_orderID].miners[_orderFragmentID] == _minerID || orders[_orderID].minerLeaders[_orderFragmentID] == _minerID));
+  /* COMMENT ME */
+  function checkOrder(bytes32 _orderID, bytes32 _minerID, bytes32 _orderFragmentID) public pure returns(bool) {
+    return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
 
@@ -165,10 +169,6 @@ contract OrderBook {
   //   require(minerID == miner[msg.sender]);
   //   republicToken.transfer(msg.sender, reward[minerID]);
   // }
-
-  function contestResult(bytes32 _orderID, uint _index) onlyRegistered public {
-    
-  }
 
   function getOutput(bytes32 _orderID) public constant returns(bytes20) {
     require(orders[_orderID].status == statusClosed);
