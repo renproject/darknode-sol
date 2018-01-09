@@ -5,9 +5,9 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("./steps");
+const steps = require("./_steps");
 
-contract('A miner', function () {
+contract('Miner Registar (multiple miners)', function () {
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test

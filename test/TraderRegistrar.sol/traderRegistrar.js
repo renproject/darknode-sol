@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require('./steps');
+const steps = require('./_steps');
 
 // Specifically request an abstraction for Traders
 
