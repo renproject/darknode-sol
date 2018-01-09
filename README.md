@@ -18,8 +18,8 @@ None of the contract expose orders, including the Order Book, which only holds o
 Install all NPM modules and Truffle as a global command.
 
 ```
-npm install
 npm install --global truffle
+npm install
 ```
 
 Run the `start-ganache` script.
