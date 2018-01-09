@@ -14,7 +14,7 @@ let ren, traderRegistrar;
 const steps = {
 
   /** Register */
-  Register: async (account, bond) => {
+  RegisterTrader: async (account, bond) => {
     await ren.approve(traderRegistrar.address, bond, { from: account.address });
     const tx = await utils.logTx('Registering', traderRegistrar.register(account.public, { from: account.address }));
 
@@ -28,28 +28,23 @@ const steps = {
   },
 
   /** Deregister */
-  Deregister: async (account) => {
+  DeregisterTrader: async (account) => {
     const tx = await utils.logTx('Deregistering', traderRegistrar.deregister(account.republic, { from: account.address }));
   },
 
   /** GetBond */
-  GetBond: async (account) => {
+  GetTraderBond: async (account) => {
     // TODO: CHange to call
     return await traderRegistrar.getBond(account.republic, { from: account.address });
   },
 
-  /** GetRenBalance */
-  GetRenBalance: async (account) => {
-    return await ren.balanceOf(account.address, { from: account.address });
-  },
-
   /** ApproveRen */
-  ApproveRen: async (amount, account) => {
+  ApproveRenToTraderRegistrar: async (amount, account) => {
     ren.approve(traderRegistrar.address, amount, { from: account.address });
   },
 
   /** UpdateBond */
-  UpdateBond: async (account, newBond) => {
+  UpdateTraderBond: async (account, newBond) => {
     tx = await utils.logTx('Updating bond', traderRegistrar.updateBond(account.republic, newBond, { from: account.address }));
 
     // Verify event
@@ -57,12 +52,12 @@ const steps = {
     //   { event: 'TraderBondUpdated', traderId: account.republic, newBond: newBond });
   },
 
-  WithdrawBond: async (account) => {
+  WithdrawTraderBond: async (account) => {
     return await utils.logTx('Releasing bond', traderRegistrar.withdrawBond(account.republic, { from: account.address }));
   },
 
   /** GetPublicKey */
-  GetPublicKey: async (republicAddr) => {
+  GetTraderPublicKey: async (republicAddr) => {
     return await traderRegistrar.getPublicKey(republicAddr);
   },
 }

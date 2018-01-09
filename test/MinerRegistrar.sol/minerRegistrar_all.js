@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("./_steps");
+const steps = require("../_steps/steps");
 
 
 
@@ -20,20 +20,20 @@ contract('Miner Registar (all miners)', function () {
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
-    try { await steps.DeregisterAll(accounts); } catch (err) { }
+    try { await steps.DeregisterAllMiners(accounts); } catch (err) { }
     await steps.WaitForEpoch();
-    await steps.WithdrawBondAll(accounts);
+    await steps.WithdrawAllMinerBonds(accounts);
   });
 
 
 
   it("can register miners", async function () {
-    await steps.RegisterAll(accounts, 1000);
+    await steps.RegisterAllMiners(accounts, 1000);
 
     // Wait for next shuffling
     await steps.WaitForEpoch();
 
-    await steps.DeregisterAll(accounts);
+    await steps.DeregisterAllMiners(accounts);
   });
 
 

@@ -45,7 +45,7 @@ const steps = {
   /** MINER SPECIFIC FUNCTIONS */
 
   /** Register */
-  Register: async (account, bond) => {
+  RegisterMiner: async (account, bond) => {
     const difference = bond - (await minerRegistrar.getBondPendingWithdrawal(account.republic));
     if (difference) {
       await ren.approve(minerRegistrar.address, difference, { from: account.address });
@@ -58,7 +58,7 @@ const steps = {
   },
 
   /** Deregister */
-  Deregister: async (account) => {
+  DeregisterMiner: async (account) => {
     const tx = await utils.logTx('Deregistering', minerRegistrar.deregister(account.republic, { from: account.address }));
     // Verify event
     // const log = tx.logs[0];
@@ -67,15 +67,9 @@ const steps = {
   },
 
   /** GetBond */
-  GetBond: async (account) => {
+  GetMinerBond: async (account) => {
     // TODO: CHange to call
     return await minerRegistrar.getBond(account.republic, { from: account.address });
-  },
-
-  /** GetPool */
-  GetPool: async (account) => {
-    // TODO: CHange to call
-    return await minerRegistrar.getPool(account.republic, { from: account.address });
   },
 
   GetAllMiners: async () => {
@@ -99,13 +93,13 @@ const steps = {
 
   // AssertPoolDistributions
 
-  /** ApproveRen */
-  ApproveRen: async (amount, account) => {
+  /** ApproveRenToMinerRegistrar */
+  ApproveRenToMinerRegistrar: async (amount, account) => {
     ren.approve(minerRegistrar.address, amount, { from: account.address });
   },
 
   /** UpdateBond */
-  UpdateBond: async (account, newBond) => {
+  UpdateMinerBond: async (account, newBond) => {
     tx = await utils.logTx('Updating bond', minerRegistrar.updateBond(account.republic, newBond, { from: account.address }));
 
     // Verify event
@@ -113,12 +107,12 @@ const steps = {
     //   { event: 'MinerBondUpdated', minerId: account.republic, newBond: newBond });
   },
 
-  WithdrawBond: async (account) => {
+  WithdrawMinerBond: async (account) => {
     return await utils.logTx('Releasing bond', minerRegistrar.withdrawBond(account.republic, { from: account.address }));
   },
 
   /** GetPublicKey */
-  GetPublicKey: async (republicAddr) => {
+  GetMinerPublicKey: async (republicAddr) => {
     return await minerRegistrar.getPublicKey(republicAddr);
   },
 
@@ -126,23 +120,23 @@ const steps = {
 
   /** FUNCTIONS FOR ALL ACCOUNTS */
 
-  WithdrawBondAll: async (accounts) => {
+  WithdrawAllMinerBonds: async (accounts) => {
     await Promise.all(accounts.map(async account => {
-      await steps.WithdrawBond(account);
+      await steps.WithdrawMinerBond(account);
     }));
   },
 
   /** Register all accounts */
-  RegisterAll: async (accounts, bond) => {
+  RegisterAllMiners: async (accounts, bond) => {
     await Promise.all(accounts.map(async account => {
-      await steps.Register(account, bond);
+      await steps.RegisterMiner(account, bond);
     }));
   },
 
   /** Deregister all accounts */
-  DeregisterAll: async (accounts) => {
+  DeregisterAllMiners: async (accounts) => {
     await Promise.all(accounts.map(async account => {
-      await steps.Deregister(account);
+      await steps.DeregisterMiner(account);
     }));
   },
 

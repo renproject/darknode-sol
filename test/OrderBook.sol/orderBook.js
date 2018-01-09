@@ -5,13 +5,14 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("./_steps");
+const steps = require("../_steps/steps");
 
 
 
 contract('Order Book', function () {
 
-  it("...", async function () {
+  it("can manage an order", async function () {
+
   });
 
 
