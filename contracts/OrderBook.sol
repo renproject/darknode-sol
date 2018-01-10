@@ -54,6 +54,24 @@ contract OrderBook {
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) reward;
 
+  /** Private functions */
+
+  /**
+   * @notice Verify that an array of miners is registered by calling upon the
+   * MinerRegistrar contract.
+   *
+   * @param _minerIDs The array of miner IDs that will be verified.
+   *
+   * @return True if all miners are registered, false otherwise.
+   */
+  function verifyMiners(bytes20[] _minerIDs) private returns (bool) {
+    bool status = true;
+    for (uint i = 0; i < _minerIDs.length && status; i++) {
+      status = status && minerRegistrar.isRegistered(_minerIDs[i]); 
+    }
+    return status;
+  }
+
   /** Public functions */
 
   /**
@@ -117,32 +135,13 @@ contract OrderBook {
 		OrderPlaced(_orderID, traderID);
 	}
 
-  /**
-   * TODO: Choose public or private
-   */
-  function verifyMiners(bytes20[] _miners) private returns (bool) {
-    bool status = true;
-    for (uint i = 0; i < _miners.length && status; i++) {
-      status = status && minerRegistrar.isRegistered(_miners[i]); 
-    }
-    return status;
-  }
-
-  /**
-   * TODO: COMMENT ME
-   */
-  function checkOrder(bytes32 _orderID, bytes20 _minerID, bytes32 _orderFragmentID) public view returns(bool) {
-    return true;
-    // TODO:
-    // return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
-  }
-
-
 	/**
-  * @notice Function that is called by the trader to expire an order and refund fees
-	* @param _orderID The order data
-  */
-	function expire(bytes32 _orderID) public {
+   * @notice Traders call this function to expire an order and refund the order
+   * fee.
+   *
+   * @param _orderID The order ID of the order that will be expired.
+   */
+	function expireOrder(bytes32 _orderID) public {
 		require(now - orders[_orderID].timestamp > 2 days);
     orders[_orderID].status = STATUS_EXPIRED;
     orderCount[owner[_orderID]]--;
@@ -152,12 +151,14 @@ contract OrderBook {
 		OrderExpired(_orderID);
 	}
 
-
-
 	/**
-   * @notice Function to close a completed order and distribute fees amongst miners
-	 * @param _orderID1 The hash for the first order
-	 * @param _orderID2 The hash for the matched order
+   * @notice Miners call this function to close an order. The order is not
+   * closed until 50% (or more) of the required miners have called this
+   * function for the same orders. When the order is successfully closed, the
+   * order fees will be evenly distributed to miners as a reward.
+   *
+	 * @param _orderID1 The order ID of the first order.
+	 * @param _orderID2 The order ID of the second order.
    * @param _matches ...
    */
 	function closeOrder(bytes32 _orderID1, bytes32 _orderID2, MatchFragment[] _matches) internal {
@@ -176,6 +177,21 @@ contract OrderBook {
 		OrderClosed(_orderID1);
     OrderClosed(_orderID2);
 	}
+
+  /**
+   * @notice Check that an order fragment has been assigned to an open order
+   * and that the given miner is authorized to close it.
+   *
+   * @param _orderID The order ID that is associated with the order fragment.
+   * @param _orderFragmentID The order fragment ID that is being checked.
+   * @param _minerID The miner ID that is being checked for authorization.
+   *
+   * @return True if the miner is authorized to close the order fragment and
+   * order is open, false otherwise.
+   */
+  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public view returns(bool) {
+    return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
+  }
 
   function getAddress(bytes20 _minerID) internal returns (address) {
     return address(_minerID);
