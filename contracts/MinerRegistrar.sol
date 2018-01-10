@@ -4,14 +4,14 @@ import './Utils.sol';
 import "./RepublicToken.sol";
 
 /**
-* TODOS:
-* 1. Break up into smaller contracts, e.g.:
-*    a. Epoch contract
-*    b. Miner list?
-*    c. Miner properties shared with traders? (e.g. public key storage)
-* 2. Remove Debug events
-*/
-
+ * Active WIP
+ * TODOS:
+ * 1. Break up into smaller contracts, e.g.:
+ *    a. Epoch contract
+ *    b. Miner list?
+ *    c. Miner properties shared with traders? (e.g. public key storage)
+ * 2. Remove Debug events
+ */
 contract MinerRegistrar {
 
   /** Contracts */

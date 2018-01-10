@@ -4,18 +4,19 @@ import "./RepublicToken.sol";
 import "./MinerRegistrar.sol";
 import "./TraderRegistrar.sol";
 
-
-/**
- * This contract is still under active development
- */
-
+/** Active WIP */
 contract OrderBook {
-	uint8 public orderLimit = 100;
-	uint32 public minimumOrderFee = 100000;
+
+  /** Contracts */
 
   RepublicToken republicToken;
   MinerRegistrar minerRegistrar;
   TraderRegistrar traderRegistrar;
+
+  /** Data */
+
+	uint8 public orderLimit = 100;
+	uint32 public minimumOrderFee = 100000;
   
   uint poolCount;
   uint kValue = 5;
@@ -53,11 +54,14 @@ contract OrderBook {
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) reward;
 
+  /** Public functions */
+
   /**
-   * @notice Constructor of the contract OrderBook
-	 * @param _republicToken The address of the REN token contract
-   * @param _minerRegistrar The address of the miner registrar contract
-   * @param _traderRegistrar ...
+   * @notice The OrderBook constructor.
+   *
+	 * @param _republicToken The address of the REN token contract.
+   * @param _minerRegistrar The address of the miner registrar contract.
+   * @param _traderRegistrar The address of the trader registrar contract.
    */
   function OrderBook(address _republicToken, address _minerRegistrar, address _traderRegistrar) public {
     republicToken = RepublicToken(_republicToken);
@@ -65,18 +69,15 @@ contract OrderBook {
     traderRegistrar = TraderRegistrar(_traderRegistrar);
   }
 
-
-
   /**
-  * @notice Open an order
+  * @notice Traders call this function to open an order.
   *
-	* @notice Function that is called by the trader to submit an order
-	* @param _orderID The hash of the order
-  * @param _orderFragmentIDs The list of hashes of the fragments
-  * @param _miners ...
+	* @param _orderID The hash of the order.
+  * @param _orderFragmentIDs The list of hashes of the fragments.
+  * @param _miners The list of miners that are authorized to close the order.
   * @param _minerLeaders ...
   */
-	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
+	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
 
     bytes20 traderID = 9; /* FIXME */
     
@@ -117,8 +118,8 @@ contract OrderBook {
 	}
 
   /**
-  * TODO: Choose public or private
-  */
+   * TODO: Choose public or private
+   */
   function verifyMiners(bytes20[] _miners) private returns (bool) {
     bool status = true;
     for (uint i = 0; i < _miners.length && status; i++) {
@@ -127,12 +128,9 @@ contract OrderBook {
     return status;
   }
 
-
-
-
   /**
-  * TODO: COMMENT ME
-  */
+   * TODO: COMMENT ME
+   */
   function checkOrder(bytes32 _orderID, bytes20 _minerID, bytes32 _orderFragmentID) public view returns(bool) {
     return true;
     // TODO:
