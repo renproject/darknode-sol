@@ -1,5 +1,7 @@
 # Ethereum Republic
 
+> This library is an active WIP.
+
 The Ethereum Republic library is the official reference implementation of the Republic Protocol on Ethereum, written in Solidity. The Republic Protocol does not explicitly require an Ethereum implementation, and future implementations may be developed on other blockchains. For now, Ethereum is used because it is the biggest and most reputable smart contract platform available.
 
 ## Smart contracts
