@@ -14,6 +14,14 @@ let orderBook;
 
 
 const steps = {
+
+  SubmitOrder(orderId, fragmentIds, randomMNetwork, leaderNetwork) {
+    const miners = [...randomMNetwork, ...leaderNetwork];
+    const leaders = [randomMNetwork[0], leaderNetwork[0]];
+
+    orderBook.submitOrder(orderId, fragmentIds, miners, leaders);
+  },
+
 };
 
 module.exports = steps;

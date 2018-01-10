@@ -150,6 +150,9 @@ const steps = {
   },
 
 
+  /**
+   * Sort the miners into MNetworks by keccak256(epoch blockhash + miner's precommited seed)
+   */
   GetMNetworks: async (accounts) => {
     const miners = await steps.GetRegisteredMiners();
     const epochHash = await steps.GetEpochBlockhash();

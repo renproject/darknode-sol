@@ -16,6 +16,9 @@ const traderB = accounts[1];
 const miners = accounts.slice(traderCount, traderCount + minerCount);
 let mNetworks;
 
+const randomHash =
+  () => web3.sha3((Math.random() * Number.MAX_SAFE_INTEGER).toString());
+
 contract('Order Book', function () {
 
   before("register traders and miners", async () => {
@@ -35,9 +38,22 @@ contract('Order Book', function () {
     mNetworks = await steps.GetMNetworks();
   })
 
+
+
+
+
+
   it("can process an order submission", async () => {
-    // 	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
-    // await steps.RegisterTrader(accounts[0]);
+    const fragmentCount = (await steps.GetMNetworkSize()).toNumber();
+
+    // Random values for testing
+    const orderId = randomHash();
+    const fragmentIds = (Array.from(Array(fragmentCount))).map(undef => randomHash());
+    const randomMNetwork = mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))];
+    const leaderNetwork = mNetworks[0];
+
+    // await steps.SubmitOrder(orderId, fragmentIds, randomMNetwork, leaderNetwork);
+
   });
 
 
