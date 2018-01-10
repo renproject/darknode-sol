@@ -14,9 +14,10 @@ module.exports = function (deployer) {
   deployer.link(Utils, [MinerRegistrar, TraderRegistrar]);
   // deployer.deploy(Traders);
 
-  deployer.deploy(RepublicToken).then(async function () {
+  return deployer.deploy(RepublicToken).then(() => {
     deployer.link(RepublicToken, [MinerRegistrar, TraderRegistrar]);
-    // deployer.deploy(TraderRegistrar, RepublicToken.address, Config.bondMinimum);
-    return deployer.deploy(MinerRegistrar, RepublicToken.address, Config.epochInterval, Config.bondMinimum);
+    return deployer.deploy(MinerRegistrar, RepublicToken.address, Config.epochInterval, Config.bondMinimum).then(() => {
+      return deployer.deploy(TraderRegistrar, RepublicToken.address, Config.bondMinimum);
+    })
   });
 };

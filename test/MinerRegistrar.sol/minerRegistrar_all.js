@@ -16,30 +16,26 @@ const steps = require("./steps");
  * 
  */
 
-contract('MinerRegistrar (big)', function () {
+contract('Miner Registar (all miners)', function () {
 
-  // it("can get all pools", async function () {
-  //   // Register and deregister
-  //   await steps.Register(accounts[0], 1000);
-  //   // console.log(await steps.GetAllMiners());
-  //   await steps.Deregister(accounts[0]);
-  // });
+  afterEach("ensure miners are all deregistered", async function () {
+    // Reset after each test
+    try { await steps.DeregisterAll(accounts); } catch (err) { }
+    await steps.WaitForEpoch();
+    await steps.WithdrawBondAll(accounts);
+  });
 
-  // it("can register all miners", async function () {
-  //   await steps.RegisterAll(accounts, 1000);
-  //   await steps.DeregisterAll(accounts);
-  // });
 
-  it("assigns evenly distributed pools", async function () {
+
+  it("can register miners", async function () {
     await steps.RegisterAll(accounts, 1000);
 
     // Wait for next shuffling
     await steps.WaitForEpoch();
 
-    // await steps.AssertPoolDistribution(accounts);
-
     await steps.DeregisterAll(accounts);
   });
+
 
 
 

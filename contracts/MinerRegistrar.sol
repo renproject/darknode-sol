@@ -41,7 +41,7 @@ contract MinerRegistrar {
 
   // CONFIGURATION
   uint256 epochInterval;
-  uint256 bondMinimum;
+  uint256 minimumBond;
 
   // Map from Republic IDs to miner structs
   mapping(bytes20 => Miner) private miners;
@@ -62,9 +62,17 @@ contract MinerRegistrar {
   
   /** Private functions */
 
-  function toDeregisterOffset() view private returns (uint256) {return deregisteredCount + 1;}
-  function stayingRegisteredOffset() view private returns (uint256) {return toDeregisterOffset() + toDeregisterCount;}
-  function toRegisterOffset() view private returns (uint256) {return stayingRegisteredOffset() + stayingRegisteredCount;}
+  function toDeregisterOffset() view private returns (uint256) {
+    return deregisteredCount + 1;
+  }
+
+  function stayingRegisteredOffset() view private returns (uint256) {
+    return toDeregisterOffset() + toDeregisterCount;
+  }
+
+  function toRegisterOffset() view private returns (uint256) {
+    return stayingRegisteredOffset() + stayingRegisteredCount;
+  }
 
   function isStayingRegistered(bytes20 minerId) private view returns (bool) {
     uint256 index = miners[minerId].index;
@@ -124,10 +132,10 @@ contract MinerRegistrar {
 
   /*** Initialisation code ***/
 
-  function MinerRegistrar(address renAddress, uint256 _epochInterval, uint256 _bondMinimum) public {
+  function MinerRegistrar(address renAddress, uint256 _epochInterval, uint256 _minimumBond) public {
     ren = RepublicToken(renAddress);
     epochInterval = _epochInterval;
-    bondMinimum = _bondMinimum;
+    minimumBond = _minimumBond;
     minerList.push(0x0);
     checkEpoch();
   }
@@ -194,10 +202,11 @@ contract MinerRegistrar {
     // if that has not happened yet, the next miner to register will trigger the update instead
     // checkEpoch(); // <1k gas if no update needed, >40k gas if update needed
 
-    address minerAddress = Utils.addressFromPubKey(publicKey);
-    bytes20 minerId = Utils.idFromPubKey(publicKey);
+    address minerAddress = Utils.ethereumAddressFromPublicKey(publicKey);
+    bytes20 minerId = Utils.republicIDFromPublicKey(publicKey);
 
     // Verify that the miner has provided the correct public key
+    // TODO: Check a signature instead
     require(msg.sender == minerAddress);
 
     // Miner should not be already registered or awaiting registration
@@ -209,7 +218,7 @@ contract MinerRegistrar {
     uint256 bond = allowance + miners[minerId].bondPendingWithdrawal;
 
     // Bond should be greater than minumum
-    require (bond > bondMinimum);
+    require (bond > minimumBond);
 
     // Transfer Ren (ERC20 token)
     bool success = ren.transferFrom(msg.sender, this, allowance);
@@ -251,27 +260,28 @@ contract MinerRegistrar {
     require(isPendingRegistration(minerId) || isStayingRegistered(minerId));
     
     // Only allow owner to modify bond
-    address owner = Utils.addressFromPubKey(miners[minerId].publicKey);
+    address owner = Utils.ethereumAddressFromPublicKey(miners[minerId].publicKey);
     require(owner == msg.sender);
 
     // Set new bond
     require(newBond > 0);
     uint256 oldBond = miners[minerId].bond;
-    if (newBond == oldBond) {return;} // could be require
-
-    bool success;
+    if (newBond == oldBond) {
+      return;
+    }
 
     if (newBond > oldBond) {
       // Increasing bond
 
       uint256 toAdd = newBond - oldBond;
 
-      // Sanity check
+      // Sanity checks
       assert(toAdd < newBond);
+      assert(toAdd > 0);
 
       // Transfer Ren (ERC20 token)
       require(ren.allowance(msg.sender, this) >= toAdd);
-      success = ren.transferFrom(msg.sender, this, toAdd);
+      bool success = ren.transferFrom(msg.sender, this, toAdd);
       require(success);
 
       miners[minerId].bond = newBond;
@@ -280,12 +290,12 @@ contract MinerRegistrar {
     } else if (newBond < oldBond) {
       // Decreasing bond
 
-      uint256 toReturn = oldBond - newBond;
+      uint256 toRefund = oldBond - newBond;
 
       // Sanity check
-      assert(toReturn < oldBond);
+      assert(toRefund < oldBond);
 
-      updateBondWithdrawal(minerId, toReturn);
+      updateBondWithdrawal(minerId, toRefund);
     }
 
     // Emit event to logs
@@ -388,11 +398,11 @@ contract MinerRegistrar {
     return minerList;
   }
 
-  function getPoolCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) / getPoolSize();
+  function getMNetworkCount() public view returns (uint256) {
+    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
   }
   
-  function getPoolSize() public view returns (uint256) {
+  function getMNetworkSize() public view returns (uint256) {
     uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
     
     // If odd, add 1 to become even
@@ -430,7 +440,7 @@ contract MinerRegistrar {
   }
 
   function getAddress(bytes20 minerId) public view returns (address) {
-    return Utils.addressFromPubKey(miners[minerId].publicKey);
+    return Utils.ethereumAddressFromPublicKey(miners[minerId].publicKey);
   }
 
   function getMinerId(address addr) public view returns (bytes20) {

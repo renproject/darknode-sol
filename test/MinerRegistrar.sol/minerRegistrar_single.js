@@ -185,60 +185,6 @@ contract('A miner', function () {
       .should.equal(accounts[0].public);
   });
 
-  it("can retrieve a list of all miners", async function () {
-    await steps.Register(accounts[0], 1000);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
-
-    await steps.Register(accounts[1], 1000);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 1]);
-
-    await steps.Deregister(accounts[0]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([1]);
-
-    await steps.Deregister(accounts[1]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([]);
-  })
-
-  it("can manage several miners registering and deregistering", async function () {
-    await steps.Register(accounts[0], 1000);
-    await steps.Register(accounts[3], 1000);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 3]);
-
-    await steps.Deregister(accounts[3]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
-
-    await steps.Register(accounts[1], 1000);
-    await steps.Register(accounts[2], 1000);
-    await steps.Deregister(accounts[1]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0, 2]);
-
-    await steps.Deregister(accounts[2]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([0]);
-
-    await steps.Deregister(accounts[0]);
-    await steps.WaitForEpoch();
-    (await steps.GetRegisteredAccounts()).should.deep.equal([]);
-
-  })
-
-  // /*** Pool shuffling ***/
-  // it("can register and deregister", async function () {
-  //   const pools = [];
-  //   await steps.Register(accounts[0], 1000, 1 * utils.seconds);
-  //   await steps.Deregister(accounts[0]);
-  // });
-
-
-
-
   // Log costs
   after("log costs", () => {
     utils.printCosts();
