@@ -4,26 +4,16 @@ import "./RepublicToken.sol";
 import "./MinerRegistrar.sol";
 import "./TraderRegistrar.sol";
 
-
-/**
- * This contract is still under active development
- */
-
+/** Active WIP */
 contract OrderBook {
-	uint8 public orderLimit = 100;
-	uint32 public minimumOrderFee = 100000;
 
-  RepublicToken republicToken;
+  /** Contracts */
+
+  RepublicToken ren;
   MinerRegistrar minerRegistrar;
   TraderRegistrar traderRegistrar;
-  
-  uint poolCount;
-  uint kValue = 5;
 
-  // TODO: Use enum instead
-	uint8 constant STATUS_OPEN = 1;
-	uint8 constant STATUS_EXPIRED = 2;
-	uint8 constant STATUS_CLOSED = 3;
+  /** Data */
 
   struct MatchFragment {
     bytes20 minerID;
@@ -48,35 +38,70 @@ contract OrderBook {
     // MatchFragment[] matchFragments;
 	}
 
+  // TODO: Use enum instead
+	uint8 constant STATUS_OPEN = 1;
+	uint8 constant STATUS_EXPIRED = 2;
+	uint8 constant STATUS_CLOSED = 3;
+
+	uint8 public orderLimit = 100;
+	uint32 public minimumOrderFee = 100000;
+  
+  uint poolCount;
+  uint kValue = 5;
+
 	mapping (bytes32 => Order) public orders;
 	mapping (bytes32 => bytes20) owner; // orderID to owner
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) reward;
 
+  /** Events */
+
+  event OrderPlaced(bytes32 _hash, bytes20 _trader);
+  event OrderExpired(bytes32 _hash);
+	event OrderClosed(bytes32 _hash);
+
+  /** Private functions */
+
   /**
-   * @notice Constructor of the contract OrderBook
-	 * @param _republicToken The address of the REN token contract
-   * @param _minerRegistrar The address of the miner registrar contract
-   * @param _traderRegistrar ...
+   * @notice Verify that an array of miners is registered by calling upon the
+   * MinerRegistrar contract.
+   *
+   * @param _minerIDs The array of miner IDs that will be verified.
+   *
+   * @return True if all miners are registered, false otherwise.
+   */
+  function verifyMiners(bytes20[] _minerIDs) private returns (bool) {
+    bool status = true;
+    for (uint i = 0; i < _minerIDs.length && status; i++) {
+      status = status && minerRegistrar.isRegistered(_minerIDs[i]); 
+    }
+    return status;
+  }
+
+  /** Public functions */
+
+  /**
+   * @notice The OrderBook constructor.
+   *
+	 * @param _republicToken The address of the REN token contract.
+   * @param _minerRegistrar The address of the miner registrar contract.
+   * @param _traderRegistrar The address of the trader registrar contract.
    */
   function OrderBook(address _republicToken, address _minerRegistrar, address _traderRegistrar) public {
-    republicToken = RepublicToken(_republicToken);
+    ren = RepublicToken(_republicToken);
     minerRegistrar = MinerRegistrar(_minerRegistrar);
     traderRegistrar = TraderRegistrar(_traderRegistrar);
   }
 
-
-
   /**
-  * @notice Open an order
+  * @notice Traders call this function to open an order.
   *
-	* @notice Function that is called by the trader to submit an order
-	* @param _orderID The hash of the order
-  * @param _orderFragmentIDs The list of hashes of the fragments
-  * @param _miners ...
+	* @param _orderID The hash of the order.
+  * @param _orderFragmentIDs The list of hashes of the fragments.
+  * @param _miners The list of miners that are authorized to close the order.
   * @param _minerLeaders ...
   */
-	function submitOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
+	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
 
     bytes20 traderID = 9; /* FIXME */
     
@@ -87,9 +112,9 @@ contract OrderBook {
     require(verifyMiners(_minerLeaders));
     require(orderCount[traderID] < orderLimit);
     
-    uint256 fee = republicToken.allowance(msg.sender, address(this));
+    uint256 fee = ren.allowance(msg.sender, address(this));
     require(fee >= minimumOrderFee);
-    require(republicToken.transferFrom(msg.sender, address(this), fee));
+    require(ren.transferFrom(msg.sender, address(this), fee));
 
     // MatchFragment[] storage matchFragments;
     // mapping(bytes20 => bytes20) minersToOrderFragmentIDs;
@@ -116,35 +141,13 @@ contract OrderBook {
 		OrderPlaced(_orderID, traderID);
 	}
 
-  /**
-  * TODO: Choose public or private
-  */
-  function verifyMiners(bytes20[] _miners) private returns (bool) {
-    bool status = true;
-    for (uint i = 0; i < _miners.length && status; i++) {
-      status = status && minerRegistrar.isRegistered(_miners[i]); 
-    }
-    return status;
-  }
-
-
-
-
-  /**
-  * TODO: COMMENT ME
-  */
-  function checkOrder(bytes32 _orderID, bytes20 _minerID, bytes32 _orderFragmentID) public view returns(bool) {
-    return true;
-    // TODO:
-    // return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
-  }
-
-
 	/**
-  * @notice Function that is called by the trader to expire an order and refund fees
-	* @param _orderID The order data
-  */
-	function expire(bytes32 _orderID) public {
+   * @notice Traders call this function to expire an order and refund the order
+   * fee.
+   *
+   * @param _orderID The order ID of the order that will be expired.
+   */
+	function expireOrder(bytes32 _orderID) public {
 		require(now - orders[_orderID].timestamp > 2 days);
     orders[_orderID].status = STATUS_EXPIRED;
     orderCount[owner[_orderID]]--;
@@ -154,12 +157,14 @@ contract OrderBook {
 		OrderExpired(_orderID);
 	}
 
-
-
 	/**
-   * @notice Function to close a completed order and distribute fees amongst miners
-	 * @param _orderID1 The hash for the first order
-	 * @param _orderID2 The hash for the matched order
+   * @notice Miners call this function to close an order. The order is not
+   * closed until 50% (or more) of the required miners have called this
+   * function for the same orders. When the order is successfully closed, the
+   * order fees will be evenly distributed to miners as a reward.
+   *
+	 * @param _orderID1 The order ID of the first order.
+	 * @param _orderID2 The order ID of the second order.
    * @param _matches ...
    */
 	function closeOrder(bytes32 _orderID1, bytes32 _orderID2, MatchFragment[] _matches) internal {
@@ -178,6 +183,21 @@ contract OrderBook {
 		OrderClosed(_orderID1);
     OrderClosed(_orderID2);
 	}
+
+  /**
+   * @notice Check that an order fragment has been assigned to an open order
+   * and that the given miner is authorized to close it.
+   *
+   * @param _orderID The order ID that is associated with the order fragment.
+   * @param _orderFragmentID The order fragment ID that is being checked.
+   * @param _minerID The miner ID that is being checked for authorization.
+   *
+   * @return True if the miner is authorized to close the order fragment and
+   * order is open, false otherwise.
+   */
+  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public view returns(bool) {
+    return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
+  }
 
   function getAddress(bytes20 _minerID) internal returns (address) {
     return address(_minerID);
@@ -220,8 +240,4 @@ contract OrderBook {
     // }
     return zkCommitments;
   }
-
-	event OrderPlaced(bytes32 _hash, bytes20 _trader);
-  event OrderExpired(bytes32 _hash);
-	event OrderClosed(bytes32 _hash);
 }

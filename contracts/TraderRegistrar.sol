@@ -3,6 +3,8 @@ pragma solidity ^0.4.17;
 import "./RepublicToken.sol";
 import "./Utils.sol";
 
+
+/** Active WIP */
 contract TraderRegistrar {
 
   /** Contracts */
