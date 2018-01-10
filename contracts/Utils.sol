@@ -31,7 +31,6 @@ library Utils {
    * @return An Ethereum address.
    */
   function ethereumAddressFromPublicKey(bytes _publicKey) public pure returns (address) {
-    // 
     return address(keccak256(lastNBytes(_publicKey, 64)));
   }
 
