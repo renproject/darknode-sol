@@ -1,18 +1,19 @@
 
-const utils = require("../test_utils");
 const { accounts, indexMap } = require("../accounts");
-var config = require("../../republic-config");
 
-// Initialise:
-let ren, minerRegistrar;
+const config = require("../../republic-config");
+const steps = require('./steps').steps;
+const utils = require("../test_utils");
+
+// Wait for contracts:
+let minerRegistrar, ren;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
   minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
 })();
 
-var steps = require('./steps').steps;
 
-const minerRegistrarSteps = {
+module.exports = {
 
   WaitForEpoch: async () => {
     while (true) {
@@ -186,5 +187,3 @@ const minerRegistrarSteps = {
   }
 
 }
-
-module.exports = { minerRegistrarSteps };

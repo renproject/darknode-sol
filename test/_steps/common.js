@@ -1,17 +1,18 @@
 
 const utils = require("../test_utils");
-const { accounts, indexMap } = require("../accounts");
-var config = require("../../republic-config");
+const config = require("../../republic-config");
+const steps = require('./steps').steps;
 
-// Initialise:
+const { accounts, indexMap } = require("../accounts");
+
+// Wait for contracts:
 let ren;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
 })();
 
-var steps = require('./steps').steps;
 
-const commonSteps = {
+module.exports = {
 
   ApproveRen: // async
     // from and to must match interface {address: ...}
@@ -24,5 +25,3 @@ const commonSteps = {
   },
 
 }
-
-module.exports = { commonSteps };

@@ -1,12 +1,14 @@
 
 const utils = require("../test_utils");
+const config = require("../../republic-config");
+const steps = require('./steps').steps;
+
 const { accounts, indexMap } = require("../accounts");
-var config = require("../../republic-config");
 
 // Todo: put into config file
 const MINIMUM_ORDER_FEE = 100000;
 
-// Initialise:
+// Wait for contracts:
 let orderBook, ren;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
@@ -15,9 +17,8 @@ let orderBook, ren;
   orderBook = await artifacts.require("OrderBook").deployed();
 })();
 
-var steps = require('./steps').steps;
 
-const orderBookSteps = {
+module.exports = {
 
   OpenOrder: async (account, orderId, fragmentIds, randomMNetwork, leaderNetwork) => {
     await steps.ApproveRen(/* from: */ account, /* to: */ orderBook, MINIMUM_ORDER_FEE);
@@ -25,5 +26,3 @@ const orderBookSteps = {
   },
 
 };
-
-module.exports = { orderBookSteps };
