@@ -12,7 +12,7 @@ library Utils {
    * @return The last n bytes of the input bytes.
    */
   function lastNBytes(bytes _bs, uint _n) public pure returns (bytes out) {
-    assert(_bs.length <= _n);
+    assert(_bs.length >= _n);
     out = new bytes(_n);
     uint offset = _bs.length - _n;
     for (uint i = 0; i < _n; i++) {
