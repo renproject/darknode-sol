@@ -1,10 +1,11 @@
 pragma solidity ^0.4.17;
 
-// import 'zeppelin-solidity/contracts/ECRecovery.sol';
 import './Utils.sol';
 import "./RepublicToken.sol";
 
 contract MinerRegistrar {
+
+  /** Contracts */
 
   // TODO: Use SafeMath library?
   RepublicToken ren;
@@ -14,10 +15,10 @@ contract MinerRegistrar {
   event MinerRegistered(bytes20 minerId, uint256 bond);
   event MinerBondUpdated(bytes20 minerId, uint256 newBond);
   event MinerDeregistered(bytes20 minerId);
-  event ReturnedBond(bytes20 minerId, uint256 amount);
+  event BondRefunded(bytes20 minerId, uint256 amount);
   event Debug(string message);
   event DebugInt(uint256 num);
-  event Epoch();
+  event NextEpoch();
 
   /** Data */
 
@@ -32,12 +33,12 @@ contract MinerRegistrar {
     uint256 bondWithdrawalTime;
   }
 
-  // Epoch
-  struct CurrentEpoch {
+  struct Epoch {
     uint256 time;
     bytes32 blockhash;
   }
-  CurrentEpoch currentEpoch;
+
+  Epoch currentEpoch;
 
   // CONFIGURATION
   uint256 epochInterval;
@@ -55,29 +56,26 @@ contract MinerRegistrar {
   bytes20[] minerList;
 
   uint256 deregisteredCount;
-  uint256 toDeregisterCount;
-  uint256 stayingRegisteredCount;
-  uint256 toRegisterCount;
-
+  uint256 willDereregisterCount;
+  uint256 willRegisterCount;
+  uint256 willStayRegisteredCount;
   
   /** Private functions */
+
+  function toRegisterOffset() view private returns (uint256) {
+    return stayingRegisteredOffset() + willStayRegisteredCount;
+  }
 
   function toDeregisterOffset() view private returns (uint256) {
     return deregisteredCount + 1;
   }
 
   function stayingRegisteredOffset() view private returns (uint256) {
-    return toDeregisterOffset() + toDeregisterCount;
-  }
-
-  function toRegisterOffset() view private returns (uint256) {
-    return stayingRegisteredOffset() + stayingRegisteredCount;
+    return toDeregisterOffset() + willDereregisterCount;
   }
 
   function isStayingRegistered(bytes20 minerId) private view returns (bool) {
     uint256 index = miners[minerId].index;
-
-    // In [registered...]
     return index >= stayingRegisteredOffset() && index < toRegisterOffset();
   }
 
@@ -92,45 +90,43 @@ contract MinerRegistrar {
 
 
   /**
-  * @dev An internal function to update a miner's bond that is pending withdrawal
-  * 
-  */
-  function updateBondWithdrawal(bytes20 minerId, uint256 amount) private {
+   * @notice A private function that updates a miner's bond that is pending
+   * withdrawal.
+   *
+   * @param minerID The ID of the miner that is being updated.
+   * @param amount  The bond update amount.
+   *
+   * @return Nothing.
+   */
+  function updateBondWithdrawal(bytes20 minerID, uint256 amount) private {
 
-    miners[minerId].bond -= amount;
+    miners[minerID].bond -= amount;
 
-    if (miners[minerId].bondPendingWithdrawal > 0 && 
-        miners[minerId].bondWithdrawalTime < currentEpoch.time) {
+    if (miners[minerID].bondPendingWithdrawal > 0 && 
+        miners[minerID].bondWithdrawalTime < currentEpoch.time) {
       // Can withdraw previous bond
 
-      uint256 toWithdraw = miners[minerId].bondPendingWithdrawal;
+      uint256 toWithdraw = miners[minerID].bondPendingWithdrawal;
 
       // Store new amount and time
-      miners[minerId].bondPendingWithdrawal = amount;
-      miners[minerId].bondWithdrawalTime = now;
+      miners[minerID].bondPendingWithdrawal = amount;
+      miners[minerID].bondWithdrawalTime = now;
 
       // Return amount
       // Transfer Ren (ERC20 token)
       bool success = ren.transfer(msg.sender, toWithdraw);
       require(success);
 
-      ReturnedBond(minerId, toWithdraw);
+      BondRefunded(minerID, toWithdraw);
     } else {
       // Can't withdraw any bond
 
-      miners[minerId].bondPendingWithdrawal += amount;
-      miners[minerId].bondWithdrawalTime = now;
+      miners[minerID].bondPendingWithdrawal += amount;
+      miners[minerID].bondWithdrawalTime = now;
     }
   }
 
-
-
-
-
-
-
-
-  /*** Initialisation code ***/
+  /** Constructor */
 
   function MinerRegistrar(address renAddress, uint256 _epochInterval, uint256 _minimumBond) public {
     ren = RepublicToken(renAddress);
@@ -140,9 +136,7 @@ contract MinerRegistrar {
     checkEpoch();
   }
 
-
-  /*** Public functions */
-
+  /** Public functions */
 
   function isRegistered(bytes20 minerId) public view returns (bool) {
     uint256 index = miners[minerId].index;
@@ -153,50 +147,50 @@ contract MinerRegistrar {
 
   function isPendingRegistration(bytes20 minerId) public view returns (bool) {
     uint256 index = miners[minerId].index;
-
-    // In [toRegister...]
-    return index >= toRegisterOffset() && index < (toRegisterOffset() + toRegisterCount);
+    return index >= toRegisterOffset() && index < (toRegisterOffset() + willRegisterCount);
   }
-
   
   function checkEpoch() public returns (bool) {
     // NOTE: Requires `epochInterval` < `now`
     if (now > currentEpoch.time + epochInterval) {
-      currentEpoch = CurrentEpoch({
+      currentEpoch = Epoch({
         time: now,
         blockhash: block.blockhash(block.number - 1)
       });
 
       // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
+      for (uint256 i = deregisteredCount; i < deregisteredCount + willDereregisterCount; i++) {
         delete minerList[i];
       }
 
       // Update counts
-      deregisteredCount += toDeregisterCount;
-      stayingRegisteredCount += toRegisterCount;
-      toRegisterCount = 0;
-      toDeregisterCount = 0;
+      deregisteredCount += willDereregisterCount;
+      willStayRegisteredCount += willRegisterCount;
+      willRegisterCount = 0;
+      willDereregisterCount = 0;
 
-      Epoch();
+      NextEpoch();
 
       return true;
-    } else {
-      return false;
     }
+  
+    return false;
   }
 
   /** 
-  * @dev Register a miner and transfer Ren bond to this contract
-  * The caller must provide the public key of the account used to make the call
-  *
-  * register will use the entire approved Ren amount as a bond
-  * another option is to allow miners to provide a bond amount as a parameter
-  * or a combination, where the whole amount is taken if not specified
-  *
-  * @param publicKey the public key of the miner, stored to allow other miners and traders to encrypt messages to the miner
-  */
-  function register(bytes publicKey) payable public {
+   * @notice Register a miner and transfer the bond to this contract. The
+   * caller must provide the public key of the miner that will be registered
+   * and a signature that proves the caller has access to the associated
+   * private key. The bond must be provided in REN, as an allowance. The entire
+   * allowance is transferred and used as the bond.
+   *
+   * @param publicKey The public key of the miner. It is stored to allow other
+   *                  miners and traders to encrypt messages to the miner.
+   * @param signature The Republic ID, generated from the public key and signed
+   *                  by the associated private key. It is used as a proof that
+   *                  the miner owns the submitted public key.
+   */
+  function register(bytes publicKey, bytes signature) payable public {
 
     // an outside entity will be calling this after each epochInterval has passed
     // if that has not happened yet, the next miner to register will trigger the update instead
@@ -205,8 +199,8 @@ contract MinerRegistrar {
     address minerAddress = Utils.ethereumAddressFromPublicKey(publicKey);
     bytes20 minerId = Utils.republicIDFromPublicKey(publicKey);
 
-    // Verify that the miner has provided the correct public key
     // TODO: Check a signature instead
+    // Verify that the miner has provided the correct public key
     require(msg.sender == minerAddress);
 
     // Miner should not be already registered or awaiting registration
@@ -227,7 +221,7 @@ contract MinerRegistrar {
     // Store public key and bond
     uint256 index = minerList.push(minerId) - 1;
 
-    toRegisterCount += 1;
+    willRegisterCount += 1;
 
     bytes32 seed = keccak256(now, block.blockhash(block.number - 1), minerId);
 
@@ -325,10 +319,10 @@ contract MinerRegistrar {
       // still in toRegister
 
       // last in toRegister
-      destinationIndex = toRegisterOffset() + toRegisterCount - 1;
+      destinationIndex = toRegisterOffset() + willRegisterCount - 1;
 
       // Update count
-      toRegisterCount -= 1;
+      willRegisterCount -= 1;
 
       decreaseLength = true;
 
@@ -340,8 +334,8 @@ contract MinerRegistrar {
       destinationIndex = stayingRegisteredOffset();
 
       // Update count
-      stayingRegisteredCount -= 1;
-      toDeregisterCount += 1;
+      willStayRegisteredCount -= 1;
+      willDereregisterCount += 1;
     }
 
     // Swap two miners in minerList
@@ -384,9 +378,9 @@ contract MinerRegistrar {
   function getCurrentMiners() public view returns (bytes20[]) {
 
     var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + toDeregisterCount + stayingRegisteredCount;
+    var registeredEnd = registeredStart + willDereregisterCount + willStayRegisteredCount;
 
-    bytes20[] memory currentMiners = new bytes20[](toDeregisterCount + stayingRegisteredCount);
+    bytes20[] memory currentMiners = new bytes20[](willDereregisterCount + willStayRegisteredCount);
 
     for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
       currentMiners[i] = minerList[i + registeredStart];
@@ -399,22 +393,22 @@ contract MinerRegistrar {
   }
 
   function getMNetworkCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
+    return (willDereregisterCount + willStayRegisteredCount) / getMNetworkSize();
   }
   
   function getMNetworkSize() public view returns (uint256) {
-    uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
+    uint256 log = Utils.logtwo(willDereregisterCount + willStayRegisteredCount);
     
     // If odd, add 1 to become even
     return log + (log % 2);
   }
 
   function getCurrentMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount);
+    return (willDereregisterCount + willStayRegisteredCount);
   }
 
   function getNextMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
+    return (willDereregisterCount + willStayRegisteredCount) - willDereregisterCount + willRegisterCount;
   }
 
 
