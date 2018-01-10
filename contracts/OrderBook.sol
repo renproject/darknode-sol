@@ -9,7 +9,7 @@ contract OrderBook {
 
   /** Contracts */
 
-  RepublicToken republicToken;
+  RepublicToken ren;
   MinerRegistrar minerRegistrar;
   TraderRegistrar traderRegistrar;
 
@@ -88,7 +88,7 @@ contract OrderBook {
    * @param _traderRegistrar The address of the trader registrar contract.
    */
   function OrderBook(address _republicToken, address _minerRegistrar, address _traderRegistrar) public {
-    republicToken = RepublicToken(_republicToken);
+    ren = RepublicToken(_republicToken);
     minerRegistrar = MinerRegistrar(_minerRegistrar);
     traderRegistrar = TraderRegistrar(_traderRegistrar);
   }
@@ -112,9 +112,9 @@ contract OrderBook {
     require(verifyMiners(_minerLeaders));
     require(orderCount[traderID] < orderLimit);
     
-    uint256 fee = republicToken.allowance(msg.sender, address(this));
+    uint256 fee = ren.allowance(msg.sender, address(this));
     require(fee >= minimumOrderFee);
-    require(republicToken.transferFrom(msg.sender, address(this), fee));
+    require(ren.transferFrom(msg.sender, address(this), fee));
 
     // MatchFragment[] storage matchFragments;
     // mapping(bytes20 => bytes20) minersToOrderFragmentIDs;
