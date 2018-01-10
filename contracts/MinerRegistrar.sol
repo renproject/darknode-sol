@@ -391,6 +391,10 @@ contract MinerRegistrar {
 
   /*** General getters ***/
 
+  function getEpochBlockhash() public view returns (bytes32) {
+    return currentEpoch.blockhash;
+  }
+
   function getCurrentMiners() public view returns (bytes20[]) {
 
     var registeredStart = toDeregisterOffset();
@@ -404,7 +408,9 @@ contract MinerRegistrar {
     return currentMiners;
   }
 
+  // TODO: Used for debugging only?, remove before mainnet
   function getAllMiners() public view returns (bytes20[]) {
+    // Note: Returns 0x0 at starting position
     return minerList;
   }
 

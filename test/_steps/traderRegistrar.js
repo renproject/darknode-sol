@@ -15,6 +15,7 @@ const steps = {
 
   /** Register */
   RegisterTrader: async (account, bond) => {
+    assert(bond > 0, "Registration bond must be positive");
     await ren.approve(traderRegistrar.address, bond, { from: account.address });
     const tx = await utils.logTx('Registering', traderRegistrar.register(account.public, { from: account.address }));
 
