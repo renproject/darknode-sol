@@ -15,17 +15,6 @@ contract OrderBook {
 
   /** Data */
 
-	uint8 public orderLimit = 100;
-	uint32 public minimumOrderFee = 100000;
-  
-  uint poolCount;
-  uint kValue = 5;
-
-  // TODO: Use enum instead
-	uint8 constant STATUS_OPEN = 1;
-	uint8 constant STATUS_EXPIRED = 2;
-	uint8 constant STATUS_CLOSED = 3;
-
   struct MatchFragment {
     bytes20 minerID;
 
@@ -49,10 +38,27 @@ contract OrderBook {
     // MatchFragment[] matchFragments;
 	}
 
+  // TODO: Use enum instead
+	uint8 constant STATUS_OPEN = 1;
+	uint8 constant STATUS_EXPIRED = 2;
+	uint8 constant STATUS_CLOSED = 3;
+
+	uint8 public orderLimit = 100;
+	uint32 public minimumOrderFee = 100000;
+  
+  uint poolCount;
+  uint kValue = 5;
+
 	mapping (bytes32 => Order) public orders;
 	mapping (bytes32 => bytes20) owner; // orderID to owner
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) reward;
+
+  /** Events */
+
+  event OrderPlaced(bytes32 _hash, bytes20 _trader);
+  event OrderExpired(bytes32 _hash);
+	event OrderClosed(bytes32 _hash);
 
   /** Private functions */
 
@@ -234,8 +240,4 @@ contract OrderBook {
     // }
     return zkCommitments;
   }
-
-	event OrderPlaced(bytes32 _hash, bytes20 _trader);
-  event OrderExpired(bytes32 _hash);
-	event OrderClosed(bytes32 _hash);
 }
