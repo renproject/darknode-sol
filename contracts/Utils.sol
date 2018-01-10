@@ -1,37 +1,61 @@
-
 pragma solidity ^0.4.17;
 
 library Utils {
 
-  /*** Helper functions */
-
-  // Create a new []byte with the last n bytes of the input
-  function lastNBytes(bytes bIn, uint n) public pure returns (bytes bOut) {
-    if (bIn.length < n) {return bOut;}
-    bOut = new bytes(n);
-    uint offset = bIn.length - n;
+  /**
+   * @notice Create a new bytes array containing the last n bytes of the input.
+   *
+   * @param bs The input bytes.
+   * @param n The number of bytes that will be taken from the end of the input
+   *        bytes.
+   *
+   * @return The last n bytes of the input bytes.
+   */
+  function lastNBytes(bytes bs, uint n) public pure returns (bytes out) {
+    assert(bs.length <= n);
+    out = new bytes(n);
+    uint offset = bs.length - n;
     for (uint i = 0; i < n; i++) {
-      bOut[i] = bIn[offset + i];
+      out[i] = bs[offset + i];
     }
-    return bOut;
+    return out;
   }
 
-  // Generate Ethereum address from Ethereum public key
-  function ethereumAddressFromPublicKey(bytes pubkey) public pure returns (address) {
-    // An ethereum public key is 65 bytes (1 byte 0x04, 32 bytes x value, 32 bytes y value)
-    // The address is taken from only the last 64 bytes
-    return address(keccak256(lastNBytes(pubkey, 64)));
+  /**
+   * @notice Generate an Ethereum address from an ECDSA public key. An Ethereum
+   * public key is 65 bytes (1 byte 0x04, 32 bytes x value, 32 bytes y value).
+   * The address is taken from only the last 64 bytes.
+   *
+   * @param publicKey The public key.
+   *
+   * @return An Ethereum address.
+   */
+  function ethereumAddressFromPublicKey(bytes publicKey) public pure returns (address) {
+    // 
+    return address(keccak256(lastNBytes(publicKey, 64)));
   }
 
-  // Generate Republic ID from Ethereum public key
-  function republicIDFromPublicKey(bytes pubkey) public pure returns (bytes20) {
-    // A Republic address is the last 20 bytes of the hash of the full 65 bytes of the public key
-    return bytes20(uint(keccak256(pubkey)) >> (8 * 12));
+  /**
+   * @notice Generate a Republic ID from an ECDSA public key. It is generated
+   * by taking the first 20 bytes of the keccak256 hash of the public key.
+   *
+   * @param publicKey The public key.
+   *
+   * @return A Republic ID.
+   */
+  function republicIDFromPublicKey(bytes publicKey) public pure returns (bytes20) {
+    return bytes20(uint(keccak256(publicKey)) >> (8 * 12));
   }
 
-  // log2, posted by Tjaden Hess
-  // https://ethereum.stackexchange.com/a/30168
-  function logtwo(uint x) public pure returns (uint y){
+  /**
+   * @notice The logarithm function, base 2. Posted by Tjaden Hess
+   * https://ethereum.stackexchange.com/a/30168.
+   * 
+   * @param x The input to the logarithm function.
+   *
+   * @return The output of the logarithm function.
+   */
+  function logtwo(uint x) public pure returns (uint y) {
     assembly {
       let arg := x
       x := sub(x,1)
@@ -60,6 +84,8 @@ library Utils {
       y := div(mload(add(m,sub(255,a))), shift)
       y := add(y, mul(256, gt(arg, 0x8000000000000000000000000000000000000000000000000000000000000000)))
     }
-    if (y == 0) { y = 1; }
+    if (y == 0) {
+      y = 1;
+    }
   }
 }

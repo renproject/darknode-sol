@@ -56,14 +56,14 @@ contract MinerRegistrar {
   bytes20[] minerList;
 
   uint256 deregisteredCount;
-  uint256 willDereregisterCount;
-  uint256 willRegisterCount;
-  uint256 willStayRegisteredCount;
+  uint256 toDereregisterCount;
+  uint256 toRegisterCount;
+  uint256 stayingRegisteredCount;
   
   /** Private functions */
 
   function toRegisterOffset() view private returns (uint256) {
-    return stayingRegisteredOffset() + willStayRegisteredCount;
+    return stayingRegisteredOffset() + stayingRegisteredCount;
   }
 
   function toDeregisterOffset() view private returns (uint256) {
@@ -71,23 +71,22 @@ contract MinerRegistrar {
   }
 
   function stayingRegisteredOffset() view private returns (uint256) {
-    return toDeregisterOffset() + willDereregisterCount;
+    return toDeregisterOffset() + toDereregisterCount;
   }
 
-  function isStayingRegistered(bytes20 minerId) private view returns (bool) {
-    uint256 index = miners[minerId].index;
+  function isStayingRegistered(bytes20 minerID) private view returns (bool) {
+    uint256 index = miners[minerID].index;
     return index >= stayingRegisteredOffset() && index < toRegisterOffset();
   }
 
-  function canRegister(bytes20 minerId) private view returns (bool) {
+  function canRegister(bytes20 minerID) private view returns (bool) {
     // TODO: Can register if in toDeregister
-    return !isRegistered(minerId) && !isPendingRegistration(minerId);
+    return !isRegistered(minerID) && !isPendingRegistration(minerID);
   }
 
-  function canDeregister(bytes20 minerId) private view returns (bool) {
-    return isStayingRegistered(minerId) || isPendingRegistration(minerId);
+  function canDeregister(bytes20 minerID) private view returns (bool) {
+    return isStayingRegistered(minerID) || isPendingRegistration(minerID);
   }
-
 
   /**
    * @notice A private function that updates a miner's bond that is pending
@@ -96,7 +95,7 @@ contract MinerRegistrar {
    * @param minerID The ID of the miner that is being updated.
    * @param amount  The bond update amount.
    *
-   * @return Nothing.
+   * @returns Nothing.
    */
   function updateBondWithdrawal(bytes20 minerID, uint256 amount) private {
 
@@ -138,8 +137,8 @@ contract MinerRegistrar {
 
   /** Public functions */
 
-  function isRegistered(bytes20 minerId) public view returns (bool) {
-    uint256 index = miners[minerId].index;
+  function isRegistered(bytes20 minerID) public view returns (bool) {
+    uint256 index = miners[minerID].index;
 
     // In [toDeregister..., registered...]
     return index >= toDeregisterOffset() && index < toRegisterOffset();
@@ -147,7 +146,7 @@ contract MinerRegistrar {
 
   function isPendingRegistration(bytes20 minerId) public view returns (bool) {
     uint256 index = miners[minerId].index;
-    return index >= toRegisterOffset() && index < (toRegisterOffset() + willRegisterCount);
+    return index >= toRegisterOffset() && index < (toRegisterOffset() + toRegisterCount);
   }
   
   function checkEpoch() public returns (bool) {
@@ -159,15 +158,15 @@ contract MinerRegistrar {
       });
 
       // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + willDereregisterCount; i++) {
+      for (uint256 i = deregisteredCount; i < deregisteredCount + toDereregisterCount; i++) {
         delete minerList[i];
       }
 
       // Update counts
-      deregisteredCount += willDereregisterCount;
-      willStayRegisteredCount += willRegisterCount;
-      willRegisterCount = 0;
-      willDereregisterCount = 0;
+      deregisteredCount += toDereregisterCount;
+      stayingRegisteredCount += toRegisterCount;
+      toRegisterCount = 0;
+      toDereregisterCount = 0;
 
       NextEpoch();
 
@@ -189,6 +188,8 @@ contract MinerRegistrar {
    * @param signature The Republic ID, generated from the public key and signed
    *                  by the associated private key. It is used as a proof that
    *                  the miner owns the submitted public key.
+   * 
+   * @returns Nothing.
    */
   function register(bytes publicKey, bytes signature) payable public {
 
@@ -221,7 +222,7 @@ contract MinerRegistrar {
     // Store public key and bond
     uint256 index = minerList.push(minerId) - 1;
 
-    willRegisterCount += 1;
+    toRegisterCount += 1;
 
     bytes32 seed = keccak256(now, block.blockhash(block.number - 1), minerId);
 
@@ -319,10 +320,10 @@ contract MinerRegistrar {
       // still in toRegister
 
       // last in toRegister
-      destinationIndex = toRegisterOffset() + willRegisterCount - 1;
+      destinationIndex = toRegisterOffset() + toRegisterCount - 1;
 
       // Update count
-      willRegisterCount -= 1;
+      toRegisterCount -= 1;
 
       decreaseLength = true;
 
@@ -334,8 +335,8 @@ contract MinerRegistrar {
       destinationIndex = stayingRegisteredOffset();
 
       // Update count
-      willStayRegisteredCount -= 1;
-      willDereregisterCount += 1;
+      stayingRegisteredCount -= 1;
+      toDereregisterCount += 1;
     }
 
     // Swap two miners in minerList
@@ -378,9 +379,9 @@ contract MinerRegistrar {
   function getCurrentMiners() public view returns (bytes20[]) {
 
     var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + willDereregisterCount + willStayRegisteredCount;
+    var registeredEnd = registeredStart + toDereregisterCount + stayingRegisteredCount;
 
-    bytes20[] memory currentMiners = new bytes20[](willDereregisterCount + willStayRegisteredCount);
+    bytes20[] memory currentMiners = new bytes20[](toDereregisterCount + stayingRegisteredCount);
 
     for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
       currentMiners[i] = minerList[i + registeredStart];
@@ -393,22 +394,22 @@ contract MinerRegistrar {
   }
 
   function getMNetworkCount() public view returns (uint256) {
-    return (willDereregisterCount + willStayRegisteredCount) / getMNetworkSize();
+    return (toDereregisterCount + stayingRegisteredCount) / getMNetworkSize();
   }
   
   function getMNetworkSize() public view returns (uint256) {
-    uint256 log = Utils.logtwo(willDereregisterCount + willStayRegisteredCount);
+    uint256 log = Utils.logtwo(toDereregisterCount + stayingRegisteredCount);
     
     // If odd, add 1 to become even
     return log + (log % 2);
   }
 
   function getCurrentMinerCount() public view returns (uint256) {
-    return (willDereregisterCount + willStayRegisteredCount);
+    return (toDereregisterCount + stayingRegisteredCount);
   }
 
   function getNextMinerCount() public view returns (uint256) {
-    return (willDereregisterCount + willStayRegisteredCount) - willDereregisterCount + willRegisterCount;
+    return (toDereregisterCount + stayingRegisteredCount) - toDereregisterCount + toRegisterCount;
   }
 
 
