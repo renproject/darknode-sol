@@ -20,6 +20,12 @@ let orderBook, ren;
 
 module.exports = {
 
+  CheckOrderFragment: async (orderID, fragmentId, account) => {
+    const check = await orderBook.checkOrderFragment.call(orderID, fragmentId, account.republic);
+    // console.log(bool);
+    assert(check, "Invalid order fragment");
+  },
+
   OpenOrder: async (account, orderId, fragmentIds, randomMNetwork, leaderNetwork) => {
     await steps.ApproveRen(/* from: */ account, /* to: */ orderBook, MINIMUM_ORDER_FEE);
     await orderBook.openOrder(orderId, fragmentIds, randomMNetwork, leaderNetwork);

@@ -214,8 +214,5 @@ contract TraderRegistrar {
   function getPublicKey(bytes20 _traderID) public view returns (bytes) {
     return traders[_traderID].publicKey;
   }
-
-  function getOwner(bytes20 _traderID) public view returns (address) {
-    return Utils.ethereumAddressFromPublicKey(traders[_traderID].publicKey);
-  }
+  
 }

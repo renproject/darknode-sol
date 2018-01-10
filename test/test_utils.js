@@ -85,6 +85,10 @@ function sleep(seconds) {
   return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
+function range(n) {
+  return Array.from(Array(n).keys());
+}
+
 
 /*** Accounts ***/
 
@@ -99,4 +103,5 @@ module.exports = {
   minutes: minutes,
   seconds: seconds,
   sleep: sleep,
+  range: range,
 }

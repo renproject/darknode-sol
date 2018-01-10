@@ -47,12 +47,25 @@ contract('Order Book', function () {
     const fragmentCount = (await steps.GetMNetworkSize()).toNumber();
 
     // Random values for testing
-    const orderId = randomHash();
-    const fragmentIds = (Array.from(Array(fragmentCount))).map(undef => randomHash());
+    const orderID = randomHash();
+    const fragmentIds = (utils.range(fragmentCount)).map(undef => randomHash());
     const randomMNetwork = mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))];
     const leaderNetwork = mNetworks[0];
 
-    await steps.OpenOrder(traderA, orderId, fragmentIds, randomMNetwork, leaderNetwork);
+    await steps.OpenOrder(traderA, orderID, fragmentIds, randomMNetwork, leaderNetwork);
+
+    // Check order fragments
+    await Promise.all(utils.range(fragmentCount).map(
+      i => steps.CheckOrderFragment(orderID, fragmentIds[i], accounts[i])
+    ));
+
+    // Sugmit order fragments
+    await Promise.all(utils.range(fragmentCount).map(
+      i => steps.CheckOrderFragment(orderID, fragmentIds[i], accounts[i])
+    ));
+
+
+
 
   });
 
