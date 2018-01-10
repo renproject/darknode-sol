@@ -92,8 +92,8 @@ contract MinerRegistrar {
    * @notice A private function that updates a miner's bond that is pending
    * withdrawal.
    *
-   * @param minerID The ID of the miner that is being updated.
-   * @param amount  The bond update amount.
+   * @param _minerID The ID of the miner that is being updated.
+   * @param _amount The bond update amount.
    */
   function updateBondWithdrawal(bytes20 _minerID, uint256 _amount) private {
 
