@@ -194,6 +194,7 @@ contract TraderRegistrar {
 
     // Return Ren
     uint256 toRefund = traders[_traderID].bond;
+    // TODO: Should this be called seperately (e.g. withdrawRen)?
     refundBond(_traderID, toRefund);
 
     // Emit event to logs

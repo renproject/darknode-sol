@@ -3,6 +3,15 @@ pragma solidity ^0.4.17;
 import './Utils.sol';
 import "./RepublicToken.sol";
 
+/**
+* TODOS:
+* 1. Break up into smaller contracts, e.g.:
+*    a. Epoch contract
+*    b. Miner list?
+*    c. Miner properties shared with traders? (e.g. public key storage)
+* 2. Remove Debug events
+*/
+
 contract MinerRegistrar {
 
   /** Contracts */
@@ -46,7 +55,7 @@ contract MinerRegistrar {
   bytes20[] minerList;
 
   uint256 deregisteredCount;
-  uint256 toDereregisterCount;
+  uint256 toDeregisterCount;
   uint256 toRegisterCount;
   uint256 stayingRegisteredCount;
 
@@ -71,7 +80,7 @@ contract MinerRegistrar {
   }
 
   function stayingRegisteredOffset() view private returns (uint256) {
-    return toDeregisterOffset() + toDereregisterCount;
+    return toDeregisterOffset() + toDeregisterCount;
   }
 
   function isStayingRegistered(bytes20 _minerID) private view returns (bool) {
@@ -107,7 +116,8 @@ contract MinerRegistrar {
       miners[_minerID].bondPendingWithdrawal = _amount;
       miners[_minerID].bondWithdrawalTime = now;
 
-      // Transfer ren
+      // Transfer Ren (ERC20 token)
+      // TODO: Should this be moved to withdrawBond?
       bool success = ren.transfer(msg.sender, toWithdraw);
       require(success);
 
@@ -162,15 +172,15 @@ contract MinerRegistrar {
       });
 
       // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + toDereregisterCount; i++) {
+      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
         delete minerList[i];
       }
 
       // Update counts
-      deregisteredCount += toDereregisterCount;
+      deregisteredCount += toDeregisterCount;
       stayingRegisteredCount += toRegisterCount;
       toRegisterCount = 0;
-      toDereregisterCount = 0;
+      toDeregisterCount = 0;
 
       NextEpoch();
 
@@ -339,7 +349,7 @@ contract MinerRegistrar {
 
       // Update count
       stayingRegisteredCount -= 1;
-      toDereregisterCount += 1;
+      toDeregisterCount += 1;
     }
 
     // Swap two miners in minerList
@@ -372,12 +382,23 @@ contract MinerRegistrar {
     updateBondWithdrawal(_minerID, 0);
   }
 
+
+
+
+
+
+  /*** General getters ***/
+
+  function getEpochBlockhash() public view returns (bytes32) {
+    return currentEpoch.blockhash;
+  }
+
   function getCurrentMiners() public view returns (bytes20[]) {
 
     var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + toDereregisterCount + stayingRegisteredCount;
+    var registeredEnd = registeredStart + toDeregisterCount + stayingRegisteredCount;
 
-    bytes20[] memory currentMiners = new bytes20[](toDereregisterCount + stayingRegisteredCount);
+    bytes20[] memory currentMiners = new bytes20[](toDeregisterCount + stayingRegisteredCount);
 
     for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
       currentMiners[i] = minerList[i + registeredStart];
@@ -385,27 +406,30 @@ contract MinerRegistrar {
     return currentMiners;
   }
 
+  // TODO: Used for debugging only?, remove before mainnet
   function getAllMiners() public view returns (bytes20[]) {
+    // Note: Returns 0x0 at starting position
     return minerList;
   }
 
   function getMNetworkCount() public view returns (uint256) {
-    return (toDereregisterCount + stayingRegisteredCount) / getMNetworkSize();
+    // TODO: Should be rounded up?
+    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
   }
   
   function getMNetworkSize() public view returns (uint256) {
-    uint256 log = Utils.logtwo(toDereregisterCount + stayingRegisteredCount);
+    uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
     
     // If odd, add 1 to become even
     return log + (log % 2);
   }
 
   function getCurrentMinerCount() public view returns (uint256) {
-    return (toDereregisterCount + stayingRegisteredCount);
+    return (toDeregisterCount + stayingRegisteredCount);
   }
 
   function getNextMinerCount() public view returns (uint256) {
-    return (toDereregisterCount + stayingRegisteredCount) - toDereregisterCount + toRegisterCount;
+    return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
   }
 
   function getBond(bytes20 _minerID) public view returns (uint256) {

@@ -51,6 +51,7 @@ const printCosts = () => {
     const max_usd = Number(max * ethPriceEstimate).toFixed(2);
     console.log(`${description} used between ${green}${min_usd} USD${reset} and ${red}${max_usd} USD${reset}`);
   }
+  logs = {};
 }
 
 function assertEventsEqual(event, expected) {
