@@ -17,7 +17,9 @@ const steps = {
   RegisterTrader: async (account, bond) => {
     assert(bond > 0, "Registration bond must be positive");
     await ren.approve(traderRegistrar.address, bond, { from: account.address });
-    const tx = await utils.logTx('Registering', traderRegistrar.register(account.public, { from: account.address }));
+
+    // TODO: Generate signature
+    const tx = await utils.logTx('Registering', traderRegistrar.register(account.public, account.public, { from: account.address }));
 
     // // Verify event
     // utils.assertEventsEqual(tx.logs[tx.logs.length - 1],

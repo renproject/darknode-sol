@@ -17,7 +17,7 @@ const steps = {
       // Must be an on-chain call, or the time won't be updated
       const tx = await utils.logTx('Checking epoch', minerRegistrar.checkEpoch());
       // If epoch happened, return
-      if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "Epoch") {
+      if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "NextEpoch") {
         return;
       }
 
@@ -56,7 +56,8 @@ const steps = {
     if (difference) {
       await ren.approve(minerRegistrar.address, difference, { from: account.address });
     }
-    const tx = await utils.logTx('Registering', minerRegistrar.register(account.public, { from: account.address }));
+    // TODO: Generate signature
+    const tx = await utils.logTx('Registering', minerRegistrar.register(account.public, account.public, { from: account.address }));
 
     // Verify event
     // utils.assertEventsEqual(tx.logs[tx.logs.length - 1],

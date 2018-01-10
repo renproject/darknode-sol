@@ -47,7 +47,7 @@ contract MinerRegistrar {
   mapping(bytes20 => Miner) private miners;
 
   // Map from ethereum public addresses to miner IDs
-  mapping(address => bytes20) private addressIds;
+  mapping(address => bytes20) private addressIDs;
 
   // Layout:
   // [0, deregistered..., toDeregister..., registered..., toRegister...]
@@ -250,7 +250,7 @@ contract MinerRegistrar {
 
     miners[minerID] = miner;
 
-    addressIds[minerAddress] = minerID;
+    addressIDs[minerAddress] = minerID;
 
     // Emit event to logs
     MinerRegistered(minerID, bond);
@@ -455,7 +455,7 @@ contract MinerRegistrar {
   }
 
   function getMinerID(address _addr) public view returns (bytes20) {
-    return addressIds[_addr];
+    return addressIDs[_addr];
   }
 
   function getBondPendingWithdrawal(bytes20 _minerID) public view returns (uint256) {
