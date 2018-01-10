@@ -14,7 +14,7 @@ const transactionFee = async (tx) => {
 }
 
 
-const logs = {};
+let logs = {};
 // logTx logs the gas price of a series of contract calls, returning the tx object the last one
 const logTx = async (description, ...promises) => {
   let fee = 0;
@@ -51,6 +51,7 @@ const printCosts = () => {
     const max_usd = Number(max * ethPriceEstimate).toFixed(2);
     console.log(`${description} used between ${green}${min_usd} USD${reset} and ${red}${max_usd} USD${reset}`);
   }
+  logs = {};
 }
 
 function assertEventsEqual(event, expected) {
