@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+const steps = require("../_steps/steps").steps;
 
 
 const traderCount = 2;
@@ -52,7 +52,7 @@ contract('Order Book', function () {
     const randomMNetwork = mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))];
     const leaderNetwork = mNetworks[0];
 
-    // await steps.SubmitOrder(orderId, fragmentIds, randomMNetwork, leaderNetwork);
+    await steps.OpenOrder(traderA, orderId, fragmentIds, randomMNetwork, leaderNetwork);
 
   });
 

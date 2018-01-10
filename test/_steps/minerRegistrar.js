@@ -10,7 +10,9 @@ let ren, minerRegistrar;
   minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
 })();
 
-const steps = {
+var steps = require('./steps').steps;
+
+const minerRegistrarSteps = {
 
   WaitForEpoch: async () => {
     while (true) {
@@ -101,7 +103,7 @@ const steps = {
 
   /** ApproveRenToMinerRegistrar */
   ApproveRenToMinerRegistrar: // async
-    (amount, account) => ren.approve(minerRegistrar.address, amount, { from: account.address })
+    (account, amount) => ren.approve(minerRegistrar.address, amount, { from: account.address })
   ,
 
   /** UpdateBond */
@@ -185,4 +187,4 @@ const steps = {
 
 }
 
-module.exports = steps;
+module.exports = { minerRegistrarSteps };

@@ -59,6 +59,7 @@ contract OrderBook {
   event OrderPlaced(bytes32 _hash, bytes20 _trader);
   event OrderExpired(bytes32 _hash);
 	event OrderClosed(bytes32 _hash);
+  event Debug(string msg);
 
   /** Private functions */
 
@@ -104,10 +105,12 @@ contract OrderBook {
 	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
 
     bytes20 traderID = 9; /* FIXME */
+
+    Debug("....");
     
-    uint256 orderFragmentCount = minerRegistrar.getMNetworkCount();
+    uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
     require(_orderFragmentIDs.length == _miners.length);
-    require(_miners.length == orderFragmentCount);
+    require(_orderFragmentIDs.length == orderFragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
     require(orderCount[traderID] < orderLimit);

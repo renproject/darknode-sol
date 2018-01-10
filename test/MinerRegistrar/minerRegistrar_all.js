@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+const steps = require("../_steps/steps").steps;
 
 
 

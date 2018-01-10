@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+const steps = require("../_steps/steps").steps;
 
 contract('A miner', function () {
 
@@ -135,7 +135,7 @@ contract('A miner', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToMinerRegistrar(newBond - oldBond, accounts[0])
+    await steps.ApproveRenToMinerRegistrar(accounts[0], newBond - oldBond)
     await steps.UpdateMinerBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -156,7 +156,7 @@ contract('A miner', function () {
 
     // Increasing bond without approving should throw an error
     const newBond = 1500;
-    await steps.ApproveRenToMinerRegistrar(0, accounts[0]);
+    await steps.ApproveRenToMinerRegistrar(accounts[0], 0);
     await steps.UpdateMinerBond(accounts[0], newBond)
       .should.be.rejectedWith(Error);
 

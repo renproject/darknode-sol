@@ -9,8 +9,14 @@ let ren;
   ren = await artifacts.require("RepublicToken").deployed();
 })();
 
+var steps = require('./steps').steps;
 
-const steps = {
+const commonSteps = {
+
+  ApproveRen: // async
+    // from and to must match interface {address: ...}
+    (from, to, amount) => ren.approve(to.address, amount, { from: from.address })
+  ,
 
   /** GetRenBalance */
   GetRenBalance: async (account) => {
@@ -19,4 +25,4 @@ const steps = {
 
 }
 
-module.exports = steps;
+module.exports = { commonSteps };

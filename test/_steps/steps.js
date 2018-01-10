@@ -3,10 +3,10 @@ const utils = require("../test_utils");
 const { accounts, indexMap } = require("../accounts");
 var config = require("../../republic-config");
 
-var commonSteps = require('./common');
-var minerRegistrarSteps = require('./minerRegistrar');
-var traderRegistrarSteps = require('./traderRegistrar');
-var orderBookSteps = require('./orderBook');
+var commonSteps = require('./common').commonSteps;
+var minerRegistrarSteps = require('./minerRegistrar').minerRegistrarSteps;
+var traderRegistrarSteps = require('./traderRegistrar').traderRegistrarSteps;
+var orderBookSteps = require('./orderBook').orderBookSteps;
 
 // Initialise:
 let ren, minerRegistrar;
@@ -23,4 +23,6 @@ const steps = {
   ...orderBookSteps,
 }
 
-module.exports = steps;
+module.exports = {
+  steps
+}

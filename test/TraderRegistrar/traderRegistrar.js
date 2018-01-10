@@ -5,7 +5,7 @@ chai.should();
 
 const utils = require("../test_utils");
 const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+const steps = require("../_steps/steps").steps;
 
 // Specifically request an abstraction for Traders
 
@@ -112,7 +112,7 @@ contract('Traders', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(newBond - oldBond, accounts[0])
+    await steps.ApproveRenToTraderRegistrar(accounts[0], newBond - oldBond)
     await steps.UpdateTraderBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -133,7 +133,7 @@ contract('Traders', function () {
 
     // Increasing bond without approving should throw an error
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(0, accounts[0]);
+    await steps.ApproveRenToTraderRegistrar(accounts[0], 0);
     await steps.UpdateTraderBond(accounts[0], newBond)
       .should.be.rejectedWith(Error);
 

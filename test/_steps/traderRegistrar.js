@@ -10,8 +10,9 @@ let ren, traderRegistrar;
   traderRegistrar = await artifacts.require("TraderRegistrar").deployed();
 })();
 
+var steps = require('./steps').steps;
 
-const steps = {
+const traderRegistrarSteps = {
 
   /** Register */
   RegisterTrader: async (account, bond) => {
@@ -42,9 +43,9 @@ const steps = {
   },
 
   /** ApproveRen */
-  ApproveRenToTraderRegistrar: async (amount, account) => {
-    ren.approve(traderRegistrar.address, amount, { from: account.address });
-  },
+  ApproveRenToTraderRegistrar:
+    (account, amount) => ren.approve(traderRegistrar.address, amount, { from: account.address })
+  ,
 
   /** UpdateBond */
   UpdateTraderBond: async (account, newBond) => {
@@ -65,4 +66,4 @@ const steps = {
   },
 }
 
-module.exports = steps;
+module.exports = { traderRegistrarSteps };
