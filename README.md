@@ -22,7 +22,7 @@ npm install --global truffle
 npm install
 ```
 
-Run the `ganache` script.
+Run the `ganache` script. This script needs to continue running in the background; either run it in a separate terminal, or append the `&` symbol.
 
 ```sh
 ./ganache
