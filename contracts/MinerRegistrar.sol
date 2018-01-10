@@ -1,6 +1,5 @@
 pragma solidity ^0.4.17;
 
-// import 'zeppelin-solidity/contracts/ECRecovery.sol';
 import './Utils.sol';
 import "./RepublicToken.sol";
 
@@ -15,18 +14,10 @@ import "./RepublicToken.sol";
 
 contract MinerRegistrar {
 
+  /** Contracts */
+
   // TODO: Use SafeMath library?
   RepublicToken ren;
-
-  /** Events */
-
-  event MinerRegistered(bytes20 minerId, uint256 bond);
-  event MinerBondUpdated(bytes20 minerId, uint256 newBond);
-  event MinerDeregistered(bytes20 minerId);
-  event ReturnedBond(bytes20 minerId, uint256 amount);
-  event Debug(string message);
-  event DebugInt(uint256 num);
-  event Epoch();
 
   /** Data */
 
@@ -41,12 +32,12 @@ contract MinerRegistrar {
     uint256 bondWithdrawalTime;
   }
 
-  // Epoch
-  struct CurrentEpoch {
+  struct Epoch {
     uint256 time;
     bytes32 blockhash;
   }
-  CurrentEpoch currentEpoch;
+
+  Epoch currentEpoch;
 
   // CONFIGURATION
   uint256 epochInterval;
@@ -65,11 +56,24 @@ contract MinerRegistrar {
 
   uint256 deregisteredCount;
   uint256 toDeregisterCount;
-  uint256 stayingRegisteredCount;
   uint256 toRegisterCount;
+  uint256 stayingRegisteredCount;
 
+  /** Events */
+
+  event MinerRegistered(bytes20 minerID, uint256 bond);
+  event MinerBondUpdated(bytes20 minerID, uint256 newBond);
+  event MinerDeregistered(bytes20 minerID);
+  event BondRefunded(bytes20 minerID, uint256 amount);
+  event Debug(string message);
+  event DebugInt(uint256 num);
+  event NextEpoch();
   
   /** Private functions */
+
+  function toRegisterOffset() view private returns (uint256) {
+    return stayingRegisteredOffset() + stayingRegisteredCount;
+  }
 
   function toDeregisterOffset() view private returns (uint256) {
     return deregisteredCount + 1;
@@ -79,100 +83,90 @@ contract MinerRegistrar {
     return toDeregisterOffset() + toDeregisterCount;
   }
 
-  function toRegisterOffset() view private returns (uint256) {
-    return stayingRegisteredOffset() + stayingRegisteredCount;
-  }
-
-  function isStayingRegistered(bytes20 minerId) private view returns (bool) {
-    uint256 index = miners[minerId].index;
-
-    // In [registered...]
+  function isStayingRegistered(bytes20 _minerID) private view returns (bool) {
+    uint256 index = miners[_minerID].index;
     return index >= stayingRegisteredOffset() && index < toRegisterOffset();
   }
 
-  function canRegister(bytes20 minerId) private view returns (bool) {
+  function canRegister(bytes20 _minerID) private view returns (bool) {
     // TODO: Can register if in toDeregister
-    return !isRegistered(minerId) && !isPendingRegistration(minerId);
+    return !isRegistered(_minerID) && !isPendingRegistration(_minerID);
   }
 
-  function canDeregister(bytes20 minerId) private view returns (bool) {
-    return isStayingRegistered(minerId) || isPendingRegistration(minerId);
+  function canDeregister(bytes20 _minerID) private view returns (bool) {
+    return isStayingRegistered(_minerID) || isPendingRegistration(_minerID);
   }
-
 
   /**
-  * @dev An internal function to update a miner's bond that is pending withdrawal
-  * 
-  */
-  function updateBondWithdrawal(bytes20 minerId, uint256 amount) private {
+   * @notice A private function that updates a miner's bond that is pending
+   * withdrawal.
+   *
+   * @param _minerID The ID of the miner that is being updated.
+   * @param _amount The bond update amount.
+   */
+  function updateBondWithdrawal(bytes20 _minerID, uint256 _amount) private {
 
-    miners[minerId].bond -= amount;
+    miners[_minerID].bond -= _amount;
 
-    if (miners[minerId].bondPendingWithdrawal > 0 && 
-        miners[minerId].bondWithdrawalTime < currentEpoch.time) {
+    if (miners[_minerID].bondPendingWithdrawal > 0 && miners[_minerID].bondWithdrawalTime < currentEpoch.time) {
       // Can withdraw previous bond
-
-      uint256 toWithdraw = miners[minerId].bondPendingWithdrawal;
+      uint256 toWithdraw = miners[_minerID].bondPendingWithdrawal;
 
       // Store new amount and time
-      miners[minerId].bondPendingWithdrawal = amount;
-      miners[minerId].bondWithdrawalTime = now;
+      miners[_minerID].bondPendingWithdrawal = _amount;
+      miners[_minerID].bondWithdrawalTime = now;
 
-      // Return amount
       // Transfer Ren (ERC20 token)
       // TODO: Should this be moved to withdrawBond?
       bool success = ren.transfer(msg.sender, toWithdraw);
       require(success);
 
-      ReturnedBond(minerId, toWithdraw);
+      BondRefunded(_minerID, toWithdraw);
     } else {
       // Can't withdraw any bond
-
-      miners[minerId].bondPendingWithdrawal += amount;
-      miners[minerId].bondWithdrawalTime = now;
+      miners[_minerID].bondPendingWithdrawal += _amount;
+      miners[_minerID].bondWithdrawalTime = now;
     }
   }
 
+  /** Public functions */
 
-
-
-
-
-
-
-  /*** Initialisation code ***/
-
-  function MinerRegistrar(address renAddress, uint256 _epochInterval, uint256 _minimumBond) public {
-    ren = RepublicToken(renAddress);
+  /** 
+   * @notice The MinerRegistrar constructor.
+   *
+   * @param _renAddress The address of the Republic Token contract.
+   * @param _epochInterval The amount of time between epochs, in seconds.
+   * @param _minimumBond The minimum bond amount that can be submitted by a
+   *                     trader.
+   */
+  function MinerRegistrar(address _renAddress, uint256 _epochInterval, uint256 _minimumBond) public {
+    ren = RepublicToken(_renAddress);
     epochInterval = _epochInterval;
     minimumBond = _minimumBond;
     minerList.push(0x0);
     checkEpoch();
   }
 
-
-  /*** Public functions */
-
-
-  function isRegistered(bytes20 minerId) public view returns (bool) {
-    uint256 index = miners[minerId].index;
-
-    // In [toDeregister..., registered...]
+  function isRegistered(bytes20 _minerID) public view returns (bool) {
+    uint256 index = miners[_minerID].index;
     return index >= toDeregisterOffset() && index < toRegisterOffset();
   }
 
-  function isPendingRegistration(bytes20 minerId) public view returns (bool) {
-    uint256 index = miners[minerId].index;
-
-    // In [toRegister...]
+  function isPendingRegistration(bytes20 _minerID) public view returns (bool) {
+    uint256 index = miners[_minerID].index;
     return index >= toRegisterOffset() && index < (toRegisterOffset() + toRegisterCount);
   }
-
   
+  /**
+   * @notice Check if the epoch needs to be updated, and update it if
+   * necessary.
+   *
+   * @return True if the epoch was updated, otherwise false.
+   */
   function checkEpoch() public returns (bool) {
     // NOTE: Requires `epochInterval` < `now`
     if (now > currentEpoch.time + epochInterval) {
-      currentEpoch = CurrentEpoch({
+      currentEpoch = Epoch({
         time: now,
         blockhash: block.blockhash(block.number - 1)
       });
@@ -188,44 +182,47 @@ contract MinerRegistrar {
       toRegisterCount = 0;
       toDeregisterCount = 0;
 
-      Epoch();
+      NextEpoch();
 
       return true;
-    } else {
-      return false;
     }
+  
+    return false;
   }
 
   /** 
-  * @dev Register a miner and transfer Ren bond to this contract
-  * The caller must provide the public key of the account used to make the call
-  *
-  * register will use the entire approved Ren amount as a bond
-  * another option is to allow miners to provide a bond amount as a parameter
-  * or a combination, where the whole amount is taken if not specified
-  *
-  * @param publicKey the public key of the miner, stored to allow other miners and traders to encrypt messages to the miner
-  */
-  function register(bytes publicKey) payable public {
+   * @notice Register a miner and transfer the bond to this contract. The
+   * caller must provide the public key of the miner that will be registered
+   * and a signature that proves the caller has access to the associated
+   * private key. The bond must be provided in REN, as an allowance. The entire
+   * allowance is transferred and used as the bond.
+   *
+   * @param _publicKey The public key of the miner. It is stored to allow other
+   *                   miners and traders to encrypt messages to the miner.
+   * @param _signature The Republic ID, generated from the public key and signed
+   *                   by the associated private key. It is used as a proof that
+   *                   the miner owns the submitted public key.
+   */
+  function register(bytes _publicKey, bytes _signature) payable public {
 
     // an outside entity will be calling this after each epochInterval has passed
     // if that has not happened yet, the next miner to register will trigger the update instead
     // checkEpoch(); // <1k gas if no update needed, >40k gas if update needed
 
-    address minerAddress = Utils.ethereumAddressFromPublicKey(publicKey);
-    bytes20 minerId = Utils.republicIDFromPublicKey(publicKey);
+    address minerAddress = Utils.ethereumAddressFromPublicKey(_publicKey);
+    bytes20 minerID = Utils.republicIDFromPublicKey(_publicKey);
 
-    // Verify that the miner has provided the correct public key
     // TODO: Check a signature instead
+    // Verify that the miner has provided the correct public key
     require(msg.sender == minerAddress);
 
     // Miner should not be already registered or awaiting registration
-    require(canRegister(minerId));
+    require(canRegister(minerID));
 
     // Set bond to be allowance plus any remaining bond from previous registration
     uint256 allowance = ren.allowance(msg.sender, this);
     // TODO: Use safe maths
-    uint256 bond = allowance + miners[minerId].bondPendingWithdrawal;
+    uint256 bond = allowance + miners[minerID].bondPendingWithdrawal;
 
     // Bond should be greater than minumum
     require (bond > minimumBond);
@@ -235,58 +232,58 @@ contract MinerRegistrar {
     require(success);
 
     // Store public key and bond
-    uint256 index = minerList.push(minerId) - 1;
+    uint256 index = minerList.push(minerID) - 1;
 
     toRegisterCount += 1;
 
-    bytes32 seed = keccak256(now, block.blockhash(block.number - 1), minerId);
+    bytes32 seed = keccak256(now, block.blockhash(block.number - 1), minerID);
 
     var miner = Miner({
-      publicKey: publicKey,
+      publicKey: _publicKey,
       owner: msg.sender,
       bond: bond,
       seed: seed,
       index: index,
-
       bondPendingWithdrawal: 0,
       bondWithdrawalTime: 0
     });
 
-    miners[minerId] = miner;
+    miners[minerID] = miner;
 
-    addressIds[minerAddress] = minerId;
+    addressIds[minerAddress] = minerID;
 
     // Emit event to logs
-    MinerRegistered(minerId, bond);
+    MinerRegistered(minerID, bond);
   }
 
   /**
-  * @dev Increase bond or decrease a miners's bond
-  * @param minerId The Republic ID of the miner
-  * @param newBond The new bond to be set for the miner, greater than or less than the current bond
-  */
-  function updateBond(bytes20 minerId, uint256 newBond) payable public {
+   * @notice Increase bond or decrease a miners's bond
+   *
+   * @param _minerID The Republic ID of the miner
+   * @param _newBond The new bond to be set for the miner, greater than or less than the current bond
+   */
+  function updateBond(bytes20 _minerID, uint256 _newBond) payable public {
     // Ensure miner is already registered
-    require(isPendingRegistration(minerId) || isStayingRegistered(minerId));
+    require(isPendingRegistration(_minerID) || isStayingRegistered(_minerID));
     
     // Only allow owner to modify bond
-    address owner = Utils.ethereumAddressFromPublicKey(miners[minerId].publicKey);
+    address owner = Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
     require(owner == msg.sender);
 
     // Set new bond
-    require(newBond > 0);
-    uint256 oldBond = miners[minerId].bond;
-    if (newBond == oldBond) {
+    require(_newBond > 0);
+    uint256 oldBond = miners[_minerID].bond;
+    if (_newBond == oldBond) {
       return;
     }
 
-    if (newBond > oldBond) {
+    if (_newBond > oldBond) {
       // Increasing bond
 
-      uint256 toAdd = newBond - oldBond;
+      uint256 toAdd = _newBond - oldBond;
 
       // Sanity checks
-      assert(toAdd < newBond);
+      assert(toAdd < _newBond);
       assert(toAdd > 0);
 
       // Transfer Ren (ERC20 token)
@@ -294,44 +291,45 @@ contract MinerRegistrar {
       bool success = ren.transferFrom(msg.sender, this, toAdd);
       require(success);
 
-      miners[minerId].bond = newBond;
+      miners[_minerID].bond = _newBond;
 
 
-    } else if (newBond < oldBond) {
+    } else if (_newBond < oldBond) {
       // Decreasing bond
 
-      uint256 toRefund = oldBond - newBond;
+      uint256 toRefund = oldBond - _newBond;
 
       // Sanity check
       assert(toRefund < oldBond);
 
-      updateBondWithdrawal(minerId, toRefund);
+      updateBondWithdrawal(_minerID, toRefund);
     }
 
     // Emit event to logs
-    MinerBondUpdated(minerId, newBond);
+    MinerBondUpdated(_minerID, _newBond);
   }
 
   /** 
-  * @dev Deregister a miner and return its bond
-  * @param minerId the Republic ID of the miner
+  * @notice Deregister a miner and refund their bond.
+  *
+  * @param _minerID The Republic ID of the miner.
   */
-  function deregister(bytes20 minerId) public {
+  function deregister(bytes20 _minerID) public {
 
     // Check that they can deregister
-    require(canDeregister(minerId));
+    require(canDeregister(_minerID));
 
     // Check that the msg.sender owns the miner
-    require(miners[minerId].owner == msg.sender);
+    require(miners[_minerID].owner == msg.sender);
 
     // Swap miners around
     uint256 destinationIndex;
-    uint256 currentIndex = miners[minerId].index;
+    uint256 currentIndex = miners[_minerID].index;
 
     bool decreaseLength = false;
 
     // TODO: If miner is in toRegister, put at end of toRegister and delete, instead
-    if (isPendingRegistration(minerId)) {
+    if (isPendingRegistration(_minerID)) {
       // still in toRegister
 
       // last in toRegister
@@ -356,7 +354,7 @@ contract MinerRegistrar {
 
     // Swap two miners in minerList
     minerList[currentIndex] = minerList[destinationIndex];
-    minerList[destinationIndex] = minerId;
+    minerList[destinationIndex] = _minerID;
     // Update their indexes
     miners[minerList[currentIndex]].index = currentIndex;
     miners[minerList[destinationIndex]].index = destinationIndex;
@@ -366,22 +364,22 @@ contract MinerRegistrar {
       minerList.length = minerList.length - 1;
     }
 
-    updateBondWithdrawal(minerId, miners[minerId].bond);
+    updateBondWithdrawal(_minerID, miners[_minerID].bond);
 
     // Emit event to logs
-    MinerDeregistered(minerId);
+    MinerDeregistered(_minerID);
   }
 
   /**
-  * @dev Withdraw the bond of a miner
+  * @notice Withdraw the bond of a miner. This is the latter of two functions a
+  * miner must call to retrieve their bond. The first call is to decrease their
+  * bond or deregister. This stages an amount of bond to be withdrawn. This 
+  * function then allows them to actually make the withdrawal.
   *
-  * This is the latter of two functions a miner must make two calls to retrieve their bond.
-  * The first call is to decrease their bond or deregister. This function then allows them to withdraw the bond.
-  *
-  * @param minerId The Republic ID of the miner
+  * @param _minerID The Republic ID of the miner.
   */
-  function withdrawBond(bytes20 minerId) public {
-    updateBondWithdrawal(minerId, 0);
+  function withdrawBond(bytes20 _minerID) public {
+    updateBondWithdrawal(_minerID, 0);
   }
 
 
@@ -434,38 +432,34 @@ contract MinerRegistrar {
     return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
   }
 
-
-  /*** Miner specific getters ***/
-
-  // Getter for miner bonds, accessible by miner ID
-  function getBond(bytes20 minerId) public view returns (uint256) {
+  function getBond(bytes20 _minerID) public view returns (uint256) {
     // Check if they have bond pending to be withdrawn but still valid
-    if (miners[minerId].bondWithdrawalTime >= currentEpoch.time) {
-      return miners[minerId].bond + miners[minerId].bondPendingWithdrawal;
+    if (miners[_minerID].bondWithdrawalTime >= currentEpoch.time) {
+      return miners[_minerID].bond + miners[_minerID].bondPendingWithdrawal;
     } else {
-      return miners[minerId].bond;
+      return miners[_minerID].bond;
     }
   }
 
-  function getSeed(bytes20 minerId) public view returns (bytes32) {
-    return miners[minerId].seed;
+  function getSeed(bytes20 _minerID) public view returns (bytes32) {
+    return miners[_minerID].seed;
   }
   
   // Allow anyone to see a Republic ID's public key
-  function getPublicKey(bytes20 minerId) public view returns (bytes) {
-    return miners[minerId].publicKey;
+  function getPublicKey(bytes20 _minerID) public view returns (bytes) {
+    return miners[_minerID].publicKey;
   }
 
-  function getAddress(bytes20 minerId) public view returns (address) {
-    return Utils.ethereumAddressFromPublicKey(miners[minerId].publicKey);
+  function getOwner(bytes20 _minerID) public view returns (address) {
+    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
   }
 
-  function getMinerId(address addr) public view returns (bytes20) {
-    return addressIds[addr];
+  function getMinerID(address _addr) public view returns (bytes20) {
+    return addressIds[_addr];
   }
 
-  function getBondPendingWithdrawal(bytes20 minerId) public view returns (uint256) {
-    return miners[minerId].bondPendingWithdrawal;
+  function getBondPendingWithdrawal(bytes20 _minerID) public view returns (uint256) {
+    return miners[_minerID].bondPendingWithdrawal;
   }
 
 }

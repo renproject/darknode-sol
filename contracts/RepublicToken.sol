@@ -1,6 +1,7 @@
 pragma solidity ^0.4.13;
 
 library SafeMath {
+
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
     if (a == 0) {
       return 0;
@@ -30,32 +31,31 @@ library SafeMath {
 }
 
 contract Ownable {
-  address public owner;
 
+  address public owner;
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-
   /**
-   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
-   * account.
+   * @notice The Ownable constructor sets the original owner of the contract to
+   * the sender account.
    */
   function Ownable() public {
     owner = msg.sender;
   }
 
-
   /**
-   * @dev Throws if called by any account other than the owner.
+   * @notice Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
     require(msg.sender == owner);
     _;
   }
 
-
   /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @notice Allows the current owner to transfer control of the contract to a
+   * new owner.
+   *
    * @param newOwner The address to transfer ownership to.
    */
   function transferOwnership(address newOwner) public onlyOwner {
@@ -63,18 +63,18 @@ contract Ownable {
     OwnershipTransferred(owner, newOwner);
     owner = newOwner;
   }
-
 }
 
 contract Pausable is Ownable {
-  event Pause();
-  event Unpause();
 
   bool public paused = false;
 
+  event Pause();
+  event Unpause();
 
   /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
+   * @notice Modifier to make a function callable only when the contract is
+   * not paused.
    */
   modifier whenNotPaused() {
     require(!paused);
@@ -82,7 +82,8 @@ contract Pausable is Ownable {
   }
 
   /**
-   * @dev Modifier to make a function callable only when the contract is paused.
+   * @notice Modifier to make a function callable only when the contract is
+   * paused.
    */
   modifier whenPaused() {
     require(paused);
@@ -90,7 +91,7 @@ contract Pausable is Ownable {
   }
 
   /**
-   * @dev called by the owner to pause, triggers stopped state
+   * @notice Called by the owner to pause. Triggers stopped state.
    */
   function pause() onlyOwner whenNotPaused public {
     paused = true;
@@ -98,7 +99,7 @@ contract Pausable is Ownable {
   }
 
   /**
-   * @dev called by the owner to unpause, returns to normal state
+   * @notice Called by the owner to unpause. Returns to normal state.
    */
   function unpause() onlyOwner whenPaused public {
     paused = false;
@@ -107,10 +108,13 @@ contract Pausable is Ownable {
 }
 
 contract ERC20Basic {
+
   uint256 public totalSupply;
+
+  event Transfer(address indexed from, address indexed to, uint256 value);
+
   function balanceOf(address who) public view returns (uint256);
   function transfer(address to, uint256 value) public returns (bool);
-  event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
 contract BasicToken is ERC20Basic {
@@ -119,9 +123,12 @@ contract BasicToken is ERC20Basic {
   mapping(address => uint256) balances;
 
   /**
-  * @dev transfer token for a specified address
+  * @notice Transfer token for a specified address.
+  *
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
+  *
+  * @return True.
   */
   function transfer(address _to, uint256 _value) public returns (bool) {
     require(_to != address(0));
@@ -135,33 +142,38 @@ contract BasicToken is ERC20Basic {
   }
 
   /**
-  * @dev Gets the balance of the specified address.
-  * @param _owner The address to query the the balance of.
-  * @return An uint256 representing the amount owned by the passed address.
-  */
+   * @notice Gets the balance of the specified address.
+   *
+   * @param _owner The address to query the the balance of.
+   *
+   * @return An uint256 representing the amount owned by the passed address.
+   */
   function balanceOf(address _owner) public view returns (uint256 balance) {
     return balances[_owner];
   }
-
 }
 
 contract ERC20 is ERC20Basic {
+  
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+
   function allowance(address owner, address spender) public view returns (uint256);
   function transferFrom(address from, address to, uint256 value) public returns (bool);
   function approve(address spender, uint256 value) public returns (bool);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 contract StandardToken is ERC20, BasicToken {
 
   mapping (address => mapping (address => uint256)) internal allowed;
 
-
   /**
-   * @dev Transfer tokens from one address to another
-   * @param _from address The address which you want to send tokens from
-   * @param _to address The address which you want to transfer to
-   * @param _value uint256 the amount of tokens to be transferred
+   * @notice Transfer tokens from one address to another.
+   *
+   * @param _from The address which you want to send tokens from.
+   * @param _to The address which you want to transfer to.
+   * @param _value The amount of tokens to be transferred.
+   *
+   * @return True.
    */
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
     require(_to != address(0));
@@ -176,14 +188,19 @@ contract StandardToken is ERC20, BasicToken {
   }
 
   /**
-   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
-   *
-   * Beware that changing an allowance with this method brings the risk that someone may use both the old
-   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
-   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+   * @notice Approve the passed address to spend the specified amount of
+   * tokens on behalf of msg.sender.
+   * Beware that changing an allowance with this method brings the risk that
+   * someone may use both the old and the new allowance by unfortunate
+   * transaction ordering. One possible solution to mitigate this race
+   * condition is to first reduce the spender's allowance to 0 and set the
+   * desired value afterwards:
    * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   *
    * @param _spender The address which will spend the funds.
    * @param _value The amount of tokens to be spent.
+   * 
+   * @return True.
    */
   function approve(address _spender, uint256 _value) public returns (bool) {
     allowed[msg.sender][_spender] = _value;
@@ -192,20 +209,28 @@ contract StandardToken is ERC20, BasicToken {
   }
 
   /**
-   * @dev Function to check the amount of tokens that an owner allowed to a spender.
-   * @param _owner address The address which owns the funds.
-   * @param _spender address The address which will spend the funds.
-   * @return A uint256 specifying the amount of tokens still available for the spender.
+   * @notice Function to check the amount of tokens that an owner allowed to a
+   * spender.
+   *
+   * @param _owner The address which owns the funds.
+   * @param _spender The address which will spend the funds.
+   *
+   * @return A uint256 specifying the amount of tokens still available for the
+   * spender.
    */
   function allowance(address _owner, address _spender) public view returns (uint256) {
     return allowed[_owner][_spender];
   }
 
   /**
-   * approve should be called when allowed[_spender] == 0. To increment
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
+   * @notice Approve should be called when allowed[_spender] == 0. To increment
+   * allowed value is better to use this function to avoid 2 calls (and wait
+   * until the first transaction is mined). From MonolithDAO Token.sol.
+   *
+   * @param _spender The address which will spend the funds.
+   * @param _addedValue The extra funds the spender will have.
+   *
+   * @return True.
    */
   function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
     allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
@@ -223,7 +248,6 @@ contract StandardToken is ERC20, BasicToken {
     Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
-
 }
 
 contract BurnableToken is StandardToken {
@@ -231,7 +255,8 @@ contract BurnableToken is StandardToken {
     event Burn(address indexed burner, uint256 value);
 
     /**
-     * @dev Burns a specific amount of tokens.
+     * @notice Burns a specific amount of tokens.
+     *
      * @param _value The amount of token to be burned.
      */
     function burn(uint256 _value) public {
@@ -278,9 +303,8 @@ contract RepublicToken is PausableToken, BurnableToken {
     uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
     
     /**
-    * @dev RepublicToken Constructor
-    */
-
+     * @notice The RepublicToken Constructor.
+     */
     function RepublicToken() public {
         totalSupply = INITIAL_SUPPLY;   
         balances[msg.sender] = INITIAL_SUPPLY;
