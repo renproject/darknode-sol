@@ -1,5 +1,5 @@
 
-const u = require("./test_utils");
+const u = require("../test_utils");
 
 // Initialise:
 let utils;
