@@ -165,6 +165,7 @@ contract TraderRegistrar {
       // Sanity check
       assert(toRefund < oldBond);
 
+      // TODO: Should this be called seperately (e.g. withdrawRen)?
       refundBond(traderId, toRefund);
     }
 
@@ -186,6 +187,7 @@ contract TraderRegistrar {
 
     // Return Ren
     uint256 toRefund = traders[traderId].bond;
+    // TODO: Should this be called seperately (e.g. withdrawRen)?
     refundBond(traderId, toRefund);
 
     // Emit event to logs

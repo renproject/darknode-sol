@@ -15,6 +15,7 @@ contract OrderBook {
   uint poolCount;
   uint kValue = 5;
 
+  // TODO: Use enum instead
 	uint8 constant STATUS_OPEN = 1;
 	uint8 constant STATUS_EXPIRED = 2;
 	uint8 constant STATUS_CLOSED = 3;
@@ -22,9 +23,9 @@ contract OrderBook {
   struct MatchFragment {
     bytes20 minerID;
 
-    uint256 orderFragmentID1;
-    uint256 orderFragmentID2;
-    uint256 outputFragment;
+    bytes32 orderFragmentID1;
+    bytes32 orderFragmentID2;
+    bytes outputFragment;
 
     bytes zkCommitment;
   }
@@ -171,7 +172,7 @@ contract OrderBook {
     return address(_minerID);
   }
 
-  function submitOutputFragment(uint _outputFragment, bytes _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes32 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2) {
+  function submitOutputFragment(bytes _outputFragment, bytes _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes32 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2) {
     require(orders[_orderID1].miners[_orderFragmentID1] == _minerID || orders[_orderID1].minerLeaders[_orderFragmentID1] == _minerID);
     require(msg.sender == getAddress(_minerID));
 

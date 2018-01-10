@@ -4,6 +4,15 @@ pragma solidity ^0.4.17;
 import './Utils.sol';
 import "./RepublicToken.sol";
 
+/**
+* TODOS:
+* 1. Break up into smaller contracts, e.g.:
+*    a. Epoch contract
+*    b. Miner list?
+*    c. Miner properties shared with traders? (e.g. public key storage)
+* 2. Remove Debug events
+*/
+
 contract MinerRegistrar {
 
   // TODO: Use SafeMath library?
@@ -111,6 +120,7 @@ contract MinerRegistrar {
 
       // Return amount
       // Transfer Ren (ERC20 token)
+      // TODO: Should this be moved to withdrawBond?
       bool success = ren.transfer(msg.sender, toWithdraw);
       require(success);
 
@@ -399,6 +409,7 @@ contract MinerRegistrar {
   }
 
   function getMNetworkCount() public view returns (uint256) {
+    // TODO: Should be rounded up?
     return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
   }
   

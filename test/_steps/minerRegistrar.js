@@ -140,6 +140,25 @@ const steps = {
     }));
   },
 
+
+  GetMNetworks: async (accounts) => {
+    const miners = await minerRegistrar.getAllMiners();
+
+    const a = miners.lengthl; // await minerRegistrar.getCurrentMinerCount();
+    const N = await minerRegistrar.getMNetworkSize();
+    const p = Math.ceil(a / N);
+
+    const mNetworks = [];
+    for (let i = 0; i < p; i++) { mNetworks.push([]); }
+
+    for (let i = 0; i < a; i++) {
+      const mIndex = i % p;
+      mNetworks[mIndex].push(miners[i]);
+    }
+
+    return mNetworks;
+  }
+
 }
 
 module.exports = steps;
