@@ -173,13 +173,10 @@ module.exports = {
    * Sort the miners into MNetworks by keccak256(epoch blockhash + miner's precommited seed)
    */
   GetMNetworks: async () => {
-    console.log("Getting registered miners");
     const miners = await steps.GetRegisteredMiners();
-    console.log("Getting epoch blockhash");
     const epochHash = await steps.GetEpochBlockhash();
     // Get miner seeds
     norms = {};
-    console.log("Getting miner seeds");
     await Promise.all(miners.map(async (miner, i) => {
       const seed = await steps.GetMinerSeed({ republic: miner });
       norms[miner] = web3.sha3(seed + epochHash);
@@ -189,7 +186,6 @@ module.exports = {
       (a, b) => norms[a] - norms[b]
     );
 
-    console.log("Getting miner count and M network size");
     const a = await steps.GetCurrentMinerCount() // miners.length;
     const N = await minerRegistrar.getMNetworkSize();
     const p = Math.ceil(a / N);

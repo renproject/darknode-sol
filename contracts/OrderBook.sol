@@ -189,8 +189,7 @@ contract OrderBook {
 	 * @param _orderID1 The order ID of the first order.
 	 * @param _orderID2 The order ID of the second order.
    */
-	function closeOrder(bytes32 _orderID1, bytes32 _orderID2) onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2) internal {
-    Debug("Closing order!!!");
+	function closeOrders(bytes32 _orderID1, bytes32 _orderID2) onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2) internal {
     bytes32 matchID = keccak256(_orderID1,_orderID2);
 
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
@@ -265,14 +264,17 @@ contract OrderBook {
     matchFragments[matchID].push(matchFragment);
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
     uint256 length = matchFragments[matchID].length;
-    DebugInt(length);
-    DebugInt(kValue);
     if (length == kValue) {
-      closeOrder(_orderID1, _orderID2);
+      closeOrders(_orderID1, _orderID2);
     }
   }
 
-  // function withdrawReward(bytes32 minerID) public {
+  // TODO: Replace with getOrderStatus
+  function isOrderClosed(bytes32 _orderID) public returns(bool) {
+    return orders[_orderID].status == STATUS_CLOSED;
+  }
+
+  // function withdrawReward(bytes20 minerID) public {
   //   require(minerID == miner[msg.sender]);
   //   republicToken.transfer(msg.sender, reward[minerID]);
   // }

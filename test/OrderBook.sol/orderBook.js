@@ -85,6 +85,11 @@ contract('Order Book', function () {
       i => steps.SubmitOutputFragment(fragments_AB[i], zkCommitments[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
     ));
 
+    (await steps.IsOrderClosed(orderID_A))
+      .should.be.true;
+    (await steps.IsOrderClosed(orderID_B))
+      .should.be.true;
+
     // assert(false); // To see events
 
 
