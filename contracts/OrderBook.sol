@@ -25,6 +25,13 @@ contract OrderBook {
     bytes32 zkCommitment; // bytes
   }
 
+  struct Match {
+    bytes32 orderID1;
+    bytes32 orderID2;
+
+    MatchFragment[] matchFragments;
+  }
+
 	struct Order {
     bytes32 orderID;
     bytes20 traderID;
@@ -37,7 +44,11 @@ contract OrderBook {
     mapping (bytes20 => bytes32) minersToOrderFragmentIDs;
 	}
 
-  mapping(bytes32 => MatchFragment[]) matchFragments;
+  // Matched order (orderID => matchID)
+  mapping(bytes32 => bytes32) orderMatch;
+
+  // Mapping from matchIDs to their matches
+  mapping(bytes32 => Match) matches;
 
   // TODO: Use enum instead
 	uint8 constant STATUS_OPEN = 1;
@@ -93,6 +104,18 @@ contract OrderBook {
       status = status && minerRegistrar.isRegistered(_minerIDs[i]); 
     }
     return status;
+  }
+
+  /**
+   * @notice Deterministically calculate the ID of a match based on the IDs of its two orders
+   */
+  function getMatchID(bytes32 _orderID1, bytes32 _orderID2) private returns (bytes32) {
+    // TODO: How does solidity compare bytes?
+    if (_orderID1 < _orderID2) {
+      return keccak256(_orderID1, _orderID2);
+    } else {
+      return keccak256(_orderID2, _orderID1);
+    }
   }
 
   /** Public functions */
@@ -192,7 +215,9 @@ contract OrderBook {
 	 * @param _orderID2 The order ID of the second order.
    */
 	function closeOrders(bytes32 _orderID1, bytes32 _orderID2) onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2) internal {
-    bytes32 matchID = keccak256(_orderID1,_orderID2);
+    bytes32 matchID = getMatchID(_orderID1,_orderID2);
+    matches[matchID].orderID1 = _orderID1;
+    matches[matchID].orderID2 = _orderID2;
 
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
 
@@ -200,12 +225,14 @@ contract OrderBook {
     uint fee = orders[_orderID1].fee + orders[_orderID2].fee / kValue;
     orders[_orderID1].status = STATUS_CLOSED;
     orders[_orderID2].status = STATUS_CLOSED;
+
+    // Decrease order counts of each trader
     orderCount[owner[_orderID1]]--;
     orderCount[owner[_orderID2]]--;
 
     // reward miners
-    for (var i = 0; i < kValue; i++) {
-      bytes20 minerID = matchFragments[matchID][i].minerID;
+    for (uint256 i = 0; i < kValue; i++) {
+      bytes20 minerID = matches[matchID].matchFragments[i].minerID;
       rewards[minerID] += fee;
     }
     delete owner[_orderID1];
@@ -250,7 +277,7 @@ contract OrderBook {
     // Check that msg.sender is the miner
     require(msg.sender == minerRegistrar.getEthereumAddress(_minerID));
 
-    bytes32 matchID = keccak256(_orderID1,_orderID2);
+    bytes32 matchID = getMatchID(_orderID2,_orderID1);
 
     // New matchFragment
     MatchFragment storage matchFragment;
@@ -259,9 +286,9 @@ contract OrderBook {
     matchFragment.minerID = _minerID;
     
 
-    matchFragments[matchID].push(matchFragment);
+    matches[matchID].matchFragments.push(matchFragment);
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
-    uint256 length = matchFragments[matchID].length;
+    uint256 length = matches[matchID].matchFragments.length;
     if (length == kValue) {
       closeOrders(_orderID1, _orderID2);
     }
@@ -281,10 +308,16 @@ contract OrderBook {
     ren.transfer(owner, reward);
   }
 
-  function getOutput(bytes32 _orderID) public constant returns(bytes20 none) {
-    // TODO: Fix (remove none in return)
-    // require(orders[_orderID].status == STATUS_CLOSED);
-    // return owner[orders[_orderID].matchID];
+  function getMatchedOrder(bytes32 _orderID) public constant returns(bytes32) {
+    require(orders[_orderID].status == STATUS_CLOSED);
+    bytes32 matchID = orderMatch[_orderID];
+    if (_orderID == matches[matchID].orderID1) {
+      return matches[matchID].orderID2;
+    } else if (_orderID == matches[matchID].orderID2) {
+      return matches[matchID].orderID1;
+    } else {
+      assert(false);
+    }
   }
 
   function getProofs(bytes32 _orderID) public constant returns(bytes32[]) {
