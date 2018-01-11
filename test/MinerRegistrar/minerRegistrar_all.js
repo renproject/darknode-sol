@@ -20,9 +20,8 @@ contract('Miner Registar (all miners)', function () {
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
-    try { await steps.DeregisterAllMiners(accounts); } catch (err) { }
     await steps.WaitForEpoch();
-    await steps.WithdrawAllMinerBonds(accounts);
+    // await steps.WithdrawAllMinerBonds(accounts);
   });
 
 

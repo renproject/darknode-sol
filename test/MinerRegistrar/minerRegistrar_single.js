@@ -10,8 +10,6 @@ const steps = require("../_steps/steps").steps;
 contract('A miner', function () {
 
   afterEach("ensure miner is deregistered", async function () {
-    // After each test, make sure that the miner is not registered
-    try { await steps.DeregisterMiner(accounts[0]); } catch (err) { }
     await steps.WaitForEpoch();
     await steps.WithdrawMinerBond(accounts[0]);
   });
@@ -20,6 +18,7 @@ contract('A miner', function () {
     // Deregistering without first registering should throw an error
     await steps.DeregisterMiner(accounts[0])
       .should.be.rejectedWith(Error);
+
   });
 
   it("can register and deregister", async function () {

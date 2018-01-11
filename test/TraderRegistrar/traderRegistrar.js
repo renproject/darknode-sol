@@ -17,11 +17,6 @@ const steps = require("../_steps/steps").steps;
 
 contract('Traders', function () {
 
-  afterEach("ensure node is deregistered", async function () {
-    // After each test, make sure that the node is not registered
-    try { await steps.DeregisterTrader(accounts[0]); } catch (err) { }
-  });
-
   it("can register and deregister", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
     await steps.DeregisterTrader(accounts[0]);
