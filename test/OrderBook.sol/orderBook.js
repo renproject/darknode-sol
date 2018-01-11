@@ -9,7 +9,7 @@ const steps = require("../_steps/steps").steps;
 
 
 const traderCount = 2;
-const minerCount = 8;
+const minerCount = accounts.length - traderCount;
 
 const trader_A = accounts[0];
 const trader_B = accounts[1];
@@ -25,13 +25,14 @@ const randomBytes =
 contract('Order Book', function () {
 
   before("register traders and miners", async () => {
+
     // Register traders:
     await steps.RegisterTrader(trader_A, 1000);
     await steps.RegisterTrader(trader_B, 1000);
 
     // Register miners:
     await Promise.all(miners.map(
-      miner => steps.RegisterMiner(miner, 1000)
+      (miner, i) => steps.RegisterMiner(miner, 1000)
     ));
 
     // Wait for Miner Registrar epoch
@@ -47,7 +48,10 @@ contract('Order Book', function () {
 
 
   it("can process an order submission", async () => {
+
     const fragmentCount = (await steps.GetMNetworkSize()).toNumber();
+
+    console.log(`Sizes: ${mNetworks.map(m => m.length)}. k: ${(fragmentCount - 1) / 2 + 1}`);
 
     // Random values for testing
     const orderID_A = randomHash();
@@ -57,6 +61,7 @@ contract('Order Book', function () {
     const fragmentIds_B = (utils.range(fragmentCount)).map(i => randomHash());
     const fragments_AB = (utils.range(fragmentCount)).map(i => randomBytes());
     const randomMNetwork = mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))];
+    const mNetworkSize = randomMNetwork.length;
     const leaderNetwork = mNetworks[0];
 
     await steps.OpenOrder(trader_A, orderID_A, fragmentIds_A, randomMNetwork, leaderNetwork);
@@ -64,20 +69,17 @@ contract('Order Book', function () {
 
 
     // Check order_A's fragments
-    await Promise.all(utils.range(fragmentCount).map(
+    await Promise.all(utils.range(mNetworkSize).map(
       i => steps.CheckOrderFragment(orderID_A, fragmentIds_A[i], randomMNetwork[i])
     ));
 
     // Check order_B's fragments
-    await Promise.all(utils.range(fragmentCount).map(
+    await Promise.all(utils.range(mNetworkSize).map(
       i => steps.CheckOrderFragment(orderID_B, fragmentIds_B[i], randomMNetwork[i])
     ));
 
     // // Submit order fragments
     const kValue = (fragmentCount - 1) / 2 + 1;
-    console.log(fragmentCount);
-    console.log(kValue);
-    console.log(mNetworks);
     await Promise.all(utils.range(kValue).map(
       // (bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
       i => steps.SubmitOutputFragment(fragments_AB[i], zkCommitments[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])

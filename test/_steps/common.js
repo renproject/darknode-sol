@@ -19,6 +19,11 @@ module.exports = {
     (from, to, amount) => ren.approve(to.address, amount, { from: from.address })
   ,
 
+  // Distribute ren
+  DistributeRen: // async
+    (accounts) => Promise.all(accounts.map(account => ren.transfer(account.address, 1000000)))
+  ,
+
   /** GetRenBalance */
   GetRenBalance: async (account) => {
     return await ren.balanceOf(account.address, { from: account.address });

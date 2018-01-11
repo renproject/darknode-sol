@@ -36,9 +36,24 @@ module.exports = {
     () => minerRegistrar.getCurrentMinerCount.call()
   ,
 
-  GetRegisteredMiners: // async
-    () => minerRegistrar.getCurrentMiners()
-  ,
+  GetRegisteredMiners: async () => {
+
+    const count = await steps.GetCurrentMinerCount();
+    const split = 50;
+    const indexes = utils.range(Math.floor(count / split) + 1);
+    const starts = indexes.map(index => index * split);
+    const ends = indexes.map(index => Math.min((index + 1) * split, count));
+
+    const miners = [];
+    const l1 = await indexes
+      .map(i => minerRegistrar.getCurrentMiners(starts[i], ends[i]))
+      .reduce(async (acc, curr) => { return (await acc).concat(await curr) }, Array(0));
+    // const l2 = await minerRegistrar.getCurrentMiners(0, count);
+
+    // l1.should.deep.equal(l2);
+
+    return l1;
+  },
 
   GetAllMiners: // async
     () => minerRegistrar.getAllMiners()
@@ -158,11 +173,14 @@ module.exports = {
    * Sort the miners into MNetworks by keccak256(epoch blockhash + miner's precommited seed)
    */
   GetMNetworks: async () => {
+    console.log("Getting registered miners");
     const miners = await steps.GetRegisteredMiners();
+    console.log("Getting epoch blockhash");
     const epochHash = await steps.GetEpochBlockhash();
     // Get miner seeds
     norms = {};
-    await Promise.all(miners.map(async (miner) => {
+    console.log("Getting miner seeds");
+    await Promise.all(miners.map(async (miner, i) => {
       const seed = await steps.GetMinerSeed({ republic: miner });
       norms[miner] = web3.sha3(seed + epochHash);
     }));
@@ -171,6 +189,7 @@ module.exports = {
       (a, b) => norms[a] - norms[b]
     );
 
+    console.log("Getting miner count and M network size");
     const a = await steps.GetCurrentMinerCount() // miners.length;
     const N = await minerRegistrar.getMNetworkSize();
     const p = Math.ceil(a / N);

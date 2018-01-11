@@ -123,7 +123,13 @@ contract OrderBook {
     
     uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
 
-    require(_orderFragmentIDs.length == _miners.length);
+    // Miner count should be within one of orderFragmentCount
+    require(_miners.length == _orderFragmentIDs.length ||
+            _miners.length == _orderFragmentIDs.length - 1);
+
+    // Leader count should be exactly the orderFragmentCount
+    require(_minerLeaders.length == _orderFragmentIDs.length);
+
     require(_orderFragmentIDs.length == orderFragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
@@ -144,9 +150,12 @@ contract OrderBook {
       orderFragmentCount: orderFragmentCount
     });
 
-    for (uint256 i = 0; i < orderFragmentCount; i++ ) {
+    // Approve each miner for their respective order fragment
+    for (uint256 i = 0; i < _miners.length; i++ ) {
       orders[_orderID].minersToOrderFragmentIDs[_miners[i]] = _orderFragmentIDs[i];
-      orders[_orderID].minersToOrderFragmentIDs[_minerLeaders[i]] = _orderFragmentIDs[i];
+    }
+    for (uint256 j = 0; j < _minerLeaders.length; j++ ) {
+      orders[_orderID].minersToOrderFragmentIDs[_minerLeaders[j]] = _orderFragmentIDs[j];
     }
 
     orderCount[traderID]++;

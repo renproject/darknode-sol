@@ -394,15 +394,18 @@ contract MinerRegistrar {
   }
 
   // TODO: Allow requesting miners from index i to j (to get miners in batches)
-  function getCurrentMiners() public view returns (bytes20[]) {
+  function getCurrentMiners(uint256 _start, uint256 _end) public view returns (bytes20[]) {
 
-    var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + toDeregisterCount + stayingRegisteredCount;
+    uint256 currentMinerCount = toDeregisterCount + stayingRegisteredCount;
 
-    bytes20[] memory currentMiners = new bytes20[](toDeregisterCount + stayingRegisteredCount);
+    require(_start < _end && _end <= currentMinerCount);
 
-    for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
-      currentMiners[i] = minerList[i + registeredStart];
+    uint256 registered_start = toDeregisterOffset();
+
+    bytes20[] memory currentMiners = new bytes20[](_end - _start);
+
+    for (uint256 i = 0; i < _end - _start; i++) {
+      currentMiners[i] = minerList[i + registered_start + _start];
     }
     return currentMiners;
   }
@@ -430,7 +433,7 @@ contract MinerRegistrar {
   }
 
   function getNextMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
+    return stayingRegisteredCount + toRegisterCount;
   }
 
   function getBond(bytes20 _minerID) public view returns (uint256) {
