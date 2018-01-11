@@ -46,7 +46,6 @@ contract OrderBook {
 	uint8 public orderLimit = 100;
 	uint32 public minimumOrderFee = 100000;
   
-  uint poolCount;
   uint kValue = 5;
 
 	mapping (bytes32 => Order) public orders;
@@ -60,6 +59,9 @@ contract OrderBook {
   event OrderExpired(bytes32 _hash);
 	event OrderClosed(bytes32 _hash);
   event Debug(string msg);
+  event Debug32(bytes32 msg);
+  event DebugBool(bool msg);
+  event DebugInt(uint256 msg);
 
   /** Private functions */
 
@@ -105,8 +107,6 @@ contract OrderBook {
 	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
 
     bytes20 traderID = 9; /* FIXME */
-
-    Debug("....");
     
     uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
     require(_orderFragmentIDs.length == _miners.length);
@@ -120,7 +120,6 @@ contract OrderBook {
     require(ren.transferFrom(msg.sender, address(this), fee));
 
     // MatchFragment[] storage matchFragments;
-    // mapping(bytes20 => bytes20) minersToOrderFragmentIDs;
     
     orders[_orderID] = Order({
       orderID: _orderID,
@@ -134,7 +133,7 @@ contract OrderBook {
       // matchFragments: matchFragments
     });
 
-    for (uint256 i = 0; i < poolCount; i++ ) {
+    for (uint256 i = 0; i < orderFragmentCount; i++ ) {
       orders[_orderID].minersToOrderFragmentIDs[_miners[i]] = _orderFragmentIDs[i];
     }
 
@@ -198,7 +197,7 @@ contract OrderBook {
    * @return True if the miner is authorized to close the order fragment and
    * order is open, false otherwise.
    */
-  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public view returns(bool) {
+  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public returns(bool) {
     return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 

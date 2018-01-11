@@ -157,7 +157,7 @@ module.exports = {
   /**
    * Sort the miners into MNetworks by keccak256(epoch blockhash + miner's precommited seed)
    */
-  GetMNetworks: async (accounts) => {
+  GetMNetworks: async () => {
     const miners = await steps.GetRegisteredMiners();
     const epochHash = await steps.GetEpochBlockhash();
     // Get miner seeds
@@ -180,7 +180,8 @@ module.exports = {
 
     for (let i = 0; i < a; i++) {
       const mIndex = i % p;
-      mNetworks[mIndex].push(miners[i]);
+      const account = accounts[indexMap[miners[i]]];
+      mNetworks[mIndex].push(account);
     }
 
     return mNetworks;

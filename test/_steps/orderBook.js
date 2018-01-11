@@ -20,15 +20,21 @@ let orderBook, ren;
 
 module.exports = {
 
-  CheckOrderFragment: async (orderID, fragmentId, account) => {
-    const check = await orderBook.checkOrderFragment.call(orderID, fragmentId, account.republic);
-    // console.log(bool);
+  CheckOrderFragment: async (orderID, fragmentId, miner) => {
+    const check = await orderBook.checkOrderFragment.call(orderID, fragmentId, miner.republic);
     assert(check, "Invalid order fragment");
   },
 
-  OpenOrder: async (account, orderId, fragmentIds, randomMNetwork, leaderNetwork) => {
-    await steps.ApproveRen(/* from: */ account, /* to: */ orderBook, MINIMUM_ORDER_FEE);
-    await orderBook.openOrder(orderId, fragmentIds, randomMNetwork, leaderNetwork);
+  SubmitOrderFragment: async (outputFragment, zkCommitment, orderID1, orderID2, miner, fragmentID1, fragmentID2) => {
+    // (bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
+    await orderBook.submitOutputFragment(outputFragment, zkCommitment, orderID1, orderID2, miner.republic, fragmentID1, fragmentID2, { from: miner.address });
+  },
+
+  OpenOrder: async (trader, orderId, fragmentIds, randomMNetwork, leaderNetwork) => {
+    await steps.ApproveRen(/* from: */ trader, /* to: */ orderBook, MINIMUM_ORDER_FEE);
+    const randomMNetworkIDs = randomMNetwork.map(account => account.republic);
+    const leaderNetworkIDs = leaderNetwork.map(account => account.republic);
+    await orderBook.openOrder(orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address });
   },
 
 };

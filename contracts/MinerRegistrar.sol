@@ -393,6 +393,7 @@ contract MinerRegistrar {
     return currentEpoch.blockhash;
   }
 
+  // TODO: Allow requesting miners from index i to j (to get miners in batches)
   function getCurrentMiners() public view returns (bytes20[]) {
 
     var registeredStart = toDeregisterOffset();
@@ -448,10 +449,6 @@ contract MinerRegistrar {
   // Allow anyone to see a Republic ID's public key
   function getPublicKey(bytes20 _minerID) public view returns (bytes) {
     return miners[_minerID].publicKey;
-  }
-
-  function getOwner(bytes20 _minerID) public view returns (address) {
-    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
   }
 
   function getMinerID(address _addr) public view returns (bytes20) {
