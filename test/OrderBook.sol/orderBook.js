@@ -90,6 +90,12 @@ contract('Order Book', function () {
     (await steps.IsOrderClosed(orderID_B))
       .should.be.true;
 
+    await Promise.all(utils.range(mNetworkSize).map(
+      i => steps.WithdrawReward(randomMNetwork[i])
+    ));
+
+    // TODO: check withdrawal is successfull
+
     // assert(false); // To see events
 
 

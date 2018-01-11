@@ -49,8 +49,9 @@ contract OrderBook {
   
 	mapping (bytes32 => Order) public orders;
 	mapping (bytes32 => bytes20) owner; // orderID to owner
+  mapping (bytes32 => address) refundAddress;
   mapping (bytes20 => uint) orderCount;
-  mapping (bytes32 => uint) reward;
+  mapping (bytes32 => uint) rewards;
 
   /** Events */
 
@@ -160,6 +161,7 @@ contract OrderBook {
 
     orderCount[traderID]++;
     owner[_orderID] = traderID;
+    refundAddress[_orderID] = msg.sender;
 
 		OrderPlaced(_orderID, traderID);
 	}
@@ -175,7 +177,7 @@ contract OrderBook {
     orders[_orderID].status = STATUS_EXPIRED;
     orderCount[owner[_orderID]]--;
     // TODO: Get address from republic ID
-    // republicToken.transferFrom(address(this), owner[_orderID], orders[_orderID].fee);
+    ren.transferFrom(address(this), refundAddress[_orderID], orders[_orderID].fee);
     delete owner[_orderID];
 		OrderExpired(_orderID);
 	}
@@ -204,7 +206,7 @@ contract OrderBook {
     // reward miners
     for (var i = 0; i < kValue; i++) {
       bytes20 minerID = matchFragments[matchID][i].minerID;
-      reward[minerID] += fee;
+      rewards[minerID] += fee;
     }
     delete owner[_orderID1];
     delete owner[_orderID2];
@@ -227,10 +229,6 @@ contract OrderBook {
     return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
-  function getAddress(bytes20 _minerID) internal returns (address) {
-    return minerRegistrar.getEthereumAddress(_minerID);
-  }
-
   function submitOutputFragment(
       bytes _outputFragment,
       bytes32 _zkCommitment,
@@ -250,7 +248,7 @@ contract OrderBook {
     // TODO: Verify zkCommitment
     
     // Check that msg.sender is the miner
-    require(msg.sender == getAddress(_minerID));
+    require(msg.sender == minerRegistrar.getEthereumAddress(_minerID));
 
     bytes32 matchID = keccak256(_orderID1,_orderID2);
 
@@ -274,10 +272,14 @@ contract OrderBook {
     return orders[_orderID].status == STATUS_CLOSED;
   }
 
-  // function withdrawReward(bytes20 minerID) public {
-  //   require(minerID == miner[msg.sender]);
-  //   republicToken.transfer(msg.sender, reward[minerID]);
-  // }
+  function withdrawReward(bytes20 _minerID) public {
+    // TODO: Should only the owner be allowed to call this?
+    address owner = minerRegistrar.getOwner(_minerID);
+    require(owner == msg.sender);
+    uint256 reward = rewards[_minerID];
+    rewards[_minerID] = 0;
+    ren.transfer(owner, reward);
+  }
 
   function getOutput(bytes32 _orderID) public constant returns(bytes20 none) {
     // TODO: Fix (remove none in return)

@@ -445,6 +445,10 @@ contract MinerRegistrar {
     }
   }
 
+  function getOwner(bytes20 _minerID) public view returns (address) {
+    return miners[_minerID].owner;
+  }
+
   function getSeed(bytes20 _minerID) public view returns (bytes32) {
     return miners[_minerID].seed;
   }

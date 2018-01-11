@@ -41,4 +41,8 @@ module.exports = {
     await orderBook.openOrder(orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address });
   },
 
+  WithdrawReward:
+    (miner) => orderBook.withdrawReward(miner.republic)
+  ,
+
 };
