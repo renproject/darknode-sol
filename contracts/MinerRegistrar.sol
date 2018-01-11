@@ -421,8 +421,8 @@ contract MinerRegistrar {
   function getMNetworkSize() public view returns (uint256) {
     uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
     
-    // If odd, add 1 to become even
-    return log + (log % 2);
+    // If even, add 1 to become odd
+    return log + (1 - (log % 2));
   }
 
   function getCurrentMinerCount() public view returns (uint256) {
@@ -453,6 +453,10 @@ contract MinerRegistrar {
 
   function getMinerID(address _addr) public view returns (bytes20) {
     return addressIDs[_addr];
+  }
+
+  function getEthereumAddress(bytes20 _minerID) public view returns (address) {
+    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
   }
 
   function getBondPendingWithdrawal(bytes20 _minerID) public view returns (uint256) {

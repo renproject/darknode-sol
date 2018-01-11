@@ -9,7 +9,7 @@ const steps = require("../_steps/steps").steps;
 
 
 const traderCount = 2;
-const minerCount = 10;
+const minerCount = 8;
 
 const trader_A = accounts[0];
 const trader_B = accounts[1];
@@ -74,10 +74,16 @@ contract('Order Book', function () {
     ));
 
     // // Submit order fragments
-    // await Promise.all(utils.range(fragmentCount).map(
-    //   // (bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
-    //   i => steps.SubmitOrderFragment(fragments_AB[i], zkCommitments[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
-    // ));
+    const kValue = (fragmentCount - 1) / 2 + 1;
+    console.log(fragmentCount);
+    console.log(kValue);
+    console.log(mNetworks);
+    await Promise.all(utils.range(kValue).map(
+      // (bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
+      i => steps.SubmitOutputFragment(fragments_AB[i], zkCommitments[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
+    ));
+
+    // assert(false); // To see events
 
 
   });

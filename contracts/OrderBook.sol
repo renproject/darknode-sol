@@ -35,8 +35,9 @@ contract OrderBook {
 
     uint256 orderFragmentCount;
     mapping (bytes20 => bytes32) minersToOrderFragmentIDs;
-    // MatchFragment[] matchFragments;
 	}
+
+  mapping(bytes32 => MatchFragment[]) matchFragments;
 
   // TODO: Use enum instead
 	uint8 constant STATUS_OPEN = 1;
@@ -46,8 +47,6 @@ contract OrderBook {
 	uint8 public orderLimit = 100;
 	uint32 public minimumOrderFee = 100000;
   
-  uint kValue = 5;
-
 	mapping (bytes32 => Order) public orders;
 	mapping (bytes32 => bytes20) owner; // orderID to owner
   mapping (bytes20 => uint) orderCount;
@@ -59,11 +58,25 @@ contract OrderBook {
   event OrderExpired(bytes32 _hash);
 	event OrderClosed(bytes32 _hash);
   event Debug(string msg);
+  event DebugAddress(address msg);
   event Debug32(bytes32 msg);
   event DebugBool(bool msg);
   event DebugInt(uint256 msg);
 
+  /** Modifiers */
+  modifier onlyOpenOrder(bytes32 orderID) {
+    require(orders[orderID].status == STATUS_OPEN);
+    _;
+  }
+
   /** Private functions */
+
+  function getKValue(uint256 orderFragmentCount) private pure returns (uint256) {
+    // orderFragmentCount should be odd
+    // assert(orderFragmentCount % 2 == 1);
+    return (orderFragmentCount - 1) / 2 + 1;
+  }
+
 
   /**
    * @notice Verify that an array of miners is registered by calling upon the
@@ -109,6 +122,7 @@ contract OrderBook {
     bytes20 traderID = 9; /* FIXME */
     
     uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
+
     require(_orderFragmentIDs.length == _miners.length);
     require(_orderFragmentIDs.length == orderFragmentCount);
     require(verifyMiners(_miners));
@@ -118,8 +132,6 @@ contract OrderBook {
     uint256 fee = ren.allowance(msg.sender, address(this));
     require(fee >= minimumOrderFee);
     require(ren.transferFrom(msg.sender, address(this), fee));
-
-    // MatchFragment[] storage matchFragments;
     
     orders[_orderID] = Order({
       orderID: _orderID,
@@ -130,11 +142,11 @@ contract OrderBook {
       timestamp: now,
 
       orderFragmentCount: orderFragmentCount
-      // matchFragments: matchFragments
     });
 
     for (uint256 i = 0; i < orderFragmentCount; i++ ) {
       orders[_orderID].minersToOrderFragmentIDs[_miners[i]] = _orderFragmentIDs[i];
+      orders[_orderID].minersToOrderFragmentIDs[_minerLeaders[i]] = _orderFragmentIDs[i];
     }
 
     orderCount[traderID]++;
@@ -167,19 +179,25 @@ contract OrderBook {
    *
 	 * @param _orderID1 The order ID of the first order.
 	 * @param _orderID2 The order ID of the second order.
-   * @param _matches ...
    */
-	function closeOrder(bytes32 _orderID1, bytes32 _orderID2, MatchFragment[] _matches) internal {
+	function closeOrder(bytes32 _orderID1, bytes32 _orderID2) onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2) internal {
+    Debug("Closing order!!!");
+    bytes32 matchID = keccak256(_orderID1,_orderID2);
+
+    uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
+
     // require();
-    uint fee = orders[_orderID1].fee + orders[_orderID2].fee/kValue;
+    uint fee = orders[_orderID1].fee + orders[_orderID2].fee / kValue;
     orders[_orderID1].status = STATUS_CLOSED;
     orders[_orderID2].status = STATUS_CLOSED;
     orderCount[owner[_orderID1]]--;
     orderCount[owner[_orderID2]]--;
-    // TODO: reward miners
-    // for (var i = 0; i < kValue; i++) {
-    //   reward[orders[_matches[i].orderFragmentID1].minerID] += fee;
-    // }
+
+    // reward miners
+    for (var i = 0; i < kValue; i++) {
+      bytes20 minerID = matchFragments[matchID][i].minerID;
+      reward[minerID] += fee;
+    }
     delete owner[_orderID1];
     delete owner[_orderID2];
 		OrderClosed(_orderID1);
@@ -202,24 +220,47 @@ contract OrderBook {
   }
 
   function getAddress(bytes20 _minerID) internal returns (address) {
-    return address(_minerID);
+    return minerRegistrar.getEthereumAddress(_minerID);
   }
 
-  function submitOutputFragment(bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2) public {
-    // TODO: Fix
-    // require(orders[_orderID1].miners[_orderFragmentID1] == _minerID || orders[_orderID1].minerLeaders[_orderFragmentID1] == _minerID);
+  function submitOutputFragment(
+      bytes _outputFragment,
+      bytes32 _zkCommitment,
+      bytes32 _orderID1,
+      bytes32 _orderID2,
+      bytes20 _minerID,
+      bytes32 _orderFragmentID1,
+      bytes32 _orderFragmentID2) public onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2)
+  {
+
+    // Check that the miner has submitted the right fragment IDs
+    require(orders[_orderID1].minersToOrderFragmentIDs[_minerID] == _orderFragmentID1);
+    require(orders[_orderID2].minersToOrderFragmentIDs[_minerID] == _orderFragmentID2);
+
+    // TODO: Check that the orders have the same orderFragmentCount?
+    
+    // TODO: Verify zkCommitment
+    
+    // Check that msg.sender is the miner
     require(msg.sender == getAddress(_minerID));
 
-    // bytes32 matchID = keccak256(_orderID1,_orderID2);
+    bytes32 matchID = keccak256(_orderID1,_orderID2);
+
+    // New matchFragment
     MatchFragment storage matchFragment;
     matchFragment.outputFragment = _outputFragment;
     matchFragment.zkCommitment = _zkCommitment;
     matchFragment.minerID = _minerID;
-    // TODO: Fix
-    // orders[_orderID1].matchFragments[matchID].push(matchFragment);
-    // if (orders[_orderID1].matches[matchID].length == kValue && orders[_orderID1].matches[matchID] == orders[_orderID2].matches[matchID]) {
-    //   closeOrder(_orderID1, _orderID2, orders[_orderID1].matches[matchID]);
-    // }
+    
+
+    matchFragments[matchID].push(matchFragment);
+    uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
+    uint256 length = matchFragments[matchID].length;
+    DebugInt(length);
+    DebugInt(kValue);
+    if (length == kValue) {
+      closeOrder(_orderID1, _orderID2);
+    }
   }
 
   // function withdrawReward(bytes32 minerID) public {
