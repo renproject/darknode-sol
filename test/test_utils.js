@@ -76,17 +76,28 @@ function assertEventsEqual(event, expected) {
 }
 
 // https://github.com/ethereum/solidity/blob/060b2c2b23da99836eb54dc30eb7d870016bcb7a/libsolidity/ast/Types.cpp#L730
-const seconds = 1;
-const minutes = seconds * 60; // 60
-const hours = minutes * 60; // 3600
-const days = hours * 24; // 86400
 
-function sleep(seconds) {
-  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-}
+const utils = {
+  seconds = 1,
+  minutes = seconds * 60, // 60
+  hours = minutes * 60, // 3600
+  days = hours * 24, // 86400
 
-function range(n) {
-  return Array.from(Array(n).keys());
+  sleep:
+    (seconds) => new Promise(resolve => setTimeout(resolve, utils.seconds * 1000))
+  ,
+
+  range:
+    (n) => Array.from(Array(n).keys())
+  ,
+
+  randomHash:
+    () => web3.sha3((Math.random() * Number.MAX_SAFE_INTEGER).toString())
+  ,
+
+  randomBytes:
+    () => web3.sha3((Math.random() * Number.MAX_SAFE_INTEGER).toString())
+  ,
 }
 
 
@@ -98,10 +109,5 @@ module.exports = {
   logTx: logTx,
   printCosts: printCosts,
   assertEventsEqual: assertEventsEqual,
-  days: days,
-  hours: hours,
-  minutes: minutes,
-  seconds: seconds,
-  sleep: sleep,
-  range: range,
+  ...utils,
 }

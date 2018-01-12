@@ -358,10 +358,23 @@ contract OrderBook {
    * @notice Get the status of an order
    *
    * @param _orderID The ID of the order
-   * @return The status as a number, corresponding to the enum { Open, Expired, Closed }
+   * @return The status as a number?, corresponding to the enum { Open, Expired, Closed }
    */
-  function getStatus(bytes32 _orderID) public view returns (Status) {
+  function getOrderStatus(bytes32 _orderID) public view returns (Status) {
     return orders[_orderID].status;
+  }
+
+  /**
+   * @notice Get the status of a match
+   *
+   * @param _matchID The ID of the match
+   * @return The status as a number?, corresponding to the enum { Open, Expired, Closed }
+   */
+  function getMatchStatus(bytes32 _matchID) public view returns (Status) {
+    Status status1 = orders[matches[_matchID].orderID1].status;
+    Status status2 = orders[matches[_matchID].orderID2].status;
+    require(status1 == status2);
+    return status1;
   }
 
   /**

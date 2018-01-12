@@ -16,11 +16,7 @@ const trader_B = accounts[1];
 const miners = accounts.slice(traderCount, traderCount + minerCount);
 let mNetworks;
 
-const randomHash =
-  () => web3.sha3((Math.random() * Number.MAX_SAFE_INTEGER).toString());
-
-const randomBytes =
-  () => web3.sha3((Math.random() * Number.MAX_SAFE_INTEGER).toString());
+const MINIMUM_ORDER_FEE = 100000;
 
 contract('Order Book', function () {
 
@@ -51,58 +47,35 @@ contract('Order Book', function () {
 
     const fragmentCount = (await steps.GetMNetworkSize()).toNumber();
 
-    console.log(`Sizes: ${mNetworks.map(m => m.length)}. k: ${(fragmentCount - 1) / 2 + 1}`);
+    const { orderID: orderID_A, fragmentIDs: fragmentIDs_A } = steps.GenerateOrder(fragmentCount);
+    const { orderID: orderID_B, fragmentIDs: fragmentIDs_B } = steps.GenerateOrder(fragmentCount);
 
-    // Random values for testing
-    const orderID_A = randomHash();
-    const orderID_B = randomHash();
-    const totalFee = 100000 * 2;
-    // const zkCommitments = (utils.range(fragmentCount)).map(i => randomHash());
-    const fragmentIds_A = (utils.range(fragmentCount)).map(i => randomHash());
-    const fragmentIds_B = (utils.range(fragmentCount)).map(i => randomHash());
-    const fragments_AB = (utils.range(fragmentCount)).map(i => randomBytes());
-    const randomMNetwork = mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))];
-    const mNetworkSize = randomMNetwork.length;
+    const { outputFragments } = steps.CombineFragments(fragmentIDs_A, fragmentIDs_B)
+
+    const mNetwork = steps.mNetwork(mNetworks);
     const leaderNetwork = mNetworks[0];
 
-    await steps.OpenOrder(trader_A, orderID_A, fragmentIds_A, randomMNetwork, leaderNetwork);
-    await steps.OpenOrder(trader_B, orderID_B, fragmentIds_B, randomMNetwork, leaderNetwork);
+    await steps.OpenOrder(trader_A, orderID_A, fragmentIDs_A, mNetwork, leaderNetwork);
+    await steps.OpenOrder(trader_B, orderID_B, fragmentIDs_B, mNetwork, leaderNetwork);
 
+    await steps.CheckFragments(orderID_A, fragmentIDs_A, mNetwork);
+    await steps.CheckFragments(orderID_B, fragmentIDs_B, mNetwork);
 
-    // Check order_A's fragments
-    await Promise.all(utils.range(mNetworkSize).map(
-      i => steps.CheckOrderFragment(orderID_A, fragmentIds_A[i], randomMNetwork[i])
-    ));
-
-    // Check order_B's fragments
-    await Promise.all(utils.range(mNetworkSize).map(
-      i => steps.CheckOrderFragment(orderID_B, fragmentIds_B[i], randomMNetwork[i])
-    ));
-
-    // // Submit order fragments
-    const kValue = (fragmentCount - 1) / 2 + 1;
-    await Promise.all(utils.range(kValue).map(
-      // (bytes _outputFragment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
-      i => steps.SubmitOutputFragment(fragments_AB[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
-    ));
+    await steps.SubmitOutputFragments(outputFragments, orderID_A, orderID_B, mNetwork, fragmentIDs_A, fragmentIDs_B);
 
     (await steps.OrdersDidMatch(orderID_A, trader_A, orderID_B, trader_B))
       .should.be.true;
 
-    for (let i = 0; i < kValue; i++) {
-      (await steps.WithdrawReward(randomMNetwork[i]))
-        .should.be.bignumber.equal(Math.floor(totalFee / kValue));
-    }
-
-    // assert(false); // To see events
-
+    const kValue = steps.GetKValue(fragmentCount);
+    (await steps.WithdrawRewards(mNetwork))
+      .should.be.bignumber.equal(Math.floor(2 * MINIMUM_ORDER_FEE / kValue) * kValue);
 
   });
 
 
-  // // Log costs
-  // after("log costs", () => {
-  //   utils.printCosts();
-  // });
+  // Log costs
+  after("log costs", () => {
+    utils.printCosts();
+  });
 
 });

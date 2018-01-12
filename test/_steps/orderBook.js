@@ -20,13 +20,47 @@ let orderBook, ren;
 
 module.exports = {
 
+  GenerateOrder: (fragmentCount) => {
+    return {
+      orderID: utils.randomHash(),
+      fragmentIDs: (utils.range(fragmentCount)).map(i => utils.randomHash()),
+    }
+  },
+
+  CombineFragments:
+    (fragmentIDs_A, fragmentIDs_B) => (utils.range(fragmentIDs_A.length)).map(i => randomBytes())
+  ,
+
+  randomMNetwork:
+    (mNetwork) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
+  ,
+
+  CheckOrderFragments: (orderID, fragmentIDs, mNetwork) => { // async
+    // Check orders fragments
+    return Promise.all(mNetwork.map(
+      (miner, i) => steps.CheckOrderFragment(orderID, fragmentIDs[i], miner)
+    ));
+  },
+
   CheckOrderFragment: async (orderID, fragmentId, miner) => {
     (await orderBook.checkOrderFragment.call(orderID, fragmentId, miner.republic))
       .should.be.true;
   },
 
+  GetKValue:
+    (fragmentCount) => (fragmentCount - 1) / 2 + 1
+  ,
+
+  SubmitOutputFragments: (outputFragments, orderID_A, orderID_B, mNetwork, fragmentIDs_A, fragmentIDs_B) => { // async
+    // Submit order fragments
+    const kValue = steps.GetKValue(outputFragments.length);
+    return Promise.all(utils.range(kValue).map(
+      i => steps.SubmitOutputFragment(outputFragments[i], orderID_A, orderID_B, mNetwork[i], fragmentIDs_A[i], fragmentIDs_B[i])
+    ));
+  },
+
   SubmitOutputFragment: async (outputFragment, orderID1, orderID2, miner, fragmentID1, fragmentID2) => {
-    await orderBook.submitOutputFragment(outputFragment, orderID1, orderID2, miner.republic, fragmentID1, fragmentID2, { from: miner.address });
+    await utils.logTx("Submitting fragment", orderBook.submitOutputFragment(outputFragment, orderID1, orderID2, miner.republic, fragmentID1, fragmentID2, { from: miner.address }));
   },
 
   GetMatchedOrder: async (_orderID) => {
@@ -38,13 +72,17 @@ module.exports = {
     await steps.ApproveRen(/* from: */ trader, /* to: */ orderBook, MINIMUM_ORDER_FEE);
     const randomMNetworkIDs = randomMNetwork.map(account => account.republic);
     const leaderNetworkIDs = leaderNetwork.map(account => account.republic);
-    await orderBook.openOrder(trader.republic, orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address });
+    await utils.logTx("Opening order", orderBook.openOrder(trader.republic, orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address }));
   },
+
+  WithdrawRewards:
+    (mNetwork) => Promise.all(mNetwork.map(miner => steps.WithdrawReward(mNetwork[i])))
+  ,
 
   WithdrawReward: async (miner) => {
     // TODO: Check Ren balance instead of getReward
     const reward = await orderBook.getReward(miner.republic);
-    await orderBook.withdrawReward(miner.republic, { from: miner.address });
+    await utils.logTx("Withdrawing miner reward", orderBook.withdrawReward(miner.republic, { from: miner.address }));
     return reward;
   },
 
