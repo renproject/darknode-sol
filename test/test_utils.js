@@ -75,16 +75,21 @@ function assertEventsEqual(event, expected) {
   return true;
 }
 
+const seconds = 1;
+const minutes = seconds * 60; // 60
+const hours = minutes * 60; // 3600
+const days = hours * 24; // 86400
+
 // https://github.com/ethereum/solidity/blob/060b2c2b23da99836eb54dc30eb7d870016bcb7a/libsolidity/ast/Types.cpp#L730
 
 const utils = {
-  seconds = 1,
-  minutes = seconds * 60, // 60
-  hours = minutes * 60, // 3600
-  days = hours * 24, // 86400
+  seconds,
+  minutes,
+  hours,
+  days,
 
   sleep:
-    (seconds) => new Promise(resolve => setTimeout(resolve, utils.seconds * 1000))
+    (seconds) => new Promise(resolve => setTimeout(resolve, seconds * 1000))
   ,
 
   range:

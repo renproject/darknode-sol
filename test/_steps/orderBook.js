@@ -28,11 +28,11 @@ module.exports = {
   },
 
   CombineFragments:
-    (fragmentIDs_A, fragmentIDs_B) => (utils.range(fragmentIDs_A.length)).map(i => randomBytes())
+    (fragmentIDs_A, fragmentIDs_B) => (utils.range(fragmentIDs_A.length)).map(i => utils.randomBytes())
   ,
 
-  randomMNetwork:
-    (mNetwork) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
+  RandomMNetwork:
+    (mNetworks) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
   ,
 
   CheckOrderFragments: (orderID, fragmentIDs, mNetwork) => { // async
@@ -75,9 +75,16 @@ module.exports = {
     await utils.logTx("Opening order", orderBook.openOrder(trader.republic, orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address }));
   },
 
-  WithdrawRewards:
-    (mNetwork) => Promise.all(mNetwork.map(miner => steps.WithdrawReward(mNetwork[i])))
-  ,
+  WithdrawRewards: async (mNetwork) => {
+    let sum = 0;
+    for (let i = 0; i < mNetwork.length; i++) {
+      // Do it in this direction in order to now have to require bignumber.js
+      const reward = await orderBook.getReward.call(mNetwork[i].republic);
+      sum = reward.add(sum);
+    }
+    Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
+    return sum;
+  },
 
   WithdrawReward: async (miner) => {
     // TODO: Check Ren balance instead of getReward

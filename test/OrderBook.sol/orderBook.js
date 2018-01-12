@@ -50,16 +50,16 @@ contract('Order Book', function () {
     const { orderID: orderID_A, fragmentIDs: fragmentIDs_A } = steps.GenerateOrder(fragmentCount);
     const { orderID: orderID_B, fragmentIDs: fragmentIDs_B } = steps.GenerateOrder(fragmentCount);
 
-    const { outputFragments } = steps.CombineFragments(fragmentIDs_A, fragmentIDs_B)
+    const outputFragments = steps.CombineFragments(fragmentIDs_A, fragmentIDs_B)
 
-    const mNetwork = steps.mNetwork(mNetworks);
+    const mNetwork = steps.RandomMNetwork(mNetworks);
     const leaderNetwork = mNetworks[0];
 
     await steps.OpenOrder(trader_A, orderID_A, fragmentIDs_A, mNetwork, leaderNetwork);
     await steps.OpenOrder(trader_B, orderID_B, fragmentIDs_B, mNetwork, leaderNetwork);
 
-    await steps.CheckFragments(orderID_A, fragmentIDs_A, mNetwork);
-    await steps.CheckFragments(orderID_B, fragmentIDs_B, mNetwork);
+    await steps.CheckOrderFragments(orderID_A, fragmentIDs_A, mNetwork);
+    await steps.CheckOrderFragments(orderID_B, fragmentIDs_B, mNetwork);
 
     await steps.SubmitOutputFragments(outputFragments, orderID_A, orderID_B, mNetwork, fragmentIDs_A, fragmentIDs_B);
 
