@@ -1,6 +1,6 @@
 
-const utils = require("../test_utils");
-const { accounts, indexMap } = require("../accounts");
+const utils = require("../_helpers/test_utils");
+const { accounts, indexMap } = require("../_helpers/accounts");
 var config = require("../../republic-config");
 
 /**

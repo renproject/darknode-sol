@@ -1,9 +1,9 @@
 
-const utils = require("../test_utils");
+const utils = require("../_helpers/test_utils");
 const config = require("../../republic-config");
 const steps = require('./steps').steps;
 
-const { accounts, indexMap } = require("../accounts");
+const { accounts, indexMap } = require("../_helpers/accounts");
 
 // Todo: put into config file
 const MINIMUM_ORDER_FEE = 100000;

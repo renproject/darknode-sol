@@ -4,4 +4,4 @@
 accountNumber=${1:-10}
 echo "Starting with $accountNumber accounts..."
 
-$(npm bin)/ganache-cli --accounts $accountNumber --seed republic --acctKeys ./test/privateKeys.json
+$(npm bin)/ganache-cli --accounts $accountNumber -d --acctKeys ./test/_helpers/privateKeys.json

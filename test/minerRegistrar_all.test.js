@@ -3,9 +3,9 @@ chai.use(require('chai-as-promised'));
 chai.use(require('chai-bignumber')());
 chai.should();
 
-const utils = require("../test_utils");
-const { accounts } = require("../accounts");
-const steps = require("../_steps/steps").steps;
+const utils = require("./_helpers/test_utils");
+const { accounts } = require("./_helpers/accounts");
+const steps = require("./_steps/steps").steps;
 
 
 
@@ -16,7 +16,9 @@ const steps = require("../_steps/steps").steps;
  * 
  */
 
-contract('Miner Registar (all miners)', function () {
+contract('Miner Registar (all miners)', function (acc) {
+
+  console.log(acc);
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
