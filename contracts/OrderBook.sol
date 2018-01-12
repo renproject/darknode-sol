@@ -240,7 +240,7 @@ contract OrderBook {
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
 
     // require();
-    uint fee = orders[_orderID1].fee + orders[_orderID2].fee / kValue;
+    uint fee = (orders[_orderID1].fee + orders[_orderID2].fee) / kValue;
     orders[_orderID1].status = Status.Closed;
     orders[_orderID2].status = Status.Closed;
 
@@ -254,7 +254,7 @@ contract OrderBook {
     // reward miners
     for (uint256 i = 0; i < kValue; i++) {
       bytes20 minerID = matches[matchID].matchFragments[i].minerID;
-      rewards[minerID] += fee / kValue;
+      rewards[minerID] += fee;
     }
     // TODO: Do something with remainder
     // uint256 sum = (fee / kValue) * kValue;
@@ -345,10 +345,20 @@ contract OrderBook {
   }
 
   /**
+   * @notice Get the reward amount a miner can withdraw
+   *
+   * @param _minerID The ID of the miner
+   * @return The reward in Ren?
+   */
+  function getReward(bytes20 _minerID) public view returns (uint256) {
+    return rewards[_minerID];
+  }
+
+  /**
    * @notice Get the status of an order
    *
    * @param _orderID The ID of the order
-   * @returns The status as a number, corresponding to the enum { Open, Expired, Closed }
+   * @return The status as a number, corresponding to the enum { Open, Expired, Closed }
    */
   function getStatus(bytes32 _orderID) public view returns (Status) {
     return orders[_orderID].status;
@@ -358,8 +368,8 @@ contract OrderBook {
    * @notice Get the corresponding matched order
    *
    * @param _orderID The ID of the order to find of the match of
-   * @returns matchedOrderID The ID of the matched order
-   * @returns matchedTraderID the ID of the matched order's trader
+   * @return matchedOrderID The ID of the matched order
+   * @return matchedTraderID the ID of the matched order's trader
    */
   function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns (bytes32 matchedOrderID, bytes20 matchedTraderID) {
     bytes32 matchID = orderMatch[_orderID];

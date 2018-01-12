@@ -56,6 +56,7 @@ contract('Order Book', function () {
     // Random values for testing
     const orderID_A = randomHash();
     const orderID_B = randomHash();
+    const totalFee = 100000 * 2;
     // const zkCommitments = (utils.range(fragmentCount)).map(i => randomHash());
     const fragmentIds_A = (utils.range(fragmentCount)).map(i => randomHash());
     const fragmentIds_B = (utils.range(fragmentCount)).map(i => randomHash());
@@ -88,11 +89,10 @@ contract('Order Book', function () {
     (await steps.OrdersDidMatch(orderID_A, trader_A, orderID_B, trader_B))
       .should.be.true;
 
-    await Promise.all(utils.range(mNetworkSize).map(
-      i => steps.WithdrawReward(randomMNetwork[i])
-    ));
-
-    // TODO: check withdrawal is successfull
+    for (let i = 0; i < kValue; i++) {
+      (await steps.WithdrawReward(randomMNetwork[i]))
+        .should.be.bignumber.equal(Math.floor(totalFee / kValue));
+    }
 
     // assert(false); // To see events
 

@@ -41,9 +41,12 @@ module.exports = {
     await orderBook.openOrder(trader.republic, orderId, fragmentIds, randomMNetworkIDs, leaderNetworkIDs, { from: trader.address });
   },
 
-  WithdrawReward:
-    (miner) => orderBook.withdrawReward(miner.republic, { from: miner.address })
-  ,
+  WithdrawReward: async (miner) => {
+    // TODO: Check Ren balance instead of getReward
+    const reward = await orderBook.getReward(miner.republic);
+    await orderBook.withdrawReward(miner.republic, { from: miner.address });
+    return reward;
+  },
 
   OrdersDidMatch: async (orderID_A, trader_A, orderID_B, trader_B) => {
     const { orderID: matchedOrderID_A, traderID: matchedTraderID_A } = await steps.GetMatchedOrder(orderID_A);
