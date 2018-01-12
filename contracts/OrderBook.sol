@@ -21,8 +21,6 @@ contract OrderBook {
     bytes32 orderFragmentID1;
     bytes32 orderFragmentID2;
     bytes outputFragment;
-
-    bytes32 zkCommitment; // bytes
   }
 
   struct Match {
@@ -36,7 +34,7 @@ contract OrderBook {
     bytes32 orderID;
     bytes20 traderID;
 
-		uint8 status;
+		Status status;
     uint256 fee;
     uint256 timestamp;
 
@@ -45,21 +43,20 @@ contract OrderBook {
 	}
 
   // Matched order (orderID => matchID)
+  // This could instead be a match from an order to another order
   mapping(bytes32 => bytes32) orderMatch;
 
   // Mapping from matchIDs to their matches
   mapping(bytes32 => Match) matches;
 
   // TODO: Use enum instead
-	uint8 constant STATUS_OPEN = 1;
-	uint8 constant STATUS_EXPIRED = 2;
-	uint8 constant STATUS_CLOSED = 3;
+  enum Status { Open, Expired, Closed }
 
 	uint8 public orderLimit = 100;
 	uint32 public minimumOrderFee = 100000;
   
 	mapping (bytes32 => Order) public orders;
-	mapping (bytes32 => bytes20) owner; // orderID to owner
+	mapping (bytes32 => bytes20) owners; // orderID to owner
   mapping (bytes32 => address) refundAddress;
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) rewards;
@@ -77,7 +74,12 @@ contract OrderBook {
 
   /** Modifiers */
   modifier onlyOpenOrder(bytes32 orderID) {
-    require(orders[orderID].status == STATUS_OPEN);
+    require(orders[orderID].status == Status.Open);
+    _;
+  }
+
+  modifier onlyClosedOrder(bytes32 orderID) {
+    require(orders[orderID].status == Status.Closed);
     _;
   }
 
@@ -136,14 +138,13 @@ contract OrderBook {
   /**
   * @notice Traders call this function to open an order.
   *
+  * @param _traderID The trader's ID
 	* @param _orderID The hash of the order.
   * @param _orderFragmentIDs The list of hashes of the fragments.
   * @param _miners The list of miners that are authorized to close the order.
   * @param _minerLeaders ...
   */
-	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
-
-    bytes20 traderID = 9; /* FIXME */
+	function openOrder(bytes20 _traderID, bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
     
     uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
 
@@ -157,7 +158,7 @@ contract OrderBook {
     require(_orderFragmentIDs.length == orderFragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
-    require(orderCount[traderID] < orderLimit);
+    require(orderCount[_traderID] < orderLimit);
     
     uint256 fee = ren.allowance(msg.sender, address(this));
     require(fee >= minimumOrderFee);
@@ -165,9 +166,9 @@ contract OrderBook {
     
     orders[_orderID] = Order({
       orderID: _orderID,
-      traderID: traderID,
+      traderID: _traderID,
       
-      status: STATUS_OPEN,
+      status: Status.Open,
       fee: fee,
       timestamp: now,
 
@@ -182,11 +183,11 @@ contract OrderBook {
       orders[_orderID].minersToOrderFragmentIDs[_minerLeaders[j]] = _orderFragmentIDs[j];
     }
 
-    orderCount[traderID]++;
-    owner[_orderID] = traderID;
+    orderCount[_traderID]++;
+    owners[_orderID] = _traderID;
     refundAddress[_orderID] = msg.sender;
 
-		OrderPlaced(_orderID, traderID);
+		OrderPlaced(_orderID, _traderID);
 	}
 
 	/**
@@ -197,11 +198,11 @@ contract OrderBook {
    */
 	function expireOrder(bytes32 _orderID) public {
 		require(now - orders[_orderID].timestamp > 2 days);
-    orders[_orderID].status = STATUS_EXPIRED;
-    orderCount[owner[_orderID]]--;
+    orders[_orderID].status = Status.Expired;
+    orderCount[owners[_orderID]]--;
     // TODO: Get address from republic ID
     ren.transferFrom(address(this), refundAddress[_orderID], orders[_orderID].fee);
-    delete owner[_orderID];
+    delete owners[_orderID];
 		OrderExpired(_orderID);
 	}
 
@@ -223,20 +224,23 @@ contract OrderBook {
 
     // require();
     uint fee = orders[_orderID1].fee + orders[_orderID2].fee / kValue;
-    orders[_orderID1].status = STATUS_CLOSED;
-    orders[_orderID2].status = STATUS_CLOSED;
+    orders[_orderID1].status = Status.Closed;
+    orders[_orderID2].status = Status.Closed;
+
+    orderMatch[_orderID1] = matchID;
+    orderMatch[_orderID2] = matchID;
 
     // Decrease order counts of each trader
-    orderCount[owner[_orderID1]]--;
-    orderCount[owner[_orderID2]]--;
+    orderCount[owners[_orderID1]]--;
+    orderCount[owners[_orderID2]]--;
 
     // reward miners
     for (uint256 i = 0; i < kValue; i++) {
       bytes20 minerID = matches[matchID].matchFragments[i].minerID;
       rewards[minerID] += fee;
     }
-    delete owner[_orderID1];
-    delete owner[_orderID2];
+    delete owners[_orderID1];
+    delete owners[_orderID2];
 		OrderClosed(_orderID1);
     OrderClosed(_orderID2);
 	}
@@ -253,12 +257,11 @@ contract OrderBook {
    * order is open, false otherwise.
    */
   function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public returns(bool) {
-    return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
+    return (orders[_orderID].status == Status.Open && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
   function submitOutputFragment(
       bytes _outputFragment,
-      bytes32 _zkCommitment,
       bytes32 _orderID1,
       bytes32 _orderID2,
       bytes20 _minerID,
@@ -268,25 +271,25 @@ contract OrderBook {
 
     // Check that the miner has submitted the right fragment IDs
     require(orders[_orderID1].minersToOrderFragmentIDs[_minerID] == _orderFragmentID1);
+    require(_orderFragmentID1 != 0x0);
     require(orders[_orderID2].minersToOrderFragmentIDs[_minerID] == _orderFragmentID2);
+    require(_orderFragmentID2 != 0x0);
 
     // TODO: Check that the orders have the same orderFragmentCount?
-    
-    // TODO: Verify zkCommitment
-    
+        
     // Check that msg.sender is the miner
     require(msg.sender == minerRegistrar.getEthereumAddress(_minerID));
 
     bytes32 matchID = getMatchID(_orderID2,_orderID1);
 
     // New matchFragment
-    MatchFragment storage matchFragment;
-    matchFragment.outputFragment = _outputFragment;
-    matchFragment.zkCommitment = _zkCommitment;
-    matchFragment.minerID = _minerID;
-    
+    matches[matchID].matchFragments.push(MatchFragment({
+      outputFragment: _outputFragment,
+      minerID: _minerID,
+      orderFragmentID1: _orderFragmentID1,
+      orderFragmentID2: _orderFragmentID2
+    }));
 
-    matches[matchID].matchFragments.push(matchFragment);
     uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
     uint256 length = matches[matchID].matchFragments.length;
     if (length == kValue) {
@@ -294,39 +297,28 @@ contract OrderBook {
     }
   }
 
-  // TODO: Replace with getOrderStatus
-  function isOrderClosed(bytes32 _orderID) public returns(bool) {
-    return orders[_orderID].status == STATUS_CLOSED;
-  }
-
   function withdrawReward(bytes20 _minerID) public {
-    // TODO: Should only the owner be allowed to call this?
     address owner = minerRegistrar.getOwner(_minerID);
+
+    // Should anyone be able to call this?
     require(owner == msg.sender);
+
     uint256 reward = rewards[_minerID];
     rewards[_minerID] = 0;
     ren.transfer(owner, reward);
   }
 
-  function getMatchedOrder(bytes32 _orderID) public constant returns(bytes32) {
-    require(orders[_orderID].status == STATUS_CLOSED);
+  function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns(bytes32 matchedOrderID, bytes20 traderID) {
     bytes32 matchID = orderMatch[_orderID];
+    bytes32 otherID;
     if (_orderID == matches[matchID].orderID1) {
-      return matches[matchID].orderID2;
+      otherID = matches[matchID].orderID2;
     } else if (_orderID == matches[matchID].orderID2) {
-      return matches[matchID].orderID1;
+      otherID = matches[matchID].orderID1;
     } else {
-      assert(false);
+      // revert();
     }
-  }
 
-  function getProofs(bytes32 _orderID) public constant returns(bytes32[]) {
-    require(orders[_orderID].status == STATUS_CLOSED);
-    bytes32[] storage zkCommitments;
-    // TODO: Fix
-    // for (var i = 0; i < orders[_orderID].outputs.length; i++) {
-    //   zkCommitments.push(orders[_orderID].outputs[i].zkCommitment);
-    // }
-    return zkCommitments;
+    return (otherID, orders[otherID].traderID);
   }
 }

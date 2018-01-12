@@ -56,7 +56,7 @@ contract('Order Book', function () {
     // Random values for testing
     const orderID_A = randomHash();
     const orderID_B = randomHash();
-    const zkCommitments = (utils.range(fragmentCount)).map(i => randomHash());
+    // const zkCommitments = (utils.range(fragmentCount)).map(i => randomHash());
     const fragmentIds_A = (utils.range(fragmentCount)).map(i => randomHash());
     const fragmentIds_B = (utils.range(fragmentCount)).map(i => randomHash());
     const fragments_AB = (utils.range(fragmentCount)).map(i => randomBytes());
@@ -81,14 +81,20 @@ contract('Order Book', function () {
     // // Submit order fragments
     const kValue = (fragmentCount - 1) / 2 + 1;
     await Promise.all(utils.range(kValue).map(
-      // (bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
-      i => steps.SubmitOutputFragment(fragments_AB[i], zkCommitments[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
+      // (bytes _outputFragment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2)
+      i => steps.SubmitOutputFragment(fragments_AB[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
     ));
 
-    (await steps.IsOrderClosed(orderID_A))
-      .should.be.true;
-    (await steps.IsOrderClosed(orderID_B))
-      .should.be.true;
+    (await steps.GetMatchedOrder(orderID_A))
+      .should.deep.equal({
+        orderID: orderID_B,
+        traderID: trader_B.republic
+      });
+    (await steps.GetMatchedOrder(orderID_B))
+      .should.deep.equal({
+        orderID: orderID_A,
+        traderID: trader_A.republic
+      });
 
     // await Promise.all(utils.range(mNetworkSize).map(
     //   i => steps.WithdrawReward(randomMNetwork[i])
