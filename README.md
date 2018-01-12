@@ -34,12 +34,6 @@ Run the Truffle test suite.
 truffle test
 ```
 
-## Republic
+## License
 
 The Ethereum Republic library was developed by the Republic Protocol team and is available under the MIT license. For more information, see our website https://republicprotocol.com.
-
-## Contributors
-
-* Noah noah@republicprotocol.com
-* Susruth susruth@republicprotocol.com
-* Loong loong@republicprotocol.com
