@@ -73,22 +73,39 @@ contract OrderBook {
   event DebugInt(uint256 msg);
 
   /** Modifiers */
-  modifier onlyOpenOrder(bytes32 orderID) {
-    require(orders[orderID].status == Status.Open);
+
+  /**
+   * @notice Only allow for orders that are currently open
+   *
+   * @param _orderID The ID of the order that must be open
+   */
+  modifier onlyOpenOrder(bytes32 _orderID) {
+    require(orders[_orderID].status == Status.Open);
     _;
   }
 
-  modifier onlyClosedOrder(bytes32 orderID) {
-    require(orders[orderID].status == Status.Closed);
+  /**
+   * @notice Only allow for orders that are currently closed
+   *
+   * @param _orderID The ID of the order that must be closed
+   */
+  modifier onlyClosedOrder(bytes32 _orderID) {
+    require(orders[_orderID].status == Status.Closed);
     _;
   }
 
   /** Private functions */
 
-  function getKValue(uint256 orderFragmentCount) private pure returns (uint256) {
+  /**
+   * Calculate the K value (number of fragments needed to be combined)
+   * Should this be passed in or calculated deterministically?
+   *
+   * @param _orderFragmentCount The total number of fragments created
+   */
+  function getKValue(uint256 _orderFragmentCount) private pure returns (uint256) {
     // orderFragmentCount should be odd
     // assert(orderFragmentCount % 2 == 1);
-    return (orderFragmentCount - 1) / 2 + 1;
+    return (_orderFragmentCount - 1) / 2 + 1;
   }
 
 
@@ -201,7 +218,7 @@ contract OrderBook {
     orders[_orderID].status = Status.Expired;
     orderCount[owners[_orderID]]--;
     // TODO: Get address from republic ID
-    ren.transferFrom(address(this), refundAddress[_orderID], orders[_orderID].fee);
+    ren.transfer(refundAddress[_orderID], orders[_orderID].fee);
     delete owners[_orderID];
 		OrderExpired(_orderID);
 	}
@@ -237,8 +254,10 @@ contract OrderBook {
     // reward miners
     for (uint256 i = 0; i < kValue; i++) {
       bytes20 minerID = matches[matchID].matchFragments[i].minerID;
-      rewards[minerID] += fee;
+      rewards[minerID] += fee / kValue;
     }
+    // TODO: Do something with remainder
+    // uint256 sum = (fee / kValue) * kValue;
     delete owners[_orderID1];
     delete owners[_orderID2];
 		OrderClosed(_orderID1);
@@ -260,6 +279,17 @@ contract OrderBook {
     return (orders[_orderID].status == Status.Open && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
+  /**
+   * @notice Submit an output fragment for a match. Once enough have been submitted,
+   * the order is closed.
+   *
+   * @param _outputFragment ...
+   * @param _orderID1 ...
+   * @param _orderID2 ...
+   * @param _minerID ...
+   * @param _orderFragmentID1 ...
+   * @param _orderFragmentID2 ...
+   */
   function submitOutputFragment(
       bytes _outputFragment,
       bytes32 _orderID1,
@@ -297,6 +327,12 @@ contract OrderBook {
     }
   }
 
+  /**
+   * @notice Allow a miner to withdraw their reward to the Ethereum address used
+   * to register them
+   *
+   * @param _minerID The ID of the miner
+   */
   function withdrawReward(bytes20 _minerID) public {
     address owner = minerRegistrar.getOwner(_minerID);
 
@@ -308,10 +344,23 @@ contract OrderBook {
     ren.transfer(owner, reward);
   }
 
+  /**
+   * @notice Get the status of an order
+   *
+   * @param _orderID The ID of the order
+   * @returns The status as a number, corresponding to the enum { Open, Expired, Closed }
+   */
   function getStatus(bytes32 _orderID) public view returns (Status) {
     return orders[_orderID].status;
   }
 
+  /**
+   * @notice Get the corresponding matched order
+   *
+   * @param _orderID The ID of the order to find of the match of
+   * @returns matchedOrderID The ID of the matched order
+   * @returns matchedTraderID the ID of the matched order's trader
+   */
   function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns (bytes32 matchedOrderID, bytes20 matchedTraderID) {
     bytes32 matchID = orderMatch[_orderID];
     if (_orderID == matches[matchID].orderID1) {
@@ -319,7 +368,7 @@ contract OrderBook {
     } else if (_orderID == matches[matchID].orderID2) {
       matchedOrderID = matches[matchID].orderID1;
     } else {
-      // revert();
+      revert();
     }
 
     matchedTraderID = orders[matchedOrderID].traderID;

@@ -42,7 +42,7 @@ module.exports = {
   },
 
   WithdrawReward:
-    (miner) => orderBook.withdrawReward(miner.republic)
+    (miner) => orderBook.withdrawReward(miner.republic, { from: miner.address })
   ,
 
   OrdersDidMatch: async (orderID_A, trader_A, orderID_B, trader_B) => {
