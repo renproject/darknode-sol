@@ -85,16 +85,8 @@ contract('Order Book', function () {
       i => steps.SubmitOutputFragment(fragments_AB[i], orderID_A, orderID_B, randomMNetwork[i], fragmentIds_A[i], fragmentIds_B[i])
     ));
 
-    (await steps.GetMatchedOrder(orderID_A))
-      .should.deep.equal({
-        orderID: orderID_B,
-        traderID: trader_B.republic
-      });
-    (await steps.GetMatchedOrder(orderID_B))
-      .should.deep.equal({
-        orderID: orderID_A,
-        traderID: trader_A.republic
-      });
+    (await steps.OrdersDidMatch(orderID_A, trader_A, orderID_B, trader_B))
+      .should.be.true;
 
     // await Promise.all(utils.range(mNetworkSize).map(
     //   i => steps.WithdrawReward(randomMNetwork[i])

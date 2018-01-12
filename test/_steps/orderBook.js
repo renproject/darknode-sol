@@ -45,4 +45,14 @@ module.exports = {
     (miner) => orderBook.withdrawReward(miner.republic)
   ,
 
+  OrdersDidMatch: async (orderID_A, trader_A, orderID_B, trader_B) => {
+    const { orderID: matchedOrderID_A, traderID: matchedTraderID_A } = await steps.GetMatchedOrder(orderID_A);
+    const { orderID: matchedOrderID_B, traderID: matchedTraderID_B } = await steps.GetMatchedOrder(orderID_B);
+
+    return (matchedOrderID_A == orderID_B) &&
+      (matchedOrderID_B == orderID_A) &&
+      (matchedTraderID_A == trader_B.republic) &&
+      (matchedTraderID_B == trader_A.republic);
+  }
+
 };

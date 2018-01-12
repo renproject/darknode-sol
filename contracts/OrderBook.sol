@@ -256,7 +256,7 @@ contract OrderBook {
    * @return True if the miner is authorized to close the order fragment and
    * order is open, false otherwise.
    */
-  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public returns(bool) {
+  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public returns (bool) {
     return (orders[_orderID].status == Status.Open && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
@@ -308,17 +308,23 @@ contract OrderBook {
     ren.transfer(owner, reward);
   }
 
-  function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns(bytes32 matchedOrderID, bytes20 traderID) {
+  function getStatus(bytes32 _orderID) public view returns (Status) {
+    return orders[_orderID].status;
+  }
+
+  function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns (bytes32 matchedOrderID, bytes20 matchedTraderID) {
     bytes32 matchID = orderMatch[_orderID];
-    bytes32 otherID;
     if (_orderID == matches[matchID].orderID1) {
-      otherID = matches[matchID].orderID2;
+      matchedOrderID = matches[matchID].orderID2;
     } else if (_orderID == matches[matchID].orderID2) {
-      otherID = matches[matchID].orderID1;
+      matchedOrderID = matches[matchID].orderID1;
     } else {
       // revert();
     }
 
-    return (otherID, orders[otherID].traderID);
+    matchedTraderID = orders[matchedOrderID].traderID;
+
+    // Not necessary
+    return (matchedOrderID, matchedTraderID);
   }
 }
