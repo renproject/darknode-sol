@@ -28,13 +28,13 @@ module.exports = {
     }
   },
 
-  GetEpochBlockhash:
-    () => minerRegistrar.getEpochBlockhash.call()
-  ,
+  GetEpochBlockhash: async () => {
+    return await minerRegistrar.getEpochBlockhash.call()
+  },
 
-  GetCurrentMinerCount: // async
-    () => minerRegistrar.getCurrentMinerCount.call()
-  ,
+  GetCurrentMinerCount: async () => {
+    return await minerRegistrar.getCurrentMinerCount.call()
+  },
 
   GetRegisteredMiners: async () => {
 
@@ -55,9 +55,9 @@ module.exports = {
     return l1;
   },
 
-  GetAllMiners: // async
-    () => minerRegistrar.getAllMiners()
-  ,
+  GetAllMiners: async () => {
+    return await minerRegistrar.getAllMiners()
+  },
 
   GetRegisteredAccountIndexes: async () => {
     const miners = await steps.GetRegisteredMiners();
@@ -92,35 +92,36 @@ module.exports = {
   },
 
   /** GetBond */
-  GetMinerBond: // async
-    account => minerRegistrar.getBond.call(account.republic)
-  ,
+  GetMinerBond: async (account) => {
+    return await minerRegistrar.getBond.call(account.republic)
+  },
 
-  GetMinerSeed:
-    account => minerRegistrar.getSeed.call(account.republic)
-  ,
+  GetMinerSeed: async (account) => {
+    return await minerRegistrar.getSeed.call(account.republic)
+  },
 
   /** getMNetworkSize */
-  GetMNetworkSize: // async
-    () => minerRegistrar.getMNetworkSize.call()
-  ,
+  GetMNetworkSize: async () => {
+    return await minerRegistrar.getMNetworkSize.call()
+  },
 
   /*** Expected Pool Count ***/
-  ExpectedMNetworkCount: // TODO: Use contract getter instead
-    (count) => Math.ceil(Math.log2(count)) - 1
-  ,
+  ExpectedMNetworkCount: (count) => {
+    // TODO: Use contract getter instead
+    return Math.ceil(Math.log2(count)) - 1
+  },
 
   /** GetRenBalance */
-  GetRenBalance: // async
-    (account) => ren.balanceOf(account.address, { from: account.address })
-  ,
+  GetRenBalance: async (account) => {
+    return await ren.balanceOf(account.address, { from: account.address })
+  },
 
   // AssertPoolDistributions
 
   /** ApproveRenToMinerRegistrar */
-  ApproveRenToMinerRegistrar: // async
-    (account, amount) => ren.approve(minerRegistrar.address, amount, { from: account.address })
-  ,
+  ApproveRenToMinerRegistrar: async (account, amount) => {
+    return await ren.approve(minerRegistrar.address, amount, { from: account.address })
+  },
 
   /** UpdateBond */
   UpdateMinerBond: async (account, newBond) => {
@@ -131,22 +132,22 @@ module.exports = {
     //   { event: 'MinerBondUpdated', minerId: account.republic, newBond: newBond });
   },
 
-  WithdrawMinerBond:
-    account => utils.logTx('Releasing bond', minerRegistrar.withdrawBond(account.republic, { from: account.address }))
-  ,
+  WithdrawMinerBond: async (account) => {
+    return await utils.logTx('Releasing bond', minerRegistrar.withdrawBond(account.republic, { from: account.address }))
+  },
 
   /** GetPublicKey */
-  GetMinerPublicKey:
-    republicAddr => minerRegistrar.getPublicKey(republicAddr)
-  ,
+  GetMinerPublicKey: async (republicAddr) => {
+    return await minerRegistrar.getPublicKey(republicAddr)
+  },
 
 
 
   /** FUNCTIONS FOR ALL ACCOUNTS */
 
-  GetAllMiners: // async
-    () => minerRegistrar.getAllMiners.call()
-  ,
+  GetAllMiners: async () => {
+    return await minerRegistrar.getAllMiners.call()
+  },
 
   WithdrawAllMinerBonds: async (accounts) => {
     await Promise.all(accounts.map(

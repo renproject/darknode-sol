@@ -14,15 +14,15 @@ let ren;
 
 module.exports = {
 
-  ApproveRen: // async
+  ApproveRen: async (from, to, amount) => {
     // from and to must match interface {address: ...}
-    (from, to, amount) => ren.approve(to.address, amount, { from: from.address })
-  ,
+    return await ren.approve(to.address, amount, { from: from.address })
+  },
 
   // Distribute ren
-  DistributeRen: // async
-    (accounts) => Promise.all(accounts.map(account => ren.transfer(account.address, 1000000)))
-  ,
+  DistributeRen: async (accounts) => {
+    return await Promise.all(accounts.map(account => ren.transfer(account.address, 1000000)))
+  },
 
   /** GetRenBalance */
   GetRenBalance: async (account) => {

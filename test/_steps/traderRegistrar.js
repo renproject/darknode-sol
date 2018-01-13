@@ -44,9 +44,9 @@ module.exports = {
   },
 
   /** ApproveRen */
-  ApproveRenToTraderRegistrar:
-    (account, amount) => ren.approve(traderRegistrar.address, amount, { from: account.address })
-  ,
+  ApproveRenToTraderRegistrar: async (account, amount) => {
+    return await ren.approve(traderRegistrar.address, amount, { from: account.address })
+  },
 
   /** UpdateBond */
   UpdateTraderBond: async (account, newBond) => {
