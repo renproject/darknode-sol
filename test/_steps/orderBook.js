@@ -82,7 +82,7 @@ module.exports = {
       const reward = await orderBook.getReward.call(mNetwork[i].republic);
       sum = reward.add(sum);
     }
-    Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
+    await Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
     return sum;
   },
 
