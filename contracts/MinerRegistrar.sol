@@ -398,14 +398,15 @@ contract MinerRegistrar {
 
     uint256 currentMinerCount = toDeregisterCount + stayingRegisteredCount;
 
-    require(_start < _end && _end <= currentMinerCount);
+    // If start == end then the array is empty
+    require(_start <= _end && _end <= currentMinerCount);
 
-    uint256 registered_start = toDeregisterOffset();
+    uint256 registeredStart = toDeregisterOffset();
 
     bytes20[] memory currentMiners = new bytes20[](_end - _start);
 
     for (uint256 i = 0; i < _end - _start; i++) {
-      currentMiners[i] = minerList[i + registered_start + _start];
+      currentMiners[i] = minerList[i + registeredStart + _start];
     }
     return currentMiners;
   }

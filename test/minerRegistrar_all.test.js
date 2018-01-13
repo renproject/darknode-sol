@@ -18,8 +18,6 @@ const steps = require("./_steps/steps").steps;
 
 contract('Miner Registar (all miners)', function (acc) {
 
-  console.log(acc);
-
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
     await steps.WaitForEpoch();

@@ -9,7 +9,6 @@ cache:
     - node_modules
 before_script:
   - npm install --global truffle
-  - npm install
   - truffle version
 script:
   - npm run test
