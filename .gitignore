@@ -6,3 +6,4 @@ scTopics
 coverage
 coverageEnv
 coverage.json
+.coveralls.yml
