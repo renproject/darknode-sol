@@ -74,7 +74,20 @@ contract('Order Book', function () {
 
 
   // Log costs
-  after("log costs", () => {
+  after("log costs", async () => {
+
+    // Register traders:
+    await steps.DeregisterTrader(trader_A, 1000);
+    await steps.DeregisterTrader(trader_B, 1000);
+
+    // Register miners:
+    await Promise.all(miners.map(
+      (miner, i) => steps.DeregisterMiner(miner, 1000)
+    ));
+
+    // Wait for Miner Registrar epoch
+    await steps.WaitForEpoch();
+
     utils.printCosts();
   });
 
