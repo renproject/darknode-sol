@@ -12,4 +12,5 @@ before_script:
   - npm install --global ganache-cli
   - truffle version
 script:
+  - ./ganache 35&
   - npm run test
