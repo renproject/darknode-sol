@@ -4,5 +4,6 @@
 accountNumber=${1:-10}
 echo "Starting with $accountNumber accounts..."
 
-ganache-cli --accounts $accountNumber -d --acctKeys ./test/_helpers/privateKeys.json --gasLimit 0xfffffffffff
+ganache-cli --port 8545 --accounts $accountNumber -d --acctKeys ./test/_helpers/privateKeys.json --gasLimit 0xfffffffffff --gasPrice 0x01
+
 #$(npm bin)/ganache-cli
