@@ -27,9 +27,7 @@ contract('Order Book', function () {
     await steps.RegisterTrader(trader_B, 1000);
 
     // Register miners:
-    await Promise.all(miners.map(
-      (miner, i) => steps.RegisterMiner(miner, 1000)
-    ));
+    await steps.RegisterMiners(miners, 1000);
 
     // Wait for Miner Registrar epoch
     await steps.WaitForEpoch();
@@ -81,12 +79,11 @@ contract('Order Book', function () {
     await steps.DeregisterTrader(trader_B, 1000);
 
     // Register miners:
-    await Promise.all(miners.map(
-      (miner, i) => steps.DeregisterMiner(miner, 1000)
-    ));
+    await steps.DeregisterMiners(miners, 1000);
 
     // Wait for Miner Registrar epoch
     await steps.WaitForEpoch();
+    await steps.WithdrawMinerBonds(miners);
 
     utils.printCosts();
   });

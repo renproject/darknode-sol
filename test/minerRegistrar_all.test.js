@@ -21,19 +21,35 @@ contract('Miner Registar (all miners)', function (acc) {
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
     await steps.WaitForEpoch();
-    // await steps.WithdrawAllMinerBonds(accounts);
+    // await steps.WithdrawMinerBonds(accounts);
   });
 
 
 
   it("can register miners", async function () {
-    await steps.RegisterAllMiners(accounts, 1000);
+    await steps.RegisterMiners(accounts, 1000);
 
     // Wait for next shuffling
     await steps.WaitForEpoch();
 
-    await steps.DeregisterAllMiners(accounts);
+    await steps.DeregisterMiners(accounts);
   });
+
+  it("can get M network", async () => {
+
+    await steps.RegisterMiners(accounts, 1000);
+    await steps.WaitForEpoch();
+
+    // Get M Networks:
+    mNetworks = await steps.GetMNetworks();
+
+    (await steps.GetMNetworkSize())
+      .should.be.bignumber.equal(mNetworks[0].length);
+
+    await steps.DeregisterMiners(accounts);
+    await steps.WaitForEpoch();
+    await steps.WithdrawMinerBonds(accounts);
+  })
 
 
 

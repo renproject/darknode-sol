@@ -56,8 +56,8 @@ contract MinerRegistrar {
 
   uint256 deregisteredCount;
   uint256 toDeregisterCount;
-  uint256 toRegisterCount;
   uint256 stayingRegisteredCount;
+  uint256 toRegisterCount;
 
   /** Events */
 
@@ -65,8 +65,9 @@ contract MinerRegistrar {
   event MinerBondUpdated(bytes20 minerID, uint256 newBond);
   event MinerDeregistered(bytes20 minerID);
   event BondRefunded(bytes20 minerID, uint256 amount);
-  event Debug(string message);
-  event DebugInt(uint256 num);
+  event Debug(string msg);
+  event DebugInt(uint256 msg);
+  event DebugBool(bool msg);
   event NextEpoch();
   
   /** Private functions */
@@ -172,9 +173,9 @@ contract MinerRegistrar {
       });
 
       // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
-        delete minerList[i];
-      }
+      // for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
+      //   delete minerList[i];
+      // }
 
       // Update counts
       deregisteredCount += toDeregisterCount;
@@ -361,6 +362,8 @@ contract MinerRegistrar {
 
     if (decreaseLength) {
       delete minerList[destinationIndex]; // Never registered, so safe to delete
+      // Set index to zero because minerList will reuse the index
+      miners[_minerID].index = 0;
       minerList.length = minerList.length - 1;
     }
 
@@ -411,20 +414,21 @@ contract MinerRegistrar {
     return currentMiners;
   }
 
-  // TODO: Used for debugging only?, remove before mainnet
-  function getAllMiners() public view returns (bytes20[]) {
-    // Note: Returns 0x0 at starting position
-    return minerList;
-  }
+  // // TODO: Used for debugging only?, remove before mainnet
+  // function getAllMiners() public view returns (bytes20[], uint256, uint256, uint256, uint256) {
+  //   // Note: Returns 0x0 at starting position
+  //   return (minerList, deregisteredCount, toDeregisterCount, stayingRegisteredCount, toRegisterCount);
+  // }
 
-  function getMNetworkCount() public view returns (uint256) {
-    // TODO: Should be rounded up?
-    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
-  }
+  // function getMNetworkCount() public view returns (uint256) {
+  //   // TODO: Should be rounded up?
+  //   return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
+  // }
   
   function getMNetworkSize() public view returns (uint256) {
+    // TODO: Get updated formula
+
     uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
-    
     // If even, add 1 to become odd
     return log + (1 - (log % 2));
   }

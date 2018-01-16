@@ -35,7 +35,7 @@ contract('Miner Registar (multiple miners)', function () {
     (await steps.GetRegisteredAccountIndexes())
       .should.deep.equal([]);
 
-    await steps.WithdrawAllMinerBonds(accounts.slice(0, 2));
+    await steps.WithdrawMinerBonds(accounts.slice(0, 2));
   })
 
   it("can manage several miners registering and deregistering", async function () {
@@ -67,7 +67,27 @@ contract('Miner Registar (multiple miners)', function () {
     (await steps.GetRegisteredAccountIndexes())
       .should.deep.equal([]);
 
-    await steps.WithdrawAllMinerBonds(accounts.slice(0, 4));
+    await steps.WithdrawMinerBonds(accounts.slice(0, 4));
+  })
+
+  it("can get next miner count", async function () {
+    await steps.RegisterMiner(accounts[0], 1000);
+    await steps.RegisterMiner(accounts[1], 1000);
+
+    (await steps.GetCurrentMinerCount())
+      .should.be.bignumber.equal(0);
+    (await steps.GetNextMinerCount())
+      .should.be.bignumber.equal(2);
+
+    await steps.WaitForEpoch();
+
+    (await steps.GetNextMinerCount())
+      .should.be.bignumber.equal(2);
+    (await steps.GetCurrentMinerCount())
+      .should.be.bignumber.equal(2);
+
+    await steps.DeregisterMiners(accounts.slice(0, 2));
+    await steps.WithdrawMinerBonds(accounts.slice(0, 2));
   })
 
 

@@ -36,6 +36,10 @@ module.exports = {
     return await minerRegistrar.getCurrentMinerCount.call()
   },
 
+  GetNextMinerCount: async () => {
+    return await minerRegistrar.getNextMinerCount.call()
+  },
+
   GetRegisteredMiners: async () => {
 
     const count = await steps.GetCurrentMinerCount();
@@ -55,9 +59,6 @@ module.exports = {
     return l1;
   },
 
-  GetAllMiners: async () => {
-    return await minerRegistrar.getAllMiners()
-  },
 
   GetRegisteredAccountIndexes: async () => {
     const miners = await steps.GetRegisteredMiners();
@@ -96,8 +97,31 @@ module.exports = {
     return await minerRegistrar.getBond.call(account.republic)
   },
 
+  /** Get miner ID from ethereum address */
+  GetMinerID: async (account) => {
+    return await minerRegistrar.getMinerID.call(account.address)
+  },
+
+
   GetMinerSeed: async (account) => {
     return await minerRegistrar.getSeed.call(account.republic)
+  },
+
+  /** getMNetworkSize */
+  GetAllMiners: async () => {
+    const [minerList, deregisteredCount, toDeregisterCount, stayingRegisteredCount, toRegisterCount] = await minerRegistrar.getAllMiners.call();
+    const deregisteredOffset = 1;
+    const toDeregisterOffset = deregisteredOffset + deregisteredCount.toNumber(); // 1 + 5 = 6
+    const registeredOffset = toDeregisterOffset + toDeregisterCount.toNumber();
+    const toRegisterOffset = registeredOffset + stayingRegisteredCount.toNumber();
+    const end = toRegisterOffset + toRegisterCount.toNumber();
+    console.log(`slice(${deregisteredOffset}, ${toDeregisterOffset}`);
+    return {
+      deregistered: minerList.slice(deregisteredOffset, toDeregisterOffset),
+      toDeregister: minerList.slice(toDeregisterOffset, registeredOffset),
+      registered: minerList.slice(registeredOffset, toRegisterOffset),
+      toRegister: minerList.slice(toRegisterOffset, end),
+    }
   },
 
   /** getMNetworkSize */
@@ -105,11 +129,15 @@ module.exports = {
     return await minerRegistrar.getMNetworkSize.call()
   },
 
+  // GetMNetworkCount: async () => {
+  //   return await minerRegistrar.getMNetworkCount.call()
+  // },
+
   /*** Expected Pool Count ***/
-  ExpectedMNetworkCount: (count) => {
-    // TODO: Use contract getter instead
-    return Math.ceil(Math.log2(count)) - 1
-  },
+  // ExpectedMNetworkCount: (count) => {
+  //   // TODO: Use contract getter instead
+  //   return Math.ceil(Math.log2(count)) - 1
+  // },
 
   /** GetRenBalance */
   GetRenBalance: async (account) => {
@@ -137,33 +165,29 @@ module.exports = {
   },
 
   /** GetPublicKey */
-  GetMinerPublicKey: async (republicAddr) => {
-    return await minerRegistrar.getPublicKey(republicAddr)
+  GetMinerPublicKey: async (account) => {
+    return await minerRegistrar.getPublicKey(account.republic)
   },
 
 
 
   /** FUNCTIONS FOR ALL ACCOUNTS */
 
-  GetAllMiners: async () => {
-    return await minerRegistrar.getAllMiners.call()
-  },
-
-  WithdrawAllMinerBonds: async (accounts) => {
+  WithdrawMinerBonds: async (accounts) => {
     await Promise.all(accounts.map(
       account => steps.WithdrawMinerBond(account)
     ));
   },
 
   /** Register all accounts */
-  RegisterAllMiners: async (accounts, bond) => {
+  RegisterMiners: async (accounts, bond) => {
     await Promise.all(accounts.map(
       account => steps.RegisterMiner(account, bond)
     ));
   },
 
   /** Deregister all accounts */
-  DeregisterAllMiners: async (accounts) => {
+  DeregisterMiners: async (accounts) => {
     await Promise.all(accounts.map(
       account => steps.DeregisterMiner(account)
     ));

@@ -148,6 +148,23 @@ contract('A miner', function () {
     await steps.DeregisterMiner(accounts[0]);
   });
 
+  it("updating their bond to their previous bond has no effect", async function () {
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    const oldBond = 1000;
+    await steps.RegisterMiner(accounts[0], oldBond);
+    await steps.UpdateMinerBond(accounts[0], oldBond);
+
+    // Bond should now be 1000
+    (await steps.GetMinerBond(accounts[0]))
+      .should.be.bignumber.equal(oldBond);
+
+    // Bond difference should have been withdrawn
+    (await steps.GetRenBalance(accounts[0]))
+      .should.be.bignumber.equal(balanceBefore.minus(oldBond));
+
+    await steps.DeregisterMiner(accounts[0]);
+  });
+
   it("can't increase their bond without first approving ren", async function () {
     const balanceBefore = (await steps.GetRenBalance(accounts[0]));
     const oldBond = 1000;
@@ -180,8 +197,13 @@ contract('A miner', function () {
   });
 
   it("can retrieve a miner's public key from its address", async function () {
-    (await steps.GetMinerPublicKey(accounts[0].republic))
+    (await steps.GetMinerPublicKey(accounts[0]))
       .should.equal(accounts[0].public);
+  });
+
+  it("can retrieve a miner's republic ID from its ethereum address", async function () {
+    (await steps.GetMinerID(accounts[0]))
+      .should.equal(accounts[0].republic);
   });
 
   // Log costs
