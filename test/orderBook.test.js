@@ -78,8 +78,8 @@ contract('Order Book', function () {
     await steps.DeregisterTrader(trader_A, 1000);
     await steps.DeregisterTrader(trader_B, 1000);
 
-    // Register miners:
-    await steps.DeregisterMiners(miners, 1000);
+    // Deregister miners:
+    await steps.DeregisterMiners(miners);
 
     // Wait for Miner Registrar epoch
     await steps.WaitForEpoch();

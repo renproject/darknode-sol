@@ -16,12 +16,7 @@ module.exports = {
 
   ApproveRen: async (from, to, amount) => {
     // from and to must match interface {address: ...}
-    return await ren.approve(to.address, amount, { from: from.address })
-  },
-
-  // Distribute ren
-  DistributeRen: async (accounts) => {
-    return await Promise.all(accounts.map(account => ren.transfer(account.address, 1000000)))
+    return await ren.approve(to.address, amount, { from: from.address });
   },
 
   /** GetRenBalance */

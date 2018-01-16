@@ -35,11 +35,15 @@ module.exports = {
     (mNetworks) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
   ,
 
-  CheckOrderFragments: (orderID, fragmentIDs, mNetwork) => { // async
+  CheckOrderFragments: async (orderID, fragmentIDs, mNetwork) => { // async
     // Check orders fragments
-    return Promise.all(mNetwork.map(
-      (miner, i) => steps.CheckOrderFragment(orderID, fragmentIDs[i], miner)
-    ));
+    for (let i = 0; i < mNetwork.length; i++) {
+      const miner = mNetwork[i];
+      await steps.CheckOrderFragment(orderID, fragmentIDs[i], miner);
+    }
+    // return Promise.all(mNetwork.map(
+    //   (miner, i) => steps.CheckOrderFragment(orderID, fragmentIDs[i], miner)
+    // ));
   },
 
   CheckOrderFragment: async (orderID, fragmentId, miner) => {
@@ -51,12 +55,15 @@ module.exports = {
     (fragmentCount) => (fragmentCount - 1) / 2 + 1
   ,
 
-  SubmitOutputFragments: (outputFragments, orderID_A, orderID_B, mNetwork, fragmentIDs_A, fragmentIDs_B) => { // async
+  SubmitOutputFragments: async (outputFragments, orderID_A, orderID_B, mNetwork, fragmentIDs_A, fragmentIDs_B) => { // async
     // Submit order fragments
     const kValue = steps.GetKValue(outputFragments.length);
-    return Promise.all(utils.range(kValue).map(
-      i => steps.SubmitOutputFragment(outputFragments[i], orderID_A, orderID_B, mNetwork[i], fragmentIDs_A[i], fragmentIDs_B[i])
-    ));
+    for (let i = 0; i < kValue; i++) {
+      await steps.SubmitOutputFragment(outputFragments[i], orderID_A, orderID_B, mNetwork[i], fragmentIDs_A[i], fragmentIDs_B[i]);
+    }
+    // return Promise.all(utils.range(kValue).map(
+    //   i => steps.SubmitOutputFragment(outputFragments[i], orderID_A, orderID_B, mNetwork[i], fragmentIDs_A[i], fragmentIDs_B[i])
+    // ));
   },
 
   SubmitOutputFragment: async (outputFragment, orderID1, orderID2, miner, fragmentID1, fragmentID2) => {
@@ -81,8 +88,9 @@ module.exports = {
       // Do it in this direction in order to now have to require bignumber.js
       const reward = await orderBook.getReward.call(mNetwork[i].republic);
       sum = reward.add(sum);
+      await steps.WithdrawReward(mNetwork[i]);
     }
-    await Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
+    // await Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
     return sum;
   },
 

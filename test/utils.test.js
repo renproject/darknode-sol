@@ -1,5 +1,11 @@
 
+const chai = require("chai");
+chai.use(require('chai-as-promised'));
+chai.use(require('chai-bignumber')());
+chai.should();
+
 const u = require("./_helpers/test_utils");
+
 
 // Initialise:
 let utils;

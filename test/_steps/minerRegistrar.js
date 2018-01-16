@@ -174,23 +174,32 @@ module.exports = {
   /** FUNCTIONS FOR ALL ACCOUNTS */
 
   WithdrawMinerBonds: async (accounts) => {
-    await Promise.all(accounts.map(
-      account => steps.WithdrawMinerBond(account)
-    ));
+    for (let i = 0; i < accounts.length; i++) {
+      await steps.WithdrawMinerBond(accounts[i]);
+    }
+    // await Promise.all(accounts.map(
+    //   account => steps.WithdrawMinerBond(account)
+    // ));
   },
 
   /** Register all accounts */
   RegisterMiners: async (accounts, bond) => {
-    await Promise.all(accounts.map(
-      account => steps.RegisterMiner(account, bond)
-    ));
+    for (let i = 0; i < accounts.length; i++) {
+      await steps.RegisterMiner(accounts[i], bond);
+    }
+    // await Promise.all(accounts.map(
+    //   account => steps.RegisterMiner(account, bond)
+    // ));
   },
 
   /** Deregister all accounts */
   DeregisterMiners: async (accounts) => {
-    await Promise.all(accounts.map(
-      account => steps.DeregisterMiner(account)
-    ));
+    for (let i = 0; i < accounts.length; i++) {
+      await steps.DeregisterMiner(accounts[i]);
+    }
+    // await Promise.all(accounts.map(
+    //   account => steps.DeregisterMiner(account)
+    // ));
   },
 
 
@@ -200,12 +209,20 @@ module.exports = {
   GetMNetworks: async () => {
     const miners = await steps.GetRegisteredMiners();
     const epochHash = await steps.GetEpochBlockhash();
+
+
     // Get miner seeds
     norms = {};
-    await Promise.all(miners.map(async (miner, i) => {
+    // await Promise.all(miners.map(async (miner, i) => {
+    //   const seed = await steps.GetMinerSeed({ republic: miner });
+    //   norms[miner] = web3.sha3(seed + epochHash);
+    // }));
+    for (let i = 0; i < miners.length; i++) {
+      const miner = miners[i];
       const seed = await steps.GetMinerSeed({ republic: miner });
       norms[miner] = web3.sha3(seed + epochHash);
-    }));
+    }
+
     // Sort miners by epoch blockhash and their norm
     miners.sort(
       (a, b) => norms[a] - norms[b]
