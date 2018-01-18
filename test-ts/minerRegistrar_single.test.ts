@@ -1,13 +1,15 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+import { contract } from "../truffle";
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
 const utils = require("./_helpers/test_utils");
 const { accounts } = require("./_helpers/accounts");
 const steps = require("./_steps/steps").steps;
 
-contract('A miner', function () {
+contract("A miner", function () {
 
   afterEach("ensure miner is deregistered", async function () {
     await steps.WaitForEpoch();
@@ -134,7 +136,7 @@ contract('A miner', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToMinerRegistrar(accounts[0], newBond - oldBond)
+    await steps.ApproveRenToMinerRegistrar(accounts[0], newBond - oldBond);
     await steps.UpdateMinerBond(accounts[0], newBond);
 
     // Bond should now be 1500

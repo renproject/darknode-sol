@@ -1,13 +1,13 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+import { contract } from "../truffle";
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
-const utils = require("./_helpers/test_utils");
-const { accounts } = require("./_helpers/accounts");
-const steps = require("./_steps/steps").steps;
-
-
+import * as utils from "./_helpers/test_utils";
+import { accounts } from "./_helpers/accounts";
+import steps from "./_steps/steps";
 
 /**
  * 
@@ -16,15 +16,13 @@ const steps = require("./_steps/steps").steps;
  * 
  */
 
-contract('Miner Registar (all miners)', function (acc) {
+contract("Miner Registar (all miners)", function () {
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
     await steps.WaitForEpoch();
     // await steps.WithdrawMinerBonds(accounts);
   });
-
-
 
   it("can register miners", async function () {
     await steps.RegisterMiners(accounts, 1000);
@@ -41,7 +39,7 @@ contract('Miner Registar (all miners)', function (acc) {
     await steps.WaitForEpoch();
 
     // Get M Networks:
-    mNetworks = await steps.GetMNetworks();
+    const mNetworks = await steps.GetMNetworks();
 
     (await steps.GetMNetworkSize())
       .should.be.bignumber.equal(mNetworks[0].length);
@@ -49,10 +47,7 @@ contract('Miner Registar (all miners)', function (acc) {
     await steps.DeregisterMiners(accounts);
     await steps.WaitForEpoch();
     await steps.WithdrawMinerBonds(accounts);
-  })
-
-
-
+  });
 
   // Log costs
   after("log costs", () => {

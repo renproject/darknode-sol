@@ -1,12 +1,13 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+import { contract } from "../truffle";
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
 const utils = require("./_helpers/test_utils");
 const { accounts } = require("./_helpers/accounts");
 const steps = require("./_steps/steps").steps;
-
 
 const traderCount = 2;
 const minerCount = accounts.length - traderCount;
@@ -14,11 +15,11 @@ const minerCount = accounts.length - traderCount;
 const trader_A = accounts[0];
 const trader_B = accounts[1];
 const miners = accounts.slice(traderCount, traderCount + minerCount);
-let mNetworks;
+let mNetworks: any;
 
 const MINIMUM_ORDER_FEE = 100000;
 
-contract('Order Book', function () {
+contract("Order Book", function () {
 
   before("register traders and miners", async () => {
 
@@ -34,12 +35,7 @@ contract('Order Book', function () {
 
     // Get M Networks:
     mNetworks = await steps.GetMNetworks();
-  })
-
-
-
-
-
+  });
 
   it("can process an order submission", async () => {
 
@@ -48,7 +44,7 @@ contract('Order Book', function () {
     const { orderID: orderID_A, fragmentIDs: fragmentIDs_A } = steps.GenerateOrder(fragmentCount);
     const { orderID: orderID_B, fragmentIDs: fragmentIDs_B } = steps.GenerateOrder(fragmentCount);
 
-    const outputFragments = steps.CombineFragments(fragmentIDs_A, fragmentIDs_B)
+    const outputFragments = steps.CombineFragments(fragmentIDs_A, fragmentIDs_B);
 
     const mNetwork = steps.RandomMNetwork(mNetworks);
     const leaderNetwork = mNetworks[0];
@@ -69,7 +65,6 @@ contract('Order Book', function () {
       .should.be.bignumber.equal(Math.floor(2 * MINIMUM_ORDER_FEE / kValue) * kValue);
 
   });
-
 
   // Log costs
   after("log costs", async () => {

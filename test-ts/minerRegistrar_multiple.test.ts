@@ -1,13 +1,15 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+import { contract } from "../truffle";
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
 const utils = require("./_helpers/test_utils");
 const { accounts } = require("./_helpers/accounts");
 const steps = require("./_steps/steps").steps;
 
-contract('Miner Registar (multiple miners)', function () {
+contract("Miner Registar (multiple miners)", function () {
 
   afterEach("ensure miners are all deregistered", async function () {
     // Reset after each test
@@ -36,7 +38,7 @@ contract('Miner Registar (multiple miners)', function () {
       .should.deep.equal([]);
 
     await steps.WithdrawMinerBonds(accounts.slice(0, 2));
-  })
+  });
 
   it("can manage several miners registering and deregistering", async function () {
     await steps.RegisterMiner(accounts[0], 1000);
@@ -68,7 +70,7 @@ contract('Miner Registar (multiple miners)', function () {
       .should.deep.equal([]);
 
     await steps.WithdrawMinerBonds(accounts.slice(0, 4));
-  })
+  });
 
   it("can get next miner count", async function () {
     await steps.RegisterMiner(accounts[0], 1000);
@@ -88,8 +90,7 @@ contract('Miner Registar (multiple miners)', function () {
 
     await steps.DeregisterMiners(accounts.slice(0, 2));
     await steps.WithdrawMinerBonds(accounts.slice(0, 2));
-  })
-
+  });
 
   // Log costs
   after("log costs", () => {

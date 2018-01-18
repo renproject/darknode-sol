@@ -1,6 +1,8 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+import { contract } from "../truffle";
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
 const utils = require("./_helpers/test_utils");
@@ -9,13 +11,7 @@ const steps = require("./_steps/steps").steps;
 
 // Specifically request an abstraction for Traders
 
-(async () => {
-  ren = await artifacts.require("RepublicToken").deployed();
-  traderRegistrar = await artifacts.require("TraderRegistrar").deployed();
-})();
-
-
-contract('Traders', function () {
+contract("Traders", function () {
 
   it("can register and deregister", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
@@ -28,13 +24,11 @@ contract('Traders', function () {
     await steps.DeregisterTrader(accounts[0]);
   });
 
-
   it("can't deregister without first registering", async function () {
     // Deregistering without first registering should throw an error
     await steps.DeregisterTrader(accounts[0])
       .should.be.rejectedWith(Error);
   });
-
 
   it("can access a bond from a republic ID", async function () {
     const bond = 1111;
@@ -46,7 +40,6 @@ contract('Traders', function () {
 
     await steps.DeregisterTrader(accounts[0]);
   });
-
 
   it("should not have a bond after deregistering", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
@@ -107,7 +100,7 @@ contract('Traders', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(accounts[0], newBond - oldBond)
+    await steps.ApproveRenToTraderRegistrar(accounts[0], newBond - oldBond);
     await steps.UpdateTraderBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -156,7 +149,6 @@ contract('Traders', function () {
     (await steps.GetTraderPublicKey(accounts[0].republic))
       .should.equal(accounts[0].public);
   });
-
 
   // Log costs
   after("log costs", () => {
