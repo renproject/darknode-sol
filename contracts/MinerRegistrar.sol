@@ -19,12 +19,18 @@ contract MinerRegistrar {
     uint256 timestamp;
   }
 
+  /**
+   * @notice Miners are stored in the registry. The owner is the address that
+   * registered the miner, the bond is the amount of REN that was transferred
+   * during registration, and the public key is the encryption key that should
+   * be used when sending sensitive information to the miner. The commitment
+   * and the 
+   */
   struct Miner {
     address owner;
     uint256 bond;
-    bytes publicKey;
+    bytes publicKey;  
     bytes32 commitment;
-    bytes32 seed;
     bool registered;
     uint256 registeredAt;
     uint256 registeredPosition;
@@ -35,14 +41,14 @@ contract MinerRegistrar {
 
   // Registry data.
   mapping(bytes20 => Miner) public miners;
-  bytes20[] arrayOfMiners;
+  bytes20[] public arrayOfMiners;
   uint256 public numberOfMiners;
 
   // Minimum bond to be considered registered.
   uint256 public minimumBond;
 
-  Epoch currentEpoch;
-
+  // The current epoch and the minimum time interval until the next epoch.
+  Epoch public currentEpoch;
   uint256 public minimumEpochInterval;
 
   // Refunable amounts of REN.
@@ -132,8 +138,6 @@ contract MinerRegistrar {
    * @param _minerID The miner ID that will be registered.
    * @param _publicKey The public key of the miner. It is stored to allow other
    *                   miners and traders to encrypt messages to the trader.
-   * @param _commitment The commitment hash of the miner. It is stored and used
-   *                    to generate the overlay network during each epoch.
    */
   function register(bytes20 _minerID, bytes _publicKey, bytes32 _commitment) public onlyUnregistered(_minerID) {
     // REN allowance is used as the bond.
@@ -148,8 +152,7 @@ contract MinerRegistrar {
       owner: msg.sender,
       bond: bond,
       publicKey: _publicKey,
-      commitment: _commitment,
-      seed: keccak256(block.blockhash(block.number - 1), _minerID),
+      commitment: keccak256(block.blockhash(block.number - 1), _minerID),
       registered: true,
       registeredAt: now,
       registeredPosition: numberOfMiners
@@ -188,7 +191,6 @@ contract MinerRegistrar {
     miners[_minerID].bond = 0;
     miners[_minerID].publicKey = "";
     miners[_minerID].commitment = "";
-    miners[_minerID].seed = "";
     miners[_minerID].registered = false;
     miners[_minerID].registeredAt = 0;
     miners[_minerID].registeredPosition = 0;
