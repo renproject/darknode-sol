@@ -42,7 +42,6 @@ contract MinerRegistrar {
   // Registry data.
   mapping(bytes20 => Miner) public miners;
   bytes20[] public arrayOfMiners;
-  uint256 public numberOfMiners;
 
   // Minimum bond to be considered registered.
   uint256 public minimumBond;
@@ -155,10 +154,9 @@ contract MinerRegistrar {
       commitment: keccak256(block.blockhash(block.number - 1), _minerID),
       registered: true,
       registeredAt: now,
-      registeredPosition: numberOfMiners
+      registeredPosition: arrayOfMiners.length
     });
     arrayOfMiners.push(_minerID);
-    numberOfMiners++;
 
     // Emit an event.
     MinerRegistered(_minerID, bond);
@@ -178,13 +176,12 @@ contract MinerRegistrar {
     // Remove the miner from the array by overide them with the last miner.
     uint256 overridePosition = miners[_minerID].registeredPosition;
     // Update the last miner to be at the overriden position.
-    bytes20 lastMinerID = arrayOfMiners[numberOfMiners-1];
+    bytes20 lastMinerID = arrayOfMiners[arrayOfMiners.length-1];
     miners[lastMinerID].registeredPosition = overridePosition;
     // Update the array of miners and delete the last position in the array.
     arrayOfMiners[overridePosition] = lastMinerID;
-    delete arrayOfMiners[numberOfMiners-1];
+    delete arrayOfMiners[arrayOfMiners.length-1];
     arrayOfMiners.length--;
-    numberOfMiners--;
 
     // Zero the miner from the registry.
     miners[_minerID].owner = 0;
@@ -230,8 +227,32 @@ contract MinerRegistrar {
     }
   }
 
+  function getMiner(bytes20 _minerID) public view returns (Miner) {
+    return miners[_minerID];
+  }
+
+  function getMiners(uint256 _offset, uint256 _limit) public view returns (Miner[]) {
+    // If the offset is out of the valid index range then return an empty
+    // array.
+    if (_offset >= arrayOfMiners.length) {
+      return new Miner[](0);
+    }
+    // If the limit is our of the valid index range then set it to the largest
+    // valid value.
+    if (_offset + _limit >= arrayOfMiners.length) {
+      _limit = arrayOfMiners.length - _offset;
+    }
+    // Return an array of a limited number of miners starting at the given
+    // offset.
+    Miner[] memory vals = new Miner[](_limit);
+    for (uint256 i = 0; i < _limit; i++) {
+      vals[_offset + i] = miners[arrayOfMiners[i]];
+    }
+    return vals;
+  }
+
   function getNumberOfMiners() public view returns (uint256) {
-    return numberOfMiners;
+    return arrayOfMiners.length;
   }
 
   function getOwner(bytes20 _minerID) public view returns (address) {

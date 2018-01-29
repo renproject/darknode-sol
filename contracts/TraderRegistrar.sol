@@ -162,6 +162,10 @@ contract TraderRegistrar {
     OwnerRefunded(msg.sender, amount);
   }
 
+  function getTrader(bytes20 _traderID) public view returns (Trader) {
+    return traders[_traderID];
+  }
+
   function getNumberOfTraders() public view returns (uint256) {
     return numberOfTraders;
   }
