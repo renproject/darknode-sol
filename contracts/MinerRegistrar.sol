@@ -77,7 +77,7 @@ contract MinerRegistrar {
    * @notice Only allow registerd miners to pass.
    */
   modifier onlyRegistered(bytes20 _minerID) {
-    if (!miners[_minerID].registered) {
+    if (miners[_minerID].registered) {
       _;
     }
   }
