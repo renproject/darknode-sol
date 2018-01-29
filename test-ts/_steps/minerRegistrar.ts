@@ -1,5 +1,3 @@
-import { web3, artifacts, Contract, assert } from "../../truffle";
-import { Account, MNetwork } from "../../types";
 
 import { accounts, indexMap } from "../_helpers/accounts";
 
@@ -9,14 +7,14 @@ import * as utils from "../_helpers/test_utils";
 
 // Wait for contracts:
 let minerRegistrar: any, ren: any;
-(async () => {
+(async (): Promise<any> => {
   ren = await artifacts.require("RepublicToken").deployed();
   minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
 })();
 
 module.exports = {
 
-  WaitForEpoch: async () => {
+  WaitForEpoch: async (): Promise<any> => {
     while (true) {
       // Must be an on-chain call, or the time won't be updated
       const tx = await utils.logTx("Checking epoch", minerRegistrar.checkEpoch());
@@ -29,19 +27,19 @@ module.exports = {
     }
   },
 
-  GetEpochBlockhash: async () => {
+  GetEpochBlockhash: async (): Promise<any> => {
     return await minerRegistrar.getEpochBlockhash.call();
   },
 
-  GetCurrentMinerCount: async () => {
+  GetCurrentMinerCount: async (): Promise<any> => {
     return await minerRegistrar.getCurrentMinerCount.call();
   },
 
-  GetNextMinerCount: async () => {
+  GetNextMinerCount: async (): Promise<any> => {
     return await minerRegistrar.getNextMinerCount.call();
   },
 
-  GetRegisteredMiners: async () => {
+  GetRegisteredMiners: async (): Promise<any> => {
 
     const count = await steps.GetCurrentMinerCount();
     const split = 50;
@@ -60,7 +58,7 @@ module.exports = {
     return l1;
   },
 
-  GetRegisteredAccountIndexes: async () => {
+  GetRegisteredAccountIndexes: async (): Promise<any> => {
     const miners = await steps.GetRegisteredMiners();
     return miners.map((miner: any) => indexMap[miner]);
   },
@@ -68,7 +66,7 @@ module.exports = {
   /** MINER SPECIFIC FUNCTIONS */
 
   /** Register */
-  RegisterMiner: async (account: Account, bond: number) => {
+  RegisterMiner: async (account: Account, bond: number): Promise<any> => {
     assert(bond > 0, "Registration bond must be positive");
     const difference = bond - (await minerRegistrar.getBondPendingWithdrawal(account.republic));
     if (difference) {
@@ -86,7 +84,7 @@ module.exports = {
   },
 
   /** Deregister */
-  DeregisterMiner: async (account: Account) => {
+  DeregisterMiner: async (account: Account): Promise<any> => {
     const tx = await utils.logTx(
       "Deregistering",
       minerRegistrar.deregister(account.republic, { from: account.address })
@@ -98,21 +96,21 @@ module.exports = {
   },
 
   /** GetBond */
-  GetMinerBond: async (account: Account) => {
+  GetMinerBond: async (account: Account): Promise<any> => {
     return await minerRegistrar.getBond.call(account.republic);
   },
 
   /** Get miner ID from ethereum address */
-  GetMinerID: async (account: Account) => {
+  GetMinerID: async (account: Account): Promise<any> => {
     return await minerRegistrar.getMinerID.call(account.address);
   },
 
-  GetMinerSeed: async (account: Account) => {
+  GetMinerSeed: async (account: Account): Promise<any> => {
     return await minerRegistrar.getSeed.call(account.republic);
   },
 
   /** getMNetworkSize */
-  GetAllMiners: async () => {
+  GetAllMiners: async (): Promise<any> => {
     const [minerList, deregisteredCount, toDeregisterCount,
       stayingRegisteredCount, toRegisterCount] = await minerRegistrar.getAllMiners.call();
     const deregisteredOffset = 1;
@@ -130,11 +128,11 @@ module.exports = {
   },
 
   /** getMNetworkSize */
-  GetMNetworkSize: async () => {
+  GetMNetworkSize: async (): Promise<any> => {
     return await minerRegistrar.getMNetworkSize.call();
   },
 
-  // GetMNetworkCount: async () => {
+  // GetMNetworkCount: async (): Promise<any> => {
   //   return await minerRegistrar.getMNetworkCount.call()
   // },
 
@@ -145,19 +143,19 @@ module.exports = {
   // },
 
   /** GetRenBalance */
-  GetRenBalance: async (account: Account) => {
+  GetRenBalance: async (account: Account): Promise<any> => {
     return await ren.balanceOf(account.address, { from: account.address });
   },
 
   // AssertPoolDistributions
 
   /** ApproveRenToMinerRegistrar */
-  ApproveRenToMinerRegistrar: async (account: Account, amount: number) => {
+  ApproveRenToMinerRegistrar: async (account: Account, amount: number): Promise<any> => {
     return await ren.approve(minerRegistrar.address, amount, { from: account.address });
   },
 
   /** UpdateBond */
-  UpdateMinerBond: async (account: Account, newBond: number) => {
+  UpdateMinerBond: async (account: Account, newBond: number): Promise<any> => {
     const tx = await utils.logTx(
       "Updating bond",
       minerRegistrar.updateBond(account.republic, newBond, { from: account.address })
@@ -168,7 +166,7 @@ module.exports = {
     //   { event: 'MinerBondUpdated', minerId: account.republic, newBond: newBond });
   },
 
-  WithdrawMinerBond: async (account: Account) => {
+  WithdrawMinerBond: async (account: Account): Promise<any> => {
     return await utils.logTx(
       "Releasing bond",
       minerRegistrar.withdrawBond(account.republic, { from: account.address })
@@ -176,13 +174,13 @@ module.exports = {
   },
 
   /** GetPublicKey */
-  GetMinerPublicKey: async (account: Account) => {
+  GetMinerPublicKey: async (account: Account): Promise<any> => {
     return await minerRegistrar.getPublicKey(account.republic);
   },
 
   /** FUNCTIONS FOR ALL ACCOUNTS */
 
-  WithdrawMinerBonds: async (_accounts: Account[]) => {
+  WithdrawMinerBonds: async (_accounts: Account[]): Promise<any> => {
     for (let i = 0; i < _accounts.length; i++) {
       await steps.WithdrawMinerBond(_accounts[i]);
     }
@@ -192,7 +190,7 @@ module.exports = {
   },
 
   /** Register all accounts */
-  RegisterMiners: async (_accounts: Account[], bond: number) => {
+  RegisterMiners: async (_accounts: Account[], bond: number): Promise<any> => {
     for (let i = 0; i < _accounts.length; i++) {
       await steps.RegisterMiner(_accounts[i], bond);
     }
@@ -202,7 +200,7 @@ module.exports = {
   },
 
   /** Deregister all accounts */
-  DeregisterMiners: async (_accounts: Account[]) => {
+  DeregisterMiners: async (_accounts: Account[]): Promise<any> => {
     for (let i = 0; i < _accounts.length; i++) {
       await steps.DeregisterMiner(_accounts[i]);
     }

@@ -1,5 +1,4 @@
 
-import { artifacts } from "../../truffle";
 import * as utils from "../_helpers/test_utils";
 const config = require("../../republic-config");
 import steps from "./steps";
@@ -14,13 +13,13 @@ let ren: any;
 
 export default {
 
-  ApproveRen: async (from: any, to: any, amount: number) => {
+  ApproveRen: async (from: Account, to: Account, amount: number): Promise<any> => {
     // from and to must match interface {address: ...}
     return await ren.approve(to.address, amount, { from: from.address });
   },
 
   /** GetRenBalance */
-  GetRenBalance: async (account: any) => {
+  GetRenBalance: async (account: Account): Promise<any> => {
     return await ren.balanceOf(account.address, { from: account.address });
   },
 

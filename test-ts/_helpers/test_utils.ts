@@ -1,4 +1,3 @@
-import { web3, assert } from "../../truffle";
 import { BigNumber } from "bignumber.js";
 
 /** USD/ETH ESTIMATE (for logging only) */

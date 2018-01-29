@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
+    "outDir": "./test",
     "lib": [
-      "es2015",
-      "dom"
+      "es2015"
     ],
     "module": "commonjs",
     "noImplicitAny": true,
+    "noImplicitReturns": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "outDir": "build/"
   }
 }

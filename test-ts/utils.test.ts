@@ -1,11 +1,10 @@
-import { contract, artifacts } from "../truffle";
 
 import * as chai from "chai";
 chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-const u = require("./_helpers/test_utils");
+import * as u from "./_helpers/test_utils";
 
 // Initialise:
 let utils: any;

@@ -1,13 +1,12 @@
-import { contract } from "../truffle";
 
 import * as chai from "chai";
 chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-const utils = require("./_helpers/test_utils");
-const { accounts } = require("./_helpers/accounts");
-const steps = require("./_steps/steps").steps;
+import * as utils from "./_helpers/test_utils";
+import { accounts } from "./_helpers/accounts";
+import steps from "./_steps/steps";
 
 contract("A miner", function () {
 

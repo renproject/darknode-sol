@@ -1,4 +1,3 @@
-import { Account } from "../../types";
 
 const privateKeys = require("./privateKeys.json");
 

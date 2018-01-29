@@ -1,7 +1,4 @@
 
-import { artifacts, assert } from "../../truffle";
-import { Account } from "../../types";
-
 const { accounts, indexMap } = require("../_helpers/accounts");
 
 const config = require("../../republic-config");
@@ -10,7 +7,7 @@ import * as utils from "../_helpers/test_utils";
 
 // Wait for contracts:
 let traderRegistrar: any, ren: any;
-(async () => {
+(async (): Promise<any> => {
   ren = await artifacts.require("RepublicToken").deployed();
   traderRegistrar = await artifacts.require("TraderRegistrar").deployed();
 })();
@@ -18,7 +15,7 @@ let traderRegistrar: any, ren: any;
 module.exports = {
 
   /** Register */
-  RegisterTrader: async (account: any, bond: number) => {
+  RegisterTrader: async (account: any, bond: number): Promise<any> => {
     assert(bond > 0, "Registration bond must be positive");
     await ren.approve(traderRegistrar.address, bond, { from: account.address });
 
@@ -33,12 +30,12 @@ module.exports = {
     //   { event: 'TraderRegistered', traderId: account.republic, bond: bond });
   },
 
-  GetTraderCount: async () => {
+  GetTraderCount: async (): Promise<any> => {
     return await traderRegistrar.getTraderCount.call();
   },
 
   /** Deregister */
-  DeregisterTrader: async (account: Account) => {
+  DeregisterTrader: async (account: Account): Promise<any> => {
     const tx = await utils.logTx(
       "Deregistering",
       traderRegistrar.deregister(account.republic, { from: account.address })
@@ -46,18 +43,18 @@ module.exports = {
   },
 
   /** GetBond */
-  GetTraderBond: async (account: Account) => {
+  GetTraderBond: async (account: Account): Promise<any> => {
     // TODO: CHange to call
     return await traderRegistrar.getBond(account.republic, { from: account.address });
   },
 
   /** ApproveRen */
-  ApproveRenToTraderRegistrar: async (account: Account, amount: number) => {
+  ApproveRenToTraderRegistrar: async (account: Account, amount: number): Promise<any> => {
     return await ren.approve(traderRegistrar.address, amount, { from: account.address });
   },
 
   /** UpdateBond */
-  UpdateTraderBond: async (account: Account, newBond: number) => {
+  UpdateTraderBond: async (account: Account, newBond: number): Promise<any> => {
     const tx = await utils.logTx(
       "Updating bond",
       traderRegistrar.updateBond(account.republic, newBond, { from: account.address })
@@ -68,7 +65,7 @@ module.exports = {
     //   { event: 'TraderBondUpdated', traderId: account.republic, newBond: newBond });
   },
 
-  WithdrawTraderBond: async (account: Account) => {
+  WithdrawTraderBond: async (account: Account): Promise<any> => {
     return await utils.logTx(
       "Releasing bond",
       traderRegistrar.withdrawBond(account.republic, { from: account.address })

@@ -1,6 +1,6 @@
 // Borrowed from https://github.com/biern/truffle-typescript-example (No License)
 
-import * as Web3 from "web3";
+// import * as Web3 from "web3";
 
 declare type _contractTest = (accounts: string[]) => void;
 declare function contract(name: string, test: _contractTest): void;
@@ -19,5 +19,5 @@ interface Artifacts {
 }
 
 declare var artifacts: Artifacts;
-declare var web3: Web3;
+declare var web3: any;
 declare var assert: any; // Fix
