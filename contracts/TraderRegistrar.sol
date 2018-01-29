@@ -50,7 +50,7 @@ contract TraderRegistrar {
    * @notice Emitted when a refund has been made.
    *
    * @param _owner The address that was refunded.
-   * @parma _amount The amount of REN that was refunded.
+   * @param _amount The amount of REN that was refunded.
    */
   event OwnerRefunded(address _owner, uint256 _amount);
 
@@ -68,6 +68,15 @@ contract TraderRegistrar {
    */
   modifier onlyUnregistered(bytes20 _traderID) {
     if (!traders[_traderID].registered) {
+      _;
+    }
+  }
+
+  /**
+   * @notice Only allow registered traders to pass.
+   */
+  modifier onlyRegistered(bytes20 _traderID) {
+    if (traders[_traderID].registered) {
       _;
     }
   }
@@ -122,15 +131,15 @@ contract TraderRegistrar {
    * @param _traderID The ID of the trader that will be deregistered. The
    *                  caller must be the owner of this trader.
    */
-  function deregister(bytes20 _traderID) public onlyOwner(_traderID) {
+  function deregister(bytes20 _traderID) public onlyOwner(_traderID) onlyRegistered(_traderID) {
+    // Setup a refund for the owner.
+    pendingRefunds[msg.sender] += traders[_traderID].bond;
+
     // Zero the trader from the registry.
     traders[_traderID].owner = 0;
     traders[_traderID].bond = 0;
     traders[_traderID].publicKey = "";
     traders[_traderID].registered = false;
-
-    // Setup a refund for the owner.
-    pendingRefunds[msg.sender] += traders[_traderID].bond;
 
     // Emit an event.
     TraderDeregistered(_traderID);

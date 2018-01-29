@@ -1,7 +1,7 @@
-pragma solidity ^0.4.17;
+pragma solidity 0.4.18;
 
-import './Utils.sol';
 import "./RepublicToken.sol";
+import "./Utils.sol";
 
 /**
  * Active WIP
@@ -21,6 +21,8 @@ contract MinerRegistrar {
     bytes commitment;
     bytes seed;
     bool registered;
+    uint256 registeredAt;
+    uint256 registeredPosition;
   }
 
   // Republic ERC20 token contract used to transfer bonds.
@@ -28,6 +30,7 @@ contract MinerRegistrar {
 
   // Registry data.
   mapping(bytes20 => Miner) public miners;
+  bytes20[] arrayOfMiners;
   uint256 public numberOfMiners;
 
   // Minimum bond to be considered registered.
@@ -57,7 +60,7 @@ contract MinerRegistrar {
    * @notice Emitted when a refund has been made.
    *
    * @param _owner The address that was refunded.
-   * @parma _amount The amount of REN that was refunded.
+   * @param _amount The amount of REN that was refunded.
    */
   event OwnerRefunded(address _owner, uint256 _amount);
 
@@ -121,12 +124,63 @@ contract MinerRegistrar {
       publicKey: _publicKey,
       commitment: _commitment,
       seed: keccak256(block.blockhash(block.number - 1), _minerID),
-      registered: true
+      registered: true,
+      registeredAt: now,
+      registeredPosition: numberOfMiners
     });
+    arrayOfMiners.push(_minerID);
     numberOfMiners++;
 
     // Emit an event.
     MinerRegistered(_minerID, bond);
+  }
+
+  /** 
+   * @notice Deregister a miner and clear their bond for refunding. Only the
+   * owner of a miner can deregister the miner.
+   *
+   * @param _minerID The ID of the miner that will be deregistered. The caller
+   *                 must be the owner of this miner.
+   */
+  function deregister(bytes20 _minerID) public onlyOwner(_minerID) onlyRegistered(_traderID) {
+    // Setup a refund for the owner.
+    pendingRefunds[msg.sender] += miners[_minerID].bond;
+
+    // Remove the miner from the array by overide them with the last miner.
+    uint256 overridePosition = miners[_minerID].registeredPosition;
+    arrayOfMiners[overridePosition] = arrayOfMiners[numberOfMiners-1];
+    arrayOfMiners[overridePosition].registeredPosition = overridePosition;
+    numberOfMiners--;
+
+    // Zero the miner from the registry.
+    miners[_minerID].owner = 0;
+    miners[_minerID].bond = 0;
+    miners[_minerID].publicKey = "";
+    miners[_minerID].commitment = "";
+    miners[_minerID].seed = "";
+    miners[_minerID].registered = false;
+    miners[_minerID].registeredAt = 0;
+    miners[_minerID].registeredPosition = 0;
+
+    // Emit an event.
+    MinerDeregistered(_minerID);
+  }
+
+  /** 
+   * @notice Refund all REN that has been cleared for refunding. Bonds are
+   * cleared for refunding when the respective trader is deregistered.
+   */
+  function refund() public {
+    // Ensure that the refund amount is greater than zero.
+    uint amount = pendingRefunds[msg.sender];
+    require(amount > 0);
+
+    // Refund the owner by transferring REN.
+    pendingRefunds[msg.sender] = 0;
+    require(ren.transfer(msg.sender, amount));
+
+    // Emit an event.
+    OwnerRefunded(msg.sender, amount);
   }
   
   /**
@@ -161,84 +215,6 @@ contract MinerRegistrar {
   
     return false;
   }
-
-  /** 
-  * @notice Deregister a miner and refund their bond.
-  *
-  * @param _minerID The Republic ID of the miner.
-  */
-  function deregister(bytes20 _minerID) public {
-
-    // Check that they can deregister
-    require(canDeregister(_minerID));
-
-    // Check that the msg.sender owns the miner
-    require(miners[_minerID].owner == msg.sender);
-
-    // Swap miners around
-    uint256 destinationIndex;
-    uint256 currentIndex = miners[_minerID].index;
-
-    bool decreaseLength = false;
-
-    // TODO: If miner is in toRegister, put at end of toRegister and delete, instead
-    if (isPendingRegistration(_minerID)) {
-      // still in toRegister
-
-      // last in toRegister
-      destinationIndex = toRegisterOffset() + toRegisterCount - 1;
-
-      // Update count
-      toRegisterCount -= 1;
-
-      decreaseLength = true;
-
-    } else {
-
-      // already registered, so swap into toDeregister
-
-      // first in registered
-      destinationIndex = stayingRegisteredOffset();
-
-      // Update count
-      stayingRegisteredCount -= 1;
-      toDeregisterCount += 1;
-    }
-
-    // Swap two miners in minerList
-    minerList[currentIndex] = minerList[destinationIndex];
-    minerList[destinationIndex] = _minerID;
-    // Update their indexes
-    miners[minerList[currentIndex]].index = currentIndex;
-    miners[minerList[destinationIndex]].index = destinationIndex;
-
-    if (decreaseLength) {
-      delete minerList[destinationIndex]; // Never registered, so safe to delete
-      minerList.length = minerList.length - 1;
-    }
-
-    updateBondWithdrawal(_minerID, miners[_minerID].bond);
-
-    // Emit event to logs
-    MinerDeregistered(_minerID);
-  }
-
-  /**
-  * @notice Withdraw the bond of a miner. This is the latter of two functions a
-  * miner must call to retrieve their bond. The first call is to decrease their
-  * bond or deregister. This stages an amount of bond to be withdrawn. This 
-  * function then allows them to actually make the withdrawal.
-  *
-  * @param _minerID The Republic ID of the miner.
-  */
-  function withdrawBond(bytes20 _minerID) public {
-    updateBondWithdrawal(_minerID, 0);
-  }
-
-
-
-
-
 
   /*** General getters ***/
 
