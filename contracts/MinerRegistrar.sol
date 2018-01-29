@@ -230,4 +230,28 @@ contract MinerRegistrar {
     }
   }
 
+  function getNumberOfMiners() public view returns (uint256) {
+    return numberOfMiners;
+  }
+
+  function getOwner(bytes20 _minerID) public view returns (address) {
+    return miners[_minerID].owner;
+  }
+
+  function getBond(bytes20 _minerID) public view returns (uint256) {
+    return miners[_minerID].bond;
+  }
+ 
+  function getPublicKey(bytes20 _minerID) public view returns (bytes) {
+    return miners[_minerID].publicKey;
+  }
+ 
+  function getCommitment(bytes20 _minerID) public view returns (bytes32) {
+    return miners[_minerID].commitment;
+  }
+
+  function getCurrentEpoch() public view returns (Epoch) {
+    return currentEpoch;
+  }
+
 }
