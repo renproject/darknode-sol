@@ -14,12 +14,17 @@ import "./Utils.sol";
  */
 contract MinerRegistrar {
 
+  struct Epoch {
+    bytes32 blockhash;
+    uint256 timestamp;
+  }
+
   struct Miner {
     address owner;
     uint256 bond;
     bytes publicKey;
-    bytes commitment;
-    bytes seed;
+    bytes32 commitment;
+    bytes32 seed;
     bool registered;
     uint256 registeredAt;
     uint256 registeredPosition;
@@ -35,6 +40,8 @@ contract MinerRegistrar {
 
   // Minimum bond to be considered registered.
   uint256 public minimumBond;
+
+  Epoch currentEpoch;
 
   uint256 public minimumEpochInterval;
 
@@ -83,10 +90,20 @@ contract MinerRegistrar {
   }
 
   /**
-   * @notice Only allow unregisterd traders to pass.
+   * @notice Only allow unregisterd miners to pass.
    */
   modifier onlyUnregistered(bytes20 _minerID) {
     if (!miners[_minerID].registered) {
+      _;
+    }
+  }
+
+  /**
+   * @notice Only allow miners that have been unregistered for a longer enough
+   * time to pass.
+   */
+  modifier onlyRefundable(bytes20 _minerID) {
+    if (now - miners[_minerID].registeredAt >= 2*minimumEpochInterval) {
       _;
     }
   }
@@ -118,7 +135,7 @@ contract MinerRegistrar {
    * @param _commitment The commitment hash of the miner. It is stored and used
    *                    to generate the overlay network during each epoch.
    */
-  function register(bytes20 _minerID, bytes _publicKey, bytes _commitment) public onlyUnregistered(_minerID) {
+  function register(bytes20 _minerID, bytes _publicKey, bytes32 _commitment) public onlyUnregistered(_minerID) {
     // REN allowance is used as the bond.
     uint256 bond = ren.allowance(msg.sender, this);
     require(bond > minimumBond);
@@ -151,14 +168,19 @@ contract MinerRegistrar {
    * @param _minerID The ID of the miner that will be deregistered. The caller
    *                 must be the owner of this miner.
    */
-  function deregister(bytes20 _minerID) public onlyOwner(_minerID) onlyRegistered(_traderID) {
+  function deregister(bytes20 _minerID) public onlyOwner(_minerID) onlyRegistered(_minerID) onlyRefundable(_minerID) {
     // Setup a refund for the owner.
     pendingRefunds[msg.sender] += miners[_minerID].bond;
 
     // Remove the miner from the array by overide them with the last miner.
     uint256 overridePosition = miners[_minerID].registeredPosition;
-    arrayOfMiners[overridePosition] = arrayOfMiners[numberOfMiners-1];
-    arrayOfMiners[overridePosition].registeredPosition = overridePosition;
+    // Update the last miner to be at the overriden position.
+    bytes20 lastMinerID = arrayOfMiners[numberOfMiners-1];
+    miners[lastMinerID].registeredPosition = overridePosition;
+    // Update the array of miners and delete the last position in the array.
+    arrayOfMiners[overridePosition] = lastMinerID;
+    delete arrayOfMiners[numberOfMiners-1];
+    arrayOfMiners.length--;
     numberOfMiners--;
 
     // Zero the miner from the registry.
@@ -193,111 +215,17 @@ contract MinerRegistrar {
   }
   
   /**
-   * @notice Check if the epoch needs to be updated, and update it if
-   * necessary.
-   *
-   * @return True if the epoch was updated, otherwise false.
+   * @notice Progress the epoch if it is possible and necessary to do so. This
+   * captures the current timestamp and current blockhash and overrides the
+   * current epoch.
    */
-  function epoch() public returns (bool) {
-    // NOTE: Requires `epochInterval` < `now`
-    if (now > currentEpoch.time + epochInterval) {
+  function epoch() public {
+    if (now > currentEpoch.timestamp + minimumEpochInterval) {
       currentEpoch = Epoch({
-        time: now,
-        blockhash: block.blockhash(block.number - 1)
+        blockhash: block.blockhash(block.number - 1),
+        timestamp: now
       });
-
-      // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
-        delete minerList[i];
-      }
-
-      // Update counts
-      deregisteredCount += toDeregisterCount;
-      stayingRegisteredCount += toRegisterCount;
-      toRegisterCount = 0;
-      toDeregisterCount = 0;
-
-      NextEpoch();
-
-      return true;
     }
-  
-    return false;
-  }
-
-  /*** General getters ***/
-
-  function getEpochBlockhash() public view returns (bytes32) {
-    return currentEpoch.blockhash;
-  }
-
-  function getCurrentMiners() public view returns (bytes20[]) {
-
-    var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + toDeregisterCount + stayingRegisteredCount;
-
-    bytes20[] memory currentMiners = new bytes20[](toDeregisterCount + stayingRegisteredCount);
-
-    for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
-      currentMiners[i] = minerList[i + registeredStart];
-    }
-    return currentMiners;
-  }
-
-  // TODO: Used for debugging only?, remove before mainnet
-  function getAllMiners() public view returns (bytes20[]) {
-    // Note: Returns 0x0 at starting position
-    return minerList;
-  }
-
-  function getMNetworkCount() public view returns (uint256) {
-    // TODO: Should be rounded up?
-    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
-  }
-  
-  function getMNetworkSize() public view returns (uint256) {
-    uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
-    
-    // If odd, add 1 to become even
-    return log + (log % 2);
-  }
-
-  function getCurrentMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount);
-  }
-
-  function getNextMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
-  }
-
-  function getBond(bytes20 _minerID) public view returns (uint256) {
-    // Check if they have bond pending to be withdrawn but still valid
-    if (miners[_minerID].bondWithdrawalTime >= currentEpoch.time) {
-      return miners[_minerID].bond + miners[_minerID].bondPendingWithdrawal;
-    } else {
-      return miners[_minerID].bond;
-    }
-  }
-
-  function getSeed(bytes20 _minerID) public view returns (bytes32) {
-    return miners[_minerID].seed;
-  }
-  
-  // Allow anyone to see a Republic ID's public key
-  function getPublicKey(bytes20 _minerID) public view returns (bytes) {
-    return miners[_minerID].publicKey;
-  }
-
-  function getOwner(bytes20 _minerID) public view returns (address) {
-    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
-  }
-
-  function getMinerID(address _addr) public view returns (bytes20) {
-    return addressIDs[_addr];
-  }
-
-  function getBondPendingWithdrawal(bytes20 _minerID) public view returns (uint256) {
-    return miners[_minerID].bondPendingWithdrawal;
   }
 
 }
