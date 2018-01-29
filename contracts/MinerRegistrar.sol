@@ -65,10 +65,19 @@ contract MinerRegistrar {
   event OwnerRefunded(address _owner, uint256 _amount);
 
   /**
-   * @notice Only allow the owner that registered the trader to pass.
+   * @notice Only allow the owner that registered the miner to pass.
    */
   modifier onlyOwner(bytes20 _minerID) {
     if (miners[_minerID].owner == msg.sender) {
+      _;
+    }
+  }
+
+  /**
+   * @notice Only allow registerd miners to pass.
+   */
+  modifier onlyRegistered(bytes20 _minerID) {
+    if (!miners[_minerID].registered) {
       _;
     }
   }
