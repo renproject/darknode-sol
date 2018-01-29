@@ -139,7 +139,7 @@ contract MinerRegistrar {
    * @param _publicKey The public key of the miner. It is stored to allow other
    *                   miners and traders to encrypt messages to the trader.
    */
-  function register(bytes20 _minerID, bytes _publicKey, bytes32 _commitment) public onlyUnregistered(_minerID) {
+  function register(bytes20 _minerID, bytes _publicKey) public onlyUnregistered(_minerID) {
     // REN allowance is used as the bond.
     uint256 bond = ren.allowance(msg.sender, this);
     require(bond > minimumBond);
