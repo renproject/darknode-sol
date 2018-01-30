@@ -1,26 +1,16 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
-const utils = require("../test_utils");
-const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+import * as utils from "./_helpers/test_utils";
+import { accounts } from "./_helpers/accounts";
+import steps from "./_steps/steps";
 
 // Specifically request an abstraction for Traders
 
-(async () => {
-  ren = await artifacts.require("RepublicToken").deployed();
-  traderRegistrar = await artifacts.require("TraderRegistrar").deployed();
-})();
-
-
-contract('Traders', function () {
-
-  afterEach("ensure node is deregistered", async function () {
-    // After each test, make sure that the node is not registered
-    try { await steps.DeregisterTrader(accounts[0]); } catch (err) { }
-  });
+contract("Traders", function () {
 
   it("can register and deregister", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
@@ -33,13 +23,11 @@ contract('Traders', function () {
     await steps.DeregisterTrader(accounts[0]);
   });
 
-
   it("can't deregister without first registering", async function () {
     // Deregistering without first registering should throw an error
     await steps.DeregisterTrader(accounts[0])
       .should.be.rejectedWith(Error);
   });
-
 
   it("can access a bond from a republic ID", async function () {
     const bond = 1111;
@@ -51,7 +39,6 @@ contract('Traders', function () {
 
     await steps.DeregisterTrader(accounts[0]);
   });
-
 
   it("should not have a bond after deregistering", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
@@ -112,7 +99,7 @@ contract('Traders', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(newBond - oldBond, accounts[0])
+    await steps.ApproveRenToTraderRegistrar(accounts[0], newBond - oldBond);
     await steps.UpdateTraderBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -133,7 +120,7 @@ contract('Traders', function () {
 
     // Increasing bond without approving should throw an error
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(0, accounts[0]);
+    await steps.ApproveRenToTraderRegistrar(accounts[0], 0);
     await steps.UpdateTraderBond(accounts[0], newBond)
       .should.be.rejectedWith(Error);
 
@@ -161,7 +148,6 @@ contract('Traders', function () {
     (await steps.GetTraderPublicKey(accounts[0].republic))
       .should.equal(accounts[0].public);
   });
-
 
   // Log costs
   after("log costs", () => {

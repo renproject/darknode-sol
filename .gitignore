@@ -1,3 +1,11 @@
 node_modules
 .node-xmlhttprequest-sync-*
-test/privateKeys.json
+scTopics
+
+coverage
+coverageEnv
+coverage.json
+.coveralls.yml
+
+test
+test-ts/_helpers/privateKeys.json

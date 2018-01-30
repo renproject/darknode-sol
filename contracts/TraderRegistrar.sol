@@ -181,5 +181,4 @@ contract TraderRegistrar {
   function getPublicKey(bytes20 _traderID) public view returns (bytes) {
     return traders[_traderID].publicKey;
   }
-
 }

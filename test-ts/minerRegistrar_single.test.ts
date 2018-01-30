@@ -1,17 +1,16 @@
-const chai = require("chai");
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-bignumber')());
+
+import * as chai from "chai";
+chai.use(require("chai-as-promised"));
+chai.use(require("chai-bignumber")());
 chai.should();
 
-const utils = require("../test_utils");
-const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+import * as utils from "./_helpers/test_utils";
+import { accounts } from "./_helpers/accounts";
+import steps from "./_steps/steps";
 
-contract('A miner', function () {
+contract("A miner", function () {
 
   afterEach("ensure miner is deregistered", async function () {
-    // After each test, make sure that the miner is not registered
-    try { await steps.DeregisterMiner(accounts[0]); } catch (err) { }
     await steps.WaitForEpoch();
     await steps.WithdrawMinerBond(accounts[0]);
   });
@@ -20,6 +19,7 @@ contract('A miner', function () {
     // Deregistering without first registering should throw an error
     await steps.DeregisterMiner(accounts[0])
       .should.be.rejectedWith(Error);
+
   });
 
   it("can register and deregister", async function () {
@@ -135,7 +135,7 @@ contract('A miner', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToMinerRegistrar(newBond - oldBond, accounts[0])
+    await steps.ApproveRenToMinerRegistrar(accounts[0], newBond - oldBond);
     await steps.UpdateMinerBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -149,6 +149,23 @@ contract('A miner', function () {
     await steps.DeregisterMiner(accounts[0]);
   });
 
+  it("updating their bond to their previous bond has no effect", async function () {
+    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+    const oldBond = 1000;
+    await steps.RegisterMiner(accounts[0], oldBond);
+    await steps.UpdateMinerBond(accounts[0], oldBond);
+
+    // Bond should now be 1000
+    (await steps.GetMinerBond(accounts[0]))
+      .should.be.bignumber.equal(oldBond);
+
+    // Bond difference should have been withdrawn
+    (await steps.GetRenBalance(accounts[0]))
+      .should.be.bignumber.equal(balanceBefore.minus(oldBond));
+
+    await steps.DeregisterMiner(accounts[0]);
+  });
+
   it("can't increase their bond without first approving ren", async function () {
     const balanceBefore = (await steps.GetRenBalance(accounts[0]));
     const oldBond = 1000;
@@ -156,7 +173,7 @@ contract('A miner', function () {
 
     // Increasing bond without approving should throw an error
     const newBond = 1500;
-    await steps.ApproveRenToMinerRegistrar(0, accounts[0]);
+    await steps.ApproveRenToMinerRegistrar(accounts[0], 0);
     await steps.UpdateMinerBond(accounts[0], newBond)
       .should.be.rejectedWith(Error);
 
@@ -181,8 +198,13 @@ contract('A miner', function () {
   });
 
   it("can retrieve a miner's public key from its address", async function () {
-    (await steps.GetMinerPublicKey(accounts[0].republic))
+    (await steps.GetMinerPublicKey(accounts[0]))
       .should.equal(accounts[0].public);
+  });
+
+  it("can retrieve a miner's republic ID from its ethereum address", async function () {
+    (await steps.GetMinerID(accounts[0]))
+      .should.equal(accounts[0].republic);
   });
 
   // Log costs
