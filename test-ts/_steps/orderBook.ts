@@ -2,6 +2,7 @@
 import * as utils from "../_helpers/test_utils";
 import { accounts, indexMap } from "../_helpers/accounts";
 import steps from "./steps";
+import { BigNumber } from "bignumber.js";
 
 const config = require("../../republic-config");
 
@@ -9,8 +10,9 @@ const config = require("../../republic-config");
 const MINIMUM_ORDER_FEE = 100000;
 
 // Wait for contracts:
+// tslint:disable-next-line:no-any
 let orderBook: any, ren: any;
-(async (): Promise<any> => {
+(async (): Promise<void> => {
   ren = await artifacts.require("RepublicToken").deployed();
   await artifacts.require("MinerRegistrar").deployed();
   await artifacts.require("TraderRegistrar").deployed();
@@ -31,10 +33,10 @@ module.exports = {
   ,
 
   RandomMNetwork:
-    (mNetworks: any[][]) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
+    (mNetworks: Account[][]) => (mNetworks[1 + Math.floor(Math.random() * (mNetworks.length - 1))])
   ,
 
-  CheckOrderFragments: async (orderID: string, fragmentIDs: string[], mNetwork: MNetwork[]): Promise<any> => { // async
+  CheckOrderFragments: async (orderID: string, fragmentIDs: string[], mNetwork: MNetwork[]): Promise<void> => { // async
     // Check orders fragments
     for (let i = 0; i < mNetwork.length; i++) {
       const miner = mNetwork[i];
@@ -45,18 +47,20 @@ module.exports = {
     // ));
   },
 
-  CheckOrderFragment: async (orderID: string, fragmentId: string, miner: any): Promise<any> => {
+  CheckOrderFragment: async (orderID: string, fragmentId: string, miner: Account): Promise<void> => {
     (await orderBook.checkOrderFragment.call(orderID, fragmentId, miner.republic))
       .should.be.true;
   },
 
   GetKValue:
-    (fragmentCount: any) => (fragmentCount - 1) / 2 + 1
+    (fragmentCount: number) => (fragmentCount - 1) / 2 + 1
   ,
 
   SubmitOutputFragments: async (
-    outputFragments: any, orderID_A: any, orderID_B: any,
-    mNetwork: any, fragmentIDs_A: any, fragmentIDs_B: any): Promise<any> => { // async
+    outputFragments: string[],
+    orderID_A: string,
+    orderID_B: string,
+    mNetwork: Account[], fragmentIDs_A: string[], fragmentIDs_B: string[]): Promise<void> => { // async
     // Submit order fragments
     const kValue = steps.GetKValue(outputFragments.length);
     for (let i = 0; i < kValue; i++) {
@@ -72,8 +76,8 @@ module.exports = {
   },
 
   SubmitOutputFragment: async (
-    outputFragment: any, orderID1: any, orderID2: any,
-    miner: any, fragmentID1: any, fragmentID2: any): Promise<any> => {
+    outputFragment: string[], orderID1: string, orderID2: string,
+    miner: Account, fragmentID1: string, fragmentID2: string): Promise<void> => {
     await utils.logTx(
       "Submitting fragment",
       orderBook.submitOutputFragment(
@@ -82,14 +86,14 @@ module.exports = {
     );
   },
 
-  GetMatchedOrder: async (_orderID: string): Promise<any> => {
+  GetMatchedOrder: async (_orderID: string): Promise<{ orderID: string, traderID: string }> => {
     const [orderID, traderID] = await orderBook.getMatchedOrder.call(_orderID);
     return { orderID, traderID };
   },
 
   OpenOrder: async (
-    trader: any, orderId: string, fragmentIds: string[],
-    randomMNetwork: any[], leaderNetwork: any[]) => {
+    trader: Account, orderId: string, fragmentIds: string[],
+    randomMNetwork: Account[], leaderNetwork: Account[]) => {
     await ren.approve(orderBook.address, MINIMUM_ORDER_FEE, { from: trader.address });
     // await steps.ApproveRen(/* from: */ trader, /* to: */ orderBook, MINIMUM_ORDER_FEE);
     const randomMNetworkIDs = randomMNetwork.map(account => account.republic);
@@ -103,19 +107,19 @@ module.exports = {
     );
   },
 
-  WithdrawRewards: async (mNetwork: MNetwork): Promise<any> => {
-    let sum = 0;
+  WithdrawRewards: async (mNetwork: MNetwork): Promise<BigNumber> => {
+    let sum = new BigNumber(0);
     for (let i = 0; i < mNetwork.length; i++) {
       // Do it in this direction in order to now have to require bignumber.js
       const reward = await orderBook.getReward.call(mNetwork[i].republic);
-      sum = reward.add(sum);
+      sum = sum.add(reward);
       await steps.WithdrawReward(mNetwork[i]);
     }
     // await Promise.all(mNetwork.map(miner => steps.WithdrawReward(miner)));
     return sum;
   },
 
-  WithdrawReward: async (miner: Account): Promise<any> => {
+  WithdrawReward: async (miner: Account): Promise<BigNumber> => {
     // TODO: Check Ren balance instead of getReward
     const reward = await orderBook.getReward(miner.republic);
     await utils.logTx("Withdrawing miner reward", orderBook.withdrawReward(miner.republic, { from: miner.address }));

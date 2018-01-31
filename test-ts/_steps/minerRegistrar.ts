@@ -1,23 +1,27 @@
 
 import { accounts, indexMap } from "../_helpers/accounts";
+import { MinerRegistrarInstance } from "../../contracts";
 
 const config = require("../../republic-config");
 import steps from "./steps";
 import * as utils from "../_helpers/test_utils";
+import { Transaction } from "web3";
+import { BigNumber } from "bignumber.js";
 
 // Wait for contracts:
-let minerRegistrar: any, ren: any;
-(async (): Promise<any> => {
+// tslint:disable-next-line:no-any
+let minerRegistrar: MinerRegistrarInstance, ren: any;
+(async (): Promise<void> => {
   ren = await artifacts.require("RepublicToken").deployed();
   minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
 })();
 
 module.exports = {
 
-  WaitForEpoch: async (): Promise<any> => {
+  WaitForEpoch: async (): Promise<void> => {
     while (true) {
       // Must be an on-chain call, or the time won't be updated
-      const tx = await utils.logTx("Checking epoch", minerRegistrar.checkEpoch());
+      const tx = await utils.logTx("Checking epoch", minerRegistrar.epoch());
       // If epoch happened, return
       if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "NextEpoch") {
         return;
@@ -27,19 +31,15 @@ module.exports = {
     }
   },
 
-  GetEpochBlockhash: async (): Promise<any> => {
-    return await minerRegistrar.getEpochBlockhash.call();
+  GetEpochBlockhash: async (): Promise<string> => {
+    return (await minerRegistrar.getCurrentEpoch.call()).blockhash;
   },
 
-  GetCurrentMinerCount: async (): Promise<any> => {
-    return await minerRegistrar.getCurrentMinerCount.call();
+  GetCurrentMinerCount: async (): Promise<BigNumber> => {
+    return await minerRegistrar.getNumberOfMiners.call();
   },
 
-  GetNextMinerCount: async (): Promise<any> => {
-    return await minerRegistrar.getNextMinerCount.call();
-  },
-
-  GetRegisteredMiners: async (): Promise<any> => {
+  GetRegisteredMiners: async (): Promise<Account[]> => {
 
     const count = await steps.GetCurrentMinerCount();
     const split = 50;
@@ -48,9 +48,13 @@ module.exports = {
     const ends = indexes.map((index: number) => Math.min((index + 1) * split, count));
 
     const miners = [];
-    const l1 = await indexes
+    const l1: Account[] = await indexes
       .map((i: number) => minerRegistrar.getCurrentMiners(starts[i], ends[i]))
-      .reduce(async (acc: any, curr: any) => { return (await acc).concat(await curr); }, Array(0));
+      .reduce(
+      async (acc: Promise<Account[]>, curr: Promise<Account>) => {
+        return (await acc).concat(await curr);
+      },
+      Array(0));
     // const l2 = await minerRegistrar.getCurrentMiners(0, count);
 
     // l1.should.deep.equal(l2);
@@ -58,9 +62,9 @@ module.exports = {
     return l1;
   },
 
-  GetRegisteredAccountIndexes: async (): Promise<any> => {
+  GetRegisteredAccountIndexes: async (): Promise<number[]> => {
     const miners = await steps.GetRegisteredMiners();
-    return miners.map((miner: any) => indexMap[miner]);
+    return miners.map((miner: string) => indexMap[miner]);
   },
 
   /** MINER SPECIFIC FUNCTIONS */

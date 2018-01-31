@@ -2,6 +2,7 @@ pragma solidity 0.4.18;
 
 import "./RepublicToken.sol";
 import "./Utils.sol";
+import "./LinkedList.sol";
 
 /**
  * Active WIP
@@ -13,6 +14,7 @@ import "./Utils.sol";
  * 2. Remove Debug events
  */
 contract MinerRegistrar {
+  using Bytes20List for Bytes20List.List;
 
   struct Epoch {
     bytes32 blockhash;
@@ -20,7 +22,7 @@ contract MinerRegistrar {
   }
 
   /**
-   * @notice Miners are stored in the registry. The owner is the address that
+   * @notice Miners are stored in the miners. The owner is the address that
    * registered the miner, the bond is the amount of REN that was transferred
    * during registration, and the public key is the encryption key that should
    * be used when sending sensitive information to the miner. The commitment
@@ -31,9 +33,9 @@ contract MinerRegistrar {
     uint256 bond;
     bytes publicKey;  
     bytes32 commitment;
-    bool registered;
-    uint256 registeredAt;
     uint256 registeredPosition;
+    uint256 registeredAt;
+    uint256 deregisteredAt;
   }
 
   // Republic ERC20 token contract used to transfer bonds.
@@ -41,7 +43,7 @@ contract MinerRegistrar {
 
   // Registry data.
   mapping(bytes20 => Miner) public miners;
-  bytes20[] public arrayOfMiners;
+  Bytes20List.List private minerList;
 
   // Minimum bond to be considered registered.
   uint256 public minimumBond;
@@ -89,7 +91,7 @@ contract MinerRegistrar {
    * @notice Only allow registerd miners to pass.
    */
   modifier onlyRegistered(bytes20 _minerID) {
-    if (miners[_minerID].registered) {
+    if (isMinerRegistered(_minerID)) {
       _;
     }
   }
@@ -98,17 +100,17 @@ contract MinerRegistrar {
    * @notice Only allow unregisterd miners to pass.
    */
   modifier onlyUnregistered(bytes20 _minerID) {
-    if (!miners[_minerID].registered) {
+    if (!isMinerRegistered(_minerID)) {
       _;
     }
   }
 
   /**
-   * @notice Only allow miners that have been unregistered for a longer enough
+   * @notice Only allow miners that have been registered for a longer enough
    * time to pass.
    */
   modifier onlyRefundable(bytes20 _minerID) {
-    if (now - miners[_minerID].registeredAt >= 2*minimumEpochInterval) {
+    if (miners[_minerID].registeredAt != 0 && miners[_minerID].registeredAt <= currentEpoch.timestamp) {
       _;
     }
   }
@@ -125,7 +127,10 @@ contract MinerRegistrar {
     ren = RepublicToken(_renAddress);
     minimumBond = _minimumBond;
     minimumEpochInterval = _minimumEpochInterval;
-    epoch();
+    currentEpoch = Epoch({
+      blockhash: block.blockhash(block.number - 1),
+      timestamp: now
+    });
   }
 
   /** 
@@ -146,17 +151,15 @@ contract MinerRegistrar {
     // Transfer the bond to this contract.
     require(ren.transferFrom(msg.sender, this, bond));
 
-    // Store this trader in the registry.
+    // Store this trader in the miners.
     miners[_minerID] = Miner({
       owner: msg.sender,
       bond: bond,
       publicKey: _publicKey,
       commitment: keccak256(block.blockhash(block.number - 1), _minerID),
-      registered: true,
-      registeredAt: now,
-      registeredPosition: arrayOfMiners.length
+      registeredAt: currentEpoch.timestamp + minimumEpochInterval,
+      deregisteredAt: 0
     });
-    arrayOfMiners.push(_minerID);
 
     // Emit an event.
     MinerRegistered(_minerID, bond);
@@ -173,24 +176,8 @@ contract MinerRegistrar {
     // Setup a refund for the owner.
     pendingRefunds[msg.sender] += miners[_minerID].bond;
 
-    // Remove the miner from the array by overide them with the last miner.
-    uint256 overridePosition = miners[_minerID].registeredPosition;
-    // Update the last miner to be at the overriden position.
-    bytes20 lastMinerID = arrayOfMiners[arrayOfMiners.length-1];
-    miners[lastMinerID].registeredPosition = overridePosition;
-    // Update the array of miners and delete the last position in the array.
-    arrayOfMiners[overridePosition] = lastMinerID;
-    delete arrayOfMiners[arrayOfMiners.length-1];
-    arrayOfMiners.length--;
-
-    // Zero the miner from the registry.
-    miners[_minerID].owner = 0;
-    miners[_minerID].bond = 0;
-    miners[_minerID].publicKey = "";
-    miners[_minerID].commitment = "";
-    miners[_minerID].registered = false;
-    miners[_minerID].registeredAt = 0;
-    miners[_minerID].registeredPosition = 0;
+    // Zero the miner from the miners.
+    miners[_minerID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
 
     // Emit an event.
     MinerDeregistered(_minerID);
@@ -222,37 +209,13 @@ contract MinerRegistrar {
     if (now > currentEpoch.timestamp + minimumEpochInterval) {
       currentEpoch = Epoch({
         blockhash: block.blockhash(block.number - 1),
-        timestamp: now
+        timestamp: currentEpoch.timestamp + minimumEpochInterval
       });
     }
   }
 
   function getMiner(bytes20 _minerID) public view returns (Miner) {
     return miners[_minerID];
-  }
-
-  function getMiners(uint256 _offset, uint256 _limit) public view returns (Miner[]) {
-    // If the offset is out of the valid index range then return an empty
-    // array.
-    if (_offset >= arrayOfMiners.length) {
-      return new Miner[](0);
-    }
-    // If the limit is our of the valid index range then set it to the largest
-    // valid value.
-    if (_offset + _limit >= arrayOfMiners.length) {
-      _limit = arrayOfMiners.length - _offset;
-    }
-    // Return an array of a limited number of miners starting at the given
-    // offset.
-    Miner[] memory vals = new Miner[](_limit);
-    for (uint256 i = 0; i < _limit; i++) {
-      vals[_offset + i] = miners[arrayOfMiners[i]];
-    }
-    return vals;
-  }
-
-  function getNumberOfMiners() public view returns (uint256) {
-    return arrayOfMiners.length;
   }
 
   function getOwner(bytes20 _minerID) public view returns (address) {
@@ -273,6 +236,23 @@ contract MinerRegistrar {
 
   function getCurrentEpoch() public view returns (Epoch) {
     return currentEpoch;
+  }
+
+  function getXingOverlay() public view returns (bytes20[]) {
+    return new bytes20[](0);
+  }
+
+  function isMinerRegistered(bytes20 _minerID) public view returns (bool) {
+    if (miners[_minerID].registeredAt == 0) {
+      return false;
+    }
+    if (miners[_minerID].registeredAt != 0 && miners[_minerID].registeredAt > currentEpoch.timestamp) {
+      return false;
+    }
+    if (miners[_minerID].deregisteredAt != 0 && miners[_minerID].deregisteredAt <= currentEpoch.timestamp) {
+      return false;
+    }
+    return true;
   }
 
 }

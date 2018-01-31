@@ -77,13 +77,9 @@ contract("Miner Registar (multiple miners)", function () {
 
     (await steps.GetCurrentMinerCount())
       .should.be.bignumber.equal(0);
-    (await steps.GetNextMinerCount())
-      .should.be.bignumber.equal(2);
 
     await steps.WaitForEpoch();
 
-    (await steps.GetNextMinerCount())
-      .should.be.bignumber.equal(2);
     (await steps.GetCurrentMinerCount())
       .should.be.bignumber.equal(2);
 

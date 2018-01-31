@@ -7,6 +7,7 @@ chai.should();
 import * as u from "./_helpers/test_utils";
 
 // Initialise:
+// tslint:disable-next-line:no-any
 let utils: any;
 (async () => {
   utils = await artifacts.require("Utils").deployed();

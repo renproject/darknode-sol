@@ -8,6 +8,7 @@ var config = require("../../republic-config");
  * being able to call all other steps
  */
 
+// tslint:disable-next-line:no-any
 const steps: any = {};
 export default steps;
 
