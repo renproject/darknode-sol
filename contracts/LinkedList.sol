@@ -33,9 +33,8 @@ library Bytes20List {
    * @param node The node being checked
    */
   modifier inList(List storage self, bytes20 node) {
-    if (self.list[node].inList) {
-      _;
-    }
+    require (isInList(self, node));
+    _;
   }
 
   /**
@@ -44,9 +43,12 @@ library Bytes20List {
    * @param node The node being checked
    */
   modifier notInList(List storage self, bytes20 node) {
-    if (!self.list[node].inList) {
-      _;
-    }
+    require (!isInList(self, node));
+    _;
+  }
+
+  function isInList(List storage self, bytes20 node) internal view returns (bool) {
+    return self.list[node].inList;
   }
 
   /**
@@ -81,12 +83,12 @@ library Bytes20List {
    */
   function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal notInList(self, newNode) {
     // May be NULL
-    bytes20 previous = self.list[target].previous;
+    bytes20 prev = self.list[target].previous;
 
     self.list[newNode].next = target;
-    self.list[newNode].previous = previous;
+    self.list[newNode].previous = prev;
     self.list[target].previous = newNode;
-    self.list[previous].next = newNode;
+    self.list[prev].next = newNode;
 
     self.list[newNode].inList = true;
   }
@@ -99,12 +101,12 @@ library Bytes20List {
    */
   function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal notInList(self, newNode) {
     // May be NULL
-    bytes20 next = self.list[target].next;
+    bytes20 nxt = self.list[target].next;
 
     self.list[newNode].previous = target;
-    self.list[newNode].next = next;
+    self.list[newNode].next = nxt;
     self.list[target].next = newNode;
-    self.list[next].previous = newNode;
+    self.list[nxt].previous = newNode;
 
     self.list[newNode].inList = true;
   }
@@ -118,11 +120,11 @@ library Bytes20List {
     if (node == NULL) {
       return;
     }
-    bytes20 previous = self.list[node].previous;
-    bytes20 next = self.list[node].next;
+    bytes20 prev = self.list[node].previous;
+    bytes20 nxt = self.list[node].next;
 
-    self.list[previous].next = next;
-    self.list[next].previous = previous;
+    self.list[prev].next = nxt;
+    self.list[nxt].previous = prev;
 
     self.list[node].inList = false; // Does `delete` do this already?
     delete self.list[node];

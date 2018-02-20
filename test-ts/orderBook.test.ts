@@ -77,7 +77,7 @@
 
 //     // Wait for Miner Registrar epoch
 //     await steps.WaitForEpoch();
-//     await steps.WithdrawMinerBonds(miners);
+//     await steps.WithdrawDarkNodeBonds(miners);
 
 //     utils.printCosts();
 //   });

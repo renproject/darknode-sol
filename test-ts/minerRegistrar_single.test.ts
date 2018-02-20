@@ -109,88 +109,6 @@ contract("A dark node", function () {
     await steps.DeregisterDarkNode(accounts[0]);
   });
 
-  it("can decrease their bond", async function () {
-    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
-    await steps.RegisterDarkNode(accounts[0], 1000);
-
-    // Decrease bond
-    const newBond = 100;
-    await steps.UpdateDarkNodeBond(accounts[0], newBond);
-    await steps.WaitForEpoch();
-
-    // Bond should now be 100
-    (await steps.GetDarkNodeBond(accounts[0]))
-      .should.be.bignumber.equal(newBond);
-
-    await steps.WithdrawDarkNodeBond(accounts[0]);
-
-    // Bond difference should be returned
-    (await steps.GetRenBalance(accounts[0]))
-      .should.be.bignumber.equal(balanceBefore.minus(newBond));
-
-    await steps.DeregisterDarkNode(accounts[0]);
-  });
-
-  it("can increase their bond", async function () {
-    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
-    const oldBond = 1000;
-    await steps.RegisterDarkNode(accounts[0], oldBond);
-
-    // Increase bond
-    const newBond = 1500;
-    await steps.ApproveRenToDarkNodeRegistrar(accounts[0], newBond - oldBond);
-    await steps.UpdateDarkNodeBond(accounts[0], newBond);
-
-    // Bond should now be 1500
-    (await steps.GetDarkNodeBond(accounts[0]))
-      .should.be.bignumber.equal(newBond);
-
-    // Bond difference should have been withdrawn
-    (await steps.GetRenBalance(accounts[0]))
-      .should.be.bignumber.equal(balanceBefore.minus(newBond));
-
-    await steps.DeregisterDarkNode(accounts[0]);
-  });
-
-  it("updating their bond to their previous bond has no effect", async function () {
-    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
-    const oldBond = 1000;
-    await steps.RegisterDarkNode(accounts[0], oldBond);
-    await steps.UpdateDarkNodeBond(accounts[0], oldBond);
-
-    // Bond should now be 1000
-    (await steps.GetDarkNodeBond(accounts[0]))
-      .should.be.bignumber.equal(oldBond);
-
-    // Bond difference should have been withdrawn
-    (await steps.GetRenBalance(accounts[0]))
-      .should.be.bignumber.equal(balanceBefore.minus(oldBond));
-
-    await steps.DeregisterDarkNode(accounts[0]);
-  });
-
-  it("can't increase their bond without first approving ren", async function () {
-    const balanceBefore = (await steps.GetRenBalance(accounts[0]));
-    const oldBond = 1000;
-    await steps.RegisterDarkNode(accounts[0], oldBond);
-
-    // Increasing bond without approving should throw an error
-    const newBond = 1500;
-    await steps.ApproveRenToDarkNodeRegistrar(accounts[0], 0);
-    await steps.UpdateDarkNodeBond(accounts[0], newBond)
-      .should.be.rejectedWith(Error);
-
-    // Bond should still be 1000
-    (await steps.GetDarkNodeBond(accounts[0]))
-      .should.be.bignumber.equal(oldBond);
-
-    // Bond difference should not have been withdrawn
-    const balanceAfter = await steps.GetRenBalance(accounts[0]);
-    balanceAfter.should.be.bignumber.equal(balanceBefore.minus(oldBond));
-
-    await steps.DeregisterDarkNode(accounts[0]);
-  });
-
   it("can't deregister twice for the same registration", async function () {
     await steps.RegisterDarkNode(accounts[0], 1000);
     await steps.DeregisterDarkNode(accounts[0]);
@@ -205,14 +123,103 @@ contract("A dark node", function () {
       .should.equal(accounts[0].public);
   });
 
-  it("can retrieve a dark node's republic ID from its ethereum address", async function () {
-    (await steps.GetDarkNodeID(accounts[0]))
-      .should.equal(accounts[0].republic);
-  });
+  // it("can retrieve a dark node's republic ID from its ethereum address", async function () {
+  //   console.log(await steps.GetDarkNodeID(accounts[0]));
+  //   // .should.equal(accounts[0].republic);
+  // });
 
   // Log costs
   after("log costs", () => {
     utils.printCosts();
   });
+
+  // 
+  // 
+  // 
+  // 
+  // 
+  // 
+
+  // it("can decrease their bond", async function () {
+  //   const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+  //   await steps.RegisterDarkNode(accounts[0], 1000);
+
+  //   // Decrease bond
+  //   const newBond = 100;
+  //   await steps.UpdateDarkNodeBond(accounts[0], newBond);
+  //   await steps.WaitForEpoch();
+
+  //   // Bond should now be 100
+  //   (await steps.GetDarkNodeBond(accounts[0]))
+  //     .should.be.bignumber.equal(newBond);
+
+  //   await steps.WithdrawDarkNodeBond(accounts[0]);
+
+  //   // Bond difference should be returned
+  //   (await steps.GetRenBalance(accounts[0]))
+  //     .should.be.bignumber.equal(balanceBefore.minus(newBond));
+
+  //   await steps.DeregisterDarkNode(accounts[0]);
+  // });
+
+  // it("can increase their bond", async function () {
+  //   const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+  //   const oldBond = 1000;
+  //   await steps.RegisterDarkNode(accounts[0], oldBond);
+
+  //   // Increase bond
+  //   const newBond = 1500;
+  //   await steps.ApproveRenToDarkNodeRegistrar(accounts[0], newBond - oldBond);
+  //   await steps.UpdateDarkNodeBond(accounts[0], newBond);
+
+  //   // Bond should now be 1500
+  //   (await steps.GetDarkNodeBond(accounts[0]))
+  //     .should.be.bignumber.equal(newBond);
+
+  //   // Bond difference should have been withdrawn
+  //   (await steps.GetRenBalance(accounts[0]))
+  //     .should.be.bignumber.equal(balanceBefore.minus(newBond));
+
+  //   await steps.DeregisterDarkNode(accounts[0]);
+  // });
+
+  // it("updating their bond to their previous bond has no effect", async function () {
+  //   const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+  //   const oldBond = 1000;
+  //   await steps.RegisterDarkNode(accounts[0], oldBond);
+  //   await steps.UpdateDarkNodeBond(accounts[0], oldBond);
+
+  //   // Bond should now be 1000
+  //   (await steps.GetDarkNodeBond(accounts[0]))
+  //     .should.be.bignumber.equal(oldBond);
+
+  //   // Bond difference should have been withdrawn
+  //   (await steps.GetRenBalance(accounts[0]))
+  //     .should.be.bignumber.equal(balanceBefore.minus(oldBond));
+
+  //   await steps.DeregisterDarkNode(accounts[0]);
+  // });
+
+  // it("can't increase their bond without first approving ren", async function () {
+  //   const balanceBefore = (await steps.GetRenBalance(accounts[0]));
+  //   const oldBond = 1000;
+  //   await steps.RegisterDarkNode(accounts[0], oldBond);
+
+  //   // Increasing bond without approving should throw an error
+  //   const newBond = 1500;
+  //   await steps.ApproveRenToDarkNodeRegistrar(accounts[0], 0);
+  //   await steps.UpdateDarkNodeBond(accounts[0], newBond)
+  //     .should.be.rejectedWith(Error);
+
+  //   // Bond should still be 1000
+  //   (await steps.GetDarkNodeBond(accounts[0]))
+  //     .should.be.bignumber.equal(oldBond);
+
+  //   // Bond difference should not have been withdrawn
+  //   const balanceAfter = await steps.GetRenBalance(accounts[0]);
+  //   balanceAfter.should.be.bignumber.equal(balanceBefore.minus(oldBond));
+
+  //   await steps.DeregisterDarkNode(accounts[0]);
+  // });
 
 });

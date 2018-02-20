@@ -58,27 +58,24 @@ contract TraderRegistrar {
    * @notice Only allow the owner that registered the trader to pass.
    */
   modifier onlyOwner(bytes20 _traderID) {
-    if (traders[_traderID].owner == msg.sender) {
-      _;
-    }
+    assert (traders[_traderID].owner == msg.sender);
+    _;
   }
 
   /**
    * @notice Only allow unregisterd traders to pass.
    */
   modifier onlyUnregistered(bytes20 _traderID) {
-    if (!traders[_traderID].registered) {
-      _;
-    }
+    assert (!traders[_traderID].registered);
+    _;
   }
 
   /**
    * @notice Only allow registered traders to pass.
    */
   modifier onlyRegistered(bytes20 _traderID) {
-    if (traders[_traderID].registered) {
-      _;
-    }
+    assert (traders[_traderID].registered);
+    _;
   }
 
   /** 

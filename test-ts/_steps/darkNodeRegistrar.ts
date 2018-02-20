@@ -7,10 +7,11 @@ import steps from "./steps";
 import * as utils from "../_helpers/test_utils";
 import { Transaction } from "web3";
 import { BigNumber } from "bignumber.js";
+import { DarkNodeRegistrarInstance } from "../../contracts";
 
 // Wait for contracts:
 // tslint:disable-next-line:no-any
-let darkNodeRegistrar: any, ren: any;
+let darkNodeRegistrar: DarkNodeRegistrarInstance, ren: any;
 (async (): Promise<void> => {
   ren = await artifacts.require("RepublicToken").deployed();
   darkNodeRegistrar = await artifacts.require("DarkNodeRegistrar").deployed();
@@ -35,31 +36,32 @@ module.exports = {
     return (await darkNodeRegistrar.getCurrentEpoch.call()).blockhash;
   },
 
-  GetCurrentDarkNodeCount: async (): Promise<BigNumber> => {
-    return await darkNodeRegistrar.getNumberOfDarkNodes.call();
-  },
+  // GetCurrentDarkNodeCount: async (): Promise<BigNumber> => {
+  //   return await darkNodeRegistrar.getNumberOfDarkNodes.call();
+  // },
 
-  GetRegisteredDarkNodes: async (): Promise<Account[]> => {
+  GetRegisteredDarkNodes: async (): Promise<any[]> => {
+    await (darkNodeRegistrar.getXingOverlay as any)();
+    return await (darkNodeRegistrar.getXingOverlay as any).call();
+    // const count = await steps.GetCurrentDarkNodeCount();
+    // const split = 50;
+    // const indexes = utils.range(Math.floor(count / split) + 1);
+    // const starts = indexes.map((index: number) => index * split);
+    // const ends = indexes.map((index: number) => Math.min((index + 1) * split, count));
 
-    const count = await steps.GetCurrentDarkNodeCount();
-    const split = 50;
-    const indexes = utils.range(Math.floor(count / split) + 1);
-    const starts = indexes.map((index: number) => index * split);
-    const ends = indexes.map((index: number) => Math.min((index + 1) * split, count));
+    // const darkNodes = [];
+    // const l1: Account[] = await indexes
+    //   .map((i: number) => darkNodeRegistrar.getXingOverlay.call())
+    //   .reduce(
+    //   async (acc: Promise<Account[]>, curr: Promise<string>) => {
+    //     return (await acc).concat(await { republic: curr });
+    //   },
+    //   Array(0));
+    // // const l2 = await darkNodeRegistrar.getCurrentDarkNodes(0, count);
 
-    const darkNodes = [];
-    const l1: Account[] = await indexes
-      .map((i: number) => darkNodeRegistrar.getCurrentDarkNodes(starts[i], ends[i]))
-      .reduce(
-      async (acc: Promise<Account[]>, curr: Promise<Account>) => {
-        return (await acc).concat(await curr);
-      },
-      Array(0));
-    // const l2 = await darkNodeRegistrar.getCurrentDarkNodes(0, count);
+    // // l1.should.deep.equal(l2);
 
-    // l1.should.deep.equal(l2);
-
-    return l1;
+    // return l1;
   },
 
   GetRegisteredAccountIndexes: async (): Promise<number[]> => {
@@ -67,7 +69,7 @@ module.exports = {
     return darkNodes.map((darkNode: string) => indexMap[darkNode]);
   },
 
-  /** MINER SPECIFIC FUNCTIONS */
+  // /** MINER SPECIFIC FUNCTIONS */
 
   /** Register */
   RegisterDarkNode: async (account: Account, bond: number): Promise<any> => {
@@ -102,37 +104,37 @@ module.exports = {
     return await darkNodeRegistrar.getBond.call(account.republic);
   },
 
-  /** Get darkNode ID from ethereum address */
-  GetDarkNodeID: async (account: Account): Promise<any> => {
-    return await darkNodeRegistrar.getDarkNodeID.call(account.address);
-  },
+  // /** Get darkNode ID from ethereum address */
+  // GetDarkNodeID: async (account: Account): Promise<any> => {
+  //   return await darkNodeRegistrar.getDarkNode.call(account.address);
+  // },
 
-  GetDarkNodeSeed: async (account: Account): Promise<any> => {
-    return await darkNodeRegistrar.getSeed.call(account.republic);
-  },
+  // GetDarkNodeSeed: async (account: Account): Promise<any> => {
+  //   return await darkNodeRegistrar.getSeed.call(account.republic);
+  // },
 
-  /** getMNetworkSize */
-  GetAllDarkNodes: async (): Promise<any> => {
-    const [darkNodeList, deregisteredCount, toDeregisterCount,
-      stayingRegisteredCount, toRegisterCount] = await darkNodeRegistrar.getAllDarkNodes.call();
-    const deregisteredOffset = 1;
-    const toDeregisterOffset = deregisteredOffset + deregisteredCount.toNumber(); // 1 + 5 = 6
-    const registeredOffset = toDeregisterOffset + toDeregisterCount.toNumber();
-    const toRegisterOffset = registeredOffset + stayingRegisteredCount.toNumber();
-    const end = toRegisterOffset + toRegisterCount.toNumber();
-    console.log(`slice(${deregisteredOffset}, ${toDeregisterOffset}`);
-    return {
-      deregistered: darkNodeList.slice(deregisteredOffset, toDeregisterOffset),
-      toDeregister: darkNodeList.slice(toDeregisterOffset, registeredOffset),
-      registered: darkNodeList.slice(registeredOffset, toRegisterOffset),
-      toRegister: darkNodeList.slice(toRegisterOffset, end),
-    };
-  },
+  // /** getMNetworkSize */
+  // GetAllDarkNodes: async (): Promise<any> => {
+  //   const [darkNodeList, deregisteredCount, toDeregisterCount,
+  //     stayingRegisteredCount, toRegisterCount] = await darkNodeRegistrar.getAllDarkNodes.call();
+  //   const deregisteredOffset = 1;
+  //   const toDeregisterOffset = deregisteredOffset + deregisteredCount.toNumber(); // 1 + 5 = 6
+  //   const registeredOffset = toDeregisterOffset + toDeregisterCount.toNumber();
+  //   const toRegisterOffset = registeredOffset + stayingRegisteredCount.toNumber();
+  //   const end = toRegisterOffset + toRegisterCount.toNumber();
+  //   console.log(`slice(${deregisteredOffset}, ${toDeregisterOffset}`);
+  //   return {
+  //     deregistered: darkNodeList.slice(deregisteredOffset, toDeregisterOffset),
+  //     toDeregister: darkNodeList.slice(toDeregisterOffset, registeredOffset),
+  //     registered: darkNodeList.slice(registeredOffset, toRegisterOffset),
+  //     toRegister: darkNodeList.slice(toRegisterOffset, end),
+  //   };
+  // },
 
-  /** getMNetworkSize */
-  GetMNetworkSize: async (): Promise<any> => {
-    return await darkNodeRegistrar.getMNetworkSize.call();
-  },
+  // /** getMNetworkSize */
+  // GetMNetworkSize: async (): Promise<any> => {
+  //   return await darkNodeRegistrar.getMNetworkSize.call();
+  // },
 
   // GetMNetworkCount: async (): Promise<any> => {
   //   return await darkNodeRegistrar.getMNetworkCount.call()
@@ -151,22 +153,22 @@ module.exports = {
 
   // AssertPoolDistributions
 
-  /** ApproveRenToDarkNodeRegistrar */
-  ApproveRenToDarkNodeRegistrar: async (account: Account, amount: number): Promise<any> => {
-    return await ren.approve(darkNodeRegistrar.address, amount, { from: account.address });
-  },
+  // /** ApproveRenToDarkNodeRegistrar */
+  // ApproveRenToDarkNodeRegistrar: async (account: Account, amount: number): Promise<any> => {
+  //   return await ren.approve(darkNodeRegistrar.address, amount, { from: account.address });
+  // },
 
-  /** UpdateBond */
-  UpdateDarkNodeBond: async (account: Account, newBond: number): Promise<any> => {
-    const tx = await utils.logTx(
-      "Updating bond",
-      darkNodeRegistrar.updateBond(account.republic, newBond, { from: account.address })
-    );
+  // /** UpdateBond */
+  // UpdateDarkNodeBond: async (account: Account, newBond: number): Promise<any> => {
+  //   const tx = await utils.logTx(
+  //     "Updating bond",
+  //     darkNodeRegistrar.updateBond(account.republic, newBond, { from: account.address })
+  //   );
 
-    // Verify event
-    // utils.assertEventsEqual(tx.logs[0],
-    //   { event: 'DarkNodeBondUpdated', darkNodeId: account.republic, newBond: newBond });
-  },
+  //   // Verify event
+  //   // utils.assertEventsEqual(tx.logs[0],
+  //   //   { event: 'DarkNodeBondUpdated', darkNodeId: account.republic, newBond: newBond });
+  // },
 
   WithdrawDarkNodeBond: async (account: Account): Promise<any> => {
     return await utils.logTx(
@@ -176,8 +178,8 @@ module.exports = {
   },
 
   /** GetPublicKey */
-  GetDarkNodePublicKey: async (account: Account): Promise<any> => {
-    return await darkNodeRegistrar.getPublicKey(account.republic);
+  GetDarkNodePublicKey: async (account: Account): Promise<string> => {
+    return await darkNodeRegistrar.getPublicKey.call(account.republic);
   },
 
   /** FUNCTIONS FOR ALL ACCOUNTS */
@@ -211,44 +213,44 @@ module.exports = {
     // ));
   },
 
-  /**
-   * Sort the darkNodes into MNetworks by keccak256(epoch blockhash + darkNode's precommited seed)
-   */
-  GetMNetworks: async (): Promise<MNetwork[]> => {
-    const darkNodes = await steps.GetRegisteredDarkNodes();
-    const epochHash = await steps.GetEpochBlockhash();
+  // /**
+  //  * Sort the darkNodes into MNetworks by keccak256(epoch blockhash + darkNode's precommited seed)
+  //  */
+  // GetMNetworks: async (): Promise<MNetwork[]> => {
+  //   const darkNodes = await steps.GetRegisteredDarkNodes();
+  //   const epochHash = await steps.GetEpochBlockhash();
 
-    // Get darkNode seeds
-    const norms: any = {};
-    // await Promise.all(darkNodes.map(async (darkNode, i) => {
-    //   const seed = await steps.GetDarkNodeSeed({ republic: darkNode });
-    //   norms[darkNode] = web3.sha3(seed + epochHash);
-    // }));
-    for (let i = 0; i < darkNodes.length; i++) {
-      const darkNode = darkNodes[i];
-      const seed = await steps.GetDarkNodeSeed({ republic: darkNode });
-      norms[darkNode] = web3.sha3(seed + epochHash);
-    }
+  //   // Get darkNode seeds
+  //   const norms: any = {};
+  //   // await Promise.all(darkNodes.map(async (darkNode, i) => {
+  //   //   const seed = await steps.GetDarkNodeSeed({ republic: darkNode });
+  //   //   norms[darkNode] = web3.sha3(seed + epochHash);
+  //   // }));
+  //   for (let i = 0; i < darkNodes.length; i++) {
+  //     const darkNode = darkNodes[i];
+  //     const seed = await steps.GetDarkNodeSeed({ republic: darkNode });
+  //     norms[darkNode] = web3.sha3(seed + epochHash);
+  //   }
 
-    // Sort darkNodes by epoch blockhash and their norm
-    darkNodes.sort(
-      (m_a: any, m_b: any) => norms[m_a] - norms[m_b]
-    );
+  //   // Sort darkNodes by epoch blockhash and their norm
+  //   darkNodes.sort(
+  //     (m_a: any, m_b: any) => norms[m_a] - norms[m_b]
+  //   );
 
-    const a = await steps.GetCurrentDarkNodeCount(); // darkNodes.length;
-    const N = await darkNodeRegistrar.getMNetworkSize();
-    const p = Math.ceil(a / N);
+  //   const a = await steps.GetCurrentDarkNodeCount(); // darkNodes.length;
+  //   const N = await darkNodeRegistrar.getMNetworkSize();
+  //   const p = Math.ceil(a / N);
 
-    const mNetworks = [];
-    for (let i = 0; i < p; i++) { mNetworks.push([]); }
+  //   const mNetworks = [];
+  //   for (let i = 0; i < p; i++) { mNetworks.push([]); }
 
-    for (let i = 0; i < a; i++) {
-      const mIndex = i % p;
-      const account = accounts[indexMap[darkNodes[i]]];
-      mNetworks[mIndex].push(account);
-    }
+  //   for (let i = 0; i < a; i++) {
+  //     const mIndex = i % p;
+  //     const account = accounts[indexMap[darkNodes[i]]];
+  //     mNetworks[mIndex].push(account);
+  //   }
 
-    return mNetworks;
-  }
+  //   return mNetworks;
+  // }
 
 };

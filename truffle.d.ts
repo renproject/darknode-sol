@@ -12,6 +12,7 @@ declare interface Contract<T> {
   "new"(): Promise<T>,
   deployed(): Promise<T>,
   at(address: string): T,
+  address: string,
 }
 
 interface Artifacts {

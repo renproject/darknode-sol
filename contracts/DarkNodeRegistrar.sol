@@ -87,6 +87,7 @@ contract DarkNodeRegistrar {
   event Debug(string str);
   event DebugBool(bool boolean);
   event DebugInt(uint256 num);
+  event Debug20(bytes20 str);
 
   /**
    * @notice Requires that the node is in the list
@@ -130,7 +131,7 @@ contract DarkNodeRegistrar {
    * @notice Only allow unregisterd darkNodes to pass.
    */
   modifier onlyUnregistered(bytes20 _darkNodeID) {
-    require (!isDarkNodeRegistered(_darkNodeID));
+    require (!isDarkNodeRegistered(_darkNodeID) && !isPendingRegistration(_darkNodeID));
     _;
   }
 
@@ -190,6 +191,9 @@ contract DarkNodeRegistrar {
       registeredPosition: 0
     });
 
+    if (darkNodeList.isInList(_darkNodeID)) {
+      darkNodeList.remove(_darkNodeID);
+    }
     darkNodeList.append(_darkNodeID);
     if (firstPending == 0x0) {
       firstPending = _darkNodeID;
@@ -216,10 +220,17 @@ contract DarkNodeRegistrar {
       
       require(firstRegistered != 0x0);
       darkNodeList.swap(_darkNodeID, firstRegistered);
+
+      // Update firstRegistered
       if (darkNodeList.next(_darkNodeID) == firstPending) {
         firstRegistered = 0x0;
       } else {
         firstRegistered = darkNodeList.next(_darkNodeID);
+      }
+
+      // Update firstPendingDeregistration
+      if (firstPendingDeregistration == 0x0) {
+        firstPendingDeregistration = _darkNodeID;
       }
 
     } else if (isPendingRegistration(_darkNodeID)) {
@@ -230,14 +241,12 @@ contract DarkNodeRegistrar {
       darkNodes[_darkNodeID].registeredAt = 0;
 
       if (firstPending == _darkNodeID) {
-        _darkNodeID = darkNodeList.next(_darkNodeID);
+        firstPending = darkNodeList.next(_darkNodeID);
       }
 
       darkNodeList.remove(_darkNodeID);
     } else {
-      Debug("Not deregisterable");
-      // DebugInt(darkNodes[_darkNodeID])
-      assert(false);
+      revert();
     }
 
     // Emit an event.
@@ -284,9 +293,9 @@ contract DarkNodeRegistrar {
     }
   }
 
-  function getDarkNode(bytes20 _darkNodeID) public view returns (DarkNode) {
-    return darkNodes[_darkNodeID];
-  }
+  // function getDarkNode(bytes20 _darkNodeID) public view returns (DarkNode) {
+  //   return darkNodes[_darkNodeID];
+  // }
 
   function getOwner(bytes20 _darkNodeID) public view returns (address) {
     return darkNodes[_darkNodeID].owner;
@@ -308,10 +317,11 @@ contract DarkNodeRegistrar {
     return currentEpoch;
   }
 
-  function getXingOverlay() public view returns (bytes20[]) {
+  function getXingOverlay() public returns (bytes20[]) {
 
     uint256 registeredCount = 0;
-    bytes20 next = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;
+    bytes20 first = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;
+    bytes20 next = first;
     while (next != firstPending && next != 0x0) {
       next = darkNodeList.next(next);
       registeredCount += 1;
@@ -319,8 +329,9 @@ contract DarkNodeRegistrar {
 
     bytes20[] memory currentMiners = new bytes20[](registeredCount);
 
-    next = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;
+    next = first;
     for (uint256 i = 0; i < registeredCount; i++) {
+      require (isDarkNodeRegistered(next));
       currentMiners[i] = next;
       next = darkNodeList.next(next);
     }
@@ -337,7 +348,7 @@ contract DarkNodeRegistrar {
     return (darkNodes[_darkNodeID].deregisteredAt == 0) && (darkNodes[_darkNodeID].registeredAt > currentEpoch.timestamp);
   }
 
-  function isDarkNodeRegistered(bytes20 _darkNodeID) public returns (bool) {
+  function isDarkNodeRegistered(bytes20 _darkNodeID) public view returns (bool) {
     if (darkNodes[_darkNodeID].registeredAt == 0) {
       // Not registered
       return false;
