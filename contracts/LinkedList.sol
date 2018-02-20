@@ -65,6 +65,14 @@ library Bytes20List {
     return self.list[NULL].previous;
   }
 
+  function next(List storage self, bytes20 node) internal view returns (bytes20) {
+    return self.list[node].next;
+  }
+
+  function previous(List storage self, bytes20 node) internal view returns (bytes20) {
+    return self.list[node].previous;
+  }
+
   /**
    * @notice Insert a new node before an existing target node
    * @param self The list being called on
@@ -136,5 +144,13 @@ library Bytes20List {
    */
   function append(List storage self, bytes20 newNode) internal notInList(self, newNode) {
     insertAfter(self, tail(self), newNode);
+  }
+
+  function swap(List storage self, bytes20 node1, bytes20 node2) internal inList(self, node1) inList(self, node2) {
+    bytes20 previous2 = self.list[node2].previous;
+    remove(self, node2);
+    insertAfter(self, node1, node2);
+    remove(self, node1);
+    insertAfter(self, previous2, node1);
   }
 }

@@ -1,11 +1,11 @@
-// pragma solidity ^0.4.18;
+pragma solidity ^0.4.18;
 
 // import "./RepublicToken.sol";
 // import "./MinerRegistrar.sol";
 // import "./TraderRegistrar.sol";
 
 // /** Active WIP */
-// contract OrderBook {
+contract OrderBook {
 
 //   /** Contracts */
 
@@ -399,4 +399,4 @@
 //     // Not necessary
 //     return (matchedOrderID, matchedTraderID);
 //   }
-// }
+}

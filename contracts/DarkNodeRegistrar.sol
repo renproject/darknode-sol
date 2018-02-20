@@ -45,15 +45,16 @@ contract DarkNodeRegistrar {
   mapping(bytes20 => DarkNode) public darkNodes;
   Bytes20List.List private darkNodeList;
 
+  bytes20 firstPendingDeregistration;
+  bytes20 firstRegistered;
+  bytes20 firstPending;
+
   // Minimum bond to be considered registered.
   uint256 public minimumBond;
 
   // The current epoch and the minimum time interval until the next epoch.
   Epoch public currentEpoch;
   uint256 public minimumEpochInterval;
-
-  // Refunable amounts of REN.
-  mapping(address => uint256) public pendingRefunds;
 
   /**
    * @notice Emitted when a darkNode is registered.
@@ -79,40 +80,67 @@ contract DarkNodeRegistrar {
   event OwnerRefunded(address _owner, uint256 _amount);
 
   /**
+   * @notice Emitted when a new epoch has begun
+   */
+  event NewEpoch();
+
+  event Debug(string str);
+  event DebugBool(bool boolean);
+  event DebugInt(uint256 num);
+
+  /**
+   * @notice Requires that the node is in the list
+   * @param self The list being called on
+   * @param node The node being checked
+   */
+  modifier inList(Bytes20List.List storage self, bytes20 node) {
+    if (self.list[node].inList) {
+      _;
+    }
+  }
+
+  /**
+   * @notice Requires that the node is NOT in the list
+   * @param self The list being called on
+   * @param node The node being checked
+   */
+  modifier notInList(Bytes20List.List storage self, bytes20 node) {
+    if (!self.list[node].inList) {
+      _;
+    }
+  }
+
+  /**
    * @notice Only allow the owner that registered the darkNode to pass.
    */
   modifier onlyOwner(bytes20 _darkNodeID) {
-    if (darkNodes[_darkNodeID].owner == msg.sender) {
-      _;
-    }
+    require (darkNodes[_darkNodeID].owner == msg.sender);
+    _;
   }
 
   /**
    * @notice Only allow registerd darkNodes to pass.
    */
   modifier onlyRegistered(bytes20 _darkNodeID) {
-    if (isDarkNodeRegistered(_darkNodeID)) {
-      _;
-    }
+    require (isDarkNodeRegistered(_darkNodeID));
+    _;
   }
 
   /**
    * @notice Only allow unregisterd darkNodes to pass.
    */
   modifier onlyUnregistered(bytes20 _darkNodeID) {
-    if (!isDarkNodeRegistered(_darkNodeID)) {
-      _;
-    }
+    require (!isDarkNodeRegistered(_darkNodeID));
+    _;
   }
 
   /**
    * @notice Only allow darkNodes that have been registered for a longer enough
    * time to pass.
    */
-  modifier onlyRefundable(bytes20 _darkNodeID) {
-    if (darkNodes[_darkNodeID].registeredAt != 0 && darkNodes[_darkNodeID].registeredAt <= currentEpoch.timestamp) {
-      _;
-    }
+  modifier onlyDeregistrable(bytes20 _darkNodeID) {
+    require (darkNodes[_darkNodeID].registeredAt != 0 && darkNodes[_darkNodeID].registeredAt <= currentEpoch.timestamp);
+    _;
   }
 
   /** 
@@ -162,6 +190,11 @@ contract DarkNodeRegistrar {
       registeredPosition: 0
     });
 
+    darkNodeList.append(_darkNodeID);
+    if (firstPending == 0x0) {
+      firstPending = _darkNodeID;
+    }
+
     // Emit an event.
     DarkNodeRegistered(_darkNodeID, bond);
   }
@@ -173,12 +206,39 @@ contract DarkNodeRegistrar {
    * @param _darkNodeID The ID of the darkNode that will be deregistered. The caller
    *                 must be the owner of this darkNode.
    */
-  function deregister(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyRegistered(_darkNodeID) onlyRefundable(_darkNodeID) {
-    // Setup a refund for the owner.
-    pendingRefunds[msg.sender] += darkNodes[_darkNodeID].bond;
+  function deregister(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) { // onlyDeregistrable(_darkNodeID) {
 
-    // Zero the darkNode from the darkNodes.
-    darkNodes[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
+    if (isDeregistrable(_darkNodeID)) {
+      // Deregister
+
+      // Set deregisteredAt          
+      darkNodes[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
+      
+      require(firstRegistered != 0x0);
+      darkNodeList.swap(_darkNodeID, firstRegistered);
+      if (darkNodeList.next(_darkNodeID) == firstPending) {
+        firstRegistered = 0x0;
+      } else {
+        firstRegistered = darkNodeList.next(_darkNodeID);
+      }
+
+    } else if (isPendingRegistration(_darkNodeID)) {
+      // Pending registration
+
+      // Cancel registration
+      darkNodes[_darkNodeID].deregisteredAt = 0;
+      darkNodes[_darkNodeID].registeredAt = 0;
+
+      if (firstPending == _darkNodeID) {
+        _darkNodeID = darkNodeList.next(_darkNodeID);
+      }
+
+      darkNodeList.remove(_darkNodeID);
+    } else {
+      Debug("Not deregisterable");
+      // DebugInt(darkNodes[_darkNodeID])
+      assert(false);
+    }
 
     // Emit an event.
     DarkNodeDeregistered(_darkNodeID);
@@ -188,14 +248,17 @@ contract DarkNodeRegistrar {
    * @notice Refund all REN that has been cleared for refunding. Bonds are
    * cleared for refunding when the respective trader is deregistered.
    */
-  function refund() public {
+  function refund(bytes20 _darkNodeID) public {
+    require(!isDarkNodeRegistered(_darkNodeID));
     // Ensure that the refund amount is greater than zero.
-    uint amount = pendingRefunds[msg.sender];
-    require(amount > 0);
+    uint amount = darkNodes[_darkNodeID].bond;
 
     // Refund the owner by transferring REN.
-    pendingRefunds[msg.sender] = 0;
-    require(ren.transfer(msg.sender, amount));
+    darkNodes[_darkNodeID].bond = 0;
+
+    if (amount > 0) {
+      require(ren.transfer(msg.sender, amount));
+    }
 
     // Emit an event.
     OwnerRefunded(msg.sender, amount);
@@ -212,6 +275,12 @@ contract DarkNodeRegistrar {
         blockhash: block.blockhash(block.number - 1),
         timestamp: currentEpoch.timestamp + minimumEpochInterval
       });
+      if (firstRegistered == 0x0) {
+        firstRegistered = firstPending;
+      }
+      firstPendingDeregistration = 0x0;
+      firstPending = 0x0;
+      NewEpoch();
     }
   }
 
@@ -240,17 +309,44 @@ contract DarkNodeRegistrar {
   }
 
   function getXingOverlay() public view returns (bytes20[]) {
+
+    uint256 registeredCount = 0;
+    bytes20 next = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;
+    while (next != firstPending && next != 0x0) {
+      next = darkNodeList.next(next);
+      registeredCount += 1;
+    }
+
+    bytes20[] memory currentMiners = new bytes20[](registeredCount);
+
+    next = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;
+    for (uint256 i = 0; i < registeredCount; i++) {
+      currentMiners[i] = next;
+      next = darkNodeList.next(next);
+    }
+    return currentMiners;
+
     return new bytes20[](0);
   }
 
-  function isDarkNodeRegistered(bytes20 _darkNodeID) public view returns (bool) {
+  function isDeregistrable(bytes20 _darkNodeID) internal view returns (bool) {
+    return (darkNodes[_darkNodeID].registeredAt != 0 && darkNodes[_darkNodeID].registeredAt <= currentEpoch.timestamp && darkNodes[_darkNodeID].deregisteredAt == 0);
+  }
+
+  function isPendingRegistration(bytes20 _darkNodeID) internal view returns (bool) {
+    return (darkNodes[_darkNodeID].deregisteredAt == 0) && (darkNodes[_darkNodeID].registeredAt > currentEpoch.timestamp);
+  }
+
+  function isDarkNodeRegistered(bytes20 _darkNodeID) public returns (bool) {
     if (darkNodes[_darkNodeID].registeredAt == 0) {
+      // Not registered
       return false;
-    }
-    if (darkNodes[_darkNodeID].registeredAt != 0 && darkNodes[_darkNodeID].registeredAt > currentEpoch.timestamp) {
+    } 
+    if (isPendingRegistration(_darkNodeID)) {
       return false;
     }
     if (darkNodes[_darkNodeID].deregisteredAt != 0 && darkNodes[_darkNodeID].deregisteredAt <= currentEpoch.timestamp) {
+      // Deregistered
       return false;
     }
     return true;

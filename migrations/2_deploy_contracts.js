@@ -17,7 +17,7 @@ module.exports = function (deployer) {
 
   return deployer.deploy(RepublicToken).then(() => {
     deployer.link(RepublicToken, [DarkNodeRegistrar, TraderRegistrar]);
-    return deployer.deploy(DarkNodeRegistrar, RepublicToken.address, Config.epochInterval, Config.bondMinimum).then(() => {
+    return deployer.deploy(DarkNodeRegistrar, RepublicToken.address, Config.bondMinimum, Config.epochInterval).then(() => {
       return deployer.deploy(TraderRegistrar, RepublicToken.address, Config.bondMinimum)
       // .then(() => {
       //   return deployer.deploy(OrderBook, RepublicToken.address, DarkNodeRegistrar.address, TraderRegistrar.address)

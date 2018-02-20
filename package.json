@@ -21,6 +21,7 @@
     "tslint-react": "^3.4.0"
   },
   "scripts": {
-    "test": "tsc && ./scripts/test.sh"
+    "test": "tsc && truffle test",
+    "coverage": "tsc && ./scripts/test.sh"
   }
 }

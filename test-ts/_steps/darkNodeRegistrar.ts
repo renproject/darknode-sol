@@ -23,7 +23,7 @@ module.exports = {
       // Must be an on-chain call, or the time won't be updated
       const tx = await utils.logTx("Checking epoch", darkNodeRegistrar.epoch());
       // If epoch happened, return
-      if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "NextEpoch") {
+      if (tx.logs.length > 0 && tx.logs[tx.logs.length - 1].event === "NewEpoch") {
         return;
       }
 
@@ -72,14 +72,11 @@ module.exports = {
   /** Register */
   RegisterDarkNode: async (account: Account, bond: number): Promise<any> => {
     assert(bond > 0, "Registration bond must be positive");
-    const difference = bond - (await darkNodeRegistrar.getBondPendingWithdrawal(account.republic));
-    if (difference) {
-      await ren.approve(darkNodeRegistrar.address, difference, { from: account.address });
-    }
+    await ren.approve(darkNodeRegistrar.address, bond, { from: account.address });
     // TODO: Generate signature
     const tx = await utils.logTx(
       "Registering",
-      darkNodeRegistrar.register(account.public, account.public, { from: account.address })
+      darkNodeRegistrar.register(account.republic, account.public, { from: account.address })
     );
 
     // Verify event
@@ -93,6 +90,7 @@ module.exports = {
       "Deregistering",
       darkNodeRegistrar.deregister(account.republic, { from: account.address })
     );
+    return tx;
     // Verify event
     // const log = tx.logs[0];
     // assert(log.event == 'DarkNodeDeregistered');
@@ -173,7 +171,7 @@ module.exports = {
   WithdrawDarkNodeBond: async (account: Account): Promise<any> => {
     return await utils.logTx(
       "Releasing bond",
-      darkNodeRegistrar.withdrawBond(account.republic, { from: account.address })
+      darkNodeRegistrar.refund(account.republic, { from: account.address })
     );
   },
 
