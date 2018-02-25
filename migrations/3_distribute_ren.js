@@ -1,5 +1,5 @@
 
-const { accounts } = require("../test/accounts");
+const { accounts } = require("../test/_helpers/accounts");
 
 module.exports = function (deployer) {
   return artifacts.require("RepublicToken").deployed().then((ren) => {
