@@ -15,4 +15,3 @@ export default steps;
 Object.assign(steps, require("./common"));
 Object.assign(steps, require("./darkNodeRegistrar"));
 Object.assign(steps, require("./traderRegistrar"));
-// Object.assign(steps, require("./orderBook"));
