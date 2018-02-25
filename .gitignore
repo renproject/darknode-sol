@@ -8,4 +8,3 @@ coverage.json
 .coveralls.yml
 
 test
-test-ts/_helpers/privateKeys.json

@@ -58,7 +58,7 @@ contract TraderRegistrar {
    * @notice Only allow the owner that registered the trader to pass.
    */
   modifier onlyOwner(bytes20 _traderID) {
-    assert (traders[_traderID].owner == msg.sender);
+    require (traders[_traderID].owner == msg.sender);
     _;
   }
 
@@ -66,7 +66,7 @@ contract TraderRegistrar {
    * @notice Only allow unregisterd traders to pass.
    */
   modifier onlyUnregistered(bytes20 _traderID) {
-    assert (!traders[_traderID].registered);
+    require (!traders[_traderID].registered);
     _;
   }
 
@@ -74,7 +74,7 @@ contract TraderRegistrar {
    * @notice Only allow registered traders to pass.
    */
   modifier onlyRegistered(bytes20 _traderID) {
-    assert (traders[_traderID].registered);
+    require (traders[_traderID].registered);
     _;
   }
 

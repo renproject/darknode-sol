@@ -21,7 +21,7 @@
     "tslint-react": "^3.4.0"
   },
   "scripts": {
-    "test": "tsc && truffle test",
-    "coverage": "tsc && ./scripts/test.sh"
+    "test": "tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json && truffle test",
+    "coverage": "tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json && ./scripts/test.sh"
   }
 }

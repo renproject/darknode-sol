@@ -23,7 +23,7 @@ module.exports = {
     // TODO: Generate signature
     const tx = await utils.logTx(
       "Registering",
-      traderRegistrar.register(account.public, account.public, { from: account.address })
+      traderRegistrar.register(account.republic, account.public, { from: account.address })
     );
 
     // // Verify event
@@ -57,7 +57,7 @@ module.exports = {
   WithdrawTraderBond: async (account: Account): Promise<any> => {
     return await utils.logTx(
       "Releasing bond",
-      traderRegistrar.refund(account.republic, { from: account.address })
+      traderRegistrar.refund({ from: account.address })
     );
   },
 

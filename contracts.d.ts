@@ -36,7 +36,7 @@ declare interface TraderRegistrarInstance extends Contract<TraderRegistrarInstan
   TraderRegistrar(address: string, _minimumBond: number, options?: any): Promise<void>,
   register(_traderID: string, _publicKey: string, options?: any): Promise<void>,
   deregister(_traderID: string, options?: any): Promise<void>,
-  refund(_traderID: string, options?: any): Promise<void>,
+  refund(options?: any): Promise<void>,
   getNumberOfTraders: { call: () => Promise<BigNumber> },
   getOwner: { call: (_traderID: string) => Promise<string> },
   getBond: { call: (_traderID: string) => Promise<BigNumber> },
