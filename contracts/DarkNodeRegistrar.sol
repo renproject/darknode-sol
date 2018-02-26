@@ -4,7 +4,7 @@ import "./RepublicToken.sol";
 import "./Utils.sol";
 import "./LinkedList.sol";
 
-pragma experimental ABIEncoderV2;
+// pragma experimental ABIEncoderV2;
 
 /**
  * Active WIP
