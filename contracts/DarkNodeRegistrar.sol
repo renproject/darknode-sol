@@ -4,6 +4,8 @@ import "./RepublicToken.sol";
 import "./Utils.sol";
 import "./LinkedList.sol";
 
+pragma experimental ABIEncoderV2;
+
 /**
  * Active WIP
  * TODOS:
@@ -95,9 +97,8 @@ contract DarkNodeRegistrar {
    * @param node The node being checked
    */
   modifier inList(Bytes20List.List storage self, bytes20 node) {
-    if (self.list[node].inList) {
-      _;
-    }
+    require (self.list[node].inList);
+    _;
   }
 
   /**
@@ -106,9 +107,8 @@ contract DarkNodeRegistrar {
    * @param node The node being checked
    */
   modifier notInList(Bytes20List.List storage self, bytes20 node) {
-    if (!self.list[node].inList) {
-      _;
-    }
+    require (!self.list[node].inList);
+    _;
   }
 
   /**
@@ -120,7 +120,7 @@ contract DarkNodeRegistrar {
   }
 
   /**
-   * @notice Only allow registerd darkNodes to pass.
+   * @notice Only allow registered darkNodes to pass.
    */
   modifier onlyRegistered(bytes20 _darkNodeID) {
     require (isDarkNodeRegistered(_darkNodeID));
@@ -128,7 +128,7 @@ contract DarkNodeRegistrar {
   }
 
   /**
-   * @notice Only allow unregisterd darkNodes to pass.
+   * @notice Only allow unregistered darkNodes to pass.
    */
   modifier onlyUnregistered(bytes20 _darkNodeID) {
     require (!isDarkNodeRegistered(_darkNodeID) && !isPendingRegistration(_darkNodeID));
@@ -173,12 +173,18 @@ contract DarkNodeRegistrar {
    *                   darkNodes and traders to encrypt messages to the trader.
    */
   function register(bytes20 _darkNodeID, bytes _publicKey) public onlyUnregistered(_darkNodeID) {
-    // REN allowance is used as the bond.
-    uint256 bond = ren.allowance(msg.sender, this);
-    require(bond > minimumBond);
+    // Bond that hasn't been withdrawn yet
+    uint256 existingBond = darkNodes[_darkNodeID].bond;
+    // REN allowance
+    uint256 newBond = ren.allowance(msg.sender, this);
 
-    // Transfer the bond to this contract.
-    require(ren.transferFrom(msg.sender, this, bond));
+    if (newBond > 0) {
+      // Transfer the bond to this contract.
+      require(ren.transferFrom(msg.sender, this, newBond));
+    }
+
+    uint256 bond = existingBond + newBond;
+    require(bond > minimumBond);
 
     // Store this trader in the darkNodes.
     darkNodes[_darkNodeID] = DarkNode({
@@ -257,8 +263,7 @@ contract DarkNodeRegistrar {
    * @notice Refund all REN that has been cleared for refunding. Bonds are
    * cleared for refunding when the respective trader is deregistered.
    */
-  function refund(bytes20 _darkNodeID) public {
-    require(!isDarkNodeRegistered(_darkNodeID));
+  function refund(bytes20 _darkNodeID) public onlyUnregistered(_darkNodeID) {
     // Ensure that the refund amount is greater than zero.
     uint amount = darkNodes[_darkNodeID].bond;
 
@@ -317,7 +322,7 @@ contract DarkNodeRegistrar {
     return currentEpoch;
   }
 
-  function getXingOverlay() public returns (bytes20[]) {
+  function getXingOverlay() public view returns (bytes20[]) {
 
     uint256 registeredCount = 0;
     bytes20 first = (firstPendingDeregistration == 0) ? firstRegistered : firstPendingDeregistration;

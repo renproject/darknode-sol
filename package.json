@@ -21,7 +21,7 @@
     "tslint-react": "^3.4.0"
   },
   "scripts": {
-    "build": "tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json",
+    "build": "rm -rf ./test && tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json",
     "test": "npm run build && truffle test",
     "coverage": "npm run build && solidity-coverage"
   }
