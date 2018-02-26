@@ -34,4 +34,13 @@ contract("LinkedList", function() {
     await linkedlist.head();
   });
 
+  it("negative tests... (TODO)", async function () {
+    await linkedlist.remove(0x0)
+      .should.be.rejectedWith(Error);
+    await linkedlist.remove("4")
+      .should.be.rejectedWith(Error);
+    await linkedlist.append("1")
+      .should.be.rejectedWith(Error);
+  });
+
 });
