@@ -184,7 +184,7 @@ contract DarkNodeRegistrar {
     }
 
     uint256 bond = existingBond + newBond;
-    require(bond > minimumBond);
+    require(bond >= minimumBond);
 
     // Store this trader in the darkNodes.
     darkNodes[_darkNodeID] = DarkNode({
