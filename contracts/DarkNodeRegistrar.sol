@@ -131,7 +131,7 @@ contract DarkNodeRegistrar {
    * @notice Only allow unregistered darkNodes to pass.
    */
   modifier onlyUnregistered(bytes20 _darkNodeID) {
-    require (!isDarkNodeRegistered(_darkNodeID) && !isPendingRegistration(_darkNodeID));
+    require (!isDarkNodeRegistered(_darkNodeID) && !isDarkNodePendingRegistration(_darkNodeID));
     _;
   }
 
@@ -239,7 +239,7 @@ contract DarkNodeRegistrar {
         firstPendingDeregistration = _darkNodeID;
       }
 
-    } else if (isPendingRegistration(_darkNodeID)) {
+    } else if (isDarkNodePendingRegistration(_darkNodeID)) {
       // Pending registration
 
       // Cancel registration
@@ -349,7 +349,7 @@ contract DarkNodeRegistrar {
     return (darkNodes[_darkNodeID].registeredAt != 0 && darkNodes[_darkNodeID].registeredAt <= currentEpoch.timestamp && darkNodes[_darkNodeID].deregisteredAt == 0);
   }
 
-  function isPendingRegistration(bytes20 _darkNodeID) internal view returns (bool) {
+  function isDarkNodePendingRegistration(bytes20 _darkNodeID) public view returns (bool) {
     return (darkNodes[_darkNodeID].deregisteredAt == 0) && (darkNodes[_darkNodeID].registeredAt > currentEpoch.timestamp);
   }
 
@@ -358,7 +358,7 @@ contract DarkNodeRegistrar {
       // Not registered
       return false;
     } 
-    if (isPendingRegistration(_darkNodeID)) {
+    if (isDarkNodePendingRegistration(_darkNodeID)) {
       return false;
     }
     if (darkNodes[_darkNodeID].deregisteredAt != 0 && darkNodes[_darkNodeID].deregisteredAt <= currentEpoch.timestamp) {
