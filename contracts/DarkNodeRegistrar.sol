@@ -318,9 +318,9 @@ contract DarkNodeRegistrar {
     return darkNodes[_darkNodeID].commitment;
   }
 
-  function getCurrentEpoch() public view returns (Epoch) {
-    return currentEpoch;
-  }
+  // function getCurrentEpoch() public view returns (Epoch) {
+  //   return currentEpoch;
+  // }
 
   function getXingOverlay() public view returns (bytes20[]) {
 
