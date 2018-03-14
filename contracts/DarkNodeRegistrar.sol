@@ -172,18 +172,18 @@ contract DarkNodeRegistrar {
    * @param _publicKey The public key of the darkNode. It is stored to allow other
    *                   darkNodes and traders to encrypt messages to the trader.
    */
-  function register(bytes20 _darkNodeID, bytes _publicKey) public onlyUnregistered(_darkNodeID) {
+  function register(bytes20 _darkNodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darkNodeID) {
     // Bond that hasn't been withdrawn yet
     uint256 existingBond = darkNodes[_darkNodeID].bond;
     // REN allowance
-    uint256 newBond = ren.allowance(msg.sender, this);
+    require(_bond <= ren.allowance(msg.sender, this));
 
-    if (newBond > 0) {
+    if (_bond > 0) {
       // Transfer the bond to this contract.
-      require(ren.transferFrom(msg.sender, this, newBond));
+      require(ren.transferFrom(msg.sender, this, _bond));
     }
 
-    uint256 bond = existingBond + newBond;
+    uint256 bond = existingBond + _bond;
     require(bond >= minimumBond);
 
     // Store this trader in the darkNodes.
