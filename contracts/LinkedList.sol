@@ -1,18 +1,20 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.18;
 
-library Bytes20List {
+/**
+ * @notice LinkedList is a library for a circular double linked list.
+ */
+library LinkedList {
 
   /*
-   * @notice Circular doubly linked list with a permanent NULL node (0x0)
-   * NULL.next is the head
-   * NULL.previous is the tail
+   * @notice A permanent NULL node (0x0) in the circular double linked list.
+   * NULL.next is the head, and NULL.previous is the tail.
    */
   bytes20 private constant NULL = 0x0;
 
   /**
-   * @notice A node points to the node before it and the node after it
-   * If node.previous = NULL, then the node is the head of the list
-   * If node.next = NULL, then the node is the tail of the list
+   * @notice A node points to the node before it, and the node after it. If
+   * node.previous = NULL, then the node is the head of the list. If
+   * node.next = NULL, then the node is the tail of the list.
    */
   struct Node {
     bool inList;
@@ -21,29 +23,32 @@ library Bytes20List {
   }
   
   /**
-   * @notice The Linked List is a mapping from bytes20s to nodes
+   * @notice LinkedList uses a mapping from bytes20s to nodes. Each bytes20
+   * uniquely identifies a node, and in this way they are used like pointers.
    */
   struct List {
-      mapping (bytes20 => Node) list;
+    mapping (bytes20 => Node) list;
   }
 
   /**
-   * @notice Requires that the node is in the list
-   * @param self The list being called on
-   * @param node The node being checked
+   * @notice Requires that the node is in the list.
+   *
+   * @param self The list being used.
+   * @param node The node being checked.
    */
-  modifier inList(List storage self, bytes20 node) {
-    require (isInList(self, node));
+  modifier onlyInList(List storage self, bytes20 node) {
+    require(isInList(self, node));
     _;
   }
 
   /**
-   * @notice Requires that the node is NOT in the list
-   * @param self The list being called on
-   * @param node The node being checked
+   * @notice Requires that the node is not in the list.
+   *
+   * @param self The list being used.
+   * @param node The node being checked.
    */
-  modifier notInList(List storage self, bytes20 node) {
-    require (!isInList(self, node));
+  modifier onlyNotInList(List storage self, bytes20 node) {
+    require(!isInList(self, node));
     _;
   }
 
@@ -52,18 +57,26 @@ library Bytes20List {
   }
 
   /**
-   * @notice Returns the head of the doubly linked list
-   * @param self The list being called on
+   * @notice Get the node at the beginning of a double linked list.
+   *
+   * @param self The list being used.
+   *
+   * @return A bytes20 identifying the node at the beginning of the double
+   * linked list.
    */
-  function head(List storage self) internal view returns (bytes20) {
+  function begin(List storage self) internal view returns (bytes20) {
     return self.list[NULL].next;
   }
 
   /**
-   * @notice Returns the tail of the doubly linked list
-   * @param self The list being called on
+   * @notice Get the node at the end of a double linked list.
+   *
+   * @param self The list being used.
+   *
+   * @return A bytes20 identifying the node at the end of the double linked
+   * list.
    */
-  function tail(List storage self) internal view returns (bytes20) {
+  function end(List storage self) internal view returns (bytes20) {
     return self.list[NULL].previous;
   }
 
@@ -76,13 +89,14 @@ library Bytes20List {
   }
 
   /**
-   * @notice Insert a new node before an existing target node
-   * @param self The list being called on
-   * @param target The existing node in the list
-   * @param newNode The next node to insert before the target
+   * @notice Insert a new node before an existing node.
+   *
+   * @param self The list being used.
+   * @param target The existing node in the list.
+   * @param newNode The next node to insert before the target.
    */
-  function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal notInList(self, newNode) {
-    // May be NULL
+  function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal onlyNotInList(self, newNode) {
+    // It is expected that this value is sometimes NULL.
     bytes20 prev = self.list[target].previous;
 
     self.list[newNode].next = target;
@@ -94,65 +108,73 @@ library Bytes20List {
   }
 
   /**
-   * @notice Insert a new node after an existing target node
-   * @param self The list being called on
-   * @param target The existing node in the list
-   * @param newNode The next node to insert after the target
+   * @notice Insert a new node after an existing node.
+   *
+   * @param self The list being used.
+   * @param target The existing node in the list.
+   * @param newNode The next node to insert after the target.
    */
-  function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal notInList(self, newNode) {
-    // May be NULL
-    bytes20 nxt = self.list[target].next;
+  function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal onlyNotInList(self, newNode) {
+    // It is expected that this value is sometimes NULL.
+    bytes20 n = self.list[target].next;
 
     self.list[newNode].previous = target;
-    self.list[newNode].next = nxt;
+    self.list[newNode].next = n;
     self.list[target].next = newNode;
-    self.list[nxt].previous = newNode;
+    self.list[n].previous = newNode;
 
     self.list[newNode].inList = true;
   }
   
   /**
-   * @notice Delete a node
-   * @param self The list being called on
-   * @param node The existing node in the list to be removed
+   * @notice Remove a node from the list, and fix the previous and next
+   * pointers that are pointing to the removed node. Removing anode that is not
+   * in the list will do nothing.
+   *
+   * @param self The list being using.
+   * @param node The node in the list to be removed.
    */
-  function remove(List storage self, bytes20 node) internal inList(self, node) {
+  function remove(List storage self, bytes20 node) internal onlyInList(self, node) {
     if (node == NULL) {
       return;
     }
-    bytes20 prev = self.list[node].previous;
-    bytes20 nxt = self.list[node].next;
+    bytes20 p = self.list[node].previous;
+    bytes20 n = self.list[node].next;
 
-    self.list[prev].next = nxt;
-    self.list[nxt].previous = prev;
+    self.list[p].next = n;
+    self.list[n].previous = p;
 
-    self.list[node].inList = false; // Does `delete` do this already?
+    // Deleting the node should set this value to false, but we set it here for
+    // explicitness.
+    self.list[node].inList = false;
     delete self.list[node];
   }
 
   /**
-   * @notice Place a node at the start of the list
-   * @param self The list being called on
-   * @param newNode The node to insert at the start of the list
+   * @notice Insert a node at the beginning of the list.
+   *
+   * @param self The list being used.
+   * @param node The node to insert at the beginning of the list.
    */
-  function prepend(List storage self, bytes20 newNode) internal notInList(self, newNode) {
-    insertBefore(self, head(self), newNode);
+  function prepend(List storage self, bytes20 node) internal onlyNotInList(self, node) {
+    insertBefore(self, begin(self), node);
   }
 
   /**
-   * @notice Place a node at the end of the list
-   * @param self The list being called on
-   * @param newNode The node to insert at the end of the list
+   * @notice Insert a node at the end of the list.
+   *
+   * @param self The list being used.
+   * @param node The node to insert at the end of the list.
    */
-  function append(List storage self, bytes20 newNode) internal notInList(self, newNode) {
-    insertAfter(self, tail(self), newNode);
+  function append(List storage self, bytes20 node) internal onlyNotInList(self, node) {
+    insertAfter(self, end(self), node);
   }
 
-  function swap(List storage self, bytes20 node1, bytes20 node2) internal inList(self, node1) inList(self, node2) {
-    bytes20 previous2 = self.list[node2].previous;
-    remove(self, node2);
-    insertAfter(self, node1, node2);
-    remove(self, node1);
-    insertAfter(self, previous2, node1);
+  function swap(List storage self, bytes20 left, bytes20 right) internal onlyInList(self, left) onlyInList(self, right) {
+    bytes20 previousRight = self.list[right].previous;
+    remove(self, right);
+    insertAfter(self, left, right);
+    remove(self, left);
+    insertAfter(self, previousRight, left);
   }
 }
