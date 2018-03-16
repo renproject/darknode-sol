@@ -3,9 +3,9 @@ chai.use(require('chai-as-promised'));
 chai.use(require('chai-bignumber')());
 chai.should();
 
-const utils = require("../test_utils");
-const { accounts } = require("../accounts");
-const steps = require("../_steps/steps");
+const utils = require("./_helpers/test_utils");
+const { accounts } = require("./_helpers/accounts");
+const steps = require("./_steps/steps").steps;
 
 // Specifically request an abstraction for Traders
 
@@ -16,11 +16,6 @@ const steps = require("../_steps/steps");
 
 
 contract('Traders', function () {
-
-  afterEach("ensure node is deregistered", async function () {
-    // After each test, make sure that the node is not registered
-    try { await steps.DeregisterTrader(accounts[0]); } catch (err) { }
-  });
 
   it("can register and deregister", async function () {
     await steps.RegisterTrader(accounts[0], 1000);
@@ -112,7 +107,7 @@ contract('Traders', function () {
 
     // Increase bond
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(newBond - oldBond, accounts[0])
+    await steps.ApproveRenToTraderRegistrar(accounts[0], newBond - oldBond)
     await steps.UpdateTraderBond(accounts[0], newBond);
 
     // Bond should now be 1500
@@ -133,7 +128,7 @@ contract('Traders', function () {
 
     // Increasing bond without approving should throw an error
     const newBond = 1500;
-    await steps.ApproveRenToTraderRegistrar(0, accounts[0]);
+    await steps.ApproveRenToTraderRegistrar(accounts[0], 0);
     await steps.UpdateTraderBond(accounts[0], newBond)
       .should.be.rejectedWith(Error);
 

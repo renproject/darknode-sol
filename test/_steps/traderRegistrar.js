@@ -1,17 +1,19 @@
 
-const utils = require("../test_utils");
-const { accounts, indexMap } = require("../accounts");
-var config = require("../../republic-config");
+const { accounts, indexMap } = require("../_helpers/accounts");
 
-// Initialise:
-let ren, traderRegistrar;
+const config = require("../../republic-config");
+const steps = require('./steps').steps;
+const utils = require("../_helpers/test_utils");
+
+// Wait for contracts:
+let traderRegistrar, ren;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
   traderRegistrar = await artifacts.require("TraderRegistrar").deployed();
 })();
 
 
-const steps = {
+module.exports = {
 
   /** Register */
   RegisterTrader: async (account, bond) => {
@@ -42,8 +44,8 @@ const steps = {
   },
 
   /** ApproveRen */
-  ApproveRenToTraderRegistrar: async (amount, account) => {
-    ren.approve(traderRegistrar.address, amount, { from: account.address });
+  ApproveRenToTraderRegistrar: async (account, amount) => {
+    return await ren.approve(traderRegistrar.address, amount, { from: account.address })
   },
 
   /** UpdateBond */
@@ -64,5 +66,3 @@ const steps = {
     return await traderRegistrar.getPublicKey(republicAddr);
   },
 }
-
-module.exports = steps;

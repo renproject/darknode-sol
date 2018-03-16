@@ -56,8 +56,8 @@ contract MinerRegistrar {
 
   uint256 deregisteredCount;
   uint256 toDeregisterCount;
-  uint256 toRegisterCount;
   uint256 stayingRegisteredCount;
+  uint256 toRegisterCount;
 
   /** Events */
 
@@ -65,8 +65,9 @@ contract MinerRegistrar {
   event MinerBondUpdated(bytes20 minerID, uint256 newBond);
   event MinerDeregistered(bytes20 minerID);
   event BondRefunded(bytes20 minerID, uint256 amount);
-  event Debug(string message);
-  event DebugInt(uint256 num);
+  event Debug(string msg);
+  event DebugInt(uint256 msg);
+  event DebugBool(bool msg);
   event NextEpoch();
   
   /** Private functions */
@@ -172,9 +173,9 @@ contract MinerRegistrar {
       });
 
       // TODO: Would zeroing deregistered miners return gas?
-      for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
-        delete minerList[i];
-      }
+      // for (uint256 i = deregisteredCount; i < deregisteredCount + toDeregisterCount; i++) {
+      //   delete minerList[i];
+      // }
 
       // Update counts
       deregisteredCount += toDeregisterCount;
@@ -361,6 +362,8 @@ contract MinerRegistrar {
 
     if (decreaseLength) {
       delete minerList[destinationIndex]; // Never registered, so safe to delete
+      // Set index to zero because minerList will reuse the index
+      miners[_minerID].index = 0;
       minerList.length = minerList.length - 1;
     }
 
@@ -393,35 +396,41 @@ contract MinerRegistrar {
     return currentEpoch.blockhash;
   }
 
-  function getCurrentMiners() public view returns (bytes20[]) {
+  // TODO: Allow requesting miners from index i to j (to get miners in batches)
+  function getCurrentMiners(uint256 _start, uint256 _end) public view returns (bytes20[]) {
 
-    var registeredStart = toDeregisterOffset();
-    var registeredEnd = registeredStart + toDeregisterCount + stayingRegisteredCount;
+    uint256 currentMinerCount = toDeregisterCount + stayingRegisteredCount;
 
-    bytes20[] memory currentMiners = new bytes20[](toDeregisterCount + stayingRegisteredCount);
+    // If start == end then the array is empty
+    require(_start <= _end && _end <= currentMinerCount);
 
-    for (uint256 i = 0; i < registeredEnd - registeredStart; i++) {
-      currentMiners[i] = minerList[i + registeredStart];
+    uint256 registeredStart = toDeregisterOffset();
+
+    bytes20[] memory currentMiners = new bytes20[](_end - _start);
+
+    for (uint256 i = 0; i < _end - _start; i++) {
+      currentMiners[i] = minerList[i + registeredStart + _start];
     }
     return currentMiners;
   }
 
-  // TODO: Used for debugging only?, remove before mainnet
-  function getAllMiners() public view returns (bytes20[]) {
-    // Note: Returns 0x0 at starting position
-    return minerList;
-  }
+  // // TODO: Used for debugging only?, remove before mainnet
+  // function getAllMiners() public view returns (bytes20[], uint256, uint256, uint256, uint256) {
+  //   // Note: Returns 0x0 at starting position
+  //   return (minerList, deregisteredCount, toDeregisterCount, stayingRegisteredCount, toRegisterCount);
+  // }
 
-  function getMNetworkCount() public view returns (uint256) {
-    // TODO: Should be rounded up?
-    return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
-  }
+  // function getMNetworkCount() public view returns (uint256) {
+  //   // TODO: Should be rounded up?
+  //   return (toDeregisterCount + stayingRegisteredCount) / getMNetworkSize();
+  // }
   
   function getMNetworkSize() public view returns (uint256) {
+    // TODO: Get updated formula
+
     uint256 log = Utils.logtwo(toDeregisterCount + stayingRegisteredCount);
-    
-    // If odd, add 1 to become even
-    return log + (log % 2);
+    // If even, add 1 to become odd
+    return log + (1 - (log % 2));
   }
 
   function getCurrentMinerCount() public view returns (uint256) {
@@ -429,7 +438,7 @@ contract MinerRegistrar {
   }
 
   function getNextMinerCount() public view returns (uint256) {
-    return (toDeregisterCount + stayingRegisteredCount) - toDeregisterCount + toRegisterCount;
+    return stayingRegisteredCount + toRegisterCount;
   }
 
   function getBond(bytes20 _minerID) public view returns (uint256) {
@@ -441,6 +450,10 @@ contract MinerRegistrar {
     }
   }
 
+  function getOwner(bytes20 _minerID) public view returns (address) {
+    return miners[_minerID].owner;
+  }
+
   function getSeed(bytes20 _minerID) public view returns (bytes32) {
     return miners[_minerID].seed;
   }
@@ -450,12 +463,12 @@ contract MinerRegistrar {
     return miners[_minerID].publicKey;
   }
 
-  function getOwner(bytes20 _minerID) public view returns (address) {
-    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
-  }
-
   function getMinerID(address _addr) public view returns (bytes20) {
     return addressIDs[_addr];
+  }
+
+  function getEthereumAddress(bytes20 _minerID) public view returns (address) {
+    return Utils.ethereumAddressFromPublicKey(miners[_minerID].publicKey);
   }
 
   function getBondPendingWithdrawal(bytes20 _minerID) public view returns (uint256) {

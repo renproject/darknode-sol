@@ -8,8 +8,11 @@
     "keccak": "^1.4.0",
     "secp256k1": "^3.4.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "coveralls": "^3.0.0",
+    "solidity-coverage": "^0.4.8"
+  },
   "scripts": {
-    "test": "truffle test"
+    "test": "./scripts/test.sh"
   }
 }

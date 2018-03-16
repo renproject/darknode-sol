@@ -1,8 +1,9 @@
 # Ethereum Republic
 
-> These contracts are a work in progress.
+[![Build Status](https://travis-ci.org/republicprotocol/eth-republic.svg?branch=branch%2Fcoverage)](https://travis-ci.org/republicprotocol/eth-republic)
+[![Coverage Status](https://coveralls.io/repos/github/republicprotocol/eth-republic/badge.svg?branch=master)](https://coveralls.io/github/republicprotocol/eth-republic?branch=master)
 
-The Ethereum Republic repository contains the official reference implementations of the Republic Protocol on Ethereum, written in Solidity. The Republic Protocol does not explicitly require an Ethereum implementation, and future implementations may be developed on other blockchains. For now, Ethereum is used because it is the most mature smart contract platform available.
+The Ethereum Republic library is the official reference implementation of the Republic Protocol on Ethereum, written in Solidity. The Republic Protocol does not explicitly require an Ethereum implementation, and future implementations may be developed on other blockchains. For now, Ethereum is used because it is the biggest and most reputable smart contract platform available.
 
 ## Smart contracts
 

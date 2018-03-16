@@ -1,26 +1,17 @@
 
-const utils = require("../test_utils");
-const { accounts, indexMap } = require("../accounts");
+const utils = require("../_helpers/test_utils");
+const { accounts, indexMap } = require("../_helpers/accounts");
 var config = require("../../republic-config");
 
-var commonSteps = require('./common');
-var minerRegistrarSteps = require('./minerRegistrar');
-var traderRegistrarSteps = require('./traderRegistrar');
-var orderBookSteps = require('./orderBook');
+/**
+ * This pattern is used so that steps can be split into different files while still
+ * being able to call all other steps
+ */
 
-// Initialise:
-let ren, minerRegistrar;
-(async () => {
-  ren = await artifacts.require("RepublicToken").deployed();
-  minerRegistrar = await artifacts.require("MinerRegistrar").deployed();
-})();
+const steps = {};
+module.exports.steps = steps;
 
-
-const steps = {
-  ...commonSteps,
-  ...minerRegistrarSteps,
-  ...traderRegistrarSteps,
-  ...orderBookSteps,
-}
-
-module.exports = steps;
+Object.assign(steps, require('./common'));
+Object.assign(steps, require('./minerRegistrar'));
+Object.assign(steps, require('./traderRegistrar'));
+Object.assign(steps, require('./orderBook'));

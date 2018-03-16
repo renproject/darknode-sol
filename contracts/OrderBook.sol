@@ -21,46 +21,93 @@ contract OrderBook {
     bytes32 orderFragmentID1;
     bytes32 orderFragmentID2;
     bytes outputFragment;
+  }
 
-    bytes32 zkCommitment; // bytes
+  struct Match {
+    bytes32 orderID1;
+    bytes32 orderID2;
+
+    MatchFragment[] matchFragments;
   }
 
 	struct Order {
     bytes32 orderID;
     bytes20 traderID;
 
-		uint8 status;
+		Status status;
     uint256 fee;
     uint256 timestamp;
 
     uint256 orderFragmentCount;
     mapping (bytes20 => bytes32) minersToOrderFragmentIDs;
-    // MatchFragment[] matchFragments;
 	}
 
+  // Matched order (orderID => matchID)
+  // This could instead be a match from an order to another order
+  mapping(bytes32 => bytes32) orderMatch;
+
+  // Mapping from matchIDs to their matches
+  mapping(bytes32 => Match) matches;
+
   // TODO: Use enum instead
-	uint8 constant STATUS_OPEN = 1;
-	uint8 constant STATUS_EXPIRED = 2;
-	uint8 constant STATUS_CLOSED = 3;
+  enum Status { Open, Expired, Closed }
 
 	uint8 public orderLimit = 100;
 	uint32 public minimumOrderFee = 100000;
   
-  uint poolCount;
-  uint kValue = 5;
-
 	mapping (bytes32 => Order) public orders;
-	mapping (bytes32 => bytes20) owner; // orderID to owner
+	mapping (bytes32 => bytes20) owners; // orderID to owner
+  mapping (bytes32 => address) refundAddress;
   mapping (bytes20 => uint) orderCount;
-  mapping (bytes32 => uint) reward;
+  mapping (bytes32 => uint) rewards;
 
   /** Events */
 
   event OrderPlaced(bytes32 _hash, bytes20 _trader);
   event OrderExpired(bytes32 _hash);
 	event OrderClosed(bytes32 _hash);
+  event Debug(string msg);
+  event DebugAddress(address msg);
+  event Debug32(bytes32 msg);
+  event DebugBool(bool msg);
+  event DebugInt(uint256 msg);
+
+  /** Modifiers */
+
+  /**
+   * @notice Only allow for orders that are currently open
+   *
+   * @param _orderID The ID of the order that must be open
+   */
+  modifier onlyOpenOrder(bytes32 _orderID) {
+    require(orders[_orderID].status == Status.Open);
+    _;
+  }
+
+  /**
+   * @notice Only allow for orders that are currently closed
+   *
+   * @param _orderID The ID of the order that must be closed
+   */
+  modifier onlyClosedOrder(bytes32 _orderID) {
+    require(orders[_orderID].status == Status.Closed);
+    _;
+  }
 
   /** Private functions */
+
+  /**
+   * Calculate the K value (number of fragments needed to be combined)
+   * Should this be passed in or calculated deterministically?
+   *
+   * @param _orderFragmentCount The total number of fragments created
+   */
+  function getKValue(uint256 _orderFragmentCount) private pure returns (uint256) {
+    // orderFragmentCount should be odd
+    // assert(orderFragmentCount % 2 == 1);
+    return (_orderFragmentCount - 1) / 2 + 1;
+  }
+
 
   /**
    * @notice Verify that an array of miners is registered by calling upon the
@@ -76,6 +123,18 @@ contract OrderBook {
       status = status && minerRegistrar.isRegistered(_minerIDs[i]); 
     }
     return status;
+  }
+
+  /**
+   * @notice Deterministically calculate the ID of a match based on the IDs of its two orders
+   */
+  function getMatchID(bytes32 _orderID1, bytes32 _orderID2) private returns (bytes32) {
+    // TODO: How does solidity compare bytes?
+    if (_orderID1 < _orderID2) {
+      return keccak256(_orderID1, _orderID2);
+    } else {
+      return keccak256(_orderID2, _orderID1);
+    }
   }
 
   /** Public functions */
@@ -96,49 +155,56 @@ contract OrderBook {
   /**
   * @notice Traders call this function to open an order.
   *
+  * @param _traderID The trader's ID
 	* @param _orderID The hash of the order.
   * @param _orderFragmentIDs The list of hashes of the fragments.
   * @param _miners The list of miners that are authorized to close the order.
   * @param _minerLeaders ...
   */
-	function openOrder(bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
-
-    bytes20 traderID = 9; /* FIXME */
+	function openOrder(bytes20 _traderID, bytes32 _orderID, bytes32[] _orderFragmentIDs, bytes20[] _miners, bytes20[] _minerLeaders) public {
     
-    uint256 orderFragmentCount = minerRegistrar.getMNetworkCount();
-    require(_orderFragmentIDs.length == _miners.length);
-    require(_miners.length == orderFragmentCount);
+    uint256 orderFragmentCount = minerRegistrar.getMNetworkSize();
+
+    // Miner count should be within one of orderFragmentCount
+    require(_miners.length == _orderFragmentIDs.length ||
+            _miners.length == _orderFragmentIDs.length - 1);
+
+    // Leader count should be exactly the orderFragmentCount
+    require(_minerLeaders.length == _orderFragmentIDs.length);
+
+    require(_orderFragmentIDs.length == orderFragmentCount);
     require(verifyMiners(_miners));
     require(verifyMiners(_minerLeaders));
-    require(orderCount[traderID] < orderLimit);
+    require(orderCount[_traderID] < orderLimit);
     
     uint256 fee = ren.allowance(msg.sender, address(this));
     require(fee >= minimumOrderFee);
     require(ren.transferFrom(msg.sender, address(this), fee));
-
-    // MatchFragment[] storage matchFragments;
-    // mapping(bytes20 => bytes20) minersToOrderFragmentIDs;
     
     orders[_orderID] = Order({
       orderID: _orderID,
-      traderID: traderID,
+      traderID: _traderID,
       
-      status: STATUS_OPEN,
+      status: Status.Open,
       fee: fee,
       timestamp: now,
 
       orderFragmentCount: orderFragmentCount
-      // matchFragments: matchFragments
     });
 
-    for (uint256 i = 0; i < poolCount; i++ ) {
+    // Approve each miner for their respective order fragment
+    for (uint256 i = 0; i < _miners.length; i++ ) {
       orders[_orderID].minersToOrderFragmentIDs[_miners[i]] = _orderFragmentIDs[i];
     }
+    for (uint256 j = 0; j < _minerLeaders.length; j++ ) {
+      orders[_orderID].minersToOrderFragmentIDs[_minerLeaders[j]] = _orderFragmentIDs[j];
+    }
 
-    orderCount[traderID]++;
-    owner[_orderID] = traderID;
+    orderCount[_traderID]++;
+    owners[_orderID] = _traderID;
+    refundAddress[_orderID] = msg.sender;
 
-		OrderPlaced(_orderID, traderID);
+		OrderPlaced(_orderID, _traderID);
 	}
 
 	/**
@@ -149,11 +215,11 @@ contract OrderBook {
    */
 	function expireOrder(bytes32 _orderID) public {
 		require(now - orders[_orderID].timestamp > 2 days);
-    orders[_orderID].status = STATUS_EXPIRED;
-    orderCount[owner[_orderID]]--;
+    orders[_orderID].status = Status.Expired;
+    orderCount[owners[_orderID]]--;
     // TODO: Get address from republic ID
-    // republicToken.transferFrom(address(this), owner[_orderID], orders[_orderID].fee);
-    delete owner[_orderID];
+    ren.transfer(refundAddress[_orderID], orders[_orderID].fee);
+    delete owners[_orderID];
 		OrderExpired(_orderID);
 	}
 
@@ -165,21 +231,35 @@ contract OrderBook {
    *
 	 * @param _orderID1 The order ID of the first order.
 	 * @param _orderID2 The order ID of the second order.
-   * @param _matches ...
    */
-	function closeOrder(bytes32 _orderID1, bytes32 _orderID2, MatchFragment[] _matches) internal {
+	function closeOrders(bytes32 _orderID1, bytes32 _orderID2) onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2) internal {
+    bytes32 matchID = getMatchID(_orderID1,_orderID2);
+    matches[matchID].orderID1 = _orderID1;
+    matches[matchID].orderID2 = _orderID2;
+
+    uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
+
     // require();
-    uint fee = orders[_orderID1].fee + orders[_orderID2].fee/kValue;
-    orders[_orderID1].status = STATUS_CLOSED;
-    orders[_orderID2].status = STATUS_CLOSED;
-    orderCount[owner[_orderID1]]--;
-    orderCount[owner[_orderID2]]--;
-    // TODO: reward miners
-    // for (var i = 0; i < kValue; i++) {
-    //   reward[orders[_matches[i].orderFragmentID1].minerID] += fee;
-    // }
-    delete owner[_orderID1];
-    delete owner[_orderID2];
+    uint fee = (orders[_orderID1].fee + orders[_orderID2].fee) / kValue;
+    orders[_orderID1].status = Status.Closed;
+    orders[_orderID2].status = Status.Closed;
+
+    orderMatch[_orderID1] = matchID;
+    orderMatch[_orderID2] = matchID;
+
+    // Decrease order counts of each trader
+    orderCount[owners[_orderID1]]--;
+    orderCount[owners[_orderID2]]--;
+
+    // reward miners
+    for (uint256 i = 0; i < kValue; i++) {
+      bytes20 minerID = matches[matchID].matchFragments[i].minerID;
+      rewards[minerID] += fee;
+    }
+    // TODO: Do something with remainder
+    // uint256 sum = (fee / kValue) * kValue;
+    delete owners[_orderID1];
+    delete owners[_orderID2];
 		OrderClosed(_orderID1);
     OrderClosed(_orderID2);
 	}
@@ -195,49 +275,128 @@ contract OrderBook {
    * @return True if the miner is authorized to close the order fragment and
    * order is open, false otherwise.
    */
-  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public view returns(bool) {
-    return (orders[_orderID].status == STATUS_OPEN && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
+  function checkOrderFragment(bytes32 _orderID, bytes32 _orderFragmentID, bytes20 _minerID) public returns (bool) {
+    return (orders[_orderID].status == Status.Open && orders[_orderID].minersToOrderFragmentIDs[_minerID] == _orderFragmentID);
   }
 
-  function getAddress(bytes20 _minerID) internal returns (address) {
-    return address(_minerID);
+  /**
+   * @notice Submit an output fragment for a match. Once enough have been submitted,
+   * the order is closed.
+   *
+   * @param _outputFragment ...
+   * @param _orderID1 ...
+   * @param _orderID2 ...
+   * @param _minerID ...
+   * @param _orderFragmentID1 ...
+   * @param _orderFragmentID2 ...
+   */
+  function submitOutputFragment(
+      bytes _outputFragment,
+      bytes32 _orderID1,
+      bytes32 _orderID2,
+      bytes20 _minerID,
+      bytes32 _orderFragmentID1,
+      bytes32 _orderFragmentID2) public onlyOpenOrder(_orderID1) onlyOpenOrder(_orderID2)
+  {
+
+    // Check that the miner has submitted the right fragment IDs
+    require(orders[_orderID1].minersToOrderFragmentIDs[_minerID] == _orderFragmentID1);
+    require(_orderFragmentID1 != 0x0);
+    require(orders[_orderID2].minersToOrderFragmentIDs[_minerID] == _orderFragmentID2);
+    require(_orderFragmentID2 != 0x0);
+
+    // TODO: Check that the orders have the same orderFragmentCount?
+        
+    // Check that msg.sender is the miner
+    require(msg.sender == minerRegistrar.getEthereumAddress(_minerID));
+
+    bytes32 matchID = getMatchID(_orderID2,_orderID1);
+
+    // New matchFragment
+    matches[matchID].matchFragments.push(MatchFragment({
+      outputFragment: _outputFragment,
+      minerID: _minerID,
+      orderFragmentID1: _orderFragmentID1,
+      orderFragmentID2: _orderFragmentID2
+    }));
+
+    uint256 kValue = getKValue(orders[_orderID1].orderFragmentCount);
+    uint256 length = matches[matchID].matchFragments.length;
+    if (length == kValue) {
+      closeOrders(_orderID1, _orderID2);
+    }
   }
 
-  function submitOutputFragment(bytes _outputFragment, bytes32 _zkCommitment, bytes32 _orderID1, bytes32 _orderID2, bytes20 _minerID, bytes32 _orderFragmentID1, bytes32 _orderFragmentID2) public {
-    // TODO: Fix
-    // require(orders[_orderID1].miners[_orderFragmentID1] == _minerID || orders[_orderID1].minerLeaders[_orderFragmentID1] == _minerID);
-    require(msg.sender == getAddress(_minerID));
+  /**
+   * @notice Allow a miner to withdraw their reward to the Ethereum address used
+   * to register them
+   *
+   * @param _minerID The ID of the miner
+   */
+  function withdrawReward(bytes20 _minerID) public {
+    address owner = minerRegistrar.getOwner(_minerID);
 
-    // bytes32 matchID = keccak256(_orderID1,_orderID2);
-    MatchFragment storage matchFragment;
-    matchFragment.outputFragment = _outputFragment;
-    matchFragment.zkCommitment = _zkCommitment;
-    matchFragment.minerID = _minerID;
-    // TODO: Fix
-    // orders[_orderID1].matchFragments[matchID].push(matchFragment);
-    // if (orders[_orderID1].matches[matchID].length == kValue && orders[_orderID1].matches[matchID] == orders[_orderID2].matches[matchID]) {
-    //   closeOrder(_orderID1, _orderID2, orders[_orderID1].matches[matchID]);
-    // }
+    // Should anyone be able to call this?
+    require(owner == msg.sender);
+
+    uint256 reward = rewards[_minerID];
+    rewards[_minerID] = 0;
+    ren.transfer(owner, reward);
   }
 
-  // function withdrawReward(bytes32 minerID) public {
-  //   require(minerID == miner[msg.sender]);
-  //   republicToken.transfer(msg.sender, reward[minerID]);
-  // }
-
-  function getOutput(bytes32 _orderID) public constant returns(bytes20 none) {
-    // TODO: Fix (remove none in return)
-    // require(orders[_orderID].status == STATUS_CLOSED);
-    // return owner[orders[_orderID].matchID];
+  /**
+   * @notice Get the reward amount a miner can withdraw
+   *
+   * @param _minerID The ID of the miner
+   * @return The reward in Ren?
+   */
+  function getReward(bytes20 _minerID) public view returns (uint256) {
+    return rewards[_minerID];
   }
 
-  function getProofs(bytes32 _orderID) public constant returns(bytes32[]) {
-    require(orders[_orderID].status == STATUS_CLOSED);
-    bytes32[] storage zkCommitments;
-    // TODO: Fix
-    // for (var i = 0; i < orders[_orderID].outputs.length; i++) {
-    //   zkCommitments.push(orders[_orderID].outputs[i].zkCommitment);
-    // }
-    return zkCommitments;
+  /**
+   * @notice Get the status of an order
+   *
+   * @param _orderID The ID of the order
+   * @return The status as a number?, corresponding to the enum { Open, Expired, Closed }
+   */
+  function getOrderStatus(bytes32 _orderID) public view returns (Status) {
+    return orders[_orderID].status;
+  }
+
+  /**
+   * @notice Get the status of a match
+   *
+   * @param _matchID The ID of the match
+   * @return The status as a number?, corresponding to the enum { Open, Expired, Closed }
+   */
+  function getMatchStatus(bytes32 _matchID) public view returns (Status) {
+    Status status1 = orders[matches[_matchID].orderID1].status;
+    Status status2 = orders[matches[_matchID].orderID2].status;
+    require(status1 == status2);
+    return status1;
+  }
+
+  /**
+   * @notice Get the corresponding matched order
+   *
+   * @param _orderID The ID of the order to find of the match of
+   * @return matchedOrderID The ID of the matched order
+   * @return matchedTraderID the ID of the matched order's trader
+   */
+  function getMatchedOrder(bytes32 _orderID) onlyClosedOrder(_orderID) public view returns (bytes32 matchedOrderID, bytes20 matchedTraderID) {
+    bytes32 matchID = orderMatch[_orderID];
+    if (_orderID == matches[matchID].orderID1) {
+      matchedOrderID = matches[matchID].orderID2;
+    } else if (_orderID == matches[matchID].orderID2) {
+      matchedOrderID = matches[matchID].orderID1;
+    } else {
+      revert();
+    }
+
+    matchedTraderID = orders[matchedOrderID].traderID;
+
+    // Not necessary
+    return (matchedOrderID, matchedTraderID);
   }
 }

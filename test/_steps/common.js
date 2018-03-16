@@ -1,16 +1,23 @@
 
-const utils = require("../test_utils");
-const { accounts, indexMap } = require("../accounts");
-var config = require("../../republic-config");
+const utils = require("../_helpers/test_utils");
+const config = require("../../republic-config");
+const steps = require('./steps').steps;
 
-// Initialise:
+const { accounts, indexMap } = require("../_helpers/accounts");
+
+// Wait for contracts:
 let ren;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
 })();
 
 
-const steps = {
+module.exports = {
+
+  ApproveRen: async (from, to, amount) => {
+    // from and to must match interface {address: ...}
+    return await ren.approve(to.address, amount, { from: from.address });
+  },
 
   /** GetRenBalance */
   GetRenBalance: async (account) => {
@@ -18,5 +25,3 @@ const steps = {
   },
 
 }
-
-module.exports = steps;
