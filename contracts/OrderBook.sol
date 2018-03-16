@@ -4,16 +4,16 @@ import "./RepublicToken.sol";
 import "./MinerRegistrar.sol";
 import "./TraderRegistrar.sol";
 
-/** Active WIP */
+/* Active WIP */
 contract OrderBook {
 
-  /** Contracts */
+  /* Contracts */
 
   RepublicToken ren;
   MinerRegistrar minerRegistrar;
   TraderRegistrar traderRegistrar;
 
-  /** Data */
+  /* Data */
 
   struct MatchFragment {
     bytes20 minerID;
@@ -61,7 +61,7 @@ contract OrderBook {
   mapping (bytes20 => uint) orderCount;
   mapping (bytes32 => uint) rewards;
 
-  /** Events */
+  /* Events */
 
   event OrderPlaced(bytes32 _hash, bytes20 _trader);
   event OrderExpired(bytes32 _hash);
@@ -72,7 +72,7 @@ contract OrderBook {
   event DebugBool(bool msg);
   event DebugInt(uint256 msg);
 
-  /** Modifiers */
+  /* Modifiers */
 
   /**
    * @notice Only allow for orders that are currently open
@@ -94,7 +94,7 @@ contract OrderBook {
     _;
   }
 
-  /** Private functions */
+  /* Private functions */
 
   /**
    * Calculate the K value (number of fragments needed to be combined)
@@ -137,7 +137,7 @@ contract OrderBook {
     }
   }
 
-  /** Public functions */
+  /* Public functions */
 
   /**
    * @notice The OrderBook constructor.

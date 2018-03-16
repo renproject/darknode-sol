@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 import "./RepublicToken.sol";
 import "./Utils.sol";
@@ -15,6 +15,7 @@ contract TraderRegistrar {
     address owner;
     uint256 bond;
     bytes publicKey;
+    bool registered;
   }
 
   // Republic ERC20 token contract used to transfer bonds.
@@ -49,7 +50,7 @@ contract TraderRegistrar {
    * @notice Emitted when a refund has been made.
    *
    * @param _owner The address that was refunded.
-   * @parma _amount The amount of REN that was refunded.
+   * @param _amount The amount of REN that was refunded.
    */
   event OwnerRefunded(address _owner, uint256 _amount);
 
@@ -57,9 +58,24 @@ contract TraderRegistrar {
    * @notice Only allow the owner that registered the trader to pass.
    */
   modifier onlyOwner(bytes20 _traderID) {
-    if (traders[_traderID].owner == msg.sender) {
-      _;
-    }
+    require (traders[_traderID].owner == msg.sender);
+    _;
+  }
+
+  /**
+   * @notice Only allow unregisterd traders to pass.
+   */
+  modifier onlyUnregistered(bytes20 _traderID) {
+    require (!traders[_traderID].registered);
+    _;
+  }
+
+  /**
+   * @notice Only allow registered traders to pass.
+   */
+  modifier onlyRegistered(bytes20 _traderID) {
+    require (traders[_traderID].registered);
+    _;
   }
 
   /** 
@@ -80,10 +96,11 @@ contract TraderRegistrar {
    * The bond must be provided in REN as an allowance and the entire allowance
    * will be used.
    *
+   * @param _traderID The trader ID that will be registered.
    * @param _publicKey The public key of the trader. It is stored to allow other
    *                   miners and traders to encrypt messages to the trader.
    */
-  function register(bytes _publicKey) public {
+  function register(bytes20 _traderID, bytes _publicKey) public onlyUnregistered(_traderID) {
     // REN allowance is used as the bond.
     uint256 bond = ren.allowance(msg.sender, this);
     require(bond > minimumBond);
@@ -92,16 +109,16 @@ contract TraderRegistrar {
     require(ren.transferFrom(msg.sender, this, bond));
 
     // Store this trader in the registry.
-    bytes20 traderID = Utils.republicIDFromPublicKey(_publicKey);
-    traders[traderID] = Trader({
+    traders[_traderID] = Trader({
       owner: msg.sender,
       bond: bond,
-      publicKey: _publicKey
+      publicKey: _publicKey,
+      registered: true
     });
     numberOfTraders++;
 
     // Emit an event.
-    TraderRegistered(traderID, bond);
+    TraderRegistered(_traderID, bond);
   }
 
   /** 
@@ -111,14 +128,15 @@ contract TraderRegistrar {
    * @param _traderID The ID of the trader that will be deregistered. The
    *                  caller must be the owner of this trader.
    */
-  function deregister(bytes20 _traderID) public onlyOwner(_traderID) {
+  function deregister(bytes20 _traderID) public onlyOwner(_traderID) onlyRegistered(_traderID) {
+    // Setup a refund for the owner.
+    pendingRefunds[msg.sender] += traders[_traderID].bond;
+
     // Zero the trader from the registry.
     traders[_traderID].owner = 0;
     traders[_traderID].bond = 0;
     traders[_traderID].publicKey = "";
-
-    // Setup a refund for the owner.
-    pendingRefunds[msg.sender] += traders[_traderID].bond;
+    traders[_traderID].registered = false;
 
     // Emit an event.
     TraderDeregistered(_traderID);
@@ -139,6 +157,10 @@ contract TraderRegistrar {
 
     // Emit an event.
     OwnerRefunded(msg.sender, amount);
+  }
+
+  function getTrader(bytes20 _traderID) public view returns (Trader) {
+    return traders[_traderID];
   }
 
   function getNumberOfTraders() public view returns (uint256) {

@@ -1,27 +1,26 @@
 
-const utils = require("../_helpers/test_utils");
+import * as utils from "../_helpers/test_utils";
 const config = require("../../republic-config");
-const steps = require('./steps').steps;
+import steps from "./steps";
 
-const { accounts, indexMap } = require("../_helpers/accounts");
+import { accounts, indexMap } from "../_helpers/accounts";
 
 // Wait for contracts:
-let ren;
+let ren: any;
 (async () => {
   ren = await artifacts.require("RepublicToken").deployed();
 })();
 
+export default {
 
-module.exports = {
-
-  ApproveRen: async (from, to, amount) => {
+  ApproveRen: async (from: Account, to: Account, amount: number): Promise<any> => {
     // from and to must match interface {address: ...}
     return await ren.approve(to.address, amount, { from: from.address });
   },
 
   /** GetRenBalance */
-  GetRenBalance: async (account) => {
+  GetRenBalance: async (account: Account): Promise<any> => {
     return await ren.balanceOf(account.address, { from: account.address });
   },
 
-}
+};
