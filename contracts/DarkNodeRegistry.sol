@@ -5,10 +5,10 @@ import "./RepublicToken.sol";
 import "./Utils.sol";
 
 /**
- * @notice DarkNodeRegistrar is responsible for the registration and
+ * @notice DarkNodeRegistry is responsible for the registration and
  * deregistration of dark nodes.
  */
-contract DarkNodeRegistrar {
+contract DarkNodeRegistry {
 
   struct Epoch {
     bytes32 blockhash;
