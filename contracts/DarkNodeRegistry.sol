@@ -25,7 +25,7 @@ contract DarkNodeRegistry {
   struct DarkNode {
     address owner;
     uint256 bond;
-    bytes publicKey;  
+    bytes publicKey;
     uint256 registeredAt;
     uint256 deregisteredAt;
   }
@@ -75,11 +75,6 @@ contract DarkNodeRegistry {
    * @notice Emitted when a new epoch has begun
    */
   event NewEpoch();
-
-  event Debug(string str);
-  event DebugBool(bool boolean);
-  event DebugInt(uint256 num);
-  event Debug20(bytes20 str);
 
   /**
    * @notice Requires that the node is in the list
@@ -141,7 +136,7 @@ contract DarkNodeRegistry {
    *                     darkNode.
    * @param _minimumEpochInterval The minimum amount of time between epochs.
    */
-  function DarkNodeRegistrar(address _tokenAddress, uint256 _minimumBond, uint256 _minimumEpochInterval) public {
+  function DarkNodeRegistry(address _tokenAddress, uint256 _minimumBond, uint256 _minimumEpochInterval) public {
     ren = RepublicToken(_tokenAddress);
     minimumBond = _minimumBond;
     minimumEpochInterval = _minimumEpochInterval;

@@ -1,9 +1,9 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.18;
 
 import "./RepublicToken.sol";
 import "./Utils.sol";
 
-contract TraderRegistrar {
+contract TraderRegistrry {
 
   /**
    * @notice Traders are stored in the registry. The owner is the address that
@@ -58,7 +58,7 @@ contract TraderRegistrar {
    * @notice Only allow the owner that registered the trader to pass.
    */
   modifier onlyOwner(bytes20 _traderID) {
-    require (traders[_traderID].owner == msg.sender);
+    require(traders[_traderID].owner == msg.sender);
     _;
   }
 
@@ -66,7 +66,7 @@ contract TraderRegistrar {
    * @notice Only allow unregisterd traders to pass.
    */
   modifier onlyUnregistered(bytes20 _traderID) {
-    require (!traders[_traderID].registered);
+    require(!traders[_traderID].registered);
     _;
   }
 
@@ -74,18 +74,18 @@ contract TraderRegistrar {
    * @notice Only allow registered traders to pass.
    */
   modifier onlyRegistered(bytes20 _traderID) {
-    require (traders[_traderID].registered);
+    require(traders[_traderID].registered);
     _;
   }
 
   /** 
-   * @notice The TraderRegistrar constructor.
+   * @notice The TraderRegistry constructor.
    *
    * @param _renAddress The address of the Republic Token contract.
    * @param _minimumBond The minimum bond amount that can be submitted by a
    *                     trader.
    */
-  function TraderRegistrar(address _renAddress, uint256 _minimumBond) public {
+  function TraderRegistry(address _renAddress, uint256 _minimumBond) public {
     ren = RepublicToken(_renAddress);
     minimumBond = _minimumBond;
   }
