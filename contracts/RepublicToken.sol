@@ -120,7 +120,7 @@ contract ERC20Basic {
 contract BasicToken is ERC20Basic {
   using SafeMath for uint256;
 
-  mapping(address => uint256) balances;
+  mapping(address => uint256) public balances;
 
   /**
   * @notice Transfer token for a specified address.
@@ -252,24 +252,24 @@ contract StandardToken is ERC20, BasicToken {
 
 contract BurnableToken is StandardToken {
 
-    event Burn(address indexed burner, uint256 value);
+  event Burn(address indexed burner, uint256 value);
 
-    /**
-     * @notice Burns a specific amount of tokens.
-     *
-     * @param _value The amount of token to be burned.
-     */
-    function burn(uint256 _value) public {
-        require(_value > 0);
-        require(_value <= balances[msg.sender]);
-        // no need to require value <= totalSupply, since that would imply the
-        // sender's balance is greater than the totalSupply, which *should* be an assertion failure
+  /**
+    * @notice Burns a specific amount of tokens.
+    *
+    * @param _value The amount of token to be burned.
+    */
+  function burn(uint256 _value) public {
+    require(_value > 0);
+    require(_value <= balances[msg.sender]);
+    // no need to require value <= totalSupply, since that would imply the
+    // sender's balance is greater than the totalSupply, which *should* be an assertion failure
 
-        address burner = msg.sender;
-        balances[burner] = balances[burner].sub(_value);
-        totalSupply = totalSupply.sub(_value);
-        Burn(burner, _value);
-    }
+    address burner = msg.sender;
+    balances[burner] = balances[burner].sub(_value);
+    totalSupply = totalSupply.sub(_value);
+    Burn(burner, _value);
+  }
 }
 
 contract PausableToken is StandardToken, Pausable {
@@ -297,26 +297,26 @@ contract PausableToken is StandardToken, Pausable {
 
 contract RepublicToken is PausableToken, BurnableToken {
 
-    string public constant name = "Republic Token";
-    string public constant symbol = "REN";
-    uint8 public constant decimals = 18;
-    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
-    
-    /**
-     * @notice The RepublicToken Constructor.
-     */
-    function RepublicToken() public {
-        totalSupply = INITIAL_SUPPLY;   
-        balances[msg.sender] = INITIAL_SUPPLY;
-    }
+  string public constant name = "Republic Token";
+  string public constant symbol = "REN";
+  uint8 public constant decimals = 18;
+  uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
+  
+  /**
+    * @notice The RepublicToken Constructor.
+    */
+  function RepublicToken() public {
+    totalSupply = INITIAL_SUPPLY;   
+    balances[msg.sender] = INITIAL_SUPPLY;
+  }
 
-    function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
-        require(amount > 0);
+  function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
+    require(amount > 0);
 
-        balances[owner] = balances[owner].sub(amount);
-        balances[beneficiary] = balances[beneficiary].add(amount);
-        Transfer(owner, beneficiary, amount);
+    balances[owner] = balances[owner].sub(amount);
+    balances[beneficiary] = balances[beneficiary].add(amount);
+    Transfer(owner, beneficiary, amount);
 
-        return true;
-    }
+    return true;
+  }
 }
