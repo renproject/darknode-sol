@@ -1,15 +1,28 @@
 {
+  "name": "eth-erpublic",
+  "version": "0.0.0",
   "dependencies": {
+    "@types/chai": "^4.1.1",
+    "@types/mocha": "^2.2.46",
+    "@types/node": "^9.3.0",
     "bignumber.js": "^5.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
     "ganache-cli": "^6.0.3",
     "keccak": "^1.4.0",
-    "secp256k1": "^3.4.0"
+    "secp256k1": "^3.4.0",
+    "typescript": "^2.6.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "coveralls": "^3.0.0",
+    "solidity-coverage": "^0.4.8",
+    "tslint": "^5.9.1",
+    "tslint-react": "^3.4.0"
+  },
   "scripts": {
-    "test": "truffle test"
+    "build": "rm -rf ./test && tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json",
+    "test": "npm run build && truffle test",
+    "coverage": "npm run build && solidity-coverage"
   }
 }
