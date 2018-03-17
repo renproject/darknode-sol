@@ -268,9 +268,20 @@ contract DarkNodeRegistry {
     return darkNodeRegistry[_darkNodeID].publicKey;
   }
 
-  function getDarkNodes() public pure returns (bytes20[]) {
-    // UNIMPLEMENTED
-    return new bytes20[](0);
+  function getDarkNodes() public view returns (bytes20[]) {
+    bytes20[] memory nodes = new bytes20[](darkNodesNum);
+
+    // Begin with the first node in the list
+    bytes20 next = LinkedList.begin(darkNodes);
+    // Iterate until all dark nodes have been checked
+    for (uint256 n = 0; n < darkNodesNum; n++) {
+      assert(isRegistered(next));
+      nodes[n] = next;
+      // Move to the next node in the linked list
+      next = LinkedList.next(darkNodes, next);
+    }
+
+    return nodes;
   }
 
   /**
