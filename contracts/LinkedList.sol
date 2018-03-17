@@ -9,7 +9,7 @@ library LinkedList {
    * @notice A permanent NULL node (0x0) in the circular double linked list.
    * NULL.next is the head, and NULL.previous is the tail.
    */
-  bytes20 private constant NULL = 0x0;
+  bytes20 public constant NULL = 0x0;
 
   /**
    * @notice A node points to the node before it, and the node after it. If
