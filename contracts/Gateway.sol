@@ -10,7 +10,7 @@ contract RepublicProtocol is Ownable {
 
   event Update();
 
-  function RepublicProtocol (address _token, address _darkNodeRegistry, address _traderRegistry) public {
+  function RepublicProtocol(address _token, address _darkNodeRegistry, address _traderRegistry) public {
     token = _token;
     darkNodeRegistry = _darkNodeRegistry;
     traderRegistry = _traderRegistry;
