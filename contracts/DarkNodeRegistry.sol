@@ -40,12 +40,13 @@ contract DarkNodeRegistry {
   bytes20 public darkNodesLastPendingRegistration;
   bytes20 public darkNodesLastRegistration;
 
-  // Minimum bond to be considered registered.
+  // Constants used to parameterize behavior.
   uint256 public minimumBond;
+  uint256 public minimumDarkPoolSize;
+  uint256 public minimumEpochInterval;
 
   // The current epoch and the minimum time interval until the next epoch.
   Epoch public currentEpoch;
-  uint256 public minimumEpochInterval;
 
   /**
    * @notice Emitted when a darkNode is registered.
@@ -130,14 +131,16 @@ contract DarkNodeRegistry {
   /** 
    * @notice The DarkNodeRegistrar constructor.
    *
-   * @param _tokenAddress The address of the RepublicToken contract.
+   * @param _token The address of the RepublicToken contract.
    * @param _minimumBond The minimum bond amount that can be submitted by a
    *                     darkNode.
+   * @param _minimumDarkPoolSize The minimum size of a dark pool.
    * @param _minimumEpochInterval The minimum amount of time between epochs.
    */
-  function DarkNodeRegistry(address _tokenAddress, uint256 _minimumBond, uint256 _minimumEpochInterval) public {
-    ren = RepublicToken(_tokenAddress);
+  function DarkNodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    ren = RepublicToken(_token);
     minimumBond = _minimumBond;
+    minimumDarkPoolSize = _minimumDarkPoolSize;
     minimumEpochInterval = _minimumEpochInterval;
     currentEpoch = Epoch({
       blockhash: block.blockhash(block.number - 1),
