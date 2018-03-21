@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.20;
 
 import "./LinkedList.sol";
 import "./RepublicToken.sol";
@@ -24,21 +24,19 @@ contract DarkNodeRegistry {
   struct DarkNode {
     address owner;
     uint256 bond;
-    bytes publicKey;
     uint256 registeredAt;
     uint256 deregisteredAt;
+    bytes publicKey;
   }
 
   // Republic ERC20 token contract used to transfer bonds.
   RepublicToken ren;
 
   // Registry data.
+  mapping(bytes20 => DarkNode) private darkNodeRegistry;
   LinkedList.List private darkNodes;
-  mapping(bytes20 => DarkNode) public darkNodeRegistry;
-  uint256 public darkNodesNum;
-  uint256 public darkNodesNumNextEpoch;
-  bytes20 public darkNodesLastPendingRegistration;
-  bytes20 public darkNodesLastRegistration;
+  uint256 public numDarkNodes;
+  uint256 public numDarkNodesNextEpoch;
 
   // Constants used to parameterize behavior.
   uint256 public minimumBond;
@@ -81,8 +79,8 @@ contract DarkNodeRegistry {
    * @param self The list being called on
    * @param node The node being checked
    */
-  modifier onlyInList(LinkedList.List storage self, bytes20 node) {
-    require(LinkedList.isInList(self, node));
+  modifier onlyInList(LinkedList.List storage _self, bytes20 _node) {
+    require(LinkedList.isInList(_self, _node));
     _;
   }
 
@@ -91,8 +89,8 @@ contract DarkNodeRegistry {
    * @param self The list being called on
    * @param node The node being checked
    */
-  modifier onlyNotInList(LinkedList.List storage self, bytes20 node) {
-    require(!LinkedList.isInList(self, node));
+  modifier onlyNotInList(LinkedList.List storage _self, bytes20 _node) {
+    require(!LinkedList.isInList(_self, _node));
     _;
   }
 
@@ -146,10 +144,8 @@ contract DarkNodeRegistry {
       blockhash: uint256(block.blockhash(block.number - 1)),
       timestamp: now
     });
-    darkNodesNum = 0;
-    darkNodesNumNextEpoch = 0;
-    darkNodesLastPendingRegistration = 0x0;
-    darkNodesLastRegistration = 0x0;
+    numDarkNodes = 0;
+    numDarkNodesNextEpoch = 0;
   }
 
   /**
@@ -160,10 +156,7 @@ contract DarkNodeRegistry {
   function epoch() public {
     require(now > currentEpoch.timestamp + minimumEpochInterval);
 
-    // Reject the epoch update if the block hash is incompatible with the dark
-    // ocean for the next epoch
     uint256 blockhash = uint256(block.blockhash(block.number - 1));
-    require(blockhash % darkNodesNumNextEpoch != 0);
 
     // Update the epoch hash and timestamp
     currentEpoch = Epoch({
@@ -172,9 +165,7 @@ contract DarkNodeRegistry {
     });
     
     // Update the registry information
-    darkNodesNum = darkNodesNumNextEpoch;
-    darkNodesLastRegistration = darkNodesLastPendingRegistration;
-    darkNodesLastPendingRegistration = 0x0;
+    numDarkNodes = numDarkNodesNextEpoch;
 
     // Emit an event
     NewEpoch();
@@ -202,7 +193,6 @@ contract DarkNodeRegistry {
     require(ren.transferFrom(msg.sender, this, _bond));
 
     // Flag this dark node for registration
-    LinkedList.append(darkNodes, _darkNodeID);
     darkNodeRegistry[_darkNodeID] = DarkNode({
       owner: msg.sender,
       bond: _bond,
@@ -210,8 +200,8 @@ contract DarkNodeRegistry {
       registeredAt: currentEpoch.timestamp + minimumEpochInterval,
       deregisteredAt: 0
     });
-    darkNodesLastPendingRegistration = _darkNodeID;
-    darkNodesNumNextEpoch++;
+    LinkedList.append(darkNodes, _darkNodeID);
+    numDarkNodesNextEpoch++;
 
     // Emit an event.
     DarkNodeRegistered(_darkNodeID, _bond);
@@ -228,7 +218,7 @@ contract DarkNodeRegistry {
   function deregister(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyRegistered(_darkNodeID) {
     // Flag the dark node for deregistration
     darkNodeRegistry[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
-    darkNodesNumNextEpoch--;
+    numDarkNodesNextEpoch--;
 
     // Emit an event
     DarkNodeDeregistered(_darkNodeID);
@@ -276,16 +266,21 @@ contract DarkNodeRegistry {
   }
 
   function getDarkNodes() public view returns (bytes20[]) {
-    bytes20[] memory nodes = new bytes20[](darkNodesNum);
+    bytes20[] memory nodes = new bytes20[](numDarkNodes);
 
     // Begin with the first node in the list
+    uint256 n = 0;
     bytes20 next = LinkedList.begin(darkNodes);
-    // Iterate until all dark nodes have been checked
-    for (uint256 n = 0; n < darkNodesNum; n++) {
-      assert(isRegistered(next));
+
+    // Iterate until all registered dark nodes have been collected
+    while (n < numDarkNodes) {
+      // Only include registered dark nodes
+      if (!isRegistered(next)) {
+        continue;
+      }
       nodes[n] = next;
-      // Move to the next node in the linked list
       next = LinkedList.next(darkNodes, next);
+      n++;
     }
 
     return nodes;
