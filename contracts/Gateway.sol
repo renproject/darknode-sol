@@ -2,7 +2,7 @@ pragma solidity ^0.4.20;
 
 import "./Ownable.sol";
 
-contract RepublicProtocol is Ownable {
+contract Gateway is Ownable {
 
   address public token;
   address public darkNodeRegistry;
@@ -11,10 +11,16 @@ contract RepublicProtocol is Ownable {
 
   event Update();
 
-  function RepublicProtocol (address _token, address _darkNodeRegistry, address _traderRegistry) public {
+  function Gateway
+  (   address _token, 
+      address _darkNodeRegistry, 
+      address _traderRegistry,
+      uint256 _darkpoolSize
+  ) public {
     token = _token;
     darkNodeRegistry = _darkNodeRegistry;
     traderRegistry = _traderRegistry;
+    darkpoolSize = _darkpoolSize;
   }
  
   function updateDarkNodeRegistry(address _darkNodeRegistry) public onlyOwner {
