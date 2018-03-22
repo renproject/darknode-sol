@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.20;
 
 import "./RepublicToken.sol";
 import "./Utils.sol";
@@ -58,7 +58,7 @@ contract TraderRegistrar {
    * @notice Only allow the owner that registered the trader to pass.
    */
   modifier onlyOwner(bytes20 _traderID) {
-    require (traders[_traderID].owner == msg.sender);
+    require(traders[_traderID].owner == msg.sender);
     _;
   }
 
@@ -66,7 +66,7 @@ contract TraderRegistrar {
    * @notice Only allow unregisterd traders to pass.
    */
   modifier onlyUnregistered(bytes20 _traderID) {
-    require (!traders[_traderID].registered);
+    require(!traders[_traderID].registered);
     _;
   }
 
@@ -74,7 +74,7 @@ contract TraderRegistrar {
    * @notice Only allow registered traders to pass.
    */
   modifier onlyRegistered(bytes20 _traderID) {
-    require (traders[_traderID].registered);
+    require(traders[_traderID].registered);
     _;
   }
 
@@ -159,8 +159,8 @@ contract TraderRegistrar {
     OwnerRefunded(msg.sender, amount);
   }
 
-  function getTrader(bytes20 _traderID) public view returns (Trader) {
-    return traders[_traderID];
+  function getTrader(bytes20 _traderID) public view returns (address, uint256, bytes, bool) {
+    return (traders[_traderID].owner, traders[_traderID].bond, traders[_traderID].publicKey, traders[_traderID].registered);
   }
 
   function getNumberOfTraders() public view returns (uint256) {
