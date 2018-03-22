@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.20;
 
 library SafeMath {
 
@@ -93,7 +93,7 @@ contract Pausable is Ownable {
   /**
    * @notice Called by the owner to pause. Triggers stopped state.
    */
-  function pause() onlyOwner whenNotPaused public {
+  function pause() public onlyOwner whenNotPaused {
     paused = true;
     Pause();
   }
@@ -101,7 +101,7 @@ contract Pausable is Ownable {
   /**
    * @notice Called by the owner to unpause. Returns to normal state.
    */
-  function unpause() onlyOwner whenPaused public {
+  function unpause() public onlyOwner whenPaused {
     paused = false;
     Unpause();
   }
