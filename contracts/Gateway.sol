@@ -7,7 +7,7 @@ contract Gateway is Ownable {
   address public token;
   address public darkNodeRegistry;
   address public traderRegistry;
-  uint256 public darkpoolSize;
+  uint256 public darkPoolSize;
 
   event Update();
 
@@ -15,12 +15,12 @@ contract Gateway is Ownable {
   (   address _token, 
       address _darkNodeRegistry, 
       address _traderRegistry,
-      uint256 _darkpoolSize
+      uint256 _darkPoolSize
   ) public {
     token = _token;
     darkNodeRegistry = _darkNodeRegistry;
     traderRegistry = _traderRegistry;
-    darkpoolSize = _darkpoolSize;
+    darkPoolSize = _darkPoolSize;
   }
  
   function updateDarkNodeRegistry(address _darkNodeRegistry) public onlyOwner {
@@ -33,8 +33,8 @@ contract Gateway is Ownable {
     Update();
   }
 
-  function updateMinimumDarkpoolSize(uint256 _darkpoolSize) public onlyOwner {
-    darkpoolSize = _darkpoolSize;
+  function updateMinimumDarkpoolSize(uint256 _darkPoolSize) public onlyOwner {
+    darkPoolSize = _darkPoolSize;
     Update();
   }
  
