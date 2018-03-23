@@ -65,6 +65,10 @@ contract("LinkedList", function(accounts) {
     await linkedList.remove("").should.not.be.rejectedWith();
   });
 
+  it("should not add the same value more than once", async () => {
+    await linkedList.append("1").should.be.rejectedWith();
+  });
+
   it("should not remove a node not in the list", async () => {
     await linkedList.remove("6").should.be.rejectedWith();
   })
