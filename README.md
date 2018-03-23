@@ -1,7 +1,7 @@
 # Ethereum Republic
 
-[![Build Status](https://travis-ci.org/republicprotocol/eth-republic.svg?branch=branch%2Fcoverage)](https://travis-ci.org/republicprotocol/eth-republic)
-[![Coverage Status](https://coveralls.io/repos/github/republicprotocol/eth-republic/badge.svg?branch=master)](https://coveralls.io/github/republicprotocol/eth-republic?branch=master)
+[![Build Status](https://travis-ci.org/republicprotocol/republic-sol.svg?branch=branch%2Fcoverage)](https://travis-ci.org/republicprotocol/republic-sol)
+[![Coverage Status](https://coveralls.io/repos/github/republicprotocol/republic-sol/badge.svg?branch=master)](https://coveralls.io/github/republicprotocol/republic-sol?branch=master)
 
 > These contracts are a work in progress.
 
