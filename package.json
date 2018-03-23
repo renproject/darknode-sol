@@ -1,5 +1,5 @@
 {
-  "name": "eth-erpublic",
+  "name": "rerpublic-sol",
   "version": "0.0.0",
   "dependencies": {
     "@types/chai": "^4.1.1",
@@ -7,7 +7,6 @@
     "@types/node": "^9.3.0",
     "bignumber.js": "^5.0.0",
     "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
     "ganache-cli": "^6.0.3",
     "keccak": "^1.4.0",
@@ -21,8 +20,7 @@
     "tslint-react": "^3.4.0"
   },
   "scripts": {
-    "build": "rm -rf ./test && tsc && cp ./test-ts/_helpers/privateKeys.json ./test/_helpers/privateKeys.json",
-    "test": "npm run build && truffle test",
-    "coverage": "npm run build && solidity-coverage"
+    "test": "truffle test",
+    "coverage": "solidity-coverage"
   }
 }
