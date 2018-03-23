@@ -1,9 +1,9 @@
-const linkedListTest = artifacts.require("linkedListTest.sol");
+const linkedListTest = artifacts.require("LinkedListTest.sol");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
-contract("linkedList", function(accounts) {
+contract("LinkedList", function(accounts) {
 
   let linkedList;
 
