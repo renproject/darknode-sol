@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
@@ -80,11 +80,11 @@ library LinkedList {
     return self.list[NULL].previous;
   }
 
-  function next(List storage self, bytes20 node) internal view returns (bytes20) {
+  function next(List storage self, bytes20 node) internal onlyInList(self, node) view returns (bytes20) {
     return self.list[node].next;
   }
 
-  function previous(List storage self, bytes20 node) internal view returns (bytes20) {
+  function previous(List storage self, bytes20 node) internal onlyInList(self, node) view returns (bytes20) {
     return self.list[node].previous;
   }
 

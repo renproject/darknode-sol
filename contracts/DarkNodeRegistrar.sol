@@ -1,8 +1,7 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
-import "./LinkedList.sol";
+import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
-import "./Utils.sol";
 
 /**
  * @notice DarkNodeRegistrar is responsible for the registration and
