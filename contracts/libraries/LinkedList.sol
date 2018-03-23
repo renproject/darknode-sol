@@ -29,7 +29,7 @@ library LinkedList {
   struct List {
     mapping (bytes20 => Node) list;
   }
-
+  
   /**
    * @notice Requires that the node is in the list.
    *
