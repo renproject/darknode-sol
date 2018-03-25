@@ -4,7 +4,7 @@ contract Ownable {
 
   address public owner;
 
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+  event OwnershipTransferred(address indexed _previousOwner, address indexed _newOwner);
 
   /**
    * @notice The Ownable constructor sets the original owner of the contract to
@@ -26,11 +26,11 @@ contract Ownable {
    * @notice Allows the current owner to transfer control of the contract to a
    * new owner.
    *
-   * @param newOwner The address to transfer ownership to.
+   * @param _newOwner The address to transfer ownership to.
    */
-  function transferOwnership(address newOwner) public onlyOwner {
-    require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
+  function transferOwnership(address _newOwner) public onlyOwner {
+    require(_newOwner != address(0));
+    owner = _newOwner;
+    OwnershipTransferred(owner, _newOwner);
   }
 }

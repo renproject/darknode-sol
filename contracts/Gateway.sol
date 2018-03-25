@@ -5,32 +5,32 @@ import "./Ownable.sol";
 contract Gateway is Ownable {
 
   address public republicToken;
-  address public darkNodeRegistrar;
-  address public traderRegistrar;
+  address public darkNodeRegistry;
+  address public traderRegistry;
   uint256 public minimumDarkPoolSize;
 
   event update(bytes4 functionID, uint256 oldValue, uint256 newValue);
 
   function Gateway
   (   address _republicToken, 
-      address _darkNodeRegistrar, 
-      address _traderRegistrar,
+      address _darkNodeRegistry, 
+      address _traderRegistry,
       uint256 _minimumDarkPoolSize
   ) public {
     republicToken = _republicToken;
-    darkNodeRegistrar = _darkNodeRegistrar;
-    traderRegistrar = _traderRegistrar;
+    darkNodeRegistry = _darkNodeRegistry;
+    traderRegistry = _traderRegistry;
     minimumDarkPoolSize = _minimumDarkPoolSize;
   }
  
-  function updateDarkNodeRegistrar(address _darkNodeRegistrar) public onlyOwner {
-    update(bytes4(sha256("updateDarkNodeRegistrar(address)")), uint256(darkNodeRegistrar), uint256(_darkNodeRegistrar));
-    darkNodeRegistrar = _darkNodeRegistrar;
+  function updateDarkNodeRegistry(address _darkNodeRegistry) public onlyOwner {
+    update(bytes4(sha256("updateDarkNodeRegistry(address)")), uint256(darkNodeRegistry), uint256(_darkNodeRegistry));
+    darkNodeRegistry = _darkNodeRegistry;
   }
 
-  function updateTraderRegistrar(address _traderRegistrar) public onlyOwner {
-    update(bytes4(sha256("updateTraderRegistrar(address)")), uint256(traderRegistrar), uint256(_traderRegistrar));
-    traderRegistrar = _traderRegistrar;
+  function updateTraderRegistry(address _traderRegistry) public onlyOwner {
+    update(bytes4(sha256("updateTraderRegistry(address)")), uint256(traderRegistry), uint256(_traderRegistry));
+    traderRegistry = _traderRegistry;
   }
 
   function updateMinimumDarkPoolSize(uint256 _minimumDarkPoolSize) public onlyOwner {

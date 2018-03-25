@@ -77,6 +77,8 @@ library LinkedList {
    */
   function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal {
     require(!isInList(self, newNode));
+    require(isInList(self, target) || target == NULL);
+
     // It is expected that this value is sometimes NULL.
     bytes20 prev = self.list[target].previous;
 
@@ -97,6 +99,8 @@ library LinkedList {
    */
   function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal {
     require(!isInList(self, newNode));
+    require(isInList(self, target) || target == NULL);
+
     // It is expected that this value is sometimes NULL.
     bytes20 n = self.list[target].next;
 

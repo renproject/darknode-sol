@@ -2,7 +2,7 @@ pragma solidity ^0.4.19;
 
 import "./RepublicToken.sol";
 
-contract TraderRegistrar {
+contract TraderRegistrry {
 
   /**
    * @notice Traders are stored in the registry. The owner is the address that
@@ -78,13 +78,13 @@ contract TraderRegistrar {
   }
 
   /** 
-   * @notice The TraderRegistrar constructor.
+   * @notice The TraderRegistry constructor.
    *
    * @param _renAddress The address of the Republic Token contract.
    * @param _minimumBond The minimum bond amount that can be submitted by a
    *                     trader.
    */
-  function TraderRegistrar(address _renAddress, uint256 _minimumBond) public {
+  function TraderRegistry(address _renAddress, uint256 _minimumBond) public {
     ren = RepublicToken(_renAddress);
     minimumBond = _minimumBond;
   }
