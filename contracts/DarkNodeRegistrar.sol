@@ -81,26 +81,6 @@ contract DarkNodeRegistrar {
   event Debug20(bytes20 str);
 
   /**
-   * @notice Requires that the node is in the list
-   * @param self The list being called on
-   * @param node The node being checked
-   */
-  modifier onlyInList(LinkedList.List storage self, bytes20 node) {
-    require(LinkedList.isInList(self, node));
-    _;
-  }
-
-  /**
-   * @notice Requires that the node is NOT in the list
-   * @param self The list being called on
-   * @param node The node being checked
-   */
-  modifier onlyNotInList(LinkedList.List storage self, bytes20 node) {
-    require(!LinkedList.isInList(self, node));
-    _;
-  }
-
-  /**
    * @notice Only allow the owner that registered the darkNode to pass.
    */
   modifier onlyOwner(bytes20 _darkNodeID) {
