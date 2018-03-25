@@ -8,16 +8,6 @@ contract LinkedListTest {
 
   LinkedList.List private ll;
 
-  modifier onlyInList(LinkedList.List storage self, bytes20 node) {
-    require(LinkedList.isInList(self, node));
-    _;
-  }
-
-  modifier onlyNotInList(LinkedList.List storage self, bytes20 node) {
-    require(!LinkedList.isInList(self, node));
-    _;
-  }
-
   function isInList(bytes20 node) public view returns (bool) {
     return ll.isInList(node);
   }
