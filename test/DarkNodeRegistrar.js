@@ -14,6 +14,15 @@ contract("DarkNodeRegistrar", function(accounts) {
     dnr = await DarkNodeRegistrar.new(ren.address, 100, 60);
   });
 
+  it("can not register a Dark Node with a bond less than the minimum bond", async() => {
+    await ren.approve(dnr.address, 99, {from: accounts[0]})
+    await dnr.register("", "", 99).should.be.rejectedWith();
+    await dnr.register("", "", 100).should.be.rejectedWith();
+  })
+
+  it("can not call epoch before the minimum time interval", async() => {
+    await dnr.epoch().should.be.rejectedWith();
+  })
 
   it("can register a Dark Node, call an epoch and check registration", async () => {
     await ren.approve(dnr.address, 100, {from: accounts[0]})
@@ -44,8 +53,11 @@ contract("DarkNodeRegistrar", function(accounts) {
   // NOT IMPLEMENTED
   it("can get all the Dark Node", async () => {
     const nodes = await dnr.getDarkNodes()
-    console.log(nodes)
   }) 
+
+  it("should fail to refund before deregistering", async () => {
+    await dnr.refund("0x261c74f7dd1ed6a069e18375ab2bee9afcb10956").should.be.rejectedWith();
+  })
 
   it("can deregister a Dark Node, call an epoch and check deregistration", async () => {
     await dnr.deregister("0x261c74f7dd1ed6a069e18375ab2bee9afcb10956")
@@ -60,6 +72,14 @@ contract("DarkNodeRegistrar", function(accounts) {
         reject(err);
       }
     }, 90 * 1000));
+  })
+
+  it("should fail to refund twice", async () => {
+    await dnr.refund("0x261c74f7dd1ed6a069e18375ab2bee9afcb10956").should.be.rejectedWith();
+  })
+
+  it("should not refund for an address which is never registered", async () => {
+    await dnr.refund("").should.be.rejectedWith();
   })
 
 
