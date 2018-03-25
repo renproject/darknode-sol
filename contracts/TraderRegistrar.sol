@@ -99,25 +99,26 @@ contract TraderRegistrar {
    * @param _publicKey The public key of the trader. It is stored to allow other
    *                   miners and traders to encrypt messages to the trader.
    */
-  function register(bytes20 _traderID, bytes _publicKey) public onlyUnregistered(_traderID) {
+  function register(bytes20 _traderID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_traderID) {
     // REN allowance is used as the bond.
-    uint256 bond = ren.allowance(msg.sender, this);
-    require(bond > minimumBond);
+    require(_bond >= minimumBond);
+    require(_bond <= ren.allowance(msg.sender, this));
+    require(ren.transferFrom(msg.sender, this, _bond));
 
     // Transfer the bond to this contract.
-    require(ren.transferFrom(msg.sender, this, bond));
+    require(ren.transferFrom(msg.sender, this, _bond));
 
     // Store this trader in the registry.
     traders[_traderID] = Trader({
       owner: msg.sender,
-      bond: bond,
+      bond: _bond,
       publicKey: _publicKey,
       registered: true
     });
     numberOfTraders++;
 
     // Emit an event.
-    TraderRegistered(_traderID, bond);
+    TraderRegistered(_traderID, _bond);
   }
 
   /** 
