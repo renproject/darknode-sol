@@ -68,7 +68,7 @@ contract("DarkNodeRegistry", function(accounts) {
   })
 
   it("can only get the Dark Nodes that are fully registered", async () => {
-    const nodes = await dnr.getDarkNodes.call()
+    const nodes = await dnr.getDarkNodes()
     assert.equal(nodes.length, 1)
     assert.equal(nodes[0], "0x261c74f7dd1ed6a069e18375ab2bee9afcb10956")
   }) 
