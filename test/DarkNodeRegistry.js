@@ -42,6 +42,15 @@ contract("DarkNodeRegistry", function(accounts) {
     }, 90 * 1000));
   })
 
+  it("can not register a node twice", async () => {
+    await ren.approve(dnr.address, 100, {from: accounts[0]})
+    await dnr.register("0x261c74f7dd1ed6a069e18375ab2bee9afcb10956", "0x42a990655bffe188c9823a2f914641a32dcbb1b242a990655bffe188c9823a2f914641a32dcbb1b242a990655bffe188c9823a2f914641a32dcbb1b2aabbccabbc", 100).should.be.rejectedWith();
+  })
+
+  it("can not deregister a node which is not registered", async () => {
+    await dnr.deregister("").should.be.rejectedWith();
+  })
+
   it("can get the owner of the Dark Node", async () => {
     assert.equal((await dnr.getOwner("0x261c74f7dd1ed6a069e18375ab2bee9afcb10956")), accounts[0])
   }) 

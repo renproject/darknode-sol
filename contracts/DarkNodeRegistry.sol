@@ -195,7 +195,7 @@ contract DarkNodeRegistry {
    * @param _darkNodeID The dark node ID that will be deregistered. The caller
    *                    of this method must be the owner of this dark node.
    */
-  function deregister(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyRegistered(_darkNodeID) {
+  function deregister(bytes20 _darkNodeID) public onlyRegistered(_darkNodeID) onlyOwner(_darkNodeID) {
     // Flag the dark node for deregistration
     darkNodeRegistry[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
     numDarkNodesNextEpoch--;
