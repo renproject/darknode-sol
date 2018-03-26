@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
@@ -30,28 +30,6 @@ library LinkedList {
     mapping (bytes20 => Node) list;
   }
 
-  /**
-   * @notice Requires that the node is in the list.
-   *
-   * @param self The list being used.
-   * @param node The node being checked.
-   */
-  modifier onlyInList(List storage self, bytes20 node) {
-    require(isInList(self, node));
-    _;
-  }
-
-  /**
-   * @notice Requires that the node is not in the list.
-   *
-   * @param self The list being used.
-   * @param node The node being checked.
-   */
-  modifier onlyNotInList(List storage self, bytes20 node) {
-    require(!isInList(self, node));
-    _;
-  }
-
   function isInList(List storage self, bytes20 node) internal view returns (bool) {
     return self.list[node].inList;
   }
@@ -81,10 +59,12 @@ library LinkedList {
   }
 
   function next(List storage self, bytes20 node) internal view returns (bytes20) {
+    require(isInList(self, node));
     return self.list[node].next;
   }
 
   function previous(List storage self, bytes20 node) internal view returns (bytes20) {
+    require(isInList(self, node));
     return self.list[node].previous;
   }
 
@@ -95,7 +75,10 @@ library LinkedList {
    * @param target The existing node in the list.
    * @param newNode The next node to insert before the target.
    */
-  function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal onlyNotInList(self, newNode) {
+  function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal {
+    require(!isInList(self, newNode));
+    require(isInList(self, target) || target == NULL);
+
     // It is expected that this value is sometimes NULL.
     bytes20 prev = self.list[target].previous;
 
@@ -114,7 +97,10 @@ library LinkedList {
    * @param target The existing node in the list.
    * @param newNode The next node to insert after the target.
    */
-  function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal onlyNotInList(self, newNode) {
+  function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal {
+    require(!isInList(self, newNode));
+    require(isInList(self, target) || target == NULL);
+
     // It is expected that this value is sometimes NULL.
     bytes20 n = self.list[target].next;
 
@@ -134,7 +120,8 @@ library LinkedList {
    * @param self The list being using.
    * @param node The node in the list to be removed.
    */
-  function remove(List storage self, bytes20 node) internal onlyInList(self, node) {
+  function remove(List storage self, bytes20 node) internal {
+    require(isInList(self, node));
     if (node == NULL) {
       return;
     }
@@ -156,7 +143,8 @@ library LinkedList {
    * @param self The list being used.
    * @param node The node to insert at the beginning of the list.
    */
-  function prepend(List storage self, bytes20 node) internal onlyNotInList(self, node) {
+  function prepend(List storage self, bytes20 node) internal {
+    require(!isInList(self, node));
     insertBefore(self, begin(self), node);
   }
 
@@ -166,11 +154,14 @@ library LinkedList {
    * @param self The list being used.
    * @param node The node to insert at the end of the list.
    */
-  function append(List storage self, bytes20 node) internal onlyNotInList(self, node) {
+  function append(List storage self, bytes20 node) internal {
+    require(!isInList(self, node));
     insertAfter(self, end(self), node);
   }
 
-  function swap(List storage self, bytes20 left, bytes20 right) internal onlyInList(self, left) onlyInList(self, right) {
+  function swap(List storage self, bytes20 left, bytes20 right) internal {
+    require(isInList(self, left));
+    require(isInList(self, right));
     bytes20 previousRight = self.list[right].previous;
     remove(self, right);
     insertAfter(self, left, right);

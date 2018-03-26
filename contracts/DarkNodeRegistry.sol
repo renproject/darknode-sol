@@ -1,17 +1,16 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
-import "./LinkedList.sol";
+import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
-import "./Utils.sol";
 
 /**
- * @notice DarkNodeRegistrar is responsible for the registration and
+ * @notice DarkNodeRegistry is responsible for the registration and
  * deregistration of dark nodes.
  */
-contract DarkNodeRegistrar {
+contract DarkNodeRegistry {
 
   struct Epoch {
-    bytes32 blockhash;
+    uint256 blockhash;
     uint256 timestamp;
   }
 
@@ -25,28 +24,27 @@ contract DarkNodeRegistrar {
   struct DarkNode {
     address owner;
     uint256 bond;
-    bytes publicKey;  
     uint256 registeredAt;
     uint256 deregisteredAt;
+    bytes publicKey;
   }
 
   // Republic ERC20 token contract used to transfer bonds.
   RepublicToken ren;
 
   // Registry data.
+  mapping(bytes20 => DarkNode) private darkNodeRegistry;
   LinkedList.List private darkNodes;
-  mapping(bytes20 => DarkNode) public darkNodeRegistry;
-  uint256 public darkNodesNum;
-  uint256 public darkNodesNumNextEpoch;
-  bytes20 public darkNodesLastPendingRegistration;
-  bytes20 public darkNodesLastRegistration;
+  uint256 public numDarkNodes;
+  uint256 public numDarkNodesNextEpoch;
 
-  // Minimum bond to be considered registered.
+  // Constants used to parameterize behavior.
   uint256 public minimumBond;
+  uint256 public minimumDarkPoolSize;
+  uint256 public minimumEpochInterval;
 
   // The current epoch and the minimum time interval until the next epoch.
   Epoch public currentEpoch;
-  uint256 public minimumEpochInterval;
 
   /**
    * @notice Emitted when a darkNode is registered.
@@ -75,31 +73,6 @@ contract DarkNodeRegistrar {
    * @notice Emitted when a new epoch has begun
    */
   event NewEpoch();
-
-  event Debug(string str);
-  event DebugBool(bool boolean);
-  event DebugInt(uint256 num);
-  event Debug20(bytes20 str);
-
-  /**
-   * @notice Requires that the node is in the list
-   * @param self The list being called on
-   * @param node The node being checked
-   */
-  modifier onlyInList(LinkedList.List storage self, bytes20 node) {
-    require(LinkedList.isInList(self, node));
-    _;
-  }
-
-  /**
-   * @notice Requires that the node is NOT in the list
-   * @param self The list being called on
-   * @param node The node being checked
-   */
-  modifier onlyNotInList(LinkedList.List storage self, bytes20 node) {
-    require(!LinkedList.isInList(self, node));
-    _;
-  }
 
   /**
    * @notice Only allow the owner that registered the darkNode to pass.
@@ -134,25 +107,25 @@ contract DarkNodeRegistrar {
   }
 
   /** 
-   * @notice The DarkNodeRegistrar constructor.
+   * @notice The DarkNodeRegistry constructor.
    *
-   * @param _tokenAddress The address of the RepublicToken contract.
+   * @param _token The address of the RepublicToken contract.
    * @param _minimumBond The minimum bond amount that can be submitted by a
    *                     darkNode.
+   * @param _minimumDarkPoolSize The minimum size of a dark pool.
    * @param _minimumEpochInterval The minimum amount of time between epochs.
    */
-  function DarkNodeRegistrar(address _tokenAddress, uint256 _minimumBond, uint256 _minimumEpochInterval) public {
-    ren = RepublicToken(_tokenAddress);
+  function DarkNodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    ren = RepublicToken(_token);
     minimumBond = _minimumBond;
+    minimumDarkPoolSize = _minimumDarkPoolSize;
     minimumEpochInterval = _minimumEpochInterval;
     currentEpoch = Epoch({
-      blockhash: block.blockhash(block.number - 1),
+      blockhash: uint256(block.blockhash(block.number - 1)),
       timestamp: now
     });
-    darkNodesNum = 0;
-    darkNodesNumNextEpoch = 0;
-    darkNodesLastPendingRegistration = 0x0;
-    darkNodesLastRegistration = 0x0;
+    numDarkNodes = 0;
+    numDarkNodesNextEpoch = 0;
   }
 
   /**
@@ -163,16 +136,16 @@ contract DarkNodeRegistrar {
   function epoch() public {
     require(now > currentEpoch.timestamp + minimumEpochInterval);
 
+    uint256 blockhash = uint256(block.blockhash(block.number - 1));
+
     // Update the epoch hash and timestamp
     currentEpoch = Epoch({
-      blockhash: block.blockhash(block.number - 1),
+      blockhash: blockhash,
       timestamp: currentEpoch.timestamp + minimumEpochInterval
     });
     
     // Update the registry information
-    darkNodesNum = darkNodesNumNextEpoch;
-    darkNodesLastRegistration = darkNodesLastPendingRegistration;
-    darkNodesLastPendingRegistration = 0x0;
+    numDarkNodes = numDarkNodesNextEpoch;
 
     // Emit an event
     NewEpoch();
@@ -200,7 +173,6 @@ contract DarkNodeRegistrar {
     require(ren.transferFrom(msg.sender, this, _bond));
 
     // Flag this dark node for registration
-    LinkedList.append(darkNodes, _darkNodeID);
     darkNodeRegistry[_darkNodeID] = DarkNode({
       owner: msg.sender,
       bond: _bond,
@@ -208,8 +180,8 @@ contract DarkNodeRegistrar {
       registeredAt: currentEpoch.timestamp + minimumEpochInterval,
       deregisteredAt: 0
     });
-    darkNodesLastPendingRegistration = _darkNodeID;
-    darkNodesNumNextEpoch++;
+    LinkedList.append(darkNodes, _darkNodeID);
+    numDarkNodesNextEpoch++;
 
     // Emit an event.
     DarkNodeRegistered(_darkNodeID, _bond);
@@ -223,10 +195,10 @@ contract DarkNodeRegistrar {
    * @param _darkNodeID The dark node ID that will be deregistered. The caller
    *                    of this method must be the owner of this dark node.
    */
-  function deregister(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyRegistered(_darkNodeID) {
+  function deregister(bytes20 _darkNodeID) public onlyRegistered(_darkNodeID) onlyOwner(_darkNodeID) {
     // Flag the dark node for deregistration
     darkNodeRegistry[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
-    darkNodesNumNextEpoch--;
+    numDarkNodesNextEpoch--;
 
     // Emit an event
     DarkNodeDeregistered(_darkNodeID);
@@ -273,9 +245,26 @@ contract DarkNodeRegistrar {
     return darkNodeRegistry[_darkNodeID].publicKey;
   }
 
-  function getDarkNodes() public pure returns (bytes20[]) {
-    // UNIMPLEMENTED
-    return new bytes20[](0);
+  function getDarkNodes() public view returns (bytes20[]) {
+    bytes20[] memory nodes = new bytes20[](numDarkNodes);
+
+    // Begin with the first node in the list
+    uint256 n = 0;
+    bytes20 next = LinkedList.begin(darkNodes);
+
+    // Iterate until all registered dark nodes have been collected
+    while (n < numDarkNodes) {
+      // Only include registered dark nodes
+      if (!isRegistered(next)) {
+        next = LinkedList.next(darkNodes, next);
+        continue;
+      }
+      nodes[n] = next;
+      next = LinkedList.next(darkNodes, next);
+      n++;
+    }
+
+    return nodes;
   }
 
   /**

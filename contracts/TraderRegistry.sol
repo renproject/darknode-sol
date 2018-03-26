@@ -1,9 +1,8 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.19;
 
 import "./RepublicToken.sol";
-import "./Utils.sol";
 
-contract TraderRegistrar {
+contract TraderRegistrry {
 
   /**
    * @notice Traders are stored in the registry. The owner is the address that
@@ -79,13 +78,13 @@ contract TraderRegistrar {
   }
 
   /** 
-   * @notice The TraderRegistrar constructor.
+   * @notice The TraderRegistry constructor.
    *
    * @param _renAddress The address of the Republic Token contract.
    * @param _minimumBond The minimum bond amount that can be submitted by a
    *                     trader.
    */
-  function TraderRegistrar(address _renAddress, uint256 _minimumBond) public {
+  function TraderRegistry(address _renAddress, uint256 _minimumBond) public {
     ren = RepublicToken(_renAddress);
     minimumBond = _minimumBond;
   }
@@ -100,25 +99,26 @@ contract TraderRegistrar {
    * @param _publicKey The public key of the trader. It is stored to allow other
    *                   miners and traders to encrypt messages to the trader.
    */
-  function register(bytes20 _traderID, bytes _publicKey) public onlyUnregistered(_traderID) {
+  function register(bytes20 _traderID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_traderID) {
     // REN allowance is used as the bond.
-    uint256 bond = ren.allowance(msg.sender, this);
-    require(bond > minimumBond);
+    require(_bond >= minimumBond);
+    require(_bond <= ren.allowance(msg.sender, this));
+    require(ren.transferFrom(msg.sender, this, _bond));
 
     // Transfer the bond to this contract.
-    require(ren.transferFrom(msg.sender, this, bond));
+    require(ren.transferFrom(msg.sender, this, _bond));
 
     // Store this trader in the registry.
     traders[_traderID] = Trader({
       owner: msg.sender,
-      bond: bond,
+      bond: _bond,
       publicKey: _publicKey,
       registered: true
     });
     numberOfTraders++;
 
     // Emit an event.
-    TraderRegistered(_traderID, bond);
+    TraderRegistered(_traderID, _bond);
   }
 
   /** 

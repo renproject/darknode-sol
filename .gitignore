@@ -1,10 +1,9 @@
 node_modules
 .node-xmlhttprequest-sync-*
 scTopics
-
+allFiredEvents
+in_complete_tests
 coverage
 coverageEnv
 coverage.json
 .coveralls.yml
-
-test
