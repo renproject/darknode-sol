@@ -256,6 +256,7 @@ contract DarkNodeRegistry {
     while (n < numDarkNodes) {
       // Only include registered dark nodes
       if (!isRegistered(next)) {
+        next = LinkedList.next(darkNodes, next);
         continue;
       }
       nodes[n] = next;
