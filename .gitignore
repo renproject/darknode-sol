@@ -1,6 +1,7 @@
 node_modules
 .node-xmlhttprequest-sync-*
 scTopics
+allFiredEvents
 
 coverage
 coverageEnv
