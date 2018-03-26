@@ -74,11 +74,23 @@ contract("LinkedList", function(accounts) {
   })
 
   it("should not insert after a node not in the list", async () => {
-    await linkedList.insertAfter("6").should.be.rejectedWith();
+    await linkedList.insertAfter("6", "7").should.be.rejectedWith();
   })
 
   it("should not insert before a node not in the list", async () => {
-    await linkedList.insertBefore("6").should.be.rejectedWith();
+    await linkedList.insertBefore("6", "8").should.be.rejectedWith();
+  })
+
+  it("should not insert a node aldready in the list", async () => {
+    await linkedList.insertAfter("2", "3").should.be.rejectedWith();
+  })
+
+  it("should not insert a node aldready in the list", async () => {
+    await linkedList.insertBefore("3", "2").should.be.rejectedWith();
+  })
+
+  it("should not prepend a value that aldready exists", async () => {
+    await linkedList.prepend("2").should.be.rejectedWith();
   })
 
   it("should not swap a node not in the list, and a node in the list", async () => {
