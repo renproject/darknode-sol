@@ -1,11 +1,11 @@
-const Arc1 = artifacts.require("Arc1Test");
+const Arc = artifacts.require("Arc");
 const Token = artifacts.require("RepublicToken");
+const Sha256 = require("crypto-js/sha256");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-// Integration test for Arc1 library
 
 // User Story 2: 
 
@@ -16,35 +16,29 @@ chai.should();
  * 
  */
 
-contract("Arc1", function(accounts) {
 
-  const secretAlice = '0x8CbaC5e4d803bE2A3A5cd3DbE7174504c6DD0c1C'
-  const keyAlice = web3.sha3(secretAlice)
-  const Alice = accounts[4];
-  const signatureAlice = web3.eth.sign(Alice, keyAlice)
-  
-  const secretBob   = '0xd3DbE7174504c6DD0c1C8CbaC5e4d803bE2A3A5c'
-  const keyBob = web3.sha3(secretBob)
-  const Bob = accounts[5];
-  const signatureBob = web3.eth.sign(Bob, keyBob)
+contract("Arc", function(accounts) {
 
-  let swap, dualKey, dualSigAlice;
+  const secret = 'Secret'
+  const secretLock = Sha256(secret).toString();
+  const Alice = accounts[2];
+  const Bob = accounts[3];
 
   before(async function () {
     tokenA   = await Token.new({from: Alice});
-    arcAlice = await Arc1.new(keyAlice, signatureAlice, 0, 100, tokenA.address, {from: Alice});
+    arcAlice = await Arc.new("0x"+secretLock, tokenA.address, 100, 0, Bob, {from: Alice});
   });
 
-  it("Alice deposits token A to her contract", async () => {
+  it("Alice deposit ether to the contract", async () => {
     await tokenA.transfer(arcAlice.address, 100, {from: Alice});
-  });
+  })
 
-  it("Alice audits Bob's contract", async () => {
-    // No contract found
-  });
+  it("Alice audits the contract", async () => {
+    // No contract
+  })
 
-  it("Alice is not happy with the audit, and refunds herself after expiry", async () => {
+  it("Alice refunds and her tokens", async () => {
     await arcAlice.refund(tokenA.address, 100, {from: Alice});
-  });
+  })
 
 });
