@@ -74,8 +74,7 @@ library Arc0 {
 
   function verify(address _tokenAddress, uint256 _value, address _callerContractAddress) internal view returns (bool) {
     if (_tokenAddress == ETHEREUM) {
-      // return(_callerContractAddress.balance >= _value);
-      return true;
+      return(_callerContractAddress.balance >= _value);
     } else {
       Token t = Token(_tokenAddress);
       return(t.balanceOf(_callerContractAddress) >= _value);
