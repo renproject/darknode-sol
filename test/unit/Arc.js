@@ -33,8 +33,21 @@ contract("Arc", function(accounts) {
   })
 
   it("Bob can redeem and get ether", async () => {
+    await arc.redeem("Random String").should.be.rejectedWith();
+  })
+
+  it("Alice can not refund herself before expiry", async () => {
+    await arc.refund(0x1, 100, {from: Alice}).should.be.rejectedWith();
+  })
+
+  it("Bob can redeem and get ether", async () => {
     await arc.redeem(secret);
   })
+
+  it("Alice can not refund herself after Bob redeemed", async () => {
+    await arc.refund(0x1, 100, {from: Alice}).should.be.rejectedWith();
+  })
+
 
   it("Alice can read the secret", async () => {
     const auditSecret = await arc.auditSecret();
@@ -45,4 +58,11 @@ contract("Arc", function(accounts) {
     await arcRefund.refund(0x1, 100, {from: Alice});
   })
 
+  it("Bob can not redeem after alce refunded", async () => {
+    await arcRefund.redeem(secret).should.be.rejectedWith();
+  })
+
+  it("No one should be able to audit after the swap", async () => {
+    await arc.audit.call().should.be.rejectedWith();
+  })
 });
