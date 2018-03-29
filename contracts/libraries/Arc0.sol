@@ -87,7 +87,7 @@ library Arc0 {
       _receiver.transfer(_value);
     } else {
       Token t = Token(_tokenAddress);
-      require(t.transfer(_receiver, _value));
+      t.transfer(_receiver, _value);
     }
   }
 }

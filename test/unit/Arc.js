@@ -55,6 +55,10 @@ contract("Arc", function(accounts) {
   })
 
   it("Alice can refund herself", async () => {
+    await arcRefund.refund(0x2, 100, {from: Alice}).should.be.rejectedWith();
+  })
+
+  it("Alice can refund herself", async () => {
     await arcRefund.refund(0x1, 100, {from: Alice});
   })
 
