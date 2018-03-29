@@ -140,17 +140,4 @@ contract("DarkNodeRegistry", function(accounts) {
   it("should not refund for an address which is never registered", async () => {
     await dnr.refund("").should.be.rejectedWith();
   })
-
-
-  it("can get the DarkNodeRegistry address", async () => {
-    assert.equal((await gateway.darkNodeRegistry.call()),"0x42a990655bffe188c9823a2f914641a32dcbb1b2");
-  });
-
-  it("can get the TraderRegistry address", async () => {
-    assert.equal((await gateway.traderRegistry.call()),"0x8c98238c9823842a99018a2f914641a32dcbb1b2");
-  });
-
-  it("can get the MinimumDarkPoolSize", async () => {
-    assert.equal((await gateway.minimumDarkPoolSize.call()),5)
-  });
 });
