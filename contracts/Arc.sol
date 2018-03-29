@@ -13,14 +13,6 @@ contract Arc {
 
   }
 
-  function test() public view returns (bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _validity, address _receiver) {
-    return (swap.secretLock, swap.tokenAddress, swap.value, swap.expiry, swap.receiver);
-  }
-
-  function test2(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _validity, address _receiver) public view returns (bytes32, address, uint256, uint256, address) {
-    return (_secretLock, _tokenAddress, _value, _validity, _receiver);
-  }
-
   function redeem(bytes _secret) public {
     Arc0.redeem(swap, _secret);
   }
@@ -36,6 +28,5 @@ contract Arc {
   function refund(address _tokenAddress, uint256 _value) public {
     Arc0.refund(swap, _tokenAddress, _value);
   }
-
 }
 
