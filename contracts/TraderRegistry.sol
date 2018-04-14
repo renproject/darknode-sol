@@ -103,7 +103,7 @@ contract TraderRegistrry {
     // REN allowance is used as the bond.
     require(_bond >= minimumBond);
     require(_bond <= ren.allowance(msg.sender, this));
-    require(ren.transferFrom(msg.sender, this, _bond));
+
 
     // Transfer the bond to this contract.
     require(ren.transferFrom(msg.sender, this, _bond));
