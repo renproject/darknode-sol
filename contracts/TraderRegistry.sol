@@ -2,7 +2,7 @@ pragma solidity ^0.4.19;
 
 import "./RepublicToken.sol";
 
-contract TraderRegistrry {
+contract TraderRegistry {
 
   /**
    * @notice Traders are stored in the registry. The owner is the address that
