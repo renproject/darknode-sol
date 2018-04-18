@@ -1,32 +1,32 @@
 pragma solidity ^0.4.18;
 
-import "./libraries/Arc0.sol";
+import "./libraries/LibArc.sol";
 
 contract Arc {
-  Arc0.Swap private swap;
+    LibArc.Swap private swap;
 
-  function Arc(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _validity, address _receiver) public {
-    Arc0.initiate(swap, _secretLock, _tokenAddress, _value, _validity, msg.sender, _receiver);
-  }
+    function Arc(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _validity, address _receiver) public {
+        LibArc.initiate(swap, _secretLock, _tokenAddress, _value, _validity, msg.sender, _receiver);
+    }
 
-  function () public payable {
+    function () public payable {
 
-  }
+    }
 
-  function redeem(bytes _secret) public {
-    Arc0.redeem(swap, _secret);
-  }
+    function redeem(bytes _secret) public {
+        LibArc.redeem(swap, _secret);
+    }
 
-  function audit() public view returns (address, uint256, address, uint256) {
-    return Arc0.audit(swap);
-  }
+    function audit() public view returns (address, uint256, address, uint256) {
+        return LibArc.audit(swap);
+    }
 
-  function auditSecret() public view returns (bytes) {
-    return Arc0.auditSecret(swap);
-  }
+    function auditSecret() public view returns (bytes) {
+        return LibArc.auditSecret(swap);
+    }
 
-  function refund(address _tokenAddress, uint256 _value) public {
-    Arc0.refund(swap, _tokenAddress, _value);
-  }
+    function refund(address _tokenAddress, uint256 _value) public {
+        LibArc.refund(swap, _tokenAddress, _value);
+    }
 }
 
