@@ -17,7 +17,7 @@ chai.should();
  */
 
 
-contract("Arc", function(accounts) {
+contract("Arc", function (accounts) {
 
   const secret = 'Secret'
   const secretLock = Sha256(secret).toString();
@@ -25,12 +25,12 @@ contract("Arc", function(accounts) {
   const Bob = accounts[3];
 
   before(async function () {
-    tokenA   = await Token.new({from: Alice});
-    arcAlice = await Arc.new("0x"+secretLock, tokenA.address, 100, 0, Bob, {from: Alice});
+    tokenA = await Token.new({ from: Alice });
+    arcAlice = await Arc.new("0x" + secretLock, tokenA.address, 100, 0, Bob, { from: Alice });
   });
 
   it("Alice deposit ether to the contract", async () => {
-    await tokenA.transfer(arcAlice.address, 100, {from: Alice});
+    await tokenA.transfer(arcAlice.address, 100, { from: Alice });
   })
 
   it("Alice audits the contract", async () => {
@@ -38,7 +38,7 @@ contract("Arc", function(accounts) {
   })
 
   it("Alice refunds and her tokens", async () => {
-    await arcAlice.refund(tokenA.address, 100, {from: Alice});
+    await arcAlice.refund(tokenA.address, 100, { from: Alice });
   })
 
 });

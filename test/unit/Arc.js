@@ -5,9 +5,9 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-// Unit tests for Arc1 library
+// Unit tests for the Arc library
 
-contract("Arc", function(accounts) {
+contract("Arc", function (accounts) {
 
   const secret = 'Secret'
   const secretLock = Sha256(secret).toString();
@@ -15,13 +15,13 @@ contract("Arc", function(accounts) {
   const Bob = accounts[3];
 
   before(async function () {
-    arc = await Arc.new("0x"+secretLock, 0x0, 100, 600, Bob, {from: Alice});
-    arcRefund = await Arc.new("0x"+secretLock, 0x0, 100, 0, Bob, {from: Alice});
+    arc = await Arc.new("0x" + secretLock, 0x0, 100, 600, Bob, { from: Alice });
+    arcRefund = await Arc.new("0x" + secretLock, 0x0, 100, 0, Bob, { from: Alice });
   });
 
   it("Alice deposit ether to the contract", async () => {
-    await arc.sendTransaction({from: Alice, value: 100});
-    await arcRefund.sendTransaction({from: Alice, value: 100});
+    await arc.sendTransaction({ from: Alice, value: 100 });
+    await arcRefund.sendTransaction({ from: Alice, value: 100 });
   })
 
   it("Bob audits the contract", async () => {
@@ -37,7 +37,7 @@ contract("Arc", function(accounts) {
   })
 
   it("Alice can not refund herself before expiry", async () => {
-    await arc.refund(0x1, 100, {from: Alice}).should.be.rejectedWith();
+    await arc.refund(0x1, 100, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Bob can redeem and get ether", async () => {
@@ -45,7 +45,7 @@ contract("Arc", function(accounts) {
   })
 
   it("Alice can not refund herself after Bob redeemed", async () => {
-    await arc.refund(0x1, 100, {from: Alice}).should.be.rejectedWith();
+    await arc.refund(0x1, 100, { from: Alice }).should.be.rejectedWith();
   })
 
 
@@ -55,11 +55,11 @@ contract("Arc", function(accounts) {
   })
 
   it("Alice can refund herself", async () => {
-    await arcRefund.refund(0x2, 100, {from: Alice}).should.be.rejectedWith();
+    await arcRefund.refund(0x2, 100, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Alice can refund herself", async () => {
-    await arcRefund.refund(0x1, 100, {from: Alice});
+    await arcRefund.refund(0x1, 100, { from: Alice });
   })
 
   it("Bob can not redeem after alce refunded", async () => {
