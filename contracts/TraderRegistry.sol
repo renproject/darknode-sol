@@ -118,7 +118,7 @@ contract TraderRegistry {
         numberOfTraders++;
 
         // Emit an event.
-        TraderRegistered(_traderID, _bond);
+        emit TraderRegistered(_traderID, _bond);
     }
 
     /** 
@@ -139,7 +139,7 @@ contract TraderRegistry {
         traders[_traderID].registered = false;
 
         // Emit an event.
-        TraderDeregistered(_traderID);
+        emit TraderDeregistered(_traderID);
     }
 
     /** 
@@ -156,7 +156,7 @@ contract TraderRegistry {
         require(ren.transfer(msg.sender, amount));
 
         // Emit an event.
-        OwnerRefunded(msg.sender, amount);
+        emit OwnerRefunded(msg.sender, amount);
     }
 
     function getTrader(bytes20 _traderID) public view returns (address, uint256, bytes, bool) {

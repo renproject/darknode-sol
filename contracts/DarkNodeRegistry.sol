@@ -148,7 +148,7 @@ contract DarkNodeRegistry {
         numDarkNodes = numDarkNodesNextEpoch;
 
         // Emit an event
-        NewEpoch();
+        emit NewEpoch();
     }
 
     /** 
@@ -184,7 +184,7 @@ contract DarkNodeRegistry {
         numDarkNodesNextEpoch++;
 
         // Emit an event.
-        DarkNodeRegistered(_darkNodeID, _bond);
+        emit DarkNodeRegistered(_darkNodeID, _bond);
     }
 
     /** 
@@ -201,7 +201,7 @@ contract DarkNodeRegistry {
         numDarkNodesNextEpoch--;
 
         // Emit an event
-        DarkNodeDeregistered(_darkNodeID);
+        emit DarkNodeDeregistered(_darkNodeID);
     }
 
     /** 
@@ -230,7 +230,7 @@ contract DarkNodeRegistry {
         require(ren.transfer(msg.sender, amount));
 
         // Emit an event.
-        OwnerRefunded(msg.sender, amount);
+        emit OwnerRefunded(msg.sender, amount);
     }
 
     function getOwner(bytes20 _darkNodeID) public view returns (address) {
