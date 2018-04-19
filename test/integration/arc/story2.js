@@ -20,13 +20,13 @@ chai.should();
 contract("Arc", function (accounts) {
 
   const secret = 'Secret'
-  const secretLock = Sha256(secret).toString();
+  const secretLock = `0x${Sha256(secret).toString()}`;
   const Alice = accounts[2];
   const Bob = accounts[3];
 
   before(async function () {
     tokenA = await Token.new({ from: Alice });
-    arcAlice = await Arc.new("0x" + secretLock, tokenA.address, 100, 0, Bob, { from: Alice });
+    arcAlice = await Arc.new(secretLock, tokenA.address, 100, 0, Bob, { from: Alice });
   });
 
   it("Alice deposit ether to the contract", async () => {

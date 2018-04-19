@@ -7,7 +7,7 @@ chai.should();
 
 const MINIMUM_BOND = 100;
 const MINIMUM_DARKPOOL_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 5;
+const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("DarkNodeRegistry", function (accounts) {
 

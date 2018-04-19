@@ -10,13 +10,13 @@ chai.should();
 contract("Arc", function (accounts) {
 
   const secret = 'Secret'
-  const secretLock = Sha256(secret).toString();
+  const secretLock = `0x${Sha256(secret).toString()}`;
   const Alice = accounts[2];
   const Bob = accounts[3];
 
   before(async function () {
-    arc = await Arc.new("0x" + secretLock, 0x0, 100, 600, Bob, { from: Alice });
-    arcRefund = await Arc.new("0x" + secretLock, 0x0, 100, 0, Bob, { from: Alice });
+    arc = await Arc.new(secretLock, 0x0, 100, 600, Bob, { from: Alice });
+    arcRefund = await Arc.new(secretLock, 0x0, 100, 0, Bob, { from: Alice });
   });
 
   it("Alice deposit ether to the contract", async () => {
@@ -26,10 +26,11 @@ contract("Arc", function (accounts) {
 
   it("Bob audits the contract", async () => {
     const audit = await arc.audit.call();
-    assert.equal(audit[0], 0x1);
-    assert.equal(audit[1].toNumber(), 100);
-    assert.equal(audit[2], Bob);
-    // assert.equal(audit[3].toNumber(), 100);
+    assert.equal(audit[0], secretLock);
+    assert.equal(audit[1], 0x1); // Token
+    assert.equal(audit[2], Bob); // Receiver
+    assert.equal(audit[3].toNumber(), 100); // Value
+    // assert.equal(audit[3].toNumber(), 100); // Expiry
   })
 
   it("Bob can redeem and get ether", async () => {

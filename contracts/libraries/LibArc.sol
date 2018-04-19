@@ -47,10 +47,10 @@ library LibArc {
         self.status = Status.initiated;
     }
 
-    function audit(Swap storage self) internal view returns (address, uint256, address, uint256) {
+    function audit(Swap storage self) internal view returns (bytes32, address, address, uint256, uint256) {
         require(self.status == Status.initiated);
         // require(verify(self.tokenAddress, self.value, self.caller));
-        return (self.tokenAddress, self.value, self.receiver, self.expiry);
+        return (self.secretLock, self.tokenAddress, self.receiver, self.value, self.expiry);
     }
 
     function redeem(Swap storage self, bytes _secret) internal {

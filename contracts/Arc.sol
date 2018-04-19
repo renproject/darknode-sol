@@ -17,7 +17,7 @@ contract Arc {
         LibArc.redeem(swap, _secret);
     }
 
-    function audit() public view returns (address, uint256, address, uint256) {
+    function audit() public view returns (bytes32, address, address, uint256, uint256) {
         return LibArc.audit(swap);
     }
 

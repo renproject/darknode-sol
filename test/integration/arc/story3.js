@@ -22,15 +22,15 @@ contract("Arc", function (accounts) {
 
 
     const secret = 'Secret'
-    const secretLock = Sha256(secret).toString();
-    const badSecretLock = Sha256(secret).toString();
+    const secretLock = `0x${Sha256(secret).toString()}`;
+    const badSecretLock = `0x${Sha256(secret).toString()}`;
     const Alice = accounts[2];
     const Bob = accounts[3];
 
     before(async function () {
         tokenA = await Token.new({ from: Alice });
-        arcAlice = await Arc.new("0x" + badSecretLock, tokenA.address, 100, 600, Bob, { from: Alice });
-        arcBob = await Arc.new("0x" + secretLock, 0x1, 100, 0, Alice, { from: Bob });
+        arcAlice = await Arc.new(badSecretLock, tokenA.address, 100, 600, Bob, { from: Alice });
+        arcBob = await Arc.new(secretLock, 0x1, 100, 0, Alice, { from: Bob });
     });
 
     it("Alice deposit ether to the contract", async () => {
@@ -40,16 +40,17 @@ contract("Arc", function (accounts) {
 
     it("Alice audits the contract", async () => {
         const audit = await arcBob.audit.call();
-        assert.equal(audit[0], 0x1);
-        assert.equal(audit[1].toNumber(), 100);
-        assert.equal(audit[2], Alice);
+        // assert.equal(audit[0], secretLock);
+        assert.equal(audit[1], 0x1); // Token
+        assert.equal(audit[2], Alice); // Receiver
+        assert.equal(audit[3].toNumber(), 100); // Value
     })
 
     it("Bob's contract audit reveals a wrong secret hash", async () => {
         const audit = await arcAlice.audit.call();
-        assert.equal(audit[0], tokenA.address);
-        assert.equal(audit[1].toNumber(), 100);
+        assert.equal(audit[1], tokenA.address);
         assert.equal(audit[2], Bob);
+        assert.equal(audit[3].toNumber(), 100);
     })
 
 });
