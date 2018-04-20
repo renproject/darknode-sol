@@ -1,9 +1,6 @@
 pragma solidity ^0.4.23;
 
-contract DarkNodeRegistry {
-	function getDarkNodes() public view returns (bytes20[]);
-	function getOwner(bytes20 _nodeId) public view returns (address);
-}
+import "./DarkNodeRegistry.sol";
 
 contract RewardVaultEther {
 
@@ -19,16 +16,14 @@ contract RewardVaultEther {
 		uint256 rrn;
 		uint256 balance;
 		bytes[] orders;
+		bytes[] challenges;
+		address[] rewardees;
 		mapping(address => mapping (bytes=>bool)) rewards;
 	}
 
-	// Helper struct
-	struct Selected {
-		mapping (uint256=>bool) order;
-		mapping (uint256=>bool) node;
-	}	
-
-	mapping (uint256 => RewardRound) RewardRounds;
+	mapping (bytes32 => bool) selectedOrder;
+	mapping (bytes32 => bool) selectedNode;
+	mapping (uint256 => RewardRound) public RewardRounds;
 
 	function RewardVaultEther(uint256 _rewardeeCount, uint256 _challengeCount, uint256 _threshold, address _dnrAddress) public {	
 		rewardeeCount = _rewardeeCount;
@@ -60,7 +55,6 @@ contract RewardVaultEther {
 	}
 
 	function Withdraw(bytes challenge, bytes proof, uint256 rewardRoundNonce) public {
-		require(RewardRounds[rewardRoundNonce].rewards[msg.sender][challenge]);
 		require(validateProof(challenge, proof));
 		RewardRounds[rewardRoundNonce].balance -= rewardPerProof;
 		RewardRounds[rewardRoundNonce].rewards[msg.sender][challenge] = false;
@@ -69,31 +63,36 @@ contract RewardVaultEther {
 
 	function finalizeRewardRound(uint256 n) internal {
 		uint256 x = RewardRounds[n].rrn % (RewardRounds[n].orders.length);
-		bytes[] challenges;
-
-		Selected storage selected;
 
 		for (uint256 i = 0; i < challengeCount; i++) {
-			while (selected.order[x]) {
+			while (selectedOrder[keccak256(n, x)]) {
 				x = x+1;
 			}
-			challenges.push(RewardRounds[n].orders[x]);
-			selected.order[x] = true;
-			x = (x + RewardRounds[n].rrn) % challenges.length;
+			RewardRounds[n].challenges.push(RewardRounds[n].orders[x]);
+			selectedOrder[keccak256(n, x)] = true;
+			x = (x + RewardRounds[n].rrn) % RewardRounds[n].orders.length;
 		}
 
 		bytes20[] memory nodes = dnr.getDarkNodes();
 		x = RewardRounds[n].rrn % nodes.length;
-		
+
+		address rewardee;
 		for (i = 0; i < rewardeeCount; i++) {
-			while (selected.node[x]) {
+			while (selectedNode[keccak256(n, x)]) {
 				x = x+1;
 			}
+			rewardee = dnr.getOwner(nodes[x]);
+			RewardRounds[n].rewardees.push(rewardee);
 			for (uint256 j = 0; j < challengeCount; j++) {
-				RewardRounds[n].rewards[dnr.getOwner(nodes[x])][challenges[j]] = true;
+				RewardRounds[n].rewards[rewardee][RewardRounds[n].challenges[j]] = true;
 			}
+			selectedNode[keccak256(n, x)] = true;
 			x = (x + RewardRounds[n].rrn) % nodes.length;
 		}
+	}
+
+	function getRewardees(uint256 nonce) public view returns (address[]) {
+		return RewardRounds[nonce].rewardees;
 	}
 
 	function validateProof(bytes _challenge, bytes _proof) internal pure returns (bool) {
