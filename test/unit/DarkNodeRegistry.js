@@ -11,7 +11,7 @@ contract("DarkNodeRegistry", function(accounts) {
 
   before(async function () {
     ren = await RepublicToken.new();
-    dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 60);
+    dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 3);
     for (i = 1; i < accounts.length; i++) { 
       await ren.transfer(accounts[i], 100);
     }
@@ -46,7 +46,7 @@ contract("DarkNodeRegistry", function(accounts) {
       } catch (err) {
         reject(err);
       }
-    }, 90 * 1000));
+    }, 6 * 1000));
   })
 
   it("can not register a node twice", async () => {
@@ -90,7 +90,7 @@ contract("DarkNodeRegistry", function(accounts) {
       } catch (err) {
         reject(err);
       }
-    }, 90 * 1000));
+    }, 6 * 1000));
   })
 
   it("can only get the Dark Nodes that are fully registered", async () => {
@@ -130,7 +130,7 @@ contract("DarkNodeRegistry", function(accounts) {
       } catch (err) {
         reject(err);
       }
-    }, 90 * 1000));
+    }, 6 * 1000));
   })
 
   it("should fail to refund twice", async () => {
