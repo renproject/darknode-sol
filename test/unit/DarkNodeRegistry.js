@@ -7,7 +7,7 @@ chai.should();
 
 const MINIMUM_BOND = 100;
 const MINIMUM_DARKPOOL_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 5;
+const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("DarkNodeRegistry", function (accounts) {
 
@@ -129,47 +129,6 @@ contract("DarkNodeRegistry", function (accounts) {
   it("should not refund for an address which is never registered", async () => {
     await dnr.refund("").should.be.rejectedWith();
   })
-
-
-  // it("can get the DarkNodeRegistry address", async () => {
-  //   assert.equal((await gateway.darkNodeRegistry.call()),"0x42a990655bffe188c9823a2f914641a32dcbb1b2");
-  // });
-
-  // it("can get the TraderRegistry address", async () => {
-  //   assert.equal((await gateway.traderRegistry.call()),"0x8c98238c9823842a99018a2f914641a32dcbb1b2");
-  // });
-
-  // it("can get the MinimumDarkPoolSize", async () => {
-  //   assert.equal((await gateway.minimumDarkPoolSize.call()),5)
-  // });
-
-  // it("owner can update the DarkNodeRegistry address", async () => {
-  //   await gateway.updateDarkNodeRegistry("", {from: accounts[0]});
-  //   assert.equal((await gateway.darkNodeRegistry.call()),"0x0000000000000000000000000000000000000000");
-  // });
-
-  // it("owner can update the TraderRegistry address", async () => {
-  //   await gateway.updateTraderRegistry("", {from: accounts[0]})
-  //   assert.equal((await gateway.traderRegistry.call()),"0x0000000000000000000000000000000000000000");
-  // });
-
-  // it("owner can update the MinimumDarkPoolSize", async () => {
-  //   await gateway.updateMinimumDarkPoolSize(10, {from: accounts[0]})
-  //   assert.equal((await gateway.minimumDarkPoolSize.call()).toNumber(),10)
-  // });
-
-  // it("anyone other than the owner cannot update the DarkNodeRegistry address", async () => {
-  //   await gateway.updateDarkNodeRegistry("", {from: accounts[1]}).should.be.rejectedWith();
-  // });
-
-  // it("anyone other than the owner cannot update the TraderRegistry address", async () => {
-  //   await gateway.updateTraderRegistry("", {from: accounts[1]}).should.be.rejectedWith();
-  // });
-
-  // it("anyone other than the owner cannot update the MinimumDarkPoolSize", async () => {
-  //   await gateway.updateMinimumDarkPoolSize(10, {from: accounts[1]}).should.be.rejectedWith();
-  // });
-
 });
 
 async function waitForEpoch(dnr) {
