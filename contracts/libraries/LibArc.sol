@@ -23,7 +23,7 @@ library LibArc {
         address tokenAddress;
         uint256 value;
         
-        bytes secret;
+        bytes32 secret;
         bytes32 secretLock;
 
         uint256 expiry;
@@ -53,7 +53,7 @@ library LibArc {
         return (self.secretLock, self.tokenAddress, self.receiver, self.value, self.expiry);
     }
 
-    function redeem(Swap storage self, bytes _secret) internal {
+    function redeem(Swap storage self, bytes32 _secret) internal {
         require(self.status == Status.initiated);
         require(self.secretLock == sha256(_secret));
         self.secret = _secret;
@@ -68,7 +68,7 @@ library LibArc {
         withdraw(_tokenAddress, _value, self.sender, self.caller);
     }
 
-    function auditSecret(Swap storage self) internal constant returns (bytes) {
+    function auditSecret(Swap storage self) internal constant returns (bytes32) {
         return self.secret;
     }
 
