@@ -10,7 +10,7 @@ import "./RepublicToken.sol";
 contract DarkNodeRegistry {
 
     struct Epoch {
-        uint256 blockhash;
+        uint256 epochhash;
         uint256 timestamp;
     }
 
@@ -121,7 +121,7 @@ contract DarkNodeRegistry {
         minimumDarkPoolSize = _minimumDarkPoolSize;
         minimumEpochInterval = _minimumEpochInterval;
         currentEpoch = Epoch({
-            blockhash: uint256(block.blockhash(block.number - 1)),
+            epochhash: uint256(blockhash(block.number - 1)),
             timestamp: now
         });
         numDarkNodes = 0;
@@ -136,11 +136,11 @@ contract DarkNodeRegistry {
     function epoch() public {
         require(now > currentEpoch.timestamp + minimumEpochInterval);
 
-        uint256 blockhash = uint256(block.blockhash(block.number - 1));
+        uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
         currentEpoch = Epoch({
-            blockhash: blockhash,
+            epochhash: epochhash,
             timestamp: currentEpoch.timestamp + minimumEpochInterval
         });
         

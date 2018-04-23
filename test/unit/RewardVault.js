@@ -1,4 +1,4 @@
-const RewardVaultEther = artifacts.require("RewardVaultEther");
+const RewardVault = artifacts.require("RewardVault");
 const DarkNodeRegistry = artifacts.require("DarkNodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const chai = require("chai");
@@ -6,14 +6,14 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("RewardVaultEther", function(accounts) {
+contract("RewardVault", function(accounts) {
 
-  let rve, dnr, ren;
+  let rv, dnr, ren;
 
   before(async function () {
     ren = await RepublicToken.new();
-    dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 3);
-    rve = await RewardVaultEther.new(5, 5, 100, dnr.address);
+    dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 0);
+    rv = await RewardVault.new(5, 5, 100, dnr.address, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
     for (i = 1; i < accounts.length; i++) { 
       await ren.transfer(accounts[i], 100);
     }
@@ -22,33 +22,30 @@ contract("RewardVaultEther", function(accounts) {
         await ren.approve(dnr.address, 100, {from: accounts[i]});
         await dnr.register(uid, uid, 100, {from: accounts[i]});
     }
-    await new Promise((resolve, reject) => setTimeout(async () => {
-        try {
-          await dnr.epoch();
-          for (i = 0; i < accounts.length; i++) { 
-            uid = (i+1).toString();
-            assert.equal((await dnr.isRegistered(uid)), true);
-          }
-          resolve();
-        } catch (err) {
-          reject(err);
-        }
-      }, 6 * 1000));
+
+    await dnr.epoch();
+    for (i = 0; i < accounts.length; i++) { 
+      uid = (i+1).toString();
+      assert.equal((await dnr.isRegistered(uid)), true);
+    }
+
   });
 
   it("should deposit ether", async() => {
     for (i = 0; i < 10; i++) {
-      await rve.Deposit("Order"+i, {value: 10});
+      await rv.deposit("Order"+i, 10, {value: 10});
     }
   })
 
   it("should be able to finalize a reward round", async() => {
-    await rve.Finalize(0);
+    await rv.finalize(0);
   })
 
   it("should be able to withdraw reward", async() => {
-    const rewardees = await rve.getRewardees(0);
-    await rve.Withdraw("Order"+0, "", 0, {from: rewardees[0]});
+    const rewardees = await rv.rewardees(0);
+    const challenges = await rv.challengeIds(0);
+    await rv.withdraw(challenges[0], "", 0, {from: rewardees[0]});
   })
+
 
 });
