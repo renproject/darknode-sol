@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 contract Token {
     function transfer(address, uint256) public returns (bool);
