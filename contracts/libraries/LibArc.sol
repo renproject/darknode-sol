@@ -1,28 +1,34 @@
 pragma solidity ^0.4.18;
 
+import "../RewardVault.sol";
+
 contract Token {
     function transfer(address, uint256) public returns (bool);
     function balanceOf(address) public view returns (uint256);
     function transferFrom(address, address, uint256) public returns (bool);
     function allowance(address, address) public view returns (uint256);
+    function approve(address, uint256) public returns (bool);
 }
 
 library LibArc {
-    address internal constant ETHEREUM = 0x1;
-
+    address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+    
     enum Status {
       pending, initiated, redeemed, refunded
     }
 
     struct Swap {
         address caller;
-        
         address sender;
         address receiver;
-
         address tokenAddress;
         uint256 value;
-        
+
+        uint256 fee;
+        bytes order;
+        address vaultAddress;
+        RewardVault vault;
+
         bytes secret;
         bytes32 secretLock;
 
@@ -30,65 +36,37 @@ library LibArc {
         Status status;
     }
 
-    function initiate(Swap storage self,  bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _validity, address _sender, address _receiver) internal {
-
-        if (_tokenAddress == address(0x0) || _tokenAddress == ETHEREUM) {
-            self.tokenAddress = ETHEREUM;
-        } else {
-            self.tokenAddress = _tokenAddress;
-        }
-
-        self.caller = msg.sender;
-        self.secretLock = _secretLock;
-        self.sender = _sender;
-        self.receiver = _receiver;
-        self.value = _value;
-        self.expiry = block.timestamp + _validity;
-        self.status = Status.initiated;
-    }
-
     function audit(Swap storage self) internal view returns (bytes32, address, address, uint256, uint256) {
         require(self.status == Status.initiated);
-        // require(verify(self.tokenAddress, self.value, self.caller));
         return (self.secretLock, self.tokenAddress, self.receiver, self.value, self.expiry);
     }
 
-    function redeem(Swap storage self, bytes _secret) internal {
+    function redeem(Swap storage self, bytes _secret) internal returns (bool) {
         require(self.status == Status.initiated);
         require(self.secretLock == sha256(_secret));
         self.secret = _secret;
         self.status = Status.redeemed;
-        withdraw(self.tokenAddress, self.value, self.receiver, self.caller);
+        return true;
     }
 
-    function refund(Swap storage self, address _tokenAddress, uint256 _value) internal {
+    function refund(Swap storage self) internal returns (bool) {
         require(self.status == Status.initiated);
         require(block.timestamp >= self.expiry);
         self.status = Status.refunded;
-        withdraw(_tokenAddress, _value, self.sender, self.caller);
+        return true;
     }
 
     function auditSecret(Swap storage self) internal constant returns (bytes) {
+        require(self.status == Status.redeemed);
         return self.secret;
     }
 
-    function verify(address _tokenAddress, uint256 _value, address _callerContractAddress) internal view returns (bool) {
+    function verify(address _tokenAddress, uint256 _value, address _spender) internal view returns (bool) {
         if (_tokenAddress == ETHEREUM) {
-            return(_callerContractAddress.balance >= _value);
+            return(_spender.balance >= _value);
         } else {
             Token t = Token(_tokenAddress);
-            return(t.balanceOf(_callerContractAddress) >= _value);
+            return(t.balanceOf(_spender) >= _value);
         }
     }
-
-    function withdraw(address _tokenAddress, uint256 _value, address _receiver, address _callerContractAddress) internal {
-        require(verify(_tokenAddress, _value, _callerContractAddress));
-        if (_tokenAddress == ETHEREUM) {
-            _receiver.transfer(_value);
-        } else {
-            Token t = Token(_tokenAddress);
-            t.transfer(_receiver, _value);
-        }
-    }
-
 }
