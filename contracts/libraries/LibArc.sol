@@ -11,8 +11,8 @@ contract Token {
 }
 
 library LibArc {
-    address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
-    
+    address constant internal ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+
     enum Status {
       pending, initiated, redeemed, refunded
     }
