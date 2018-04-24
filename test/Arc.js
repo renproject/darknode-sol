@@ -20,6 +20,7 @@ contract("Arc", function (accounts) {
   const orderBob = 'OrderBob'
   const Alice = accounts[2];
   const Bob = accounts[3];
+  const Charlie = accounts[3];
 
   var ren, dnr, rv, rverc20, rvGateway, arc, arcERC20, arcERC20Refund, arcRefund;
 
@@ -113,8 +114,16 @@ contract("Arc", function (accounts) {
     await arcERC20.redeem(secret, {from: Alice});
   })
 
+  it("Bob can not redeem and get erc20 tokens", async () => {
+    await arcERC20.redeem(secret, {from: Bob}).should.be.rejectedWith();
+  })
+
   it("Bob can redeem and get ether", async () => {
     await arc.redeem(secret, {from: Bob});
+  })
+
+  it("Alice can not redeem and get ether", async () => {
+    await arc.redeem(secret, {from: Alice}).should.be.rejectedWith();
   })
 
   it("Alice can not refund herself after Bob redeemed", async () => {
@@ -135,9 +144,23 @@ contract("Arc", function (accounts) {
     assert.equal(secret, web3.toAscii(auditSecret));
   })
 
+  it("should be able to audit after the swap/refund", async () => {
+    await arc.audit.call({from: Charlie}).should.be.rejectedWith();
+  })
+
   it("Alice can not refund herself with tokens she does not have", async () => {
     await arcRefund.refund(0x2, 1000, { from: Alice }).should.be.rejectedWith();
   })
+
+  it("Bob can not refund alice's contract", async () => {
+    await arcRefund.refund(ETHEREUM, 1000, { from: Bob }).should.be.rejectedWith();
+  })  
+
+
+  it("Alce can not refund bob's contract", async () => {
+    await arcERC20Refund.refund(ren.address, 1000, { from: Alice }).should.be.rejectedWith();
+  })
+
 
   it("Alice can refund herself", async () => {
     await arcRefund.refund(ETHEREUM, 1000, { from: Alice });
@@ -157,10 +180,15 @@ contract("Arc", function (accounts) {
     await arcERC20Refund.redeem(secret, {from: Alice}).should.be.rejectedWith();
   })
 
-  it("No one should be able to audit after the swap/refund", async () => {
-    await arc.audit.call().should.be.rejectedWith();
-    await arcERC20.audit.call().should.be.rejectedWith();
-    await arcRefund.audit.call().should.be.rejectedWith();
-    await arcERC20Refund.audit.call().should.be.rejectedWith();
+  it("should be able to audit after the swap/refund", async () => {
+    await arc.audit.call({from: Bob}).should.be.rejectedWith();
+    await arcERC20.audit.call({from: Alice}).should.be.rejectedWith();
+    await arcRefund.audit.call({from: Bob}).should.be.rejectedWith();
+    await arcERC20Refund.audit.call({from: Alice}).should.be.rejectedWith();
+  })
+
+  it("should fail to audit secret after refund", async() => {
+    await arcRefund.auditSecret.call({from: Alice}).should.be.rejectedWith();
+    await arcERC20Refund.auditSecret.call({from: Bob}).should.be.rejectedWith();
   })
 });
