@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import "./libraries/LibArc.sol";
 import "./RewardGateway.sol";
@@ -23,7 +23,6 @@ contract Arc {
     function Arc(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _feeRate, uint256 _validity, address _receiver, bytes _order, address _rewardGatewayAddress) public {
         swap.tokenAddress = _tokenAddress;
         swap.order = _order;
-        swap.vault = vault;
         swap.secretLock = _secretLock;
         swap.value = _value;
         swap.fee = calculateFee(_value, _feeRate);
