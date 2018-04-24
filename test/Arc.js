@@ -58,11 +58,11 @@ contract("Arc", function (accounts) {
     await rvGateway.updateRewardVault(ETHEREUM, rv.address);
     await rvGateway.updateRewardVault(ren.address, rverc20.address);
 
-    arc = await Arc.new(secretLock, ETHEREUM, 1000, Date.now() + 600, Bob, orderAlice, rvGateway.address, { from: Alice });
-    arcRefund = await Arc.new(secretLock, ETHEREUM, 1000, 0, Bob, orderAlice, rvGateway.address, { from: Alice });
+    arc = await Arc.new(secretLock, ETHEREUM, 997, 2, Date.now() + 600, Bob, orderAlice, rvGateway.address, { from: Alice });
+    arcRefund = await Arc.new(secretLock, ETHEREUM, 997, 2, 0, Bob, orderAlice, rvGateway.address, { from: Alice });
 
-    arcERC20 = await Arc.new(secretLock, ren.address, 1000, Date.now() + 600, Alice, orderBob, rvGateway.address, { from: Bob });
-    arcERC20Refund = await Arc.new(secretLock, ren.address, 1000, 0, Alice, orderBob, rvGateway.address, { from: Bob });
+    arcERC20 = await Arc.new(secretLock, ren.address, 997, 2, Date.now() + 600, Alice, orderBob, rvGateway.address, { from: Bob });
+    arcERC20Refund = await Arc.new(secretLock, ren.address, 997, 2, 0, Alice, orderBob, rvGateway.address, { from: Bob });
 
   });
 
@@ -81,7 +81,7 @@ contract("Arc", function (accounts) {
     assert.equal(audit[0], secretLock);
     assert.equal(audit[1], ETHEREUM.toLowerCase()); // Token
     assert.equal(audit[2], Bob); // Receiver
-    assert.equal(audit[3].toNumber(), 998); // Value
+    assert.equal(audit[3].toNumber(), 997); // Value
     // assert.equal(audit[3].toNumber(), 100); // Expiry
   })
 
@@ -90,7 +90,7 @@ contract("Arc", function (accounts) {
     assert.equal(audit[0], secretLock);
     assert.equal(audit[1], ren.address); // Token
     assert.equal(audit[2], Alice); // Receiver
-    assert.equal(audit[3].toNumber(), 998); // Value
+    assert.equal(audit[3].toNumber(), 997); // Value
     // assert.equal(audit[3].toNumber(), 100); // Expiry
   })
 
