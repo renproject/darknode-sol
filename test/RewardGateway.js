@@ -1,6 +1,6 @@
 const RewardVault = artifacts.require("RewardVault");
 const RewardGateway = artifacts.require("RewardGateway");
-const DarkNodeRegistry = artifacts.require("DarkNodeRegistry");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
@@ -13,7 +13,7 @@ contract("RewardVault", function (accounts) {
 
     before(async function () {
         ren = await RepublicToken.new();
-        dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 0);
+        dnr = await DarknodeRegistry.new(ren.address, 100, 72, 0);
         rv = await RewardVault.new(
             5,
             5,

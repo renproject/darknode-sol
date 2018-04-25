@@ -1,9 +1,11 @@
 pragma solidity ^0.4.23;
 
-contract RewardGateway {
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
+contract RewardGateway is Ownable {
     mapping (address=>address) public rewardVaults;
 
-    function updateRewardVault(address _tokenAddress, address _rewardVaultAddress) public {
+    function updateRewardVault(address _tokenAddress, address _rewardVaultAddress) onlyOwner public {
         rewardVaults[_tokenAddress] = _rewardVaultAddress;
     }
 }

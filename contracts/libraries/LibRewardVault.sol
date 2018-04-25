@@ -1,6 +1,6 @@
 pragma solidity 0.4.23;
 
-import "../DarkNodeRegistry.sol";
+import "../DarknodeRegistry.sol";
 
 library LibRewardVault {
 
@@ -26,7 +26,7 @@ library LibRewardVault {
         address dnrAddress;
         address tokenAddress;
 
-        mapping (bytes32 => bool) selectedOrder;
+        mapping (uint256 => mapping (uint256 => bool)) selectedOrder;
         mapping (bytes32 => bool) selectedNode;
         mapping (uint256 => RewardRound) rewardRounds;
     }
@@ -34,12 +34,13 @@ library LibRewardVault {
     function deposit(RewardVault storage self, bytes _order, uint256 _value) internal {
         self.rewardRounds[self.currentNonce].orders.push(_order);
         if (self.rewardRounds[self.currentNonce].balance + _value >= self.threshold) {
+            self.rewardRounds[self.currentNonce + 1].balance = self.rewardRounds[self.currentNonce].balance + _value - self.threshold;
+            self.rewardRounds[self.currentNonce].balance = self.threshold;
+            self.rewardRounds[self.currentNonce].rrn = uint256(blockhash(block.number - 1));
+            
             self.currentNonce++;
-            self.rewardRounds[self.currentNonce].balance = self.rewardRounds[self.currentNonce - 1].balance + _value - self.threshold;
-            self.rewardRounds[self.currentNonce - 1].balance = self.threshold;
-            self.rewardRounds[self.currentNonce - 1].rrn = uint256(blockhash(block.number - 1));
             return;
-        } 
+        }
         self.rewardRounds[self.currentNonce].balance += _value;
         return;
     }
@@ -59,28 +60,29 @@ library LibRewardVault {
 
     function finalize(RewardVault storage self, uint256 n) internal {
 
-        DarkNodeRegistry dnr = DarkNodeRegistry(self.dnrAddress);
+        DarknodeRegistry dnr = DarknodeRegistry(self.dnrAddress);
         require(self.rewardRounds[n].balance == self.threshold && !self.rewardRounds[n].finalized);
         uint256 x = self.rewardRounds[n].rrn % (self.rewardRounds[n].orders.length);
 
+        // Choose `challengeCount` orders using rrn as random seed
         for (uint256 i = 0; i < self.challengeCount; i++) {
-            while (self.selectedOrder[keccak256(n, x)]) {
+            while (self.selectedOrder[n][x]) {
                 x = x+1;
             }
             self.rewardRounds[n].challenges.push(keccak256(self.rewardRounds[n].orders[x]));
-            self.selectedOrder[keccak256(n, x)] = true;
+            self.selectedOrder[n][x] = true;
             x = (x + self.rewardRounds[n].rrn) % self.rewardRounds[n].orders.length;
         }
 
         bytes20[] memory nodeIds = dnr.getDarkNodes();
         x = self.rewardRounds[n].rrn % nodeIds.length;
 
-        address rewardee;
+        // Choose `rewardeeCount` nodes using rrn as random seed
         for (i = 0; i < self.rewardeeCount; i++) {
             while (self.selectedNode[keccak256(n, x)]) {
                 x = x+1;
             }
-            rewardee = dnr.getOwner(nodeIds[x]);
+            address rewardee = dnr.getOwner(nodeIds[x]);
             self.rewardRounds[n].rewardees.push(rewardee);
             for (uint256 j = 0; j < self.challengeCount; j++) {
                 self.rewardRounds[n].rewards[rewardee][self.rewardRounds[n].challenges[j]] = true;
