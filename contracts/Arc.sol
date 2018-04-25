@@ -3,14 +3,6 @@ pragma solidity ^0.4.23;
 import "./RewardGateway.sol";
 import "./RewardVault.sol";
 
-contract Token {
-    function transfer(address, uint256) public returns (bool);
-    function balanceOf(address) public view returns (uint256);
-    function transferFrom(address, address, uint256) public returns (bool);
-    function allowance(address, address) public view returns (uint256);
-    function approve(address, uint256) public returns (bool);
-}
-
 contract Arc {
 
     enum Status {
@@ -125,7 +117,7 @@ contract Arc {
         if (_tokenAddress == ETHEREUM) {
             _receiver.transfer(_value);
         } else {
-            Token t = Token(_tokenAddress);
+            ERC20 t = ERC20(_tokenAddress);
             t.transfer(_receiver, _value);
         }
     }
@@ -135,7 +127,7 @@ contract Arc {
     */
     function payFee(bytes32 _orderID) internal {
         if (swaps[_orderID].tokenAddress != ETHEREUM) {
-            Token t = Token(swaps[_orderID].tokenAddress);
+            ERC20 t = ERC20(swaps[_orderID].tokenAddress);
             t.approve(address(swaps[_orderID].vault), swaps[_orderID].fee);
             swaps[_orderID].vault.deposit(swaps[_orderID].order, swaps[_orderID].fee);
             return;
@@ -150,7 +142,7 @@ contract Arc {
         if (_tokenAddress == ETHEREUM) {
             return(msg.value == _value);
         }
-        Token t = Token(_tokenAddress);
+        ERC20 t = ERC20(_tokenAddress);
         if (t.allowance(msg.sender, address(this)) < _value) {
             return false;
         }

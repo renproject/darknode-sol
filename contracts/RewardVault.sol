@@ -2,13 +2,6 @@ pragma solidity ^0.4.23;
 
 import "./libraries/LibRewardVault.sol";
 
-// ERC20Token interface
-contract ERC20Token {
-    function allowance(address owner, address spender) public view returns (uint256);
-    function transfer(address owner, uint256 value) public returns (bool);
-    function transferFrom(address from, address to, uint256 value) public returns (bool);
-}
-
 contract RewardVault {
     // Constant address for ethereum
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
@@ -17,7 +10,7 @@ contract RewardVault {
     LibRewardVault.RewardVault private vault;
 
     // ERC20 token object
-    ERC20Token private token;
+    ERC20 private token;
 
     /** 
     * @notice The RewardVault constructor.
@@ -41,7 +34,7 @@ contract RewardVault {
         });
 
         if (_tokenAddress != ETHEREUM) {
-            token = ERC20Token(_tokenAddress);
+            token = ERC20(_tokenAddress);
         }
     }
 
