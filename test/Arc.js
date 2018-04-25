@@ -40,31 +40,31 @@ contract("Arc", function (accounts) {
     ren = await RepublicToken.new();
     dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 0);
     rv = await RewardVault.new(
-        5,
-        5,
-        100,
-        dnr.address,
-        ETHEREUM
+      5,
+      5,
+      100,
+      dnr.address,
+      ETHEREUM
     );
     rverc20 = await RewardVault.new(5, 5, 100, dnr.address, ren.address);
     rvGateway = await RewardGateway.new();
 
     // Distributing REN tokens
     for (i = 1; i < accounts.length; i++) {
-        await ren.transfer(accounts[i], 100000);
+      await ren.transfer(accounts[i], 100000);
     }
 
     // Registring Dark Nodes
     for (i = 0; i < accounts.length; i++) {
-        uid = (i + 1).toString();
-        await ren.approve(dnr.address, 100, { from: accounts[i] });
-        await dnr.register(uid, uid, 100, { from: accounts[i] });
+      uid = (i + 1).toString();
+      await ren.approve(dnr.address, 100, { from: accounts[i] });
+      await dnr.register(uid, uid, 100, { from: accounts[i] });
     }
 
     await dnr.epoch();
     for (i = 0; i < accounts.length; i++) {
-        uid = (i + 1).toString();
-        assert.equal(await dnr.isRegistered(uid), true);
+      uid = (i + 1).toString();
+      assert.equal(await dnr.isRegistered(uid), true);
     }
 
     await rvGateway.updateRewardVault(ETHEREUM, rv.address);
@@ -78,18 +78,18 @@ contract("Arc", function (accounts) {
   })
 
   it("Alice initiates an atomic swap", async () => {
-    await arc.initiate(secretLock, ETHEREUM, 1000, 2, Date.now() + 600, Bob, orderAlice, { from: Alice, value: 1000});
-    await arc.initiate(secretLock, ETHEREUM, 1000, 2, 0, Bob, orderAliceRefund, { from: Alice,value: 1000 });
+    await arc.initiate(secretLock, ETHEREUM, 1000, 2, Date.now() + 600, Bob, orderAlice, { from: Alice, value: 1000 });
+    await arc.initiate(secretLock, ETHEREUM, 1000, 2, 0, Bob, orderAliceRefund, { from: Alice, value: 1000 });
   })
 
   it("Bob initiates an atomic swap", async () => {
-    await ren.approve(arc.address, 2000, {from: Bob});
+    await ren.approve(arc.address, 2000, { from: Bob });
     await arc.initiate(secretLock, ren.address, 1000, 2, Date.now() + 600, Alice, orderBob, { from: Bob });
     await arc.initiate(secretLock, ren.address, 1000, 2, 0, Alice, orderBobRefund, { from: Bob });
   })
 
   it("Bob should not be able to initiate an atomic swap with out proper allowance", async () => {
-    await ren.approve(arc.address, 999, {from: Bob});
+    await ren.approve(arc.address, 999, { from: Bob });
     await arc.initiate(secretLock, ren.address, 1000, 2, Date.now() + 600, Alice, orderNegative, { from: Bob }).should.be.rejectedWith();
     await arc.initiate(secretLock, ren.address, 999, 2, 0, Alice, orderNegative, { from: Bob });
   })
@@ -121,7 +121,7 @@ contract("Arc", function (accounts) {
   })
 
   it("Alice can not redeem and get ether", async () => {
-    await arc.redeem(orderIdBob, "Random String", {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdBob, "Random String", { from: Alice }).should.be.rejectedWith();
   })
 
   it("Bob can not refund himself before expiry", async () => {
@@ -129,19 +129,19 @@ contract("Arc", function (accounts) {
   })
 
   it("Bob can not redeem and get erc20 tokens", async () => {
-    await arc.redeem(orderIdBob, secret, {from: Bob}).should.be.rejectedWith();
+    await arc.redeem(orderIdBob, secret, { from: Bob }).should.be.rejectedWith();
   })
 
   it("Alice can redeem and get erc20 tokens", async () => {
-    await arc.redeem(orderIdBob, secret, {from: Alice});
+    await arc.redeem(orderIdBob, secret, { from: Alice });
   })
 
   it("Alice can not redeem and get ether", async () => {
-    await arc.redeem(orderIdAlice, secret, {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdAlice, secret, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Bob can redeem and get ether", async () => {
-    await arc.redeem(orderIdAlice, secret, {from: Bob});
+    await arc.redeem(orderIdAlice, secret, { from: Bob });
   })
 
 
@@ -154,17 +154,17 @@ contract("Arc", function (accounts) {
   })
 
   it("Alice can read the secret", async () => {
-    const auditSecret = await arc.auditSecret(orderIdAlice, {from: Alice});
+    const auditSecret = await arc.auditSecret(orderIdAlice, { from: Alice });
     assert.equal(secret, auditSecret);
   })
 
   it("Bob can read the secret", async () => {
-    const auditSecret = await arc.auditSecret(orderIdBob, {from: Bob});
+    const auditSecret = await arc.auditSecret(orderIdBob, { from: Bob });
     assert.equal(secret, auditSecret);
   })
 
   it("should be able to audit after the swap/refund", async () => {
-    await arc.audit.call(orderIdAlice, {from: Charlie}).should.be.rejectedWith();
+    await arc.audit.call(orderIdAlice, { from: Charlie }).should.be.rejectedWith();
   })
 
   it("Alice can not refund herself with tokens she does not have", async () => {
@@ -173,7 +173,7 @@ contract("Arc", function (accounts) {
 
   it("Bob can not refund alice's contract", async () => {
     await arc.refund(orderIdAlice, ETHEREUM, 1000, { from: Bob }).should.be.rejectedWith();
-  })  
+  })
 
 
   it("Alce can not refund bob's contract", async () => {
@@ -183,7 +183,7 @@ contract("Arc", function (accounts) {
 
   it("Alice can refund herself", async () => {
     await arc.refund(orderIdAliceRefund, ETHEREUM, 1000, { from: Alice });
-  })  
+  })
 
 
   it("Bob can refund himself", async () => {
@@ -192,22 +192,22 @@ contract("Arc", function (accounts) {
 
 
   it("Bob can not redeem after alice refunded", async () => {
-    await arc.redeem(orderIdAlice, secret, {from: Bob}).should.be.rejectedWith();
+    await arc.redeem(orderIdAlice, secret, { from: Bob }).should.be.rejectedWith();
   })
 
   it("Alice can not redeem after bob refunded", async () => {
-    await arc.redeem(orderIdBobRefund, secret, {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdBobRefund, secret, { from: Alice }).should.be.rejectedWith();
   })
 
   it("should be able to audit after the swap/refund", async () => {
-    await arc.audit.call(orderIdAlice, {from: Bob}).should.be.rejectedWith();
-    await arc.audit.call(orderIdBob, {from: Alice}).should.be.rejectedWith();
-    await arc.audit.call(orderIdAliceRefund, {from: Bob}).should.be.rejectedWith();
-    await arc.audit.call(orderIdBobRefund, {from: Alice}).should.be.rejectedWith();
+    await arc.audit.call(orderIdAlice, { from: Bob }).should.be.rejectedWith();
+    await arc.audit.call(orderIdBob, { from: Alice }).should.be.rejectedWith();
+    await arc.audit.call(orderIdAliceRefund, { from: Bob }).should.be.rejectedWith();
+    await arc.audit.call(orderIdBobRefund, { from: Alice }).should.be.rejectedWith();
   })
 
-  it("should fail to audit secret after refund", async() => {
-    await arc.auditSecret.call(orderIdAliceRefund, {from: Alice}).should.be.rejectedWith();
-    await arc.auditSecret.call(orderIdBobRefund, {from: Bob}).should.be.rejectedWith();
+  it("should fail to audit secret after refund", async () => {
+    await arc.auditSecret.call(orderIdAliceRefund, { from: Alice }).should.be.rejectedWith();
+    await arc.auditSecret.call(orderIdBobRefund, { from: Bob }).should.be.rejectedWith();
   })
 });

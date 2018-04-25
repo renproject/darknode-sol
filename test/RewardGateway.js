@@ -7,11 +7,11 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("RewardVault", function(accounts) {
+contract("RewardVault", function (accounts) {
     const ETHEREUM = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
     let rv, dnr, ren;
 
-    before(async function() {
+    before(async function () {
         ren = await RepublicToken.new();
         dnr = await DarkNodeRegistry.new(ren.address, 100, 72, 0);
         rv = await RewardVault.new(
