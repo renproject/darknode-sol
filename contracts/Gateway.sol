@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./Ownable.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Gateway is Ownable {
 
@@ -11,7 +11,7 @@ contract Gateway is Ownable {
 
     event update(bytes4 functionID, uint256 oldValue, uint256 newValue);
 
-    function Gateway(
+    constructor(
         address _republicToken, 
         address _darkNodeRegistry, 
         address _traderRegistry,

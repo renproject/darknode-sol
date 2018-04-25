@@ -28,4 +28,16 @@ contract RepublicToken is PausableToken, BurnableToken {
 
         return true;
     }
+
+    function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
+        // Do not allow sending REN to this contract
+        require(_to != address(this));
+        return super.transfer(_to, _value);
+    }
+
+    function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
+        // Do not allow sending REN to this contract
+        require(_to != address(this));
+        return super.transferFrom(_from, _to, _value);
+    }
 }

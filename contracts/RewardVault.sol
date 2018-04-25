@@ -22,7 +22,7 @@ contract RewardVault {
     * @param _tokenAddress The address of the ERC20 contract, 
     *       `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` for ether.
     */
-    function RewardVault(uint256 _rewardeeCount, uint256 _challengeCount, uint256 _threshold, address _dnrAddress, address _tokenAddress) public {    
+    constructor(uint256 _rewardeeCount, uint256 _challengeCount, uint256 _threshold, address _dnrAddress, address _tokenAddress) public {    
         vault = LibRewardVault.RewardVault({
             currentNonce: 0,
             rewardeeCount : _rewardeeCount,

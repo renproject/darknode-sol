@@ -42,7 +42,7 @@ contract Arc {
     /**
     *   @notice constructor.
     */
-    function Arc(address _rewardGatewayAddress) public {
+    constructor(address _rewardGatewayAddress) public {
         gateway = RewardGateway(_rewardGatewayAddress);
     }
 

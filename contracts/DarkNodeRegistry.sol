@@ -115,7 +115,7 @@ contract DarkNodeRegistry {
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum amount of time between epochs.
     */
-    function DarkNodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    constructor(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
