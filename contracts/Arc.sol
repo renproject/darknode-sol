@@ -59,6 +59,7 @@ contract Arc {
     */
     function initiate(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _feeRate, uint256 _validity, address _receiver, bytes _order) public payable {
         bytes32 orderID = keccak256(_order);
+        require(swaps[orderID].status == Status.pending);
         require(validateDeposit(_tokenAddress, _value));
         swaps[orderID].tokenAddress = _tokenAddress;
         swaps[orderID].order = _order;
@@ -112,8 +113,8 @@ contract Arc {
     function refund(bytes32 _orderID, address _tokenAddress, uint256 _value) public {
         require(swaps[_orderID].status == Status.initiated);
         require(block.timestamp >= swaps[_orderID].expiry);
-        swaps[_orderID].status = Status.refunded;
         require(msg.sender == swaps[_orderID].sender);
+        swaps[_orderID].status = Status.refunded;
         withdraw(_tokenAddress, _value, msg.sender);
     }
 
