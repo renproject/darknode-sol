@@ -3,7 +3,8 @@ const RewardVault = artifacts.require("RewardVault");
 const RewardGateway = artifacts.require("RewardGateway");
 const DarkNodeRegistry = artifacts.require("DarkNodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
-const Sha256 = require("crypto-js/sha256");
+const Sha256 = require('crypto-js/sha256');
+const Keccak256 = require('js-sha3').keccak256;
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
@@ -14,13 +15,24 @@ chai.should();
 contract("Arc", function (accounts) {
 
   const ETHEREUM = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-  const secret = 'Secret'
-  const secretLock = `0x${Sha256(secret).toString()}`;
+  const secret = `0x${Sha256('Secret').toString()}`;
+  const secretLock = `0x${Sha256(Sha256('Secret')).toString()}`;
+
   const orderAlice = 'OrderAlice'
   const orderBob = 'OrderBob'
+  const orderAliceRefund = 'OrderAliceRefund'
+  const orderBobRefund = 'OrderBobRefund'
+
+  const orderNegative = 'OrderNegative'
+
+  const orderIdAlice = `0x${Keccak256(orderAlice)}`
+  const orderIdBob = `0x${Keccak256(orderBob)}`
+  const orderIdAliceRefund = `0x${Keccak256(orderAliceRefund)}`
+  const orderIdBobRefund = `0x${Keccak256(orderBobRefund)}`
+
   const Alice = accounts[2];
   const Bob = accounts[3];
-  const Charlie = accounts[3];
+  const Charlie = accounts[4];
 
   var ren, dnr, rv, rverc20, rvGateway, arc, arcERC20, arcERC20Refund, arcRefund;
 
@@ -58,137 +70,144 @@ contract("Arc", function (accounts) {
     await rvGateway.updateRewardVault(ETHEREUM, rv.address);
     await rvGateway.updateRewardVault(ren.address, rverc20.address);
 
-    arc = await Arc.new(secretLock, ETHEREUM, 997, 2, Date.now() + 600, Bob, orderAlice, rvGateway.address, { from: Alice });
-    arcRefund = await Arc.new(secretLock, ETHEREUM, 997, 2, 0, Bob, orderAlice, rvGateway.address, { from: Alice });
-
-    arcERC20 = await Arc.new(secretLock, ren.address, 997, 2, Date.now() + 600, Alice, orderBob, rvGateway.address, { from: Bob });
-    arcERC20Refund = await Arc.new(secretLock, ren.address, 997, 2, 0, Alice, orderBob, rvGateway.address, { from: Bob });
-
+    arc = await Arc.new(rvGateway.address);
   });
 
-  it("Alice deposit ether to the contract", async () => {
-    await arc.sendTransaction({ from: Alice, value: 1000 });
-    await arcRefund.sendTransaction({ from: Alice, value: 1000 });
+  it("Test sha256", async () => {
+    assert.equal((await arc.testSha256(secret)), secretLock);
   })
 
-  it("Bob deposits erc20 tokens to the contract", async () => {
-    await ren.transfer(arcERC20.address, 1000, {from: Bob});
-    await ren.transfer(arcERC20Refund.address, 1000, {from: Bob});
+  it("Alice initiates an atomic swap", async () => {
+    await arc.initiate(secretLock, ETHEREUM, 1000, 2, Date.now() + 600, Bob, orderAlice, { from: Alice, value: 1000});
+    await arc.initiate(secretLock, ETHEREUM, 1000, 2, 0, Bob, orderAliceRefund, { from: Alice,value: 1000 });
+  })
+
+  it("Bob initiates an atomic swap", async () => {
+    await ren.approve(arc.address, 2000, {from: Bob});
+    await arc.initiate(secretLock, ren.address, 1000, 2, Date.now() + 600, Alice, orderBob, { from: Bob });
+    await arc.initiate(secretLock, ren.address, 1000, 2, 0, Alice, orderBobRefund, { from: Bob });
+  })
+
+  it("Bob should not be able to initiate an atomic swap with out proper allowance", async () => {
+    await ren.approve(arc.address, 999, {from: Bob});
+    await arc.initiate(secretLock, ren.address, 1000, 2, Date.now() + 600, Alice, orderNegative, { from: Bob }).should.be.rejectedWith();
+    await arc.initiate(secretLock, ren.address, 999, 2, 0, Alice, orderNegative, { from: Bob });
   })
 
   it("Bob audits the contract", async () => {
-    const audit = await arc.audit.call();
+    const audit = await arc.audit.call(orderIdAlice);
     assert.equal(audit[0], secretLock);
     assert.equal(audit[1], ETHEREUM.toLowerCase()); // Token
     assert.equal(audit[2], Bob); // Receiver
-    assert.equal(audit[3].toNumber(), 997); // Value
+    assert.equal(audit[3].toNumber(), 998); // Value
     // assert.equal(audit[3].toNumber(), 100); // Expiry
   })
 
   it("Alice audits the contract", async () => {
-    const audit = await arcERC20.audit.call();
+    const audit = await arc.audit.call(orderIdBob);
     assert.equal(audit[0], secretLock);
     assert.equal(audit[1], ren.address); // Token
     assert.equal(audit[2], Alice); // Receiver
-    assert.equal(audit[3].toNumber(), 997); // Value
+    assert.equal(audit[3].toNumber(), 998); // Value
     // assert.equal(audit[3].toNumber(), 100); // Expiry
   })
 
   it("Bob can not redeem and get ether", async () => {
-    await arc.redeem("Random String", { from: Bob }).should.be.rejectedWith();
+    await arc.redeem(orderIdAlice, "Random String", { from: Bob }).should.be.rejectedWith();
   })
 
   it("Alice can not refund herself before expiry", async () => {
-    await arc.refund(ETHEREUM, 100, { from: Alice }).should.be.rejectedWith();
+    await arc.refund(orderIdAlice, ETHEREUM, 100, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Alice can not redeem and get ether", async () => {
-    await arcERC20.redeem("Random String", {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdBob, "Random String", {from: Alice}).should.be.rejectedWith();
   })
 
   it("Bob can not refund himself before expiry", async () => {
-    await arcERC20.refund(ren.address, 100, { from: Bob }).should.be.rejectedWith();
-  })
-
-  it("Alice can redeem and get erc20 tokens", async () => {
-    await arcERC20.redeem(secret, {from: Alice});
+    await arc.refund(orderIdBob, ren.address, 100, { from: Bob }).should.be.rejectedWith();
   })
 
   it("Bob can not redeem and get erc20 tokens", async () => {
-    await arcERC20.redeem(secret, {from: Bob}).should.be.rejectedWith();
+    await arc.redeem(orderIdBob, secret, {from: Bob}).should.be.rejectedWith();
   })
 
-  it("Bob can redeem and get ether", async () => {
-    await arc.redeem(secret, {from: Bob});
+  it("Alice can redeem and get erc20 tokens", async () => {
+    await arc.redeem(orderIdBob, secret, {from: Alice});
   })
 
   it("Alice can not redeem and get ether", async () => {
-    await arc.redeem(secret, {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdAlice, secret, {from: Alice}).should.be.rejectedWith();
   })
 
+  it("Bob can redeem and get ether", async () => {
+    await arc.redeem(orderIdAlice, secret, {from: Bob});
+  })
+
+
   it("Alice can not refund herself after Bob redeemed", async () => {
-    await arc.refund(ETHEREUM, 100, { from: Alice }).should.be.rejectedWith();
+    await arc.refund(orderIdAlice, ETHEREUM, 100, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Bob can not refund herself after Bob redeemed", async () => {
-    await arcERC20.refund(ren.address, 100, { from: Bob }).should.be.rejectedWith();
+    await arc.refund(orderIdBob, ren.address, 100, { from: Bob }).should.be.rejectedWith();
   })
 
   it("Alice can read the secret", async () => {
-    const auditSecret = await arc.auditSecret({from: Alice});
-    assert.equal(secret, web3.toAscii(auditSecret));
+    const auditSecret = await arc.auditSecret(orderIdAlice, {from: Alice});
+    assert.equal(secret, auditSecret);
   })
 
   it("Bob can read the secret", async () => {
-    const auditSecret = await arcERC20.auditSecret({from: Bob});
-    assert.equal(secret, web3.toAscii(auditSecret));
+    const auditSecret = await arc.auditSecret(orderIdBob, {from: Bob});
+    assert.equal(secret, auditSecret);
   })
 
   it("should be able to audit after the swap/refund", async () => {
-    await arc.audit.call({from: Charlie}).should.be.rejectedWith();
+    await arc.audit.call(orderIdAlice, {from: Charlie}).should.be.rejectedWith();
   })
 
   it("Alice can not refund herself with tokens she does not have", async () => {
-    await arcRefund.refund(0x2, 1000, { from: Alice }).should.be.rejectedWith();
+    await arc.refund(orderIdAlice, 0x2, 1000, { from: Alice }).should.be.rejectedWith();
   })
 
   it("Bob can not refund alice's contract", async () => {
-    await arcRefund.refund(ETHEREUM, 1000, { from: Bob }).should.be.rejectedWith();
+    await arc.refund(orderIdAlice, ETHEREUM, 1000, { from: Bob }).should.be.rejectedWith();
   })  
 
 
   it("Alce can not refund bob's contract", async () => {
-    await arcERC20Refund.refund(ren.address, 1000, { from: Alice }).should.be.rejectedWith();
+    await arc.refund(orderIdBobRefund, ren.address, 1000, { from: Alice }).should.be.rejectedWith();
   })
 
 
   it("Alice can refund herself", async () => {
-    await arcRefund.refund(ETHEREUM, 1000, { from: Alice });
+    await arc.refund(orderIdAliceRefund, ETHEREUM, 1000, { from: Alice });
   })  
 
 
   it("Bob can refund himself", async () => {
-    await arcERC20Refund.refund(ren.address, 1000, { from: Bob });
+    await arc.refund(orderIdBobRefund, ren.address, 1000, { from: Bob });
   })
 
 
   it("Bob can not redeem after alice refunded", async () => {
-    await arcRefund.redeem(secret, {from: Bob}).should.be.rejectedWith();
+    await arc.redeem(orderIdAlice, secret, {from: Bob}).should.be.rejectedWith();
   })
 
   it("Alice can not redeem after bob refunded", async () => {
-    await arcERC20Refund.redeem(secret, {from: Alice}).should.be.rejectedWith();
+    await arc.redeem(orderIdBobRefund, secret, {from: Alice}).should.be.rejectedWith();
   })
 
   it("should be able to audit after the swap/refund", async () => {
-    await arc.audit.call({from: Bob}).should.be.rejectedWith();
-    await arcERC20.audit.call({from: Alice}).should.be.rejectedWith();
-    await arcRefund.audit.call({from: Bob}).should.be.rejectedWith();
-    await arcERC20Refund.audit.call({from: Alice}).should.be.rejectedWith();
+    await arc.audit.call(orderIdAlice, {from: Bob}).should.be.rejectedWith();
+    await arc.audit.call(orderIdBob, {from: Alice}).should.be.rejectedWith();
+    await arc.audit.call(orderIdAliceRefund, {from: Bob}).should.be.rejectedWith();
+    await arc.audit.call(orderIdBobRefund, {from: Alice}).should.be.rejectedWith();
   })
 
   it("should fail to audit secret after refund", async() => {
-    await arcRefund.auditSecret.call({from: Alice}).should.be.rejectedWith();
-    await arcERC20Refund.auditSecret.call({from: Bob}).should.be.rejectedWith();
+    await arc.auditSecret.call(orderIdAliceRefund, {from: Alice}).should.be.rejectedWith();
+    await arc.auditSecret.call(orderIdBobRefund, {from: Bob}).should.be.rejectedWith();
   })
 });

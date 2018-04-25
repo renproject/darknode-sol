@@ -1,82 +1,119 @@
 pragma solidity ^0.4.23;
 
-import "./libraries/LibArc.sol";
 import "./RewardGateway.sol";
+import "./RewardVault.sol";
+
+contract Token {
+    function transfer(address, uint256) public returns (bool);
+    function balanceOf(address) public view returns (uint256);
+    function transferFrom(address, address, uint256) public returns (bool);
+    function allowance(address, address) public view returns (uint256);
+    function approve(address, uint256) public returns (bool);
+}
 
 contract Arc {
 
+    enum Status {
+      pending, initiated, redeemed, refunded
+    }
+
+    struct Swap {
+        address caller;
+        address sender;
+        address receiver;
+        address tokenAddress;
+        uint256 value;
+
+        uint256 fee;
+        bytes order;
+        address vaultAddress;
+        RewardVault vault;
+
+        bytes32 secret;
+        bytes32 secretLock;
+
+        uint256 expiry;
+        Status status;
+    }
+
     // For using a similar interface for ether and erc20 tokens. We are using a constant for ethereum address.
+    // The capitalization helps solidity to validate the address (Checksum).
     address constant internal ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
-
-    // An atomic swap object, this contains all the data relevant to this atomic swap.
-    LibArc.Swap private swap;
-
-    // The reward vault object for the given token address.
-    RewardVault private vault;
 
     // The reward gateway object, contains the reward vault addresses for all token address.
     RewardGateway private gateway;
 
+    // Map of all the atomicswaps.
+    // An atomic swap object, this contains all the data relevant to this atomic swap.
+    mapping (bytes32=>Swap) swaps;
+
     /**
     *   @notice constructor.
     */
-    function Arc(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _feeRate, uint256 _validity, address _receiver, bytes _order, address _rewardGatewayAddress) public {
-        swap.tokenAddress = _tokenAddress;
-        swap.order = _order;
-        swap.secretLock = _secretLock;
-        swap.value = _value;
-        swap.fee = calculateFee(_value, _feeRate);
-        swap.sender = msg.sender;
-        swap.receiver = _receiver;
-        swap.expiry = _validity;
-        swap.status = LibArc.Status.initiated;
+    function Arc(address _rewardGatewayAddress) public {
         gateway = RewardGateway(_rewardGatewayAddress);
-        vault = RewardVault(gateway.rewardVaults(_tokenAddress));
     }
 
     /**
-    *   @notice Accepts ether transfers.
+    *   @notice Initiate an atomicswap.
     */
-    function () public payable {
-
+    function initiate(bytes32 _secretLock, address _tokenAddress, uint256 _value, uint256 _feeRate, uint256 _validity, address _receiver, bytes _order) public payable {
+        bytes32 orderID = keccak256(_order);
+        require(validateDeposit(_tokenAddress, _value));
+        swaps[orderID].tokenAddress = _tokenAddress;
+        swaps[orderID].order = _order;
+        swaps[orderID].secretLock = _secretLock;
+        swaps[orderID].fee = calculateFee(_value, _feeRate);
+        swaps[orderID].value = _value - swaps[orderID].fee;
+        swaps[orderID].sender = msg.sender;
+        swaps[orderID].receiver = _receiver;
+        swaps[orderID].expiry = _validity;
+        swaps[orderID].status = Status.initiated;
+        swaps[orderID].vault = RewardVault(gateway.rewardVaults(_tokenAddress));
     }
 
     /**
     *   @notice Redeems the atomic swap using the secret.
     */
-    function redeem(bytes _secret) public {
-        require(LibArc.redeem(swap, _secret));
-        require(LibArc.verify(swap.tokenAddress, swap.value, msg.sender));
-        withdraw(swap.tokenAddress, swap.value, swap.receiver);
-        payFee();
+    function redeem(bytes32 _orderID, bytes32 _secret) public {
+        require(swaps[_orderID].status == Status.initiated);
+        require(swaps[_orderID].receiver == msg.sender);
+        require(swaps[_orderID].secretLock == sha256(_secret));
+        swaps[_orderID].secret = _secret;
+        swaps[_orderID].status = Status.redeemed;
+        withdraw(swaps[_orderID].tokenAddress, swaps[_orderID].value, swaps[_orderID].receiver);
+        payFee(_orderID);
+    }
+
+    function testSha256(bytes32 secret) public pure returns(bytes32) {
+        return(sha256(secret));    
     }
 
     /**
-    *  @notice Audits the contract, 
-    *   1. checks if the contract has enough balance to fulfill
-    *       the atomic swap, and pay fees.
-    *   2. returns the values of the atomic swap.
+    *  @notice Audits the contract, returns the relevant values of the atomic swap.
     */
-    function audit() public view returns (bytes32, address, address, uint256, uint256) {
-        require(LibArc.verify(swap.tokenAddress, swap.value + swap.fee, msg.sender));
-        return LibArc.audit(swap);
+    function audit(bytes32 _orderID) public view returns (bytes32, address, address, uint256, uint256) {
+        require(swaps[_orderID].status == Status.initiated);
+        return (swaps[_orderID].secretLock, swaps[_orderID].tokenAddress, swaps[_orderID].receiver, swaps[_orderID].value, swaps[_orderID].expiry);
     }
 
     /**
     * @notice Audits the the secret used to redeem the swap.
     */
-    function auditSecret() public view returns (bytes) {
-        return LibArc.auditSecret(swap);
+    function auditSecret(bytes32 _orderID) public view returns (bytes32) {
+        require(swaps[_orderID].status == Status.redeemed);
+        return swaps[_orderID].secret;
     }
 
     /**
     * @notice Refunds the locked up funds to the current swap initiator, 
     *       after the expiry period.
     */
-    function refund(address _tokenAddress, uint256 _value) public {
-        require(LibArc.refund(swap));
-        require(msg.sender == swap.sender);
-        require(LibArc.verify(_tokenAddress, _value, msg.sender));
+    function refund(bytes32 _orderID, address _tokenAddress, uint256 _value) public {
+        require(swaps[_orderID].status == Status.initiated);
+        require(block.timestamp >= swaps[_orderID].expiry);
+        swaps[_orderID].status = Status.refunded;
+        require(msg.sender == swaps[_orderID].sender);
         withdraw(_tokenAddress, _value, msg.sender);
     }
 
@@ -84,7 +121,6 @@ contract Arc {
     * @notice Withdraws ether/erc20 tokens from the arc contract.
     */
     function withdraw(address _tokenAddress, uint256 _value, address _receiver) internal {
-        require(LibArc.verify(_tokenAddress, _value, address(this)));
         if (_tokenAddress == ETHEREUM) {
             _receiver.transfer(_value);
         } else {
@@ -96,17 +132,29 @@ contract Arc {
     /**
     * @notice Pays fee to the Reward Vault Contract.
     */
-    function payFee() internal {
-        require(LibArc.verify(swap.tokenAddress, swap.fee, address(this)));
-        if (swap.tokenAddress != ETHEREUM) {
-            Token t = Token(swap.tokenAddress);
-            t.approve(address(vault), swap.fee);
-            vault.deposit(swap.order, swap.fee);
+    function payFee(bytes32 _orderID) internal {
+        if (swaps[_orderID].tokenAddress != ETHEREUM) {
+            Token t = Token(swaps[_orderID].tokenAddress);
+            t.approve(address(swaps[_orderID].vault), swaps[_orderID].fee);
+            swaps[_orderID].vault.deposit(swaps[_orderID].order, swaps[_orderID].fee);
             return;
         } 
-        vault.deposit.value(swap.fee)(swap.order, swap.fee);
-        return;
+        swaps[_orderID].vault.deposit.value(swaps[_orderID].fee)(swaps[_orderID].order, swaps[_orderID].fee);
     }
+
+    /**
+    * @notice validates the deposit.
+    */
+    function validateDeposit(address _tokenAddress, uint256 _value) internal returns (bool) {
+        if (_tokenAddress == ETHEREUM) {
+            return(msg.value == _value);
+        }
+        Token t = Token(_tokenAddress);
+        if (t.allowance(msg.sender, address(this)) < _value) {
+            return false;
+        }
+        return (t.transferFrom(msg.sender, address(this), _value));
+    }   
 
     /** 
     * @notice Calculates fee, for a given value and fee rate.
@@ -114,6 +162,21 @@ contract Arc {
     function calculateFee(uint256 _value, uint256 _rate) internal pure returns (uint256) {
         // solidity gets the floor of the result of a division, 
         // and we want the fee to be the ceiling so we add 1
-        return ((_rate * _value)/(1000 - _rate) + 1);
+        
+        // Here _value is the amount of tokens the trader is willing to trade,
+        // not the amount transfered to the contract. 
+        // This equation is ubtained from solving the equations.
+        
+        /** 
+        
+        amount + fee = value
+        fee = rate * amount (where rate is percentage)
+        fee = (rate * amount)/1000 (as solidity only supports uint division, 
+                                        and we want rate to be in the range 0.X%)
+        */
+        if ((_value/1000) * 1000 == _value) { // if the value is divisable by 1000, return the exact fee 
+            return ((_rate * _value)/1000);
+        }
+        return ((_rate * _value)/1000 + 1); // otherwise return the ceiling.
     }
 }

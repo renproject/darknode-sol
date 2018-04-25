@@ -278,7 +278,7 @@ contract DarkNodeRegistry {
     }
 
     /**
-    * A registered dark node has been regsitered, and it is no longer pending
+    * A registered dark node has been registered, and it is no longer pending
     * registration. It might be pending deregistration, but it has not been
     * refunded.
     */
