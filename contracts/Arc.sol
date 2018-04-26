@@ -78,10 +78,6 @@ contract Arc {
         payFee(_orderID);
     }
 
-    function testSha256(bytes32 secret) public pure returns(bytes32) {
-        return(sha256(secret));    
-    }
-
     /**
     *  @notice Audits the contract, returns the relevant values of the atomic swap.
     */
