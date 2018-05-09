@@ -1,7 +1,7 @@
 # Ren Ledger
 
 Ren ledger (formerly know as Hyperdrive) is an Ethereum smart contract which store all the orders and their priority.
-Darknodes should look up orders in the contract and match them in terms of their priorities.  Both the traders and darknodes need to send 
+As a trader, it needs to open the order to Ren Ledger first. Darknodes should look up orders in the contract and match them in terms of their priorities.  Both the traders and darknodes need to send 
 the signed message in order to open, cancel or confirm orders.
 
 **Usage**
