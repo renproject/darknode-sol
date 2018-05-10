@@ -77,19 +77,19 @@ contract TraderRegistry {
         _;
     }
 
-    /** 
+    /**
     * @notice The TraderRegistry constructor.
     *
     * @param _renAddress The address of the Republic Token contract.
     * @param _minimumBond The minimum bond amount that can be submitted by a
     *                     trader.
     */
-    function TraderRegistry(address _renAddress, uint256 _minimumBond) public {
+    constructor(address _renAddress, uint256 _minimumBond) public {
         ren = RepublicToken(_renAddress);
         minimumBond = _minimumBond;
     }
 
-    /** 
+    /**
     * @notice Register a trader and transfer the bond to this contract. The
     * caller must provide the public key of the trader that will be registered.
     * The bond must be provided in REN as an allowance and the entire allowance
@@ -121,7 +121,7 @@ contract TraderRegistry {
         emit TraderRegistered(_traderID, _bond);
     }
 
-    /** 
+    /**
     * @notice Deregister a trader and clear their bond for refunding. Only the
     * owner of a trader can deregister the trader.
     *
@@ -142,7 +142,7 @@ contract TraderRegistry {
         emit TraderDeregistered(_traderID);
     }
 
-    /** 
+    /**
     * @notice Refund all REN that has been cleared for refunding. Bonds are
     * cleared for refunding when the respective trader is deregistered.
     */

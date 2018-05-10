@@ -3,14 +3,13 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
-contract("LinkedList", function(accounts) {
+contract("LinkedList", function (accounts) {
 
   let linkedList;
 
   before(async function () {
     linkedList = await linkedListTest.new();
   });
-
 
   it("can append", async function () {
     await linkedList.append("1");
