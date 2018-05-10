@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "./Ownable.sol";
 
@@ -23,8 +23,8 @@ contract Gateway is Ownable {
         minimumDarkPoolSize = _minimumDarkPoolSize;
     }
   
-    function updateDarkNodeRegistry(address _darkNodeRegistry) public onlyOwner {
-        emit update(bytes4(sha256("updateDarkNodeRegistry(address)")), uint256(darkNodeRegistry), uint256(_darkNodeRegistry));
+    function updateDarknodeRegistry(address _darkNodeRegistry) public onlyOwner {
+        emit update(bytes4(sha256("updateDarknodeRegistry(address)")), uint256(darkNodeRegistry), uint256(_darkNodeRegistry));
         darkNodeRegistry = _darkNodeRegistry;
     }
 

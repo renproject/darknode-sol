@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
@@ -115,7 +115,7 @@ contract DarknodeRegistry {
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum amount of time between epochs.
     */
-    function DarkNodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    function DarknodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
@@ -214,7 +214,7 @@ contract DarknodeRegistry {
     function refund(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyDeregistered(_darkNodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darkNodeID].bond;
-        assert(amount > 0);
+        require(amount > 0);
 
         // Erase the dark node from the registry
         LinkedList.remove(darkNodes, _darkNodeID);

@@ -9,8 +9,9 @@ chai.should();
 
 contract("Arc", function (accounts) {
 
-  const secret = 'Secret'
-  const secretLock = `0x${Sha256(secret).toString()}`;
+  const secretBytes = Sha256('secret');
+  const secret = `0x${secretBytes.toString()}`;
+  const secretLock = `0x${Sha256(secretBytes).toString()}`;
   const Alice = accounts[2];
   const Bob = accounts[3];
 
@@ -52,7 +53,7 @@ contract("Arc", function (accounts) {
 
   it("Alice can read the secret", async () => {
     const auditSecret = await arc.auditSecret();
-    assert.equal(secret, web3.toAscii(auditSecret));
+    assert.equal(secret, auditSecret);
   })
 
   it("Alice can refund herself", async () => {

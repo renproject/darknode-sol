@@ -1,4 +1,4 @@
-const DarkNodeRegistry = artifacts.require("DarkNodeRegistry");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const renLedger = artifacts.require("RenLedger");
 const chai = require("chai");
@@ -20,7 +20,7 @@ contract("RenLedger", function (accounts) {
 
     before(async function () {
         ren = await RepublicToken.new();
-        dnr = await DarkNodeRegistry.new(
+        dnr = await DarknodeRegistry.new(
             ren.address,
             MINIMUM_BOND,
             MINIMUM_DARKPOOL_SIZE,

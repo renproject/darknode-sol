@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import "./libraries/LibArc.sol";
 
@@ -13,7 +13,7 @@ contract Arc {
 
     }
 
-    function redeem(bytes _secret) public {
+    function redeem(bytes32 _secret) public {
         LibArc.redeem(swap, _secret);
     }
 
@@ -21,7 +21,7 @@ contract Arc {
         return LibArc.audit(swap);
     }
 
-    function auditSecret() public view returns (bytes) {
+    function auditSecret() public view returns (bytes32) {
         return LibArc.auditSecret(swap);
     }
 
