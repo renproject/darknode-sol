@@ -22,7 +22,7 @@
   "devDependencies": {
     "coveralls": "^3.0.0",
     "eth-gas-reporter": "^0.1.1",
-    "solidity-coverage": "^0.4.15",
+    "solidity-coverage": "0.4.15",
     "tslint": "^5.9.1",
     "tslint-react": "^3.4.0"
   },
