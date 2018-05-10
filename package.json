@@ -15,7 +15,8 @@
     "js-sha3": "^0.7.0",
     "keccak": "^1.4.0",
     "secp256k1": "^3.4.0",
-    "typescript": "^2.6.2"
+    "typescript": "^2.6.2",
+    "web3": "1.0.0-beta.34"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",

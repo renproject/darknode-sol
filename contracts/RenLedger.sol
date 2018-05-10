@@ -47,12 +47,7 @@ contract RenLedger {
 
         orderbook.push(_orderId);
         orderStates[_orderId] = OrderState.Open;
-        for (uint256 i = orderbook.length; i >= 0; i --) {
-            if (orderbook[i] == _orderId) {
-                orderPriorities[_orderId] = i;
-                break;
-            }
-        }
+        orderPriorities[_orderId] = orderbook.length;
 
         // The trader address should be recovered from a message in the
         // form "Republic Protocol: open: {orderId}"
