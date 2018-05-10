@@ -2,28 +2,21 @@
   "name": "republic-sol",
   "version": "0.0.0",
   "dependencies": {
-    "@types/chai": "^4.1.1",
-    "@types/mocha": "^2.2.46",
-    "@types/node": "^9.3.0",
-    "bignumber.js": "^5.0.0",
+    "bignumber.js": "^6.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
     "crypto-js": "^3.1.9-1",
-    "ethereumjs-util": "^5.1.5",
-    "ganache-cli": "^6.0.3",
+    "eslint": "^4.19.1",
+    "ganache-cli": "^6.1.0",
     "js-sha3": "^0.7.0",
-    "keccak": "^1.4.0",
-    "secp256k1": "^3.4.0",
-    "solc": "^0.4.23",
-    "typescript": "^2.6.2"
+    "zeppelin-solidity": "1.8.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
-    "eth-gas-reporter": "^0.1.1",
-    "solidity-coverage": "^0.4.15",
-    "tslint": "^5.9.1",
-    "tslint-react": "^3.4.0"
+    "eth-gas-reporter": "^0.1.2",
+    "solc": "^0.4.23",
+    "solidity-coverage": "^0.5.0"
   },
   "scripts": {
     "test": "truffle test",
