@@ -27,28 +27,83 @@ contract("RenLedger", function (accounts) {
             MINIMUM_EPOCH_INTERVAL
         );
         for (i = 0; i < accounts.length; i++) {
-            await ren.transfer(accounts[i], MINIMUM_BOND);
+            await ren.transfer(accounts[i],10000 );
         }
         ledger = await renLedger.new(ren.address, dnr.address);
-
     });
 
-    it('should be able to open an order', async function () {
+    it('should be able to open orders', async function () {
         for (i = 0; i < accounts.length; i++) {
             await ren.approve(ledger.address, 1, {from: accounts[i]});
 
-            let orderId = web3.utils.sha3(i.toString()); // create a fake orderID
-            let msg = web3.utils.fromAscii('Republic Protocol: open: ') + orderId;
-            let hash = web3.utils.sha3(msg);
+            let orderId = await web3.utils.sha3(i.toString()); // create a fake orderID
+            let prefix = await web3.utils.asciiToHex("Republic Protocol: open: ");
+            let hash = await web3.utils.sha3(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            const r = '0x' + signature.slice(2, 66);
-            const s = '0x' + signature.slice(66, 130);
-            const v = '0x' + signature.slice(130, 132);
-            const v_decimal = web3.utils.hexToNumber(v) + 27;
-
-            console.log(orderId);
-            await ledger.openOrder(orderId, v_decimal, r, s, {from: accounts[i]});
+            await ledger.openOrder(orderId, signature, {from: accounts[i]});
         }
     });
+
+    it('should be able to cancel orders', async function () {
+        for (i = 0; i < accounts.length; i++) {
+            await ren.approve(ledger.address, 1, {from: accounts[i]});
+
+            let orderId = await web3.utils.sha3(i.toString()); // create a fake orderID
+            let prefix = await web3.utils.asciiToHex("Republic Protocol: cancel: ");
+            let hash = await web3.utils.sha3(prefix + orderId.slice(2));
+            let signature = await web3.eth.sign(hash, accounts[i]);
+
+            await ledger.cancelOrder(orderId, signature, {from: accounts[i]});
+        }
+    });
+
+    it('should be able to confirm orders ', async function () {
+        // Open a bunch of orders
+        for (i = 0; i < accounts.length; i++) {
+            await ren.approve(ledger.address, 2, {from: accounts[i]});
+
+            let orderId = await web3.utils.sha3((i + 10).toString());
+            let matchId = await web3.utils.sha3((i + 20).toString());
+
+            // Open a mock order
+            let prefix = await web3.utils.asciiToHex("Republic Protocol: open: ");
+            let hash = await web3.utils.sha3(prefix + orderId.slice(2));
+            let signature = await web3.eth.sign(hash, accounts[i]);
+            await ledger.openOrder(orderId, signature, {from: accounts[i]});
+
+            // Open the matched order
+            prefix = await web3.utils.asciiToHex("Republic Protocol: open: ");
+            hash = await web3.utils.sha3(prefix + matchId.slice(2));
+            signature = await web3.eth.sign(hash, accounts[i]);
+            await ledger.openOrder(matchId, signature, {from: accounts[i]});
+        }
+        console.log("no error here 3");
+
+        // Register all nodes
+        for (i = 0; i < accounts.length; i++) {
+            let uid = (i + 1).toString();
+            await ren.approve(dnr.address, MINIMUM_BOND, {from: accounts[i]});
+            console.log("no error here 4");
+
+            await dnr.register(uid, uid, MINIMUM_BOND, {from: accounts[i]});
+            console.log("no error here 5");
+
+        }
+        await dnr.epoch();
+        console.log("no error here 6");
+
+        // Confirm orders
+        for (i = 0; i < accounts.length; i++) {
+            let orderId = await web3.utils.sha3((i + 10).toString()); // create a fake orderID
+            let matchId = [ await web3.utils.sha3((i + 20).toString())]; // create fake matched orderID
+            let prefix = await web3.utils.asciiToHex("Republic Protocol: confirm: ");
+            let hash = await web3.utils.sha3(prefix + orderId.slice(2));
+            let signature = await web3.eth.sign(hash, accounts[i]);
+
+            await ledger.confirmOrder(orderId, matchId);
+        }
+    });
+
+
 });

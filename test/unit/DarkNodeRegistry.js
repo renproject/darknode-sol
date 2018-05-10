@@ -1,4 +1,4 @@
-const DarkNodeRegistry = artifacts.require("DarkNodeRegistry");
+const DarkNodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));

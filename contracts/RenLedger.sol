@@ -1,6 +1,7 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.21;
 
 import "./DarknodeRegistry.sol";
+import "./libraries/ECDSA.sol";
 
 contract RenLedger {
 
@@ -39,7 +40,7 @@ contract RenLedger {
         ren = RepublicToken(_republicTokenAddress);
     }
 
-    function openOrder(bytes32 _orderId, uint8 _v, bytes32 _r, bytes32 _s) public {
+    function openOrder(bytes32 _orderId, bytes signature) public {
         // TODO : The fees model will be implemented later
         require(ren.allowance(msg.sender, this) >= 1);
         require(ren.transferFrom(msg.sender, this, 1));
@@ -52,7 +53,8 @@ contract RenLedger {
         // The trader address should be recovered from a message in the
         // form "Republic Protocol: open: {orderId}"
         bytes32 hash = keccak256("Republic Protocol: open: ", _orderId);
-        orderTraders[_orderId] = ecrecover(hash, _v, _r, _s);
+        address trader = ECDSA.addr(hash, signature);
+        orderTraders[_orderId] = trader;
         orderBrokers[_orderId] = msg.sender;
     }
 
@@ -73,10 +75,10 @@ contract RenLedger {
     // The trader address should be recovered from a message in the
     // form "Republic Protocol: cancel: {orderId}" and should match the address
     // already stored against that order
-    function cancelOrder(bytes32 _orderId, uint8 _v, bytes32 _r, bytes32 _s) public {
+    function cancelOrder(bytes32 _orderId, bytes signature) public {
         require(orderStates[_orderId] == OrderState.Open);
         bytes32 hash = keccak256("Republic Protocol: cancel: ", _orderId);
-        address trader = ecrecover(hash, _v, _r, _s);
+        address trader = ECDSA.addr(hash, signature);
         require(orderTraders[_orderId] == trader);
         orderStates[_orderId] = OrderState.Canceled;
     }
