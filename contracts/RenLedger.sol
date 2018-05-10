@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity 0.4.23;
 
 import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
@@ -9,16 +9,8 @@ contract RenLedger {
     enum OrderParity {Buy, Sell}
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
-    struct Order {
-        OrderType ty;
-        OrderParity parity;
-        uint256 expiry;
-    }
-
     bytes32[] public orderbook;
 
-    // todo : where do we use this ?
-    mapping(bytes32 => Order) public orders;
     mapping(bytes32 => OrderState) public orderStates;
     mapping(bytes32 => bytes32[]) public orderMatches;
     mapping(bytes32 => uint256) public orderPriorities;
@@ -26,21 +18,23 @@ contract RenLedger {
     mapping(bytes32 => address) public orderBrokers;
     mapping(bytes32 => address) public orderConfirmer;
 
+    uint256 public fee;
     DarknodeRegistry public darknodeRegistry;
-    RepublicToken ren;
+    RepublicToken public ren;
 
-    modifier onlyDarknode(address sender) {
-        require(darknodeRegistry.isRegistered(bytes20(sender)));
+    modifier onlyDarknode(address _sender) {
+        require(darknodeRegistry.isRegistered(bytes20(_sender)));
         _;
     }
 
-    constructor(address _republicTokenAddress, address _darknodeRegistryAddress) public {
+    constructor(uint256 _fee, address _republicTokenAddress, address _darknodeRegistryAddress) public {
         orderbook = new bytes32[](0);
+        fee = _fee;
         darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddress);
         ren = RepublicToken(_republicTokenAddress);
     }
 
-    function openOrder(bytes32 _orderId, bytes signature) public {
+    function openOrder(bytes _signature, bytes32 _orderId) public {
         // TODO : The fees model will be implemented later
         require(ren.allowance(msg.sender, this) >= 1);
         require(ren.transferFrom(msg.sender, this, 1));
@@ -52,16 +46,15 @@ contract RenLedger {
 
         // The trader address should be recovered from a message in the
         // form "Republic Protocol: open: {orderId}"
-        bytes32 hash = keccak256("Republic Protocol: open: ", _orderId);
-        address trader = ECDSA.addr(hash, signature);
+        bytes32 data = keccak256("Republic Protocol: open: ", _orderId);
+        address trader = ECDSA.addr(data, _signature);
         orderTraders[_orderId] = trader;
         orderBrokers[_orderId] = msg.sender;
     }
 
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
         require(orderStates[_orderId] == OrderState.Open);
-        for (uint256 i = 0; i < _orderMatches.length; i++)
-        {
+        for (uint256 i = 0; i < _orderMatches.length; i++) {
             require(orderStates[_orderMatches[i]] == OrderState.Open);
         }
 
@@ -75,10 +68,10 @@ contract RenLedger {
     // The trader address should be recovered from a message in the
     // form "Republic Protocol: cancel: {orderId}" and should match the address
     // already stored against that order
-    function cancelOrder(bytes32 _orderId, bytes signature) public {
+    function cancelOrder(bytes _signature, bytes32 _orderId) public {
         require(orderStates[_orderId] == OrderState.Open);
-        bytes32 hash = keccak256("Republic Protocol: cancel: ", _orderId);
-        address trader = ECDSA.addr(hash, signature);
+        bytes32 data = keccak256("Republic Protocol: cancel: ", _orderId);
+        address trader = ECDSA.addr(data, _signature);
         require(orderTraders[_orderId] == trader);
         orderStates[_orderId] = OrderState.Canceled;
     }
