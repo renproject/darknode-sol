@@ -36,8 +36,8 @@ contract RenLedger {
 
     function openOrder(bytes _signature, bytes32 _orderId) public {
         // TODO : The fees model will be implemented later
-        require(ren.allowance(msg.sender, this) >= 1);
-        require(ren.transferFrom(msg.sender, this, 1));
+        require(ren.allowance(msg.sender, this) >= fee);
+        require(ren.transferFrom(msg.sender, this, fee));
         require(orderStates[_orderId] == OrderState.Undefined);
 
         orderbook.push(_orderId);
