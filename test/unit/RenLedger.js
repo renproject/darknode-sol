@@ -29,7 +29,7 @@ contract("RenLedger", function (accounts) {
         for (i = 0; i < accounts.length; i++) {
             await ren.transfer(accounts[i],10000 );
         }
-        ledger = await renLedger.new(ren.address, dnr.address);
+        ledger = await renLedger.new(1, ren.address, dnr.address);
     });
 
     it('should be able to open orders', async function () {
@@ -41,7 +41,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.openOrder(orderId, signature, {from: accounts[i]});
+            await ledger.openOrder(signature, orderId, {from: accounts[i]});
         }
     });
 
@@ -52,7 +52,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.openOrder(orderId, signature, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.openOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
         }
     });
 
@@ -65,7 +65,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.openOrder(orderId, signature, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.openOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
         }
     });
 
@@ -78,7 +78,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.cancelOrder(orderId, signature, {from: accounts[i]});
+            await ledger.cancelOrder(signature, orderId, {from: accounts[i]});
         }
     });
 
@@ -91,7 +91,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.cancelOrder(orderId, signature, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.cancelOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
         }
     });
 
@@ -104,7 +104,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
 
-            await ledger.cancelOrder(orderId, signature, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.cancelOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
         }
     });
 
@@ -120,13 +120,13 @@ contract("RenLedger", function (accounts) {
             let prefix = await web3.utils.asciiToHex("Republic Protocol: open: ");
             let hash = await web3.utils.keccak256(prefix + orderId.slice(2));
             let signature = await web3.eth.sign(hash, accounts[i]);
-            await ledger.openOrder(orderId, signature, {from: accounts[i]});
+            await ledger.openOrder(signature, orderId, {from: accounts[i]});
 
             // Open the matched order
             prefix = await web3.utils.asciiToHex("Republic Protocol: open: ");
             hash = await web3.utils.keccak256(prefix + matchId.slice(2));
             signature = await web3.eth.sign(hash, accounts[i]);
-            await ledger.openOrder(matchId, signature, {from: accounts[i]});
+            await ledger.openOrder(signature, matchId, {from: accounts[i]});
         }
 
         // Register all nodes
