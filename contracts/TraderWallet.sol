@@ -9,24 +9,66 @@ contract TraderWallet is Ownable {
 
     event Deposit(address trader, address token, uint256 value);
 
-    mapping(address => mapping(address => uint256)) balances;
+    mapping(address => ERC20[]) private traderTokens;
+    mapping(address => mapping(address => bool)) private activeTraderToken;
+    mapping(address => mapping(address => uint256)) private balances;
+
+    
+    // PRIVATE functions //
+    
+    function incrementBalance(address _trader, ERC20 _token, uint256 _value) private {
+        // Check if it's the first time the trader
+        if (!activeTraderToken[_trader][_token]) {
+            activeTraderToken[_trader][_token] = true;
+            traderTokens[_trader].push(_token);
+        }
+
+        balances[_trader][_token] = balances[_trader][_token].add(_value);
+    }
+
+    function decrementBalance(address _trader, ERC20 _token, uint256 _value) private {
+        balances[_trader][_token] = balances[_trader][_token].sub(_value);
+    }
+
+
 
 
     // Trader functions //
 
-    function deposit(ERC20 _token, uint256 value) public {
+    function deposit(ERC20 _token, uint256 _value) public {
         address trader = msg.sender;
 
-        require(_token.transferFrom(trader, this, value));
-        balances[trader][_token] = balances[trader][_token].add(value);
+        require(_token.transferFrom(trader, this, _value));
+        incrementBalance(trader, _token, _value);
     }
 
-    function withdraw(ERC20 _token, uint256 value) public {
+    function withdraw(ERC20 _token, uint256 _value) public {
         address trader = msg.sender;
 
-        balances[trader][_token] = balances[trader][_token].sub(value);
-        require(_token.transfer(trader, value));
+        decrementBalance(trader, _token, _value);
+        require(_token.transfer(trader, _value));
     }
+
+    function getBalance(address _trader, ERC20 _token) public view returns (uint256) {
+        return balances[_trader][_token];
+    }
+
+    function getTokens(address _trader) public view returns (ERC20[]) {
+        return traderTokens[_trader];
+    }
+
+    function getBalances(address _trader) public view returns (ERC20[], uint256[]) {
+        ERC20[] memory tokens = traderTokens[_trader];
+        uint256[] memory traderBalances = new uint256[](tokens.length);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            traderBalances[i] = balances[_trader][tokens[i]];
+        }
+
+        return (tokens, traderBalances);
+    }
+
+
 
 
     // Verifier functions //
@@ -39,12 +81,12 @@ contract TraderWallet is Ownable {
         // TODO: Verify order match
         
         // Subtract values
-        balances[_traderA][_tokenFromTraderA] = balances[_traderA][_tokenFromTraderA].sub(_tokenAValue);
-        balances[_traderB][_tokenFromTraderB] = balances[_traderB][_tokenFromTraderB].sub(_tokenBValue);
+        decrementBalance(_traderA, _tokenFromTraderA, _tokenAValue);
+        decrementBalance(_traderB, _tokenFromTraderB, _tokenBValue);
 
         // Add values
-        balances[_traderA][_tokenFromTraderB] = balances[_traderA][_tokenFromTraderB].add(_tokenBValue);        
-        balances[_traderB][_tokenFromTraderA] = balances[_traderB][_tokenFromTraderA].add(_tokenAValue);
+        incrementBalance(_traderA, _tokenFromTraderB, _tokenBValue);
+        incrementBalance(_traderB, _tokenFromTraderA, _tokenAValue);
     }
  
 }
