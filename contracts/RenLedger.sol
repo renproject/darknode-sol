@@ -11,16 +11,16 @@ contract RenLedger {
 
     bytes32[] public orderbook;
 
-    mapping(bytes32 => OrderState) public orderStates;
-    mapping(bytes32 => bytes32[]) public orderMatches;
-    mapping(bytes32 => uint256) public orderPriorities;
-    mapping(bytes32 => address) public orderTraders;
-    mapping(bytes32 => address) public orderBrokers;
-    mapping(bytes32 => address) public orderConfirmer;
+    mapping(bytes32 => OrderState) private orderStates;
+    mapping(bytes32 => bytes32[]) private orderMatches;
+    mapping(bytes32 => uint256) private orderPriorities;
+    mapping(bytes32 => address) private orderTraders;
+    mapping(bytes32 => address) private orderBrokers;
+    mapping(bytes32 => address) private orderConfirmers;
 
     uint256 public fee;
-    DarknodeRegistry public darknodeRegistry;
-    RepublicToken public ren;
+    DarknodeRegistry private darknodeRegistry;
+    RepublicToken private ren;
 
     modifier onlyDarknode(address _sender) {
         require(darknodeRegistry.isRegistered(bytes20(_sender)));
@@ -60,7 +60,7 @@ contract RenLedger {
         for (i = 0; i < _orderMatches.length; i++) {
             orderStates[_orderMatches[i]] = OrderState.Confirmed;
         }
-        orderConfirmer[_orderId] = msg.sender;
+        orderConfirmers[_orderId] = msg.sender;
     }
 
     // The trader address should be recovered from a message in the
@@ -73,4 +73,37 @@ contract RenLedger {
         require(orderTraders[_orderId] == trader);
         orderStates[_orderId] = OrderState.Canceled;
     }
+
+    function order(uint256 index) public returns (bytes32, bool){
+        if (index > orderbook.length){
+            return ("", false);
+        }
+
+        return (orderbook[index], true);
+    }
+
+    function orderState(bytes32 _orderId) public returns (uint8){
+        return uint8(orderStates[_orderId]);
+    }
+
+    function orderMatch(bytes32 _orderId) public returns (bytes32[]){
+        return orderMatches[_orderId];
+    }
+
+    function orderPriority(bytes32 _orderId) public returns (uint256){
+        return orderPriorities[_orderId];
+    }
+
+    function orderTrader(bytes32 _orderId) public returns (address){
+        return orderTraders[_orderId];
+    }
+
+    function orderBroker(bytes32 _orderId) public returns (address){
+        return orderBrokers[_orderId];
+    }
+
+    function orderConfirmer(bytes32 _orderId) public returns (address){
+        return orderConfirmers[_orderId];
+    }
 }
+
