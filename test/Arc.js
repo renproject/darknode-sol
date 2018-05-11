@@ -73,10 +73,6 @@ contract("Arc", function (accounts) {
     arc = await Arc.new(rvGateway.address);
   });
 
-  it("Test sha256", async () => {
-    assert.equal((await arc.testSha256(secret)), secretLock);
-  })
-
   it("Alice initiates an atomic swap", async () => {
     await arc.initiate(secretLock, ETHEREUM, 1000, 2, Date.now() + 600, Bob, orderAlice, { from: Alice, value: 1000 });
     await arc.initiate(secretLock, ETHEREUM, 1000, 2, 0, Bob, orderAliceRefund, { from: Alice, value: 1000 });
