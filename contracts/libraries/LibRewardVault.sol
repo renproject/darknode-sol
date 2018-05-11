@@ -74,7 +74,7 @@ library LibRewardVault {
             x = (x + self.rewardRounds[n].rrn) % self.rewardRounds[n].orders.length;
         }
 
-        bytes20[] memory nodeIds = dnr.getDarkNodes();
+        bytes20[] memory nodeIds = dnr.getDarknodes();
         x = self.rewardRounds[n].rrn % nodeIds.length;
 
         // Choose `rewardeeCount` nodes using rrn as random seed

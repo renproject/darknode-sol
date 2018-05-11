@@ -15,13 +15,13 @@ contract DarknodeRegistry {
     }
 
     /**
-    * @notice DarkNodes are stored in the darknodes. The owner is the address that
+    * @notice Darknodes are stored in the darknodes. The owner is the address that
     * registered the darknode, the bond is the amount of REN that was transferred
     * during registration, and the public key is the encryption key that should
     * be used when sending sensitive information to the darknode. The commitment
     * and the 
     */
-    struct DarkNode {
+    struct Darknode {
         address owner;
         uint256 bond;
         uint256 registeredAt;
@@ -33,10 +33,10 @@ contract DarknodeRegistry {
     RepublicToken ren;
 
     // Registry data.
-    mapping(bytes20 => DarkNode) private darknodeRegistry;
+    mapping(bytes20 => Darknode) private darknodeRegistry;
     LinkedList.List private darknodes;
-    uint256 public numDarkNodes;
-    uint256 public numDarkNodesNextEpoch;
+    uint256 public numDarknodes;
+    uint256 public numDarknodesNextEpoch;
 
     // Constants used to parameterize behavior.
     uint256 public minimumBond;
@@ -52,14 +52,14 @@ contract DarknodeRegistry {
     * @param _darknodeID The darknode ID that was registered.
     * @param _bond The amount of REN that was transferred as bond.
     */
-    event DarkNodeRegistered(bytes20 _darknodeID, uint256 _bond);
+    event DarknodeRegistered(bytes20 _darknodeID, uint256 _bond);
 
     /**
     * @notice Emitted when a darknode is deregistered.
     * 
     * @param _darknodeID The darknode ID that was deregistered.
     */
-    event DarkNodeDeregistered(bytes20 _darknodeID);
+    event DarknodeDeregistered(bytes20 _darknodeID);
 
     /**
     * @notice Emitted when a refund has been made.
@@ -124,8 +124,8 @@ contract DarknodeRegistry {
             epochhash: uint256(blockhash(block.number - 1)),
             timestamp: now
         });
-        numDarkNodes = 0;
-        numDarkNodesNextEpoch = 0;
+        numDarknodes = 0;
+        numDarknodesNextEpoch = 0;
     }
 
     /**
@@ -145,7 +145,7 @@ contract DarknodeRegistry {
         });
         
         // Update the registry information
-        numDarkNodes = numDarkNodesNextEpoch;
+        numDarknodes = numDarknodesNextEpoch;
 
         // Emit an event
         emit NewEpoch();
@@ -173,7 +173,7 @@ contract DarknodeRegistry {
         require(ren.transferFrom(msg.sender, this, _bond));
 
         // Flag this dark node for registration
-        darknodeRegistry[_darknodeID] = DarkNode({
+        darknodeRegistry[_darknodeID] = Darknode({
             owner: msg.sender,
             bond: _bond,
             publicKey: _publicKey,
@@ -181,10 +181,10 @@ contract DarknodeRegistry {
             deregisteredAt: 0
         });
         LinkedList.append(darknodes, _darknodeID);
-        numDarkNodesNextEpoch++;
+        numDarknodesNextEpoch++;
 
         // Emit an event.
-        emit DarkNodeRegistered(_darknodeID, _bond);
+        emit DarknodeRegistered(_darknodeID, _bond);
     }
 
     /** 
@@ -198,10 +198,10 @@ contract DarknodeRegistry {
     function deregister(bytes20 _darknodeID) public onlyRegistered(_darknodeID) onlyOwner(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
-        numDarkNodesNextEpoch--;
+        numDarknodesNextEpoch--;
 
         // Emit an event
-        emit DarkNodeDeregistered(_darknodeID);
+        emit DarknodeDeregistered(_darknodeID);
     }
 
     /** 
@@ -218,7 +218,7 @@ contract DarknodeRegistry {
 
         // Erase the dark node from the registry
         LinkedList.remove(darknodes, _darknodeID);
-        darknodeRegistry[_darknodeID] = DarkNode({
+        darknodeRegistry[_darknodeID] = Darknode({
             owner: 0x0,
             bond: 0,
             publicKey: "",
@@ -245,15 +245,15 @@ contract DarknodeRegistry {
         return darknodeRegistry[_darknodeID].publicKey;
     }
 
-    function getDarkNodes() public view returns (bytes20[]) {
-        bytes20[] memory nodes = new bytes20[](numDarkNodes);
+    function getDarknodes() public view returns (bytes20[]) {
+        bytes20[] memory nodes = new bytes20[](numDarknodes);
 
         // Begin with the first node in the list
         uint256 n = 0;
         bytes20 next = LinkedList.begin(darknodes);
 
         // Iterate until all registered dark nodes have been collected
-        while (n < numDarkNodes) {
+        while (n < numDarknodes) {
         // Only include registered dark nodes
             if (!isRegistered(next)) {
                 next = LinkedList.next(darknodes, next);

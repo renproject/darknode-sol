@@ -90,7 +90,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can only get the Dark Nodes that are fully registered", async () => {
-    const nodes = await dnr.getDarkNodes.call({ gasLimit: 5000000 });
+    const nodes = await dnr.getDarknodes.call({ gasLimit: 5000000 });
     assert.equal(nodes.length, accounts.length - 6);
     assert.equal(nodes[0], "0x3000000000000000000000000000000000000000");
     assert.equal(nodes[1], "0x4000000000000000000000000000000000000000");
