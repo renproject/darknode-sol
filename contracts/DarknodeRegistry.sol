@@ -213,8 +213,8 @@ contract DarknodeRegistry {
     */
     function refund(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyDeregistered(_darkNodeID) {
         // Remember the bond amount
-        uint256 amount = darknodeRegistry[_darkNodeID].bond;
-        assert(amount > 0);
+        uint256 amount = darkNodeRegistry[_darkNodeID].bond;
+        require(amount > 0);
 
         // Erase the dark node from the registry
         LinkedList.remove(darkNodes, _darkNodeID);
