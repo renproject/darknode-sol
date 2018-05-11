@@ -28,7 +28,6 @@ contract RenLedger {
     }
 
     constructor(uint256 _fee, address _republicTokenAddress, address _darknodeRegistryAddress) public {
-        orderbook = new bytes32[](0);
         fee = _fee;
         darknodeRegistry = DarknodeRegistry(_darknodeRegistryAddress);
         ren = RepublicToken(_republicTokenAddress);
