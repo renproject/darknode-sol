@@ -59,8 +59,10 @@ contract RenLedger {
         orderStates[_orderId] = OrderState.Confirmed;
         for (i = 0; i < _orderMatches.length; i++) {
             orderStates[_orderMatches[i]] = OrderState.Confirmed;
+            orderMatches[_orderMatches[i]] = [_orderId];
         }
         orderConfirmers[_orderId] = msg.sender;
+        orderMatches[_orderId] = _orderMatches;
     }
 
     // The trader address should be recovered from a message in the
@@ -82,27 +84,27 @@ contract RenLedger {
         return (orderbook[index], true);
     }
 
-    function orderState(bytes32 _orderId) public returns (uint8){
+    function orderState(bytes32 _orderId) public view returns (uint8){
         return uint8(orderStates[_orderId]);
     }
 
-    function orderMatch(bytes32 _orderId) public returns (bytes32[]){
+    function orderMatch(bytes32 _orderId) public view returns (bytes32[]){
         return orderMatches[_orderId];
     }
 
-    function orderPriority(bytes32 _orderId) public returns (uint256){
+    function orderPriority(bytes32 _orderId) public view returns (uint256){
         return orderPriorities[_orderId];
     }
 
-    function orderTrader(bytes32 _orderId) public returns (address){
+    function orderTrader(bytes32 _orderId) public view returns (address){
         return orderTraders[_orderId];
     }
 
-    function orderBroker(bytes32 _orderId) public returns (address){
+    function orderBroker(bytes32 _orderId) public view returns (address){
         return orderBrokers[_orderId];
     }
 
-    function orderConfirmer(bytes32 _orderId) public returns (address){
+    function orderConfirmer(bytes32 _orderId) public view returns (address){
         return orderConfirmers[_orderId];
     }
 }
