@@ -14,6 +14,12 @@ contract TraderWallet is Ownable {
     mapping(address => mapping(address => uint256)) private balances;
 
     
+    // CONSTRUCTOR //
+
+    constructor() public {}
+
+
+    
     // PRIVATE functions //
     
     function incrementBalance(address _trader, ERC20 _token, uint256 _value) private {
