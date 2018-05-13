@@ -76,7 +76,7 @@ contract RenLedger {
         orderStates[_orderId] = OrderState.Canceled;
     }
 
-    function order(uint256 index) public returns (bytes32, bool){
+    function order(uint256 index) public view returns (bytes32, bool){
         if (index > orderbook.length){
             return ("", false);
         }
