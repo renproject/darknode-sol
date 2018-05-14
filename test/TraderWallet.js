@@ -112,6 +112,31 @@ contract("TraderWallet", function (accounts) {
             .should.be.rejectedWith(Error);
     })
 
+    it("can hold ether for a trader", async () => {
+        const deposit1 = 100;
+        const ETH = 0x0;
+
+        const previous = await web3.eth.getBalance(accounts[0]);
+
+        // Approve and deposit
+        const fee1 = await getFee(wallet.deposit(ETH, deposit1, { from: accounts[0], value: deposit1 }));
+
+        // Balance should be (previous - fee1 - deposit1)
+        (await web3.eth.getBalance(accounts[0])).should.be.bignumber.equal(previous.sub(fee1).sub(deposit1));
+
+        // Withdraw
+        const fee2 = await getFee(wallet.withdraw(ETH, deposit1, { from: accounts[0] }));
+
+        // Balance should be (previous - fee1 - fee2)
+        (await web3.eth.getBalance(accounts[0])).should.be.bignumber.equal(previous.sub(fee1).sub(fee2));
+    })
 
 });
 
+
+async function getFee(txP) {
+    const tx = await txP;
+    const gasAmount = tx.receipt.gasUsed;
+    const gasPrice = await web3.eth.getTransaction(tx.tx).gasPrice;
+    return gasPrice.mul(gasAmount);
+}
