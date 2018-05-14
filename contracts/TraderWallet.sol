@@ -7,6 +7,8 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract TraderWallet is Ownable {
     using SafeMath for uint256;
 
+    address ETH = 0x0;
+
     event Deposit(address trader, address token, uint256 value);
 
     mapping(address => ERC20[]) private traderTokens;
@@ -41,10 +43,14 @@ contract TraderWallet is Ownable {
 
     // Trader functions //
 
-    function deposit(ERC20 _token, uint256 _value) public {
+    function deposit(ERC20 _token, uint256 _value) payable public {
         address trader = msg.sender;
 
-        require(_token.transferFrom(trader, this, _value));
+        if (address(_token) == ETH) {
+            require(msg.value == _value);
+        } else {
+            require(_token.transferFrom(trader, this, _value));
+        }
         incrementBalance(trader, _token, _value);
     }
 
@@ -52,7 +58,11 @@ contract TraderWallet is Ownable {
         address trader = msg.sender;
 
         decrementBalance(trader, _token, _value);
-        require(_token.transfer(trader, _value));
+        if (address(_token) == ETH) {
+            trader.transfer(_value);
+        } else {
+            require(_token.transfer(trader, _value));
+        }
     }
 
     function getBalance(address _trader, ERC20 _token) public view returns (uint256) {
@@ -64,11 +74,11 @@ contract TraderWallet is Ownable {
     }
 
     function getBalances(address _trader) public view returns (ERC20[], uint256[]) {
-        ERC20[] memory tokens = traderTokens[_trader];
+        ERC20[] memory tokens = getTokens(_trader);
         uint256[] memory traderBalances = new uint256[](tokens.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
-            traderBalances[i] = balances[_trader][tokens[i]];
+            traderBalances[i] = getBalance(_trader, tokens[i]);
         }
 
         return (tokens, traderBalances);
