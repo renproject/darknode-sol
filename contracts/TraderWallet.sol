@@ -89,20 +89,20 @@ contract TraderWallet is Ownable {
 
     // Verifier functions //
 
-    function rebalance(
-        ERC20 _tokenFromTraderA, address _traderA, uint256 _tokenAValue,
-        ERC20 _tokenFromTraderB, address _traderB, uint256 _tokenBValue)
-        public
-    {
-        // TODO: Verify order match
+    // function rebalance(
+    //     ERC20 _tokenFromTraderA, address _traderA, uint256 _tokenAValue,
+    //     ERC20 _tokenFromTraderB, address _traderB, uint256 _tokenBValue)
+    //     public
+    // {
+    //     // TODO: Verify order match
         
-        // Subtract values
-        decrementBalance(_traderA, _tokenFromTraderA, _tokenAValue);
-        decrementBalance(_traderB, _tokenFromTraderB, _tokenBValue);
+    //     // Subtract values
+    //     decrementBalance(_traderA, _tokenFromTraderA, _tokenAValue);
+    //     decrementBalance(_traderB, _tokenFromTraderB, _tokenBValue);
 
-        // Add values
-        incrementBalance(_traderA, _tokenFromTraderB, _tokenBValue);
-        incrementBalance(_traderB, _tokenFromTraderA, _tokenAValue);
-    }
+    //     // Add values
+    //     incrementBalance(_traderA, _tokenFromTraderB, _tokenBValue);
+    //     incrementBalance(_traderB, _tokenFromTraderA, _tokenAValue);
+    // }
  
 }

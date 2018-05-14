@@ -112,6 +112,20 @@ contract("TraderWallet", function (accounts) {
             .should.be.rejectedWith(Error);
     })
 
+    it("can deposit and withdraw multiple times", async () => {
+        const deposit1 = 100;
+        const deposit5 = 50;
+
+        // Approve and deposit
+        await token1.approve(wallet.address, deposit1 + deposit2, { from: accounts[0] });
+        await wallet.deposit(token1.address, deposit1, { from: accounts[0] });
+        await wallet.deposit(token1.address, deposit2, { from: accounts[0] });
+
+        // Withdraw
+        await wallet.withdraw(token1.address, deposit1, { from: accounts[0] });
+        await wallet.withdraw(token1.address, deposit2, { from: accounts[0] });
+    })
+
     it("can hold ether for a trader", async () => {
         const deposit1 = 100;
         const ETH = 0x0;
@@ -130,7 +144,6 @@ contract("TraderWallet", function (accounts) {
         // Balance should be (previous - fee1 - fee2)
         (await web3.eth.getBalance(accounts[0])).should.be.bignumber.equal(previous.sub(fee1).sub(fee2));
     })
-
 });
 
 
