@@ -20,8 +20,8 @@ library ECDSA {
      return ecrecover(prefixedHash, uint8(_signature[64]) + 27, Utils.toBytes32(_signature, 0), Utils.toBytes32(_signature, 32));
    }
 
-   function verify(bytes _signature, bytes32 _hash, address _signer) internal pure returns (bool) {
-     return (addr(_hash, _signature) == _signer);
-   }
+//   function verify(bytes _signature, bytes32 _hash, address _signer) internal pure returns (bool) {
+//     return (addr(_hash, _signature) == _signer);
+//   }
 
 }

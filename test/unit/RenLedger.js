@@ -189,6 +189,12 @@ contract("RenLedger", function (accounts) {
         assert.equal(order[0], orderId);
         assert.equal(order[1], true);
 
+        // Negative test for get order
+        order = await  ledger.order.call(100);
+        assert.equal(order[0], "0x0000000000000000000000000000000000000000000000000000000000000000");
+        assert.equal(order[1], false);
+
+
         // Get order status
         let status = await ledger.orderState.call(orderId);
         assert.equal(status, 3);
