@@ -114,7 +114,7 @@ contract("TraderWallet", function (accounts) {
 
     it("can deposit and withdraw multiple times", async () => {
         const deposit1 = 100;
-        const deposit5 = 50;
+        const deposit2 = 50;
 
         // Approve and deposit
         await token1.approve(wallet.address, deposit1 + deposit2, { from: accounts[0] });
