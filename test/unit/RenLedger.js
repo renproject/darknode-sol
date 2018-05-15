@@ -40,6 +40,12 @@ contract("RenLedger", function (accounts) {
 
             await ledger.openOrder(signature, orderId, {from: accounts[i]});
         }
+
+        for (i = 0; i < accounts.length; i++) {
+            let orderId = await web3.sha3(i.toString());
+            let dep = await ledger.orderDepth.call(orderId);
+            dep.should.be.bignumber.greaterThan(0);
+        }
     });
 
     it('should be rejected when trying to open an opened without no REN allowance', async function () {
@@ -221,7 +227,19 @@ contract("RenLedger", function (accounts) {
         // Get confirmer
         let confirmer = await ledger.orderConfirmer.call(buyOrder);
         assert.equal(confirmer, accounts[0]);
+    });
 
+    it("should be able to get the depth of orderID", async function () {
+        await ren.approve(ledger.address, 1, {from: accounts[1]});
+
+        let orderId = await web3.sha3("100");
+        let prefix = await web3.toHex("Republic Protocol: open: ");
+        let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+        let signature = await web3.eth.sign(accounts[1], hash);
+
+        await ledger.openOrder(signature, orderId, {from: accounts[1]});
+        let dep = await ledger.orderDepth.call(orderId);
+        dep.should.be.bignumber.equal(1);
     });
 });
 

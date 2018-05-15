@@ -23,6 +23,7 @@ contract RenLedger {
     mapping(bytes32 => address) private orderTraders;
     mapping(bytes32 => address) private orderBrokers;
     mapping(bytes32 => address) private orderConfirmers;
+    mapping(bytes32 => uint256) public orderBlockNumber;
 
     uint256 public fee;
     // Republic ERC20 token contract is used to transfer bonds.
@@ -74,6 +75,7 @@ contract RenLedger {
         address trader = ECDSA.addr(data, _signature);
         orderTraders[_orderId] = trader;
         orderBrokers[_orderId] = msg.sender;
+        orderBlockNumber[_orderId] = block.number;
     }
 
     /**
@@ -168,6 +170,16 @@ contract RenLedger {
     */
     function orderConfirmer(bytes32 _orderId) public view returns (address){
         return orderConfirmers[_orderId];
+    }
+
+    /**
+    * orderDepth will return the block depth of the orderId
+    */
+    function orderDepth(bytes32 _orderId) public view returns (uint256) {
+        if (orderBlockNumber[_orderId] == 0) {
+            return 0;
+        }
+        return (block.number - orderBlockNumber[_orderId]);
     }
 }
 
