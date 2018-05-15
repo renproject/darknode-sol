@@ -1,13 +1,13 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.23;
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
 /**
- * @notice DarkNodeRegistry is responsible for the registration and
+ * @notice DarknodeRegistry is responsible for the registration and
  * deregistration of dark nodes.
  */
-contract DarkNodeRegistry {
+contract DarknodeRegistry {
 
     struct Epoch {
         uint256 blockhash;
@@ -33,7 +33,7 @@ contract DarkNodeRegistry {
     RepublicToken ren;
 
     // Registry data.
-    mapping(bytes20 => DarkNode) private darkNodeRegistry;
+    mapping(bytes20 => DarkNode) private darknodeRegistry;
     LinkedList.List private darkNodes;
     uint256 public numDarkNodes;
     uint256 public numDarkNodesNextEpoch;
@@ -78,7 +78,7 @@ contract DarkNodeRegistry {
     * @notice Only allow the owner that registered the darkNode to pass.
     */
     modifier onlyOwner(bytes20 _darkNodeID) {
-        require(darkNodeRegistry[_darkNodeID].owner == msg.sender);
+        require(darknodeRegistry[_darkNodeID].owner == msg.sender);
         _;
     }
 
@@ -107,7 +107,7 @@ contract DarkNodeRegistry {
     }
 
     /** 
-    * @notice The DarkNodeRegistry constructor.
+    * @notice The DarknodeRegistry constructor.
     *
     * @param _token The address of the RepublicToken contract.
     * @param _minimumBond The minimum bond amount that can be submitted by a
@@ -115,7 +115,7 @@ contract DarkNodeRegistry {
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum amount of time between epochs.
     */
-    function DarkNodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    function DarknodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
@@ -169,11 +169,11 @@ contract DarkNodeRegistry {
     function register(bytes20 _darkNodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darkNodeID) {
         // REN allowance
         require(_bond >= minimumBond);
-        require(_bond <= ren.allowance(msg.sender, this));
-        require(ren.transferFrom(msg.sender, this, _bond));
+        require(ren.allowance(msg.sender, address(this)) >= _bond);
+        require(ren.transferFrom(msg.sender, address(this), _bond));
 
         // Flag this dark node for registration
-        darkNodeRegistry[_darkNodeID] = DarkNode({
+        darknodeRegistry[_darkNodeID] = DarkNode({
             owner: msg.sender,
             bond: _bond,
             publicKey: _publicKey,
@@ -197,7 +197,7 @@ contract DarkNodeRegistry {
     */
     function deregister(bytes20 _darkNodeID) public onlyRegistered(_darkNodeID) onlyOwner(_darkNodeID) {
         // Flag the dark node for deregistration
-        darkNodeRegistry[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
+        darknodeRegistry[_darkNodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
         numDarkNodesNextEpoch--;
 
         // Emit an event
@@ -213,12 +213,12 @@ contract DarkNodeRegistry {
     */
     function refund(bytes20 _darkNodeID) public onlyOwner(_darkNodeID) onlyDeregistered(_darkNodeID) {
         // Remember the bond amount
-        uint256 amount = darkNodeRegistry[_darkNodeID].bond;
-        assert(amount > 0);
+        uint256 amount = darknodeRegistry[_darkNodeID].bond;
+        require(amount > 0);
 
         // Erase the dark node from the registry
         LinkedList.remove(darkNodes, _darkNodeID);
-        darkNodeRegistry[_darkNodeID] = DarkNode({
+        darknodeRegistry[_darkNodeID] = DarkNode({
             owner: 0x0,
             bond: 0,
             publicKey: "",
@@ -234,15 +234,15 @@ contract DarkNodeRegistry {
     }
 
     function getOwner(bytes20 _darkNodeID) public view returns (address) {
-        return darkNodeRegistry[_darkNodeID].owner;
+        return darknodeRegistry[_darkNodeID].owner;
     }
 
     function getBond(bytes20 _darkNodeID) public view returns (uint256) {
-        return darkNodeRegistry[_darkNodeID].bond;
+        return darknodeRegistry[_darkNodeID].bond;
     }
     
     function getPublicKey(bytes20 _darkNodeID) public view returns (bytes) {
-        return darkNodeRegistry[_darkNodeID].publicKey;
+        return darknodeRegistry[_darkNodeID].publicKey;
     }
 
     function getDarkNodes() public view returns (bytes20[]) {
@@ -274,7 +274,7 @@ contract DarkNodeRegistry {
     * refunded.
     */
     function isUnregistered(bytes20 _darkNodeID) public view returns (bool) {
-        return (darkNodeRegistry[_darkNodeID].registeredAt == 0);
+        return (darknodeRegistry[_darkNodeID].registeredAt == 0);
     }
 
     /**
@@ -283,8 +283,8 @@ contract DarkNodeRegistry {
     * refunded.
     */
     function isRegistered(bytes20 _darkNodeID) public view returns (bool) {
-        return darkNodeRegistry[_darkNodeID].registeredAt != 0 
-        && darkNodeRegistry[_darkNodeID].registeredAt <= currentEpoch.timestamp
+        return darknodeRegistry[_darkNodeID].registeredAt != 0 
+        && darknodeRegistry[_darkNodeID].registeredAt <= currentEpoch.timestamp
         && !isDeregistered(_darkNodeID);
     }
 
@@ -293,8 +293,8 @@ contract DarkNodeRegistry {
     * pending deregistration, but has not been refunded.
     */
     function isDeregistered(bytes20 _darkNodeID) public view returns (bool) {
-        return darkNodeRegistry[_darkNodeID].deregisteredAt != 0
-        && darkNodeRegistry[_darkNodeID].deregisteredAt <= currentEpoch.timestamp;
+        return darknodeRegistry[_darkNodeID].deregisteredAt != 0
+        && darknodeRegistry[_darkNodeID].deregisteredAt <= currentEpoch.timestamp;
     }
 
 }

@@ -15,7 +15,7 @@ contract("Gateway", function(accounts) {
     assert.equal((await gateway.republicToken.call()),"0x261c74f7dd1ed6a069e18375ab2bee9afcb10956");
   });
 
-  it("can get the DarkNodeRegistry address", async () => {
+  it("can get the DarknodeRegistry address", async () => {
     assert.equal((await gateway.darkNodeRegistry.call()),"0x42a990655bffe188c9823a2f914641a32dcbb1b2");
   });
 
@@ -27,8 +27,8 @@ contract("Gateway", function(accounts) {
     assert.equal((await gateway.minimumDarkPoolSize.call()),5)
   });
 
-  it("owner can update the DarkNodeRegistry address", async () => {
-    await gateway.updateDarkNodeRegistry("", {from: accounts[0]});
+  it("owner can update the DarknodeRegistry address", async () => {
+    await gateway.updateDarknodeRegistry("", {from: accounts[0]});
     assert.equal((await gateway.darkNodeRegistry.call()),"0x0000000000000000000000000000000000000000");
   });
 
@@ -42,8 +42,8 @@ contract("Gateway", function(accounts) {
     assert.equal((await gateway.minimumDarkPoolSize.call()).toNumber(),10)
   });
 
-  it("anyone other than the owner cannot update the DarkNodeRegistry address", async () => {
-    await gateway.updateDarkNodeRegistry("", {from: accounts[1]}).should.be.rejectedWith();
+  it("anyone other than the owner cannot update the DarknodeRegistry address", async () => {
+    await gateway.updateDarknodeRegistry("", {from: accounts[1]}).should.be.rejectedWith();
   });
 
   it("anyone other than the owner cannot update the TraderRegistry address", async () => {
