@@ -230,9 +230,16 @@ contract("RenLedger", function (accounts) {
     });
 
     it("should be able to get the depth of orderID", async function () {
+
+
+
         await ren.approve(ledger.address, 1, {from: accounts[1]});
 
         let orderId = await web3.sha3("100");
+
+        let preDep = await ledger.orderDepth.call(orderId);
+        preDep.should.be.bignumber.equal(0);
+
         let prefix = await web3.toHex("Republic Protocol: open: ");
         let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
         let signature = await web3.eth.sign(accounts[1], hash);
