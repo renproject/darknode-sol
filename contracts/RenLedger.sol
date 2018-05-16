@@ -13,8 +13,9 @@ contract RenLedger {
     enum OrderParity {Buy, Sell}
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
-    // orderbook stores all the orders in a big list in the order of added time
-    bytes32[] public orderbook;
+    // buyOrders/sellOrders store all the buy/sell orders in a list .
+    bytes32[] public buyOrders;
+    bytes32[] public sellOrders;
 
     // we use several maps to store data of each order.
     mapping(bytes32 => OrderState) private orderStates;
@@ -53,26 +54,43 @@ contract RenLedger {
     }
 
     /**
-     * @notice openOrder opens a new order in the ledger. It requires certain allowance of
-     *         REN as opening fee. It will recover and store the the trader address from the
-     *         signature.
+     * @notice openBuyOrder opens a new buy order in the ledger. The order must not be opened.
+     *         It requires certain allowance of REN as opening fee. It will recover and store
+     *         the the trader address from the signature.
      *
      * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
-     * @param _orderId Order id.
+     * @param _orderId Order id or the buy order.
      */
-    function openOrder(bytes _signature, bytes32 _orderId) public {
+    function openBuyOrder(bytes _signature, bytes32 _orderId) public {
+        openOrder(_signature, _orderId);
+        buyOrders.push(_orderId);
+        orderPriorities[_orderId] = buyOrders.length;
+
+    }
+
+    /**
+     * @notice openSellOrder opens a new sell order in the ledger. The order must not be opened.
+     *         It requires certain allowance of REN as opening fee. It will recover and store
+     *         the the trader address from the signature.
+     *
+     * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
+     * @param _orderId Order id or the buy order.
+     */
+    function openSellOrder(bytes _signature, bytes32 _orderId) public {
+        openOrder(_signature, _orderId);
+        sellOrders.push(_orderId);
+        orderPriorities[_orderId] = sellOrders.length;
+    }
+
+    function openOrder(bytes _signature, bytes32 _orderId) {
         require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
         require(orderStates[_orderId] == OrderState.Undefined);
 
-        orderbook.push(_orderId);
-        orderStates[_orderId] = OrderState.Open;
-        orderPriorities[_orderId] = orderbook.length;
-
-        // The trader address should be recovered from a message in the
-        // form "Republic Protocol: open: {orderId}"
+        // recover trader address from the signature
         bytes32 data = keccak256("Republic Protocol: open: ", _orderId);
         address trader = ECDSA.addr(data, _signature);
+        orderStates[_orderId] = OrderState.Open;
         orderTraders[_orderId] = trader;
         orderBrokers[_orderId] = msg.sender;
         orderBlockNumber[_orderId] = block.number;
@@ -109,6 +127,8 @@ contract RenLedger {
      */
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
         require(orderStates[_orderId] == OrderState.Open);
+
+        // recover trader address from the signature
         bytes32 data = keccak256("Republic Protocol: cancel: ", _orderId);
         address trader = ECDSA.addr(data, _signature);
         require(orderTraders[_orderId] == trader);
@@ -116,15 +136,27 @@ contract RenLedger {
     }
 
     /**
-    * Order will return orderId in the given index and true if exists.
+    * buyOrder will return orderId of the given index in buy order list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function order(uint256 index) public view returns (bytes32, bool){
-        if (index > orderbook.length) {
+    function buyOrder(uint256 index) public view returns (bytes32, bool){
+        if (index > buyOrders.length) {
             return ("", false);
         }
 
-        return (orderbook[index], true);
+        return (buyOrders[index], true);
+    }
+
+    /**
+    * sellOrder will return orderId of the given index in sell order list and true if exists.
+    * Otherwise it will return empty bytes and false.
+    */
+    function sellOrder(uint256 index) public view returns (bytes32, bool){
+        if (index > sellOrders.length) {
+            return ("", false);
+        }
+
+        return (sellOrders[index], true);
     }
 
     /**
@@ -143,7 +175,7 @@ contract RenLedger {
 
     /**
     * orderPriority will return the priority of the given orderID.
-    * The priority is the index of the order in the orderbook plus one.
+    * The priority is the index of the order in the orderbook.
     */
     function orderPriority(bytes32 _orderId) public view returns (uint256){
         return orderPriorities[_orderId];
