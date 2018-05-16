@@ -8,7 +8,7 @@ import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `StandardToken` functions.
  */
-contract BTCERC20 is StandardToken {
+contract BitcoinMock is StandardToken {
 
     string public constant name = "Bitcoin Mock"; // solium-disable-line uppercase
     string public constant symbol = "BTK"; // solium-disable-line uppercase

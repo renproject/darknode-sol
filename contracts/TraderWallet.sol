@@ -3,10 +3,9 @@ pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
 import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
-contract TraderWallet is Ownable {
+contract TraderWallet {
     using SafeMath for uint256;
 
     // TODO: Use same constant instance across all contracts 
@@ -27,6 +26,8 @@ contract TraderWallet is Ownable {
     event Deposit(address trader, address token, uint256 value);
     event Withdraw(address trader, address token, uint256 value);
     event Transfer(address from, address to, address token, uint256 value);
+
+    mapping(uint256 => Order) private orders;
 
     mapping(address => DetailedERC20[]) private traderTokens;
     mapping(address => mapping(address => bool)) private activeTraderToken;
@@ -106,39 +107,58 @@ contract TraderWallet is Ownable {
     }
 
 
-    function midPoint(Order buy, Order sell) public pure returns (uint16, uint16) {
-        uint16 norm = sell.priceC * 10 ** (sell.priceQ - buy.priceQ);
-        return ((buy.priceC + norm) / 2, buy.priceQ);
+    function midPoint(uint16 buyPriceC, uint16 buyPriceQ, uint16 sellPriceC, uint16 sellPriceQ) public pure returns (uint16, uint16) {
+        uint16 norm = sellPriceC * 10 ** (sellPriceQ - buyPriceQ);
+        return ((buyPriceC + norm) / 2, buyPriceQ);
     }
-
+ 
     // Verifier functions //
 
-    function rebalance(Order buy, Order sell) public {
+    function submitOrder(
+        uint256 id,
+        uint16 priceC, uint16 priceQ, uint16 volumeC, uint16 volumeQ, uint16 minimumVolumeC, uint16 minimumVolumeQ, address trader, DetailedERC20 wantToken, uint16 nonceHash
+    ) public {
+        // orders[id] = Order({
+        //     priceC: priceC,
+        //     priceQ: priceQ,
+        //     volumeC: volumeC,
+        //     volumeQ: volumeQ,
+        //     minimumVolumeC: minimumVolumeC,
+        //     minimumVolumeQ: minimumVolumeQ,
+        //     trader: trader,
+        //     wantToken: wantToken,
+        //     nonceHash: nonceHash
+        // });
+    }
+
+    function submitMatch(
+        uint256 buy, uint256 sell
+    ) public {
         // TODO: Verify order match
 
-        uint8 highDecimals = 8;
-        uint8 lowDecimals = 18;
+        uint8 highDecimals = orders[buy].wantToken.decimals();
+        uint8 lowDecimals = orders[sell].wantToken.decimals();
 
-        uint16 volumeC = sell.volumeC;
-        uint16 volumeQ = sell.volumeQ;
+        uint16 volumeC = orders[sell].volumeC;
+        uint16 volumeQ = orders[sell].volumeQ;
 
         uint16 midC;
         uint16 midQ;
-        (midC, midQ) = midPoint(buy, sell);
+        (midC, midQ) = midPoint(orders[buy].priceC, orders[buy].priceQ, orders[sell].priceC, orders[sell].priceQ);
 
         uint256 lowValue = volumeC * 2 * 10**(volumeQ + lowDecimals - 12 - 1);
         uint256 highValue = (volumeC * 2 * midC * 1) * 10*(volumeQ + (25 - midQ) + highDecimals - 12 - 1 - 1);
         
         // Subtract values
-        decrementBalance(buy.trader, sell.wantToken, lowValue);
-        decrementBalance(sell.trader, buy.wantToken, highValue);
+        decrementBalance(orders[buy].trader, orders[sell].wantToken, lowValue);
+        decrementBalance(orders[sell].trader, orders[buy].wantToken, highValue);
 
         // Add values
-        incrementBalance(sell.trader, sell.wantToken, lowValue);
-        incrementBalance(buy.trader, buy.wantToken, highValue);
+        incrementBalance(orders[sell].trader, orders[sell].wantToken, lowValue);
+        incrementBalance(orders[buy].trader, orders[buy].wantToken, highValue);
 
-        emit Transfer(buy.trader, sell.trader, sell.wantToken, lowValue);
-        emit Transfer(sell.trader, buy.trader, buy.wantToken, highValue);
+        emit Transfer(orders[buy].trader, orders[sell].trader, orders[sell].wantToken, lowValue);
+        emit Transfer(orders[sell].trader, orders[buy].trader, orders[buy].wantToken, highValue);
     }
  
 }
