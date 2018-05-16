@@ -115,7 +115,7 @@ contract DarknodeRegistry {
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum amount of time between epochs.
     */
-    constructor(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    function DarknodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
@@ -169,8 +169,8 @@ contract DarknodeRegistry {
     function register(bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darknodeID) {
         // REN allowance
         require(_bond >= minimumBond);
-        require(_bond <= ren.allowance(msg.sender, this));
-        require(ren.transferFrom(msg.sender, this, _bond));
+        require(ren.allowance(msg.sender, address(this)) >= _bond);
+        require(ren.transferFrom(msg.sender, address(this), _bond));
 
         // Flag this dark node for registration
         darknodeRegistry[_darknodeID] = Darknode({
