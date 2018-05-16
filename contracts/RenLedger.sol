@@ -19,11 +19,11 @@ contract RenLedger {
     struct Order {
         OrderParity parity;
         OrderState state;
-        address  trader;
+        address trader;
         address broker;
         address confirmer;
         uint256 priority;
-        uint256  blockNumber;
+        uint256 blockNumber;
         bytes32[] matches;
     }
 
@@ -112,7 +112,7 @@ contract RenLedger {
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
         require(orders[_orderId].state == OrderState.Open);
         for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orders[_orderMatches[i]].state== OrderState.Open);
+            require(orders[_orderMatches[i]].state == OrderState.Open);
         }
 
         for (i = 0; i < _orderMatches.length; i++) {

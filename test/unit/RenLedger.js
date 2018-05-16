@@ -31,20 +31,19 @@ contract("RenLedger", function (accounts) {
 
     it('should be able to open orders', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 2 , {from: accounts[i]});
 
-            let orderId = await web3.sha3(i.toString());
+            let buyOrderId = await web3.sha3(i.toString());
+            let sellOrderId = await web3.sha3((i+100).toString());
+
             let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
-            let signature = await web3.eth.sign(accounts[i], hash);
+            let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), {encoding: 'hex'});
+            let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), {encoding: 'hex'});
+            let buySignature = await web3.eth.sign(accounts[i], buyHash);
+            let sellSignature = await web3.eth.sign(accounts[i], sellHash);
 
-            await ledger.openOrder(signature, orderId, {from: accounts[i]});
-        }
-
-        for (i = 0; i < accounts.length; i++) {
-            let orderId = await web3.sha3(i.toString());
-            let dep = await ledger.orderDepth.call(orderId);
-            dep.should.be.bignumber.greaterThan(0);
+            await ledger.openBuyOrder(buySignature, buyOrderId, {from: accounts[i]});
+            await ledger.openSellOrder(sellSignature, sellOrderId, {from: accounts[i]});
         }
     });
 
