@@ -17,8 +17,10 @@
     "dotenv": "^5.0.1",
     "eth-gas-reporter": "^0.1.2",
     "solc": "^0.4.23",
-    "solidity-coverage": "^0.5.0",
-    "truffle-hdwallet-provider": "0.0.5"
+    "truffle-hdwallet-provider": "0.0.5",
+    "solidity-coverage": "0.5.0",
+    "tslint": "^5.9.1",
+    "tslint-react": "^3.4.0"
   },
   "scripts": {
     "test": "truffle test",
