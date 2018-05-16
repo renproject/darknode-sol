@@ -244,7 +244,7 @@ contract("RenLedger", function (accounts) {
         let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
         let signature = await web3.eth.sign(accounts[1], hash);
 
-        await ledger.openOrder(signature, orderId, {from: accounts[1]});
+        await ledger.openBuyOrder(signature, orderId, {from: accounts[1]});
         let dep = await ledger.orderDepth.call(orderId);
         dep.should.be.bignumber.equal(1);
     });

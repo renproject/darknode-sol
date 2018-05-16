@@ -13,18 +13,25 @@ contract RenLedger {
     enum OrderParity {Buy, Sell}
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
+    /**
+    * @notice Order stores the relevant data of an order.
+    */
+    struct Order {
+        OrderParity parity;
+        OrderState state;
+        address  trader;
+        address broker;
+        address confirmer;
+        uint256 priority;
+        uint256  blockNumber;
+        bytes32[] matches;
+    }
+
     // buyOrders/sellOrders store all the buy/sell orders in a list .
     bytes32[] public buyOrders;
     bytes32[] public sellOrders;
 
-    // we use several maps to store data of each order.
-    mapping(bytes32 => OrderState) private orderStates;
-    mapping(bytes32 => bytes32[]) private orderMatches;
-    mapping(bytes32 => uint256) private orderPriorities;
-    mapping(bytes32 => address) private orderTraders;
-    mapping(bytes32 => address) private orderBrokers;
-    mapping(bytes32 => address) private orderConfirmers;
-    mapping(bytes32 => uint256) public orderBlockNumber;
+    mapping(bytes32 => Order) private orders;
 
     uint256 public fee;
     // Republic ERC20 token contract is used to transfer bonds.
@@ -64,8 +71,7 @@ contract RenLedger {
     function openBuyOrder(bytes _signature, bytes32 _orderId) public {
         openOrder(_signature, _orderId);
         buyOrders.push(_orderId);
-        orderPriorities[_orderId] = buyOrders.length;
-
+        orders[_orderId].priority = buyOrders.length;
     }
 
     /**
@@ -79,21 +85,21 @@ contract RenLedger {
     function openSellOrder(bytes _signature, bytes32 _orderId) public {
         openOrder(_signature, _orderId);
         sellOrders.push(_orderId);
-        orderPriorities[_orderId] = sellOrders.length;
+        orders[_orderId].priority = buyOrders.length;
     }
 
     function openOrder(bytes _signature, bytes32 _orderId) {
         require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
-        require(orderStates[_orderId] == OrderState.Undefined);
+        require(orders[_orderId].state == OrderState.Undefined);
 
         // recover trader address from the signature
         bytes32 data = keccak256("Republic Protocol: open: ", _orderId);
         address trader = ECDSA.addr(data, _signature);
-        orderStates[_orderId] = OrderState.Open;
-        orderTraders[_orderId] = trader;
-        orderBrokers[_orderId] = msg.sender;
-        orderBlockNumber[_orderId] = block.number;
+        orders[_orderId].state = OrderState.Open;
+        orders[_orderId].trader = trader;
+        orders[_orderId].broker = msg.sender;
+        orders[_orderId].blockNumber = block.number;
     }
 
     /**
@@ -104,18 +110,18 @@ contract RenLedger {
      * @param _orderMatches A list of matched order
      */
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
-        require(orderStates[_orderId] == OrderState.Open);
+        require(orders[_orderId].state == OrderState.Open);
         for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orderStates[_orderMatches[i]] == OrderState.Open);
+            require(orders[_orderMatches[i]].state== OrderState.Open);
         }
 
-        orderStates[_orderId] = OrderState.Confirmed;
         for (i = 0; i < _orderMatches.length; i++) {
-            orderStates[_orderMatches[i]] = OrderState.Confirmed;
-            orderMatches[_orderMatches[i]] = [_orderId];
+            orders[_orderMatches[i]].state = OrderState.Confirmed;
+            orders[_orderMatches[i]].matches = [_orderId];
         }
-        orderConfirmers[_orderId] = msg.sender;
-        orderMatches[_orderId] = _orderMatches;
+        orders[_orderId].state = OrderState.Confirmed;
+        orders[_orderId].confirmer = msg.sender;
+        orders[_orderId].matches = _orderMatches;
     }
 
     /**
@@ -126,13 +132,13 @@ contract RenLedger {
      * @param _orderId Order id.
      */
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
-        require(orderStates[_orderId] == OrderState.Open);
+        require(orders[_orderId].state == OrderState.Open);
 
         // recover trader address from the signature
         bytes32 data = keccak256("Republic Protocol: cancel: ", _orderId);
         address trader = ECDSA.addr(data, _signature);
-        require(orderTraders[_orderId] == trader);
-        orderStates[_orderId] = OrderState.Canceled;
+        require(orders[_orderId].trader == trader);
+        orders[_orderId].state = OrderState.Canceled;
     }
 
     /**
@@ -163,14 +169,14 @@ contract RenLedger {
     * orderState will return status of the given orderID.
     */
     function orderState(bytes32 _orderId) public view returns (uint8){
-        return uint8(orderStates[_orderId]);
+        return uint8(orders[_orderId].state);
     }
 
     /**
     * orderMatch will return a list of matched orders to the given orderID.
     */
     function orderMatch(bytes32 _orderId) public view returns (bytes32[]){
-        return orderMatches[_orderId];
+        return orders[_orderId].matches;
     }
 
     /**
@@ -178,7 +184,7 @@ contract RenLedger {
     * The priority is the index of the order in the orderbook.
     */
     function orderPriority(bytes32 _orderId) public view returns (uint256){
-        return orderPriorities[_orderId];
+        return orders[_orderId].priority;
     }
 
     /**
@@ -186,7 +192,7 @@ contract RenLedger {
     * Trader is the one who signs the message and does the actual trading.
     */
     function orderTrader(bytes32 _orderId) public view returns (address){
-        return orderTraders[_orderId];
+        return orders[_orderId].trader;
     }
 
     /**
@@ -194,24 +200,24 @@ contract RenLedger {
     * Broker is the one who represent the trader to send the tx.
     */
     function orderBroker(bytes32 _orderId) public view returns (address){
-        return orderBrokers[_orderId];
+        return orders[_orderId].broker;
     }
 
     /**
     * orderConfirmer will return the darknode address which confirms the given orderID.
     */
     function orderConfirmer(bytes32 _orderId) public view returns (address){
-        return orderConfirmers[_orderId];
+        return orders[_orderId].confirmer;
     }
 
     /**
     * orderDepth will return the block depth of the orderId
     */
     function orderDepth(bytes32 _orderId) public view returns (uint256) {
-        if (orderBlockNumber[_orderId] == 0) {
+        if (orders[_orderId].blockNumber == 0) {
             return 0;
         }
-        return (block.number - orderBlockNumber[_orderId]);
+        return (block.number - orders[_orderId].blockNumber);
     }
 }
 
