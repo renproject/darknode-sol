@@ -9,13 +9,12 @@ contract RepublicToken is PausableToken, BurnableToken {
     string public constant symbol = "REN";
     uint8 public constant decimals = 18;
     uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
-    uint256 public totalSupply;
     
     /**
       * @notice The RepublicToken Constructor.
       */
     constructor() public {
-        totalSupply = INITIAL_SUPPLY;   
+        totalSupply_ = INITIAL_SUPPLY;   
         balances[msg.sender] = INITIAL_SUPPLY;
     }
 

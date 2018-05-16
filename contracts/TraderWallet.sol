@@ -1,17 +1,34 @@
 pragma solidity ^0.4.23;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+pragma experimental ABIEncoderV2;
+
+import "zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract TraderWallet is Ownable {
     using SafeMath for uint256;
 
+    // TODO: Use same constant instance across all contracts 
     address ETH = 0x0;
 
-    event Deposit(address trader, address token, uint256 value);
+    struct Order {
+        uint16 priceC;
+        uint16 priceQ;
+        uint16 volumeC;
+        uint16 volumeQ;
+        uint16 minimumVolumeC;
+        uint16 minimumVolumeQ;
+        address trader;
+        DetailedERC20 wantToken;
+        bytes32 nonceHash;
+    }
 
-    mapping(address => ERC20[]) private traderTokens;
+    event Deposit(address trader, address token, uint256 value);
+    event Withdraw(address trader, address token, uint256 value);
+    event Transfer(address from, address to, address token, uint256 value);
+
+    mapping(address => DetailedERC20[]) private traderTokens;
     mapping(address => mapping(address => bool)) private activeTraderToken;
     mapping(address => mapping(address => uint256)) private balances;
 
@@ -24,7 +41,7 @@ contract TraderWallet is Ownable {
     
     // PRIVATE functions //
     
-    function incrementBalance(address _trader, ERC20 _token, uint256 _value) private {
+    function incrementBalance(address _trader, DetailedERC20 _token, uint256 _value) private {
         // Check if it's the first time the trader
         if (!activeTraderToken[_trader][_token]) {
             activeTraderToken[_trader][_token] = true;
@@ -34,7 +51,7 @@ contract TraderWallet is Ownable {
         balances[_trader][_token] = balances[_trader][_token].add(_value);
     }
 
-    function decrementBalance(address _trader, ERC20 _token, uint256 _value) private {
+    function decrementBalance(address _trader, DetailedERC20 _token, uint256 _value) private {
         balances[_trader][_token] = balances[_trader][_token].sub(_value);
     }
 
@@ -43,7 +60,7 @@ contract TraderWallet is Ownable {
 
     // Trader functions //
 
-    function deposit(ERC20 _token, uint256 _value) payable public {
+    function deposit(DetailedERC20 _token, uint256 _value) payable public {
         address trader = msg.sender;
 
         if (address(_token) == ETH) {
@@ -52,9 +69,11 @@ contract TraderWallet is Ownable {
             require(_token.transferFrom(trader, this, _value));
         }
         incrementBalance(trader, _token, _value);
+
+        emit Deposit(trader, _token, _value);
     }
 
-    function withdraw(ERC20 _token, uint256 _value) public {
+    function withdraw(DetailedERC20 _token, uint256 _value) public {
         address trader = msg.sender;
 
         decrementBalance(trader, _token, _value);
@@ -63,18 +82,20 @@ contract TraderWallet is Ownable {
         } else {
             require(_token.transfer(trader, _value));
         }
+
+        emit Withdraw(trader, _token, _value);
     }
 
-    function getBalance(address _trader, ERC20 _token) public view returns (uint256) {
+    function getBalance(address _trader, DetailedERC20 _token) public view returns (uint256) {
         return balances[_trader][_token];
     }
 
-    function getTokens(address _trader) public view returns (ERC20[]) {
+    function getTokens(address _trader) public view returns (DetailedERC20[]) {
         return traderTokens[_trader];
     }
 
-    function getBalances(address _trader) public view returns (ERC20[], uint256[]) {
-        ERC20[] memory tokens = getTokens(_trader);
+    function getBalances(address _trader) public view returns (DetailedERC20[], uint256[]) {
+        DetailedERC20[] memory tokens = getTokens(_trader);
         uint256[] memory traderBalances = new uint256[](tokens.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
@@ -85,24 +106,39 @@ contract TraderWallet is Ownable {
     }
 
 
-
+    function midPoint(Order buy, Order sell) public pure returns (uint16, uint16) {
+        uint16 norm = sell.priceC * 10 ** (sell.priceQ - buy.priceQ);
+        return ((buy.priceC + norm) / 2, buy.priceQ);
+    }
 
     // Verifier functions //
 
-    // function rebalance(
-    //     ERC20 _tokenFromTraderA, address _traderA, uint256 _tokenAValue,
-    //     ERC20 _tokenFromTraderB, address _traderB, uint256 _tokenBValue)
-    //     public
-    // {
-    //     // TODO: Verify order match
-        
-    //     // Subtract values
-    //     decrementBalance(_traderA, _tokenFromTraderA, _tokenAValue);
-    //     decrementBalance(_traderB, _tokenFromTraderB, _tokenBValue);
+    function rebalance(Order buy, Order sell) public {
+        // TODO: Verify order match
 
-    //     // Add values
-    //     incrementBalance(_traderA, _tokenFromTraderB, _tokenBValue);
-    //     incrementBalance(_traderB, _tokenFromTraderA, _tokenAValue);
-    // }
+        uint8 highDecimals = 8;
+        uint8 lowDecimals = 18;
+
+        uint16 volumeC = sell.volumeC;
+        uint16 volumeQ = sell.volumeQ;
+
+        uint16 midC;
+        uint16 midQ;
+        (midC, midQ) = midPoint(buy, sell);
+
+        uint256 lowValue = volumeC * 2 * 10**(volumeQ + lowDecimals - 12 - 1);
+        uint256 highValue = (volumeC * 2 * midC * 1) * 10*(volumeQ + (25 - midQ) + highDecimals - 12 - 1 - 1);
+        
+        // Subtract values
+        decrementBalance(buy.trader, sell.wantToken, lowValue);
+        decrementBalance(sell.trader, buy.wantToken, highValue);
+
+        // Add values
+        incrementBalance(sell.trader, sell.wantToken, lowValue);
+        incrementBalance(buy.trader, buy.wantToken, highValue);
+
+        emit Transfer(buy.trader, sell.trader, sell.wantToken, lowValue);
+        emit Transfer(sell.trader, buy.trader, buy.wantToken, highValue);
+    }
  
 }
