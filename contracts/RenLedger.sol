@@ -30,6 +30,7 @@ contract RenLedger {
     // buyOrders/sellOrders store all the buy/sell orders in a list .
     bytes32[] public buyOrders;
     bytes32[] public sellOrders;
+    bytes32[] orderbook;
 
     mapping(bytes32 => Order) private orders;
 
@@ -88,7 +89,7 @@ contract RenLedger {
         orders[_orderId].priority = buyOrders.length;
     }
 
-    function openOrder(bytes _signature, bytes32 _orderId) {
+    function openOrder(bytes _signature, bytes32 _orderId) private {
         require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
         require(orders[_orderId].state == OrderState.Undefined);
@@ -100,6 +101,7 @@ contract RenLedger {
         orders[_orderId].trader = trader;
         orders[_orderId].broker = msg.sender;
         orders[_orderId].blockNumber = block.number;
+        orderbook.push(_orderId);
     }
 
     /**
@@ -218,6 +220,25 @@ contract RenLedger {
             return 0;
         }
         return (block.number - orders[_orderId].blockNumber);
+    }
+
+    /**
+    * getOrdersCount will return the number of orders in the orderbook
+    */
+    function getOrdersCount() public view returns (uint256){
+        return buyOrders.length + sellOrders.length;
+    }
+
+    /**
+    * getOrder will return orderId of the given index in the orderbook list and true if exists.
+    * Otherwise it will return empty bytes and false.
+    */
+    function getOrder(uint256 index) public view returns (bytes32, bool){
+        if (index > orderbook.length) {
+            return ("", false);
+        }
+
+        return (orderbook[index], true);
     }
 }
 
