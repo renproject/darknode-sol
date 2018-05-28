@@ -148,7 +148,7 @@ contract RenLedger {
     * Otherwise it will return empty bytes and false.
     */
     function buyOrder(uint256 index) public view returns (bytes32, bool){
-        if (index > buyOrders.length) {
+        if (index >= buyOrders.length) {
             return ("", false);
         }
 
@@ -160,7 +160,7 @@ contract RenLedger {
     * Otherwise it will return empty bytes and false.
     */
     function sellOrder(uint256 index) public view returns (bytes32, bool){
-        if (index > sellOrders.length) {
+        if (index >= sellOrders.length) {
             return ("", false);
         }
 
