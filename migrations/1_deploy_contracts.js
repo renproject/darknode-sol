@@ -1,5 +1,5 @@
 
-var DarkNodeRegistry = artifacts.require("DarknodeRegistry.sol");
+var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
 
 const CONFIG = {
     renAddress: "0x65d54eda5f032f2275caa557e50c029cfbccbb54",
@@ -10,7 +10,7 @@ const CONFIG = {
 
 module.exports = function (deployer) {
     deployer.deploy(
-        DarkNodeRegistry,
+        DarknodeRegistry,
         CONFIG.renAddress,
         CONFIG.minimumBond,
         CONFIG.minimumPoolSize,
