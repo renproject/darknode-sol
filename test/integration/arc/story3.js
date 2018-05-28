@@ -3,7 +3,6 @@ const Token = artifacts.require("RepublicToken");
 const Sha256 = require("crypto-js/sha256");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
 // Integration test for Arc library

@@ -4,7 +4,6 @@ const renLedger = artifacts.require("RenLedger");
 const chai = require("chai");
 
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
 const MINIMUM_BOND = 100;
@@ -31,14 +30,14 @@ contract("RenLedger", function (accounts) {
 
     it('should be able to open orders', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 1, { from: accounts[i] });
 
             let orderId = await web3.sha3(i.toString());
             let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.openOrder(signature, orderId, {from: accounts[i]});
+            await ledger.openOrder(signature, orderId, { from: accounts[i] });
         }
     });
 
@@ -46,90 +45,90 @@ contract("RenLedger", function (accounts) {
         for (i = 0; i < accounts.length; i++) {
             let orderId = await web3.sha3((i + 100).toString());
             let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.openOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.openOrder(signature, orderId, { from: accounts[i] }).should.be.rejectedWith();
         }
     });
 
     it('should be rejected when trying to open an opened order', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 1, { from: accounts[i] });
 
             let orderId = await web3.sha3(i.toString());
             let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.openOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.openOrder(signature, orderId, { from: accounts[i] }).should.be.rejectedWith();
         }
     });
 
     it('should be able to cancel orders', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 1, { from: accounts[i] });
 
             let orderId = await web3.sha3(i.toString());
             let prefix = await web3.toHex("Republic Protocol: cancel: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.cancelOrder(signature, orderId, {from: accounts[i]});
+            await ledger.cancelOrder(signature, orderId, { from: accounts[i] });
         }
     });
 
     it('should be rejected when trying to cancel orders which have not been open', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 1, { from: accounts[i] });
 
             let orderId = await web3.sha3((i + 100).toString());
             let prefix = await web3.toHex("Republic Protocol: cancel: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.cancelOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.cancelOrder(signature, orderId, { from: accounts[i] }).should.be.rejectedWith();
         }
     });
 
     it('should be rejected when trying to cancel orders signed by someone else', async function () {
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 1, {from: accounts[i]});
+            await ren.approve(ledger.address, 1, { from: accounts[i] });
 
             let orderId = await web3.sha3(((i + 1) % 10).toString());
             let prefix = await web3.toHex("Republic Protocol: cancel: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.cancelOrder(signature, orderId, {from: accounts[i]}).should.be.rejectedWith();
+            await ledger.cancelOrder(signature, orderId, { from: accounts[i] }).should.be.rejectedWith();
         }
     });
 
     it('should be able to confirm orders ', async function () {
         // Open a bunch of orders
         for (i = 0; i < accounts.length / 2; i++) {
-            await ren.approve(ledger.address, 2, {from: accounts[i]});
+            await ren.approve(ledger.address, 2, { from: accounts[i] });
 
             let orderId = await web3.sha3((i + 10).toString());
             let matchId = await web3.sha3((i + 20).toString());
 
             // Open a mock order
             let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
-            await ledger.openOrder(signature, orderId, {from: accounts[i]});
+            await ledger.openOrder(signature, orderId, { from: accounts[i] });
 
             // Open the matched order
             prefix = await web3.toHex("Republic Protocol: open: ");
-            hash = await web3.sha3(prefix + matchId.slice(2), {encoding: 'hex'});
+            hash = await web3.sha3(prefix + matchId.slice(2), { encoding: 'hex' });
             signature = await web3.eth.sign(accounts[i], hash);
-            await ledger.openOrder(signature, matchId, {from: accounts[i]});
+            await ledger.openOrder(signature, matchId, { from: accounts[i] });
         }
 
         // Register all nodes
         for (i = 0; i < accounts.length / 2; i++) {
-            await ren.approve(dnr.address, MINIMUM_BOND, {from: accounts[i]});
-            await dnr.register(accounts[i], "", MINIMUM_BOND, {from: accounts[i]});
+            await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
+            await dnr.register(accounts[i], "", MINIMUM_BOND, { from: accounts[i] });
         }
         await dnr.epoch();
 
@@ -138,7 +137,7 @@ contract("RenLedger", function (accounts) {
             let orderId = await web3.sha3((i + 10).toString()); // create a fake orderID
             let matchId = [await web3.sha3((i + 20).toString())]; // create fake matched orderID
             let prefix = await web3.toHex("Republic Protocol: confirm: ");
-            let hash = await web3.sha3(prefix + orderId.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + orderId.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
             await ledger.confirmOrder(orderId, matchId);
@@ -148,19 +147,19 @@ contract("RenLedger", function (accounts) {
     it('should be rejected when trying to confirmed an non-open order ', async function () {
         // Open a bunch of orders
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 2, {from: accounts[i]});
+            await ren.approve(ledger.address, 2, { from: accounts[i] });
             let openedOrder = await web3.sha3("9");
             let confirmedOrder = await web3.sha3(i.toString());
             let nonExistOrder = await web3.sha3((i + 20).toString());
 
             let prefix = await web3.toHex("Republic Protocol: confirm: ");
-            let hash = await web3.sha3(prefix + confirmedOrder.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + confirmedOrder.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
             await ledger.confirmOrder(confirmedOrder, [openedOrder]).should.be.rejectedWith();
             await ledger.confirmOrder(openedOrder, [confirmedOrder]).should.be.rejectedWith();
 
             prefix = await web3.toHex("Republic Protocol: confirm: ");
-            hash = await web3.sha3(prefix + nonExistOrder.slice(2), {encoding: 'hex'});
+            hash = await web3.sha3(prefix + nonExistOrder.slice(2), { encoding: 'hex' });
             signature = await web3.eth.sign(accounts[i], hash);
             await ledger.confirmOrder(nonExistOrder, [openedOrder]).should.be.rejectedWith();
             await ledger.confirmOrder(openedOrder, [nonExistOrder]).should.be.rejectedWith();
@@ -170,12 +169,12 @@ contract("RenLedger", function (accounts) {
     it('should be rejected when an un-registered node trying to confirm orders ', async function () {
         // Since we only registered account[0-4], we'll test with acount[5-9].
         for (i = accounts.length / 2; i < accounts.length; i++) {
-            await ren.approve(ledger.address, 2, {from: accounts[i]});
+            await ren.approve(ledger.address, 2, { from: accounts[i] });
             let order1 = await web3.sha3("7");
             let order2 = await web3.sha3("8");
 
             let prefix = await web3.toHex("Republic Protocol: confirm: ");
-            let hash = await web3.sha3(prefix + order1.slice(2), {encoding: 'hex'});
+            let hash = await web3.sha3(prefix + order1.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
             await ledger.confirmOrder(order1, [order2]).should.be.rejectedWith();
             await ledger.confirmOrder(order2, [order1]).should.be.rejectedWith();
@@ -190,7 +189,7 @@ contract("RenLedger", function (accounts) {
         assert.equal(order[1], true);
 
         // Negative test for get order
-        order = await  ledger.order.call(100);
+        order = await ledger.order.call(100);
         assert.equal(order[0], "0x0000000000000000000000000000000000000000000000000000000000000000");
         assert.equal(order[1], false);
 
@@ -208,7 +207,7 @@ contract("RenLedger", function (accounts) {
 
         // Get matched order
         let priority = await ledger.orderPriority.call(orderId);
-        priority.should.be.bignumber.equal("1");
+        priority.toNumber().should.equal(1);
 
         // Get trader
         let trader = await ledger.orderTrader.call(orderId);
