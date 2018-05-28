@@ -17,6 +17,13 @@ module.exports = {
       network_id: 3,
       gas: 3000000,
     },
+    kovan: {
+      provider: function () {
+        return new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
+      },
+      network_id: 3,
+      gas: 3000000,
+    },
   },
   mocha: {
     // // Use with `truffle develop`, not with `npm run coverage`
