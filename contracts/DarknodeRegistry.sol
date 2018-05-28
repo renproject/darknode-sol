@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
@@ -115,14 +115,14 @@ contract DarknodeRegistry {
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum amount of time between epochs.
     */
-    function DarknodeRegistry(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    constructor(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
         minimumEpochInterval = _minimumEpochInterval;
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
-            timestamp: now
+            timestamp: block.timestamp
         });
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
@@ -134,7 +134,7 @@ contract DarknodeRegistry {
     * current epoch.
     */
     function epoch() public {
-        require(now > currentEpoch.timestamp + minimumEpochInterval);
+        require(block.timestamp > currentEpoch.timestamp + minimumEpochInterval);
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
 

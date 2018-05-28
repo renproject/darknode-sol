@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
@@ -70,7 +70,7 @@ contract RenLedger {
 
         // The trader address should be recovered from a message in the
         // form "Republic Protocol: open: {orderId}"
-        bytes32 data = keccak256("Republic Protocol: open: ", _orderId);
+        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: open: ", _orderId));
         address trader = ECDSA.addr(data, _signature);
         orderTraders[_orderId] = trader;
         orderBrokers[_orderId] = msg.sender;
@@ -107,7 +107,7 @@ contract RenLedger {
      */
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
         require(orderStates[_orderId] == OrderState.Open);
-        bytes32 data = keccak256("Republic Protocol: cancel: ", _orderId);
+        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
         address trader = ECDSA.addr(data, _signature);
         require(orderTraders[_orderId] == trader);
         orderStates[_orderId] = OrderState.Canceled;
