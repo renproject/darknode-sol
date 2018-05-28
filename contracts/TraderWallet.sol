@@ -268,31 +268,36 @@ contract TraderWallet {
 
     // }
 
-    function minimumVolume(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
-        return (0, 0);
+
+    function minimumVolume(uint256 buyID, uint256 sellID) public returns (uint256, uint256) { // pure
+        emit Debug256(orders[sellID].volumeC);
+        return (orders[buyID].volumeC, orders[buyID].volumeQ);
     }
 
-    function multiplyVolumeByPrice(uint256 minVolC, uint256 minVolQ, uint256 midPriceC, uint256 midPriceQ)
-    public pure returns (uint256, uint256) {
-        return (0, 0);
+    function tupleToBTCVolume(uint256 volC, uint256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
+    public pure returns (uint256) {
+        uint256 e2 = volQ + 25 + decimals - priceQ - 12 - 1 - 1;
+        uint256 value = (volC * 2 * priceC * 1) * 10**e2;
+        return value;
     }
 
-    function tupleToVolume(uint256 volC, uint256 volQ) public pure returns (uint256) {
-        return 0;
+    function tupleToRenVolume(uint256 volC, uint256 volQ, uint256 decimals) public pure returns (uint256) {
+        uint256 e2 = decimals + volQ - 12 - 1;
+        uint256 value = 2 * volC * 10 ** e2;
+        return value;
     }
 
-    function submitMath(uint256 buyID, uint256 sellID) public {
+    function submitMatch(uint256 buyID, uint256 sellID) public {
+        // TODO: Verify order match        
 
         // Price midpoint
         (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(buyID, sellID);
         
         (uint256 minVolC, uint256 minVolQ) = minimumVolume(buyID, sellID);
 
-        (uint256 btcValueC, uint256 btcValueQ) = multiplyVolumeByPrice(minVolC, minVolQ, midPriceC, midPriceQ);
+        uint256 btcValue = tupleToBTCVolume(minVolC, minVolQ, midPriceC, midPriceQ, 18);
 
-        uint256 btcValue = tupleToVolume(btcValueC, btcValueQ);
-
-        uint256 renValue = tupleToVolume(minVolC, minVolQ);
+        uint256 renValue = tupleToRenVolume(minVolC, minVolQ, 18);
 
         finalizeMatch(buyID, sellID, btcValue, renValue);
     }
@@ -300,7 +305,6 @@ contract TraderWallet {
 
     // PRIVATE!
     function finalizeMatch(uint256 buyID, uint256 sellID, uint256 btcValue, uint256 renValue) private {
-        // TODO: Verify order match
 
         // Subtract values
         decrementBalance(orders[buyID].trader, orders[sellID].wantToken, btcValue);

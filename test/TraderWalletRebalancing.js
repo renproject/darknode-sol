@@ -40,8 +40,8 @@ contract.only("TraderWallet", function (accounts) {
 
 
         // Buying REN for BTC
-        const price1 = priceToTuple(0.0000095); // Price of 1 REN in BTC
-        const volume1 = volumeToTuple(0.0000380); // Volume in BTC
+        const price1 = [200, 7]; // priceToTuple(0.0000095); // Price of 1 REN in BTC
+        const volume1 = [200, 7]; // volumeToTuple(0.0000380); // Volume in BTC
         const buy = [
             123,
             price1[0],
@@ -55,8 +55,8 @@ contract.only("TraderWallet", function (accounts) {
             web3.sha3("buy"),
         ];
 
-        const price2 = priceToTuple(0.0000095); // Price of 1 REN in BTC
-        const volume2 = volumeToTuple(1); // Volume in REN
+        const price2 = [200, 7]; // priceToTuple(0.0000095); // Price of 1 REN in BTC
+        const volume2 = [200, 7]; // volumeToTuple(1); // Volume in REN
         const sell = [
             124,
             price2[0],
