@@ -45,7 +45,9 @@ library LibRewardVault {
         return;
     }
 
-    function withdraw(RewardVault storage self, bytes32 challenge, bytes proof, uint256 rewardRoundNonce, address _sender) internal returns(bool) {
+    function withdraw(RewardVault storage self, bytes32 challenge, bytes proof, uint256 rewardRoundNonce, address _sender)
+        internal returns(bool)
+    {
         require(self.rewardRounds[rewardRoundNonce].finalized);
         if (!self.rewardRounds[rewardRoundNonce].rewards[_sender][challenge]) {
             return false;
@@ -79,7 +81,7 @@ library LibRewardVault {
 
         // Choose `rewardeeCount` nodes using rrn as random seed
         for (i = 0; i < self.rewardeeCount; i++) {
-            while (self.selectedNode[keccak256(n, x)]) {
+            while (self.selectedNode[keccak256(abi.encodePacked(n, x))]) {
                 x = x+1;
             }
             address rewardee = dnr.getOwner(nodeIds[x]);
@@ -87,7 +89,7 @@ library LibRewardVault {
             for (uint256 j = 0; j < self.challengeCount; j++) {
                 self.rewardRounds[n].rewards[rewardee][self.rewardRounds[n].challenges[j]] = true;
             }
-            self.selectedNode[keccak256(n, x)] = true;
+            self.selectedNode[keccak256(abi.encodePacked(n, x))] = true;
             x = (x + self.rewardRounds[n].rrn) % nodeIds.length;
         }
         self.rewardRounds[n].finalized = true;

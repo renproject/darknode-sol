@@ -16,7 +16,7 @@ library ECDSA {
   
     function addr(bytes32 _hash, bytes _signature) internal pure returns (address) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-        bytes32 prefixedHash = keccak256(prefix, _hash);
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, _hash));
         return ecrecover(prefixedHash, uint8(_signature[64]) + 27, Utils.toBytes32(_signature, 0), Utils.toBytes32(_signature, 32));
     }
 
