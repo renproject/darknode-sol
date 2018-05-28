@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 // pragma experimental ABIEncoderV2;
 
@@ -153,10 +153,10 @@ contract TraderWallet {
 
 
 
-    // function priceMidPoint(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
-    //     uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceC);
-    //     return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
-    // }
+    function priceMidPoint(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
+        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceC);
+        return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
+    }
 
 
     // function minimumVolume(uint256 buyID, uint256 sellID)
@@ -186,24 +186,24 @@ contract TraderWallet {
     //     return norm < c1;
     // }
  
-    // // Verifier functions //
+    // Verifier functions //
 
-    // function submitOrder(
-    //     uint256 id,
-    //     uint256 priceC, uint256 priceQ, uint256 volumeC, uint256 volumeQ, uint256 minimumVolumeC, uint256 minimumVolumeQ, address trader, DetailedERC20 wantToken, bytes32 nonceHash
-    // ) public {
-    //     orders[id] = Order({
-    //         priceC: priceC,
-    //         priceQ: priceQ,
-    //         volumeC: volumeC,
-    //         volumeQ: volumeQ,
-    //         minimumVolumeC: minimumVolumeC,
-    //         minimumVolumeQ: minimumVolumeQ,
-    //         trader: trader,
-    //         wantToken: wantToken,
-    //         nonceHash: nonceHash
-    //     });
-    // }
+    function submitOrder(
+        uint256 id,
+        uint256 priceC, uint256 priceQ, uint256 volumeC, uint256 volumeQ, uint256 minimumVolumeC, uint256 minimumVolumeQ, address trader, DetailedERC20 wantToken, bytes32 nonceHash
+    ) public {
+        orders[id] = Order({
+            priceC: priceC,
+            priceQ: priceQ,
+            volumeC: volumeC,
+            volumeQ: volumeQ,
+            minimumVolumeC: minimumVolumeC,
+            minimumVolumeQ: minimumVolumeQ,
+            trader: trader,
+            wantToken: wantToken,
+            nonceHash: nonceHash
+        });
+    }
 
     // function verifyMatch(uint256 buyID, uint256 sellID) public {
     //     require(
@@ -264,16 +264,54 @@ contract TraderWallet {
     //     Debug256(e0);
     //     Debug256(ratio);
 
-    //     // Subtract values
-    //     decrementBalance(orders[buyID].trader, orders[sellID].wantToken, highValue);
-    //     decrementBalance(orders[sellID].trader, orders[buyID].wantToken, lowValue);
+    //     // ...
 
-    //     // // Add values
-    //     incrementBalance(orders[sellID].trader, orders[sellID].wantToken, highValue);
-    //     incrementBalance(orders[buyID].trader, orders[buyID].wantToken, lowValue);
-
-    //     emit Transfer(orders[buyID].trader, orders[sellID].trader, orders[sellID].wantToken, highValue);
-    //     emit Transfer(orders[sellID].trader, orders[buyID].trader, orders[buyID].wantToken, lowValue);
     // }
+
+    function minimumVolume(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
+        return (0, 0);
+    }
+
+    function multiplyVolumeByPrice(uint256 minVolC, uint256 minVolQ, uint256 midPriceC, uint256 midPriceQ)
+    public pure returns (uint256, uint256) {
+        return (0, 0);
+    }
+
+    function tupleToVolume(uint256 volC, uint256 volQ) public pure returns (uint256) {
+        return 0;
+    }
+
+    function submitMath(uint256 buyID, uint256 sellID) public {
+
+        // Price midpoint
+        (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(buyID, sellID);
+        
+        (uint256 minVolC, uint256 minVolQ) = minimumVolume(buyID, sellID);
+
+        (uint256 btcValueC, uint256 btcValueQ) = multiplyVolumeByPrice(minVolC, minVolQ, midPriceC, midPriceQ);
+
+        uint256 btcValue = tupleToVolume(btcValueC, btcValueQ);
+
+        uint256 renValue = tupleToVolume(minVolC, minVolQ);
+
+        finalizeMatch(buyID, sellID, btcValue, renValue);
+    }
+
+
+    // PRIVATE!
+    function finalizeMatch(uint256 buyID, uint256 sellID, uint256 btcValue, uint256 renValue) private {
+        // TODO: Verify order match
+
+        // Subtract values
+        decrementBalance(orders[buyID].trader, orders[sellID].wantToken, btcValue);
+        decrementBalance(orders[sellID].trader, orders[buyID].wantToken, renValue);
+
+        // // Add values
+        incrementBalance(orders[sellID].trader, orders[sellID].wantToken, btcValue);
+        incrementBalance(orders[buyID].trader, orders[buyID].wantToken, renValue);
+
+        emit Transfer(orders[buyID].trader, orders[sellID].trader, orders[sellID].wantToken, btcValue);
+        emit Transfer(orders[sellID].trader, orders[buyID].trader, orders[buyID].wantToken, renValue);
+    }
  
 }

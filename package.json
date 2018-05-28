@@ -16,7 +16,8 @@
     "truffle": "^4.1.11",
     "dotenv": "^5.0.1",
     "truffle-hdwallet-provider": "0.0.5",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.1",
+    "sol-merger": "^0.1.2",
     "solidity-coverage": "^0.5.4",
     "solc": "^0.4.24"
   },
