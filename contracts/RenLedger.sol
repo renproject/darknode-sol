@@ -234,7 +234,7 @@ contract RenLedger {
     * Otherwise it will return empty bytes and false.
     */
     function getOrder(uint256 index) public view returns (bytes32, bool){
-        if (index > orderbook.length) {
+        if (index >= orderbook.length) {
             return ("", false);
         }
 
