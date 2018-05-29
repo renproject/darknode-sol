@@ -10,7 +10,7 @@ chai.should();
 
 const web3_1 = require("web3");
 
-contract.only("TraderWallet", function (accounts) {
+contract("TraderWallet", function (accounts) {
 
     let wallet, ren, btc;
     const buyer = accounts[0];
