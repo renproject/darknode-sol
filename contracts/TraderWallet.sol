@@ -133,6 +133,7 @@ contract TraderWallet {
 
 
     function priceMidPoint(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
+        // Normalize to same exponent before finding mid-point (mean)
         uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
         return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
     }
@@ -151,10 +152,14 @@ contract TraderWallet {
 
     function tupleToBTCVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
     public pure returns (uint256) {
+        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
+        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
         uint256 c = volC * 5 * priceC * 2;
 
+        // Positive and negative components of exponent
         uint256 ep = priceQ + decimals;
         uint256 en = 26 + 12 + 3 + 12 + 1;
+        // Add volQ to positive or negative component based on its sign
         if (volQ < 0) {
             en += uint256(-volQ);
         } else {
@@ -173,9 +178,14 @@ contract TraderWallet {
     }
 
     function tupleToPrice(uint256 priceC, uint256 priceQ) pure public returns (uint256) {
+        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
         uint256 c = 5 * priceC;
+
+        // Positive and negative components of exponent        
         uint256 ep = priceQ + 8;
         uint256 en = 26 + 3 + 12;
+
+        // If (ep-en) is negative, divide instead of multiplying        
         if (ep >= en) {
             return c * 10 ** (ep - en);
         } else {
@@ -184,15 +194,20 @@ contract TraderWallet {
     }
 
     function tupleToRenVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
+        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
+
+        // Positive and negative components of exponent                
         uint256 ep = decimals;
         uint256 en = 12 + 1;
+        // Add volQ to positive or negative component based on its sign        
         if (volQ < 0) {
             en += uint256(-volQ);
         } else {
             ep += uint256(volQ);
         }
 
+        // If (ep-en) is negative, divide instead of multiplying                
         if (ep >= en) {
             return c * 10 ** (ep - en);
         } else {
