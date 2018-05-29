@@ -1,31 +1,31 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
-import "./Ownable.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Gateway is Ownable {
 
     address public republicToken;
-    address public darkNodeRegistry;
+    address public darknodeRegistry;
     address public traderRegistry;
     uint256 public minimumDarkPoolSize;
 
     event update(bytes4 functionID, uint256 oldValue, uint256 newValue);
 
-    function Gateway(
+    constructor(
         address _republicToken, 
-        address _darkNodeRegistry, 
+        address _darknodeRegistry, 
         address _traderRegistry,
         uint256 _minimumDarkPoolSize
     ) public {
         republicToken = _republicToken;
-        darkNodeRegistry = _darkNodeRegistry;
+        darknodeRegistry = _darknodeRegistry;
         traderRegistry = _traderRegistry;
         minimumDarkPoolSize = _minimumDarkPoolSize;
     }
   
-    function updateDarknodeRegistry(address _darkNodeRegistry) public onlyOwner {
-        emit update(bytes4(sha256("updateDarknodeRegistry(address)")), uint256(darkNodeRegistry), uint256(_darkNodeRegistry));
-        darkNodeRegistry = _darkNodeRegistry;
+    function updateDarknodeRegistry(address _darknodeRegistry) public onlyOwner {
+        emit update(bytes4(sha256("updateDarknodeRegistry(address)")), uint256(darknodeRegistry), uint256(_darknodeRegistry));
+        darknodeRegistry = _darknodeRegistry;
     }
 
     function updateTraderRegistry(address _traderRegistry) public onlyOwner {

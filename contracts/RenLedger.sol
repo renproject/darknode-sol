@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
@@ -95,7 +95,7 @@ contract RenLedger {
         require(orders[_orderId].state == OrderState.Undefined);
 
         // recover trader address from the signature
-        bytes32 data = keccak256("Republic Protocol: open: ", _orderId);
+        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: open: ", _orderId));
         address trader = ECDSA.addr(data, _signature);
         orders[_orderId].state = OrderState.Open;
         orders[_orderId].trader = trader;
@@ -137,7 +137,7 @@ contract RenLedger {
         require(orders[_orderId].state == OrderState.Open);
 
         // recover trader address from the signature
-        bytes32 data = keccak256("Republic Protocol: cancel: ", _orderId);
+        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
         address trader = ECDSA.addr(data, _signature);
         require(orders[_orderId].trader == trader);
         orders[_orderId].state = OrderState.Canceled;

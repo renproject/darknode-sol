@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./RepublicToken.sol";
 
@@ -84,7 +84,7 @@ contract TraderRegistry {
     * @param _minimumBond The minimum bond amount that can be submitted by a
     *                     trader.
     */
-    function TraderRegistry(address _renAddress, uint256 _minimumBond) public {
+    constructor(address _renAddress, uint256 _minimumBond) public {
         ren = RepublicToken(_renAddress);
         minimumBond = _minimumBond;
     }
