@@ -153,8 +153,10 @@ contract TraderWallet {
 
 
 
-    function priceMidPoint(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
-        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceC);
+    function priceMidPoint(uint256 buyID, uint256 sellID) public returns (uint256, uint256) {
+        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
+        emit Debug256(99);
+        emit Debug256((orders[buyID].priceC + norm) / 2);
         return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
     }
 
@@ -271,13 +273,29 @@ contract TraderWallet {
 
     function minimumVolume(uint256 buyID, uint256 sellID) public returns (uint256, uint256) { // pure
         emit Debug256(orders[sellID].volumeC);
-        return (orders[buyID].volumeC, orders[buyID].volumeQ);
+        return (orders[sellID].volumeC, orders[sellID].volumeQ);
     }
 
     function tupleToBTCVolume(uint256 volC, uint256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
-    public pure returns (uint256) {
-        uint256 e2 = volQ + 25 + decimals - priceQ - 12 - 1 - 1;
-        uint256 value = (volC * 2 * priceC * 1) * 10**e2;
+    public returns (uint256) { // pure
+        uint256 c = volC * 5 * priceC * 2;
+
+        uint256 ep = priceQ + volQ + decimals;
+        uint256 en = 26 + 12 + 3 + 12 + 1;
+        emit Debug256(ep);
+        emit Debug256(en);
+
+        uint256 value;
+        if (en > ep) {
+            emit Debug256(66);
+            emit Debug256(en - ep);
+            value = c / 10 ** (en - ep);
+        } else {
+            emit Debug256(77);
+            emit Debug256(ep - en);
+            value = c * 10 ** (ep - en);
+        }
+
         return value;
     }
 
@@ -295,7 +313,7 @@ contract TraderWallet {
         
         (uint256 minVolC, uint256 minVolQ) = minimumVolume(buyID, sellID);
 
-        uint256 btcValue = tupleToBTCVolume(minVolC, minVolQ, midPriceC, midPriceQ, 18);
+        uint256 btcValue = tupleToBTCVolume(minVolC, minVolQ, midPriceC, midPriceQ, 8);
 
         uint256 renValue = tupleToRenVolume(minVolC, minVolQ, 18);
 
