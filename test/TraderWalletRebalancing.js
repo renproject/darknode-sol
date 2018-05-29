@@ -26,9 +26,9 @@ contract.only("TraderWallet", function (accounts) {
     });
 
     it("can rebalance", async () => {
-        const price = 0.0000095;
-        const renDeposit = 5; // REN
-        const btcDeposit = 5 * price; // SATS
+        const price = 0.000095;
+        const renDeposit = 1 / 0.000095; // REN
+        const btcDeposit = renDeposit * price; // SATS
 
         // Give seller some tokens
         await ren.transfer(seller, renDeposit * 1e18 * 2);
@@ -43,8 +43,7 @@ contract.only("TraderWallet", function (accounts) {
         // Buying REN for BTC
         const price1 = priceToTuple(price); // Price of 1 REN in BTC
         const volume1 = volumeToTuple(btcDeposit); // Volume in BTC
-        console.log(price1);
-        console.log(volume1);
+
         const buy = [
             123,
             price1.c,
@@ -76,19 +75,15 @@ contract.only("TraderWallet", function (accounts) {
         await wallet.submitOrder(...buy);
         await wallet.submitOrder(...sell);
 
-        console.log((await wallet.getBalance(seller, ren.address)).toString());
-        console.log((await wallet.getBalance(buyer, btc.address)).toString());
-
-        console.log((await wallet.getBalance(seller, btc.address)).toString());
-        console.log((await wallet.getBalance(buyer, ren.address)).toString());
+        console.log(`Seller has ${((await wallet.getBalance(seller, ren.address)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, btc.address)) * 1e-8).toString()} BTC`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, ren.address)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, btc.address)) * 1e-8).toString()} BTC`);
 
         await wallet.submitMatch(buy[0], sell[0]);
 
-        console.log((await wallet.getBalance(seller, ren.address)).toString());
-        console.log((await wallet.getBalance(buyer, btc.address)).toString());
+        console.log(`Seller has ${((await wallet.getBalance(seller, ren.address)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, btc.address)) * 1e-8).toString()} BTC`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, ren.address)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, btc.address)) * 1e-8).toString()} BTC`);
 
-        console.log((await wallet.getBalance(seller, btc.address)).toString());
-        console.log((await wallet.getBalance(buyer, ren.address)).toString());
+        // (1).should.equal(0);
     })
 
 });

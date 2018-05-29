@@ -27,6 +27,8 @@ contract TraderWallet {
     event Withdraw(address trader, address token, uint256 value);
     event Transfer(address from, address to, address token, uint256 value);
     event Debug256(uint256 num);
+    event Debugi256(int256 num);
+    event Debug(string msg);
 
     mapping(uint256 => Order) private orders;
 
@@ -112,84 +114,6 @@ contract TraderWallet {
 
 
 
-
-// const LOW_DECIMALS = 18;
-// const HIGH_DECIMALS = 8;
-
-
-// const tupleGTE = (left: Tuple, right: Tuple): boolean => {
-//     if (left.q < right.q) {
-//         const norm = right.c * 10 ** (right.q - left.q);
-//         return left.c >= norm;
-//     } else {
-//         const norm = left.c * 10 ** (left.q - right.q);
-//         return norm >= right.c;
-//     }
-// }
-
-
-// const main = (buy: Order, sell: Order) => {
-//     // Check that buy.price >= sell.price
-//     if (!tupleGTE(buy.price, sell.price)) { return new AssertionError({ message: "buy price is less than sell price" }); }
-//     // // Check that buy.volume >= sell.minimumVolume
-//     // if (!tupleGTE(buy.volume, sell.minimumVolume)) { return new AssertionError({ message: "buy volume is less than sell minimum volume" }); }
-//     // // Check that sell.volume >= buy.minimumVolume
-//     // if (!tupleGTE(sell.volume, buy.minimumVolume)) { return new AssertionError({ message: "sell volume is less than buy minimum volume" }); }
-
-//     const midPrice = priceMidPoint(buy.price, sell.price);
-
-//     const minVolume = minimumVolume(sell.volume, midPrice, buy.volume);
-//     const ratio = tupleToVolume(minVolume) / tupleToPrice(midPrice);
-//     const lowValue = ratio * 10 ** LOW_DECIMALS;
-//     const highValue = tupleToVolume(minVolume) * 10 ** HIGH_DECIMALS;
-
-//     return `Bought ${lowValue} △ for ${highValue} ○`; // /* * 10 ** (-8) */ };
-// }
-
-
-
-
-
-
-
-
-    function priceMidPoint(uint256 buyID, uint256 sellID) public returns (uint256, uint256) {
-        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
-        emit Debug256(99);
-        emit Debug256((orders[buyID].priceC + norm) / 2);
-        return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
-    }
-
-
-    // function minimumVolume(uint256 buyID, uint256 sellID)
-    //     public view returns (uint256, uint256)
-    //     {
-        
-    //     uint256 normC = orders[buyID].priceC * orders[buyID].volumeC * 5;
-    //     // TODO: Will overflow!
-    //     uint256 normQ = orders[buyID].volumeQ + 26 - orders[buyID].priceQ - 3;
-    //     emit Debug256(normQ);
-
-
-    //     uint256 norm;
-    //     if (normQ < orders[sellID].priceQ) {
-    //         norm = orders[sellID].volumeC * 10 ** (orders[sellID].volumeQ - normQ);
-    //         return (norm < normC) ? (orders[sellID].volumeC, orders[sellID].volumeQ) : (normC, normQ);
-    //     } else {
-    //         norm = normC * 10 ** (normQ - orders[sellID].volumeQ);
-    //         return (norm < orders[sellID].volumeQ) ? (normC, normQ) : (orders[sellID].volumeC, orders[sellID].volumeQ);
-    //     }
-    // }
-
-
-
-    // function tupleLessThan(uint256 c1, uint256 q1, uint256 c2, uint256 q2, uint256 step) public pure returns (bool) {
-    //     uint256 norm = step * c2 * 10 ** (q2 - q1);
-    //     return norm < c1;
-    // }
- 
-    // Verifier functions //
-
     function submitOrder(
         uint256 id,
         uint256 priceC, uint256 priceQ, uint256 volumeC, uint256 volumeQ, uint256 minimumVolumeC, uint256 minimumVolumeQ, address trader, DetailedERC20 wantToken, bytes32 nonceHash
@@ -207,102 +131,73 @@ contract TraderWallet {
         });
     }
 
-    // function verifyMatch(uint256 buyID, uint256 sellID) public {
-    //     require(
-    //         tupleLessThan(
-    //             orders[sellID].priceC,
-    //             orders[sellID].priceQ,
-    //             orders[buyID].priceC,
-    //             orders[buyID].priceQ,
-    //             1
-    //         )
-    //     );
 
-    //     require(
-    //         tupleLessThan(
-    //             orders[sellID].priceC,
-    //             orders[sellID].priceQ,
-    //             orders[buyID].priceC,
-    //             orders[buyID].priceQ,
-    //             1
-    //         )
-    //     );
-    // }
-
-    // function submitMatch(uint256 buyID, uint256 sellID) public {
-    //     // TODO: Verify order match
-
-    //     // uint8 highDecimals = orders[buyID].wantToken.decimals();
-    //     // uint8 lowDecimals = orders[sellID].wantToken.decimals();
-
-    //     // uint256 volumeC = orders[sellID].volumeC;
-    //     // uint256 volumeQ = orders[sellID].volumeQ;
-
-    //     uint256 midC;
-    //     uint256 midQ;
-    //     uint256 minC;
-    //     uint256 minQ;
-    //     // (midC, midQ) = midPoint(orders[buyID].priceC, orders[buyID].priceQ, orders[sellID].priceC, orders[sellID].priceQ);
-
-    //     // // TODO: Check for overflows / negatives / decimals
-    //     // uint256 e1 = volumeQ + orders[sellID].wantToken.decimals() - 12 - 1;
-    //     // uint256 lowValue = volumeC * 2 * 10**e1;
-    //     // uint256 e2 = volumeQ + 25 + orders[buyID].wantToken.decimals() - midQ - 12 - 1 - 1;
-    //     // uint256 highValue = (volumeC * 2 * midC * 1) * 10**e2;
-
-    //     // uint256 (midPriceC, midPriceQ) = priceMidPoint(buy.price, sell.price);
-    //     (midC, midQ) = priceMidPoint(buyID, sellID);
-        
-    //     (minC, minQ) = minimumVolume(buyID, sellID);
-
-    //     uint256 e0 = minQ + 26 + 1 - midQ;
-    //     uint256 ratio = (4 * minC * 10 ** e0) / (midC);
-    //     uint256 lowValue = ratio * 10 ** orders[buyID].wantToken.decimals();
-    //     Debug256(orders[sellID].wantToken.decimals());
-    //     Debug256(minQ);
-    //     uint256 e2 = (orders[sellID].wantToken.decimals() + minQ - 12 - 1);
-    //     uint256 highValue = 2 * minC * 10 ** e2;
-
-    //     Debug256(e0);
-    //     Debug256(ratio);
-
-    //     // ...
-
-    // }
-
-
-    function minimumVolume(uint256 buyID, uint256 sellID) public returns (uint256, uint256) { // pure
-        emit Debug256(orders[sellID].volumeC);
-        return (orders[sellID].volumeC, orders[sellID].volumeQ);
+    function priceMidPoint(uint256 buyID, uint256 sellID) public view returns (uint256, uint256) {
+        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
+        return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
     }
 
-    function tupleToBTCVolume(uint256 volC, uint256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
-    public returns (uint256) { // pure
+    function minimumVolume(uint256 buyID, uint256 sellID, uint256 priceC, uint256 priceQ) public view returns (uint256, int256) {        
+        uint256 buyV = tupleToRenVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
+        uint256 sellV = tupleToBTCVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
+
+        if (buyV < sellV) {
+            // TODO: Optimize this process, divide above
+            return (orders[buyID].volumeC * 200 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - int256(priceQ));
+        } else {
+            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ));
+        }
+    }
+
+    function tupleToBTCVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
+    public pure returns (uint256) {
         uint256 c = volC * 5 * priceC * 2;
 
-        uint256 ep = priceQ + volQ + decimals;
+        uint256 ep = priceQ + decimals;
         uint256 en = 26 + 12 + 3 + 12 + 1;
-        emit Debug256(ep);
-        emit Debug256(en);
-
-        uint256 value;
-        if (en > ep) {
-            emit Debug256(66);
-            emit Debug256(en - ep);
-            value = c / 10 ** (en - ep);
+        if (volQ < 0) {
+            en += uint256(-volQ);
         } else {
-            emit Debug256(77);
-            emit Debug256(ep - en);
+            ep += uint256(volQ);
+        }
+
+        // If (ep-en) is negative, divide instead of multiplying
+        uint256 value;
+        if (ep >= en) {
             value = c * 10 ** (ep - en);
+        } else {
+            value = c / 10 ** (en - ep);            
         }
 
         return value;
     }
 
-    function tupleToRenVolume(uint256 volC, uint256 volQ, uint256 decimals) public pure returns (uint256) {
-        uint256 e2 = decimals + volQ - 12 - 1;
-        uint256 value = 2 * volC * 10 ** e2;
-        return value;
+    function tupleToPrice(uint256 priceC, uint256 priceQ) pure public returns (uint256) {
+        uint256 c = 5 * priceC;
+        uint256 ep = priceQ + 8;
+        uint256 en = 26 + 3 + 12;
+        if (ep >= en) {
+            return c * 10 ** (ep - en);
+        } else {
+            return c / 10 ** (en - ep);
+        }
+    }
+
+    function tupleToRenVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
+        uint256 c = 2 * volC;
+        uint256 ep = decimals;
+        uint256 en = 12 + 1;
+        if (volQ < 0) {
+            en += uint256(-volQ);
+        } else {
+            ep += uint256(volQ);
+        }
+
+        if (ep >= en) {
+            return c * 10 ** (ep - en);
+        } else {
+            return c / 10 ** (en - ep);
+        }
     }
 
     function submitMatch(uint256 buyID, uint256 sellID) public {
@@ -311,7 +206,7 @@ contract TraderWallet {
         // Price midpoint
         (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(buyID, sellID);
         
-        (uint256 minVolC, uint256 minVolQ) = minimumVolume(buyID, sellID);
+        (uint256 minVolC, int256 minVolQ) = minimumVolume(buyID, sellID, midPriceC, midPriceQ);
 
         uint256 btcValue = tupleToBTCVolume(minVolC, minVolQ, midPriceC, midPriceQ, 8);
 
@@ -321,14 +216,14 @@ contract TraderWallet {
     }
 
 
-    // PRIVATE!
+    // Ensure this remains private
     function finalizeMatch(uint256 buyID, uint256 sellID, uint256 btcValue, uint256 renValue) private {
 
         // Subtract values
         decrementBalance(orders[buyID].trader, orders[sellID].wantToken, btcValue);
         decrementBalance(orders[sellID].trader, orders[buyID].wantToken, renValue);
 
-        // // Add values
+        // Add values
         incrementBalance(orders[sellID].trader, orders[sellID].wantToken, btcValue);
         incrementBalance(orders[buyID].trader, orders[buyID].wantToken, renValue);
 
