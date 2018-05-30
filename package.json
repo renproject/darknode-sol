@@ -23,6 +23,7 @@
     "scripts": {
         "test": "truffle test",
         "coverage": "solidity-coverage",
-        "ropsten": "truffle migrate --network ropsten --reset"
+        "ropsten": "truffle migrate --network ropsten --reset",
+        "kovan": "truffle migrate --network kovan --reset"
     }
 }
