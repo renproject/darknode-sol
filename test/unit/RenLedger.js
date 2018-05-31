@@ -37,6 +37,7 @@ contract("RenLedger", function (accounts) {
             let buyOrderId = await web3.sha3(i.toString());
             let sellOrderId = await web3.sha3((i + 100).toString());
 
+
             let prefix = await web3.toHex("Republic Protocol: open: ");
             let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
             let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
@@ -45,6 +46,7 @@ contract("RenLedger", function (accounts) {
 
             await ledger.openBuyOrder(buySignature, buyOrderId, { from: accounts[i] });
             await ledger.openSellOrder(sellSignature, sellOrderId, { from: accounts[i] });
+
         }
     });
 
