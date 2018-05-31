@@ -134,7 +134,7 @@ contract DarknodeRegistry {
     * current epoch.
     */
     function epoch() public {
-        require(block.timestamp > currentEpoch.timestamp + minimumEpochInterval);
+        require(block.timestamp >= currentEpoch.timestamp + minimumEpochInterval);
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
 

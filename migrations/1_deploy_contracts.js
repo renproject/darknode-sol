@@ -1,6 +1,6 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
-var TraderWallet = artifacts.require("TraderWallet.sol");
+var TraderAccount = artifacts.require("TraderAccount.sol");
 // var RepublicToken = artifacts.require("RepublicToken.sol");
 
 // Put any configs here
@@ -36,5 +36,5 @@ function deployContract(deployer, artifact) {
 
 module.exports = function (deployer) {
     // deployDarknodeRegistry(deployer);
-    deployContract(deployer, TraderWallet);
+    // deployContract(deployer, TraderAccount);
 };
