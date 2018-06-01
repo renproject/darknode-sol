@@ -1,6 +1,6 @@
 const RepublicToken = artifacts.require("RepublicToken");
 const RenLedger = artifacts.require("RenLedger");
-const TraderAccount = artifacts.require("TraderAccount");
+const TraderAccounts = artifacts.require("TraderAccounts");
 
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
@@ -8,7 +8,7 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("TraderAccount", function (accounts) {
+contract("TraderAccounts", function (accounts) {
 
     const ETH = 1;
     const REN = 65536;
@@ -24,7 +24,7 @@ contract("TraderAccount", function (accounts) {
             [TOKEN2]: await RepublicToken.new(),
         }
         renLedger = await RenLedger.new(0, tokenAddresses[REN].address, 0x0);
-        wallet = await TraderAccount.new(renLedger.address);
+        wallet = await TraderAccounts.new(renLedger.address);
 
         await wallet.registerToken(ETH, 0x0, 18);
         await wallet.registerToken(TOKEN1, tokenAddresses[TOKEN1].address, (await tokenAddresses[TOKEN1].decimals()));

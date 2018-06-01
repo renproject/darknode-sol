@@ -1,4 +1,4 @@
-const TraderAccount = artifacts.require("TraderAccount");
+const TraderAccounts = artifacts.require("TraderAccounts");
 const RenLedger = artifacts.require("RenLedger");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -19,7 +19,7 @@ const OrderParity = {
 let prefix = web3.toHex("Republic Protocol: open: ");
 console.log(prefix);
 
-contract.only("TraderAccount", function (accounts) {
+contract.only("TraderAccounts", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
@@ -44,7 +44,7 @@ contract.only("TraderAccount", function (accounts) {
             0
         );
         renLedger = await RenLedger.new(0, tokenAddresses[REN].address, dnr.address);
-        wallet = await TraderAccount.new(renLedger.address);
+        wallet = await TraderAccounts.new(renLedger.address);
 
         await wallet.registerToken(ETH, 0x0, 18);
         await wallet.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()));

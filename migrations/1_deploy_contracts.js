@@ -1,6 +1,6 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
-var TraderAccount = artifacts.require("TraderAccount.sol");
+var TraderAccounts = artifacts.require("TraderAccounts.sol");
 // var RepublicToken = artifacts.require("RepublicToken.sol");
 
 // Put any configs here
@@ -14,6 +14,9 @@ const CONFIG = {
         minimumBond: 0, // in airen
         minimumPoolSize: 5,
         minumumEpochInterval: 60, // in seconds
+    },
+    RENLEDGER: {
+        address: "0xe6661ae76f0CE8e70723Db4c0e2d3332910Ed83b", // KOVAN
     }
 };
 
@@ -27,6 +30,14 @@ function deployDarknodeRegistry(deployer) {
     );
 }
 
+function deployTraderAccount(deployer) {
+    deployer.deploy(
+        TraderAccounts,
+        CONFIG.RENLEDGER.address,
+    );
+}
+
+
 // Deploys a contract with no parmeters
 function deployContract(deployer, artifact) {
     deployer.deploy(
@@ -35,6 +46,7 @@ function deployContract(deployer, artifact) {
 }
 
 module.exports = function (deployer) {
+    deployTraderAccount(deployer);
     // deployDarknodeRegistry(deployer);
-    // deployContract(deployer, TraderAccount);
+    // deployContract(deployer, TraderAccounts);
 };

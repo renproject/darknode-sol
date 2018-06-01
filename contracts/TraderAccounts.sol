@@ -8,7 +8,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenLedger.sol";
 
-contract TraderAccount is Ownable {
+contract TraderAccounts is Ownable {
     using SafeMath for uint256;
 
     RenLedger ledger;
@@ -151,8 +151,8 @@ contract TraderAccount is Ownable {
     }
 
     function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, uint256 priceQ) public view returns (uint256, int256) {        
-        uint256 buyV = tupleToRenVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
-        uint256 sellV = tupleToBTCVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
+        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
+        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
 
         if (buyV < sellV) {
             // TODO: Optimize this process, divide above
@@ -162,7 +162,7 @@ contract TraderAccount is Ownable {
         }
     }
 
-    function tupleToBTCVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
+    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
     public pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
@@ -205,7 +205,7 @@ contract TraderAccount is Ownable {
         }
     }
 
-    function tupleToRenVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
+    function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
 
@@ -228,7 +228,7 @@ contract TraderAccount is Ownable {
     }
 
     // Ensure this remains private
-    function finalizeMatch(bytes32 buyID, bytes32 sellID, uint256 btcValue, uint256 renValue) private {
+    function finalizeMatch(bytes32 buyID, bytes32 sellID, uint256 lowTokenValue, uint256 highTokenValue) private {
         address buyer = ledger.orderTrader(buyID);
         address seller = ledger.orderTrader(sellID);
 
@@ -237,15 +237,15 @@ contract TraderAccount is Ownable {
 
 
         // Subtract values
-        decrementBalance(buyer, sellToken, btcValue);
-        decrementBalance(seller, buyToken, renValue);
+        decrementBalance(buyer, sellToken, lowTokenValue);
+        decrementBalance(seller, buyToken, highTokenValue);
 
         // Add values
-        incrementBalance(seller, sellToken, btcValue);
-        incrementBalance(buyer, buyToken, renValue);
+        incrementBalance(seller, sellToken, lowTokenValue);
+        incrementBalance(buyer, buyToken, highTokenValue);
 
-        emit Transfer(buyer, seller, sellToken, btcValue);
-        emit Transfer(seller, buyer, buyToken, renValue);
+        emit Transfer(buyer, seller, sellToken, lowTokenValue);
+        emit Transfer(seller, buyer, buyToken, highTokenValue);
     }
 
 
@@ -313,11 +313,11 @@ contract TraderAccount is Ownable {
         
         (uint256 minVolC, int256 minVolQ) = minimumVolume(buyID, sellID, midPriceC, midPriceQ);
 
-        uint256 btcValue = tupleToBTCVolume(minVolC, minVolQ, midPriceC, midPriceQ, 8);
+        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, 8);
 
-        uint256 renValue = tupleToRenVolume(minVolC, minVolQ, 18);
+        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, 18);
 
-        finalizeMatch(buyID, sellID, btcValue, renValue);
+        finalizeMatch(buyID, sellID, lowTokenValue, highTokenValue);
     }
  
 }
