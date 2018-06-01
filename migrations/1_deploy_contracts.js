@@ -1,5 +1,6 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
+var RenLedger = artifacts.require("RenLedger.sol");
 var TraderAccounts = artifacts.require("TraderAccounts.sol");
 // var RepublicToken = artifacts.require("RepublicToken.sol");
 
@@ -15,25 +16,36 @@ const CONFIG = {
         minimumPoolSize: 5,
         minumumEpochInterval: 60, // in seconds
     },
-    RENLEDGER: {
-        address: "0xe6661ae76f0CE8e70723Db4c0e2d3332910Ed83b", // KOVAN
-    }
 };
 
-function deployDarknodeRegistry(deployer) {
-    deployer.deploy(
+async function deployDarknodeRegistry(deployer) {
+    await deployer.deploy(
         DarknodeRegistry,
         CONFIG.REN.address,
         CONFIG.DNR.minimumBond,
         CONFIG.DNR.minimumPoolSize,
         CONFIG.DNR.minumumEpochInterval
     );
+    const dnr = await DarknodeRegistry.deployed();
+    return dnr.address;
 }
 
-async function deployTraderAccount(deployer) {
+async function deployRenLedger(deployer, dnr) {
+    await deployer.deploy(
+        RenLedger,
+        0,
+        CONFIG.REN.address,
+        dnr,
+    );
+    const ledger = await RenLedger.deployed();
+    return ledger;
+}
+
+
+async function deployTraderAccount(deployer, ledger) {
     await deployer.deploy(
         TraderAccounts,
-        CONFIG.RENLEDGER.address,
+        ledger,
     );
     const accounts = await TraderAccounts.deployed();
     await accounts.registerToken(1, 0x0, 18);
@@ -41,15 +53,16 @@ async function deployTraderAccount(deployer) {
 }
 
 
-// Deploys a contract with no parmeters
-function deployContract(deployer, artifact) {
-    deployer.deploy(
-        artifact,
-    );
-}
+// // Deploys a contract with no parmeters
+// function deployContract(deployer, artifact) {
+//     deployer.deploy(
+//         artifact,
+//     );
+// }
 
-module.exports = function (deployer) {
-    // deployTraderAccount(deployer);
-    // deployDarknodeRegistry(deployer);
+module.exports = async function (deployer) {
+    // const dnr = await deployDarknodeRegistry(deployer);
+    // const ledger = await deployRenLedger(deployer, dnr);
+    await deployTraderAccount(deployer, "0x9ac38a5f17aae6d473b0f87bd6e42e8958043c70");
     // deployContract(deployer, TraderAccounts);
 };
