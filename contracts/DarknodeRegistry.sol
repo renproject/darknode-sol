@@ -106,6 +106,15 @@ contract DarknodeRegistry {
         _;
     }
 
+    /**
+    * @notice Only allowed registered nodes without a pending deregistration to
+    * deregister
+    */
+    modifier onlyDeregistrable(bytes20 _darknodeID) {
+        require(canDeregister(_darknodeID));
+        _;
+    }
+
     /** 
     * @notice The DarknodeRegistry constructor.
     *
@@ -195,7 +204,7 @@ contract DarknodeRegistry {
     * @param _darknodeID The dark node ID that will be deregistered. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function deregister(bytes20 _darknodeID) public onlyRegistered(_darknodeID) onlyOwner(_darknodeID) {
+    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyOwner(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
         numDarknodesNextEpoch--;
@@ -286,6 +295,11 @@ contract DarknodeRegistry {
         return darknodeRegistry[_darknodeID].registeredAt != 0 
         && darknodeRegistry[_darknodeID].registeredAt <= currentEpoch.timestamp
         && !isDeregistered(_darknodeID);
+    }
+
+    function canDeregister(bytes20 _darknodeID) public view returns (bool) {
+        return isRegistered(_darknodeID)
+        && darknodeRegistry[_darknodeID].deregisteredAt == 0;
     }
 
     /**

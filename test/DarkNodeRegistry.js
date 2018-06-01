@@ -8,7 +8,7 @@ const MINIMUM_BOND = 100;
 const MINIMUM_DARKPOOL_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
-contract("DarknodeRegistry", function (accounts) {
+contract.only("DarknodeRegistry", function (accounts) {
 
   let dnr, ren;
 
@@ -86,6 +86,10 @@ contract("DarknodeRegistry", function (accounts) {
     assert.equal((await dnr.isDeregistered("6")), true);
     assert.equal((await dnr.isDeregistered("9")), true);
     assert.equal((await dnr.isDeregistered("10")), true);
+  })
+
+  it("can't deregister twice", async () => {
+    await dnr.deregister("1", { from: accounts[0] }).should.be.rejectedWith();
   })
 
   it("can only get the Dark Nodes that are fully registered", async () => {
