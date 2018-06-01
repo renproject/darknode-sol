@@ -24,7 +24,8 @@
   "scripts": {
     "test": "truffle test",
     "coverage": "solidity-coverage",
-    "ropsten": "truffle migrate --network ropsten --reset",
-    "kovan": "truffle migrate --network kovan --reset"
+    "ropsten": "npm run merge && truffle migrate --network ropsten --reset",
+    "kovan": "npm run merge && truffle migrate --network kovan --reset",
+    "merge": "sol-merger \"./contracts/**/*.sol\" ./build/contracts"
   }
 }
