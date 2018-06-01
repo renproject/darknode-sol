@@ -7,7 +7,6 @@ const Sha256 = require('crypto-js/sha256');
 const Keccak256 = require('js-sha3').keccak256;
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
 // Unit tests for the Arc library

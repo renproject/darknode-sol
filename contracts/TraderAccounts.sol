@@ -189,21 +189,21 @@ contract TraderAccounts is Ownable {
         return value;
     }
 
-    function tupleToPrice(uint256 priceC, uint256 priceQ) pure public returns (uint256) {
-        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
-        uint256 c = 5 * priceC;
+    // function tupleToPrice(uint256 priceC, uint256 priceQ) pure public returns (uint256) {
+    //     // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
+    //     uint256 c = 5 * priceC;
 
-        // Positive and negative components of exponent        
-        uint256 ep = priceQ + 8;
-        uint256 en = 26 + 3 + 12;
+    //     // Positive and negative components of exponent        
+    //     uint256 ep = priceQ + 8;
+    //     uint256 en = 26 + 3 + 12;
 
-        // If (ep-en) is negative, divide instead of multiplying        
-        if (ep >= en) {
-            return c * 10 ** (ep - en);
-        } else {
-            return c / 10 ** (en - ep);
-        }
-    }
+    //     // If (ep-en) is negative, divide instead of multiplying        
+    //     if (ep >= en) {
+    //         return c * 10 ** (ep - en);
+    //     } else {
+    //         return c / 10 ** (en - ep);
+    //     }
+    // }
 
     function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
@@ -228,14 +228,11 @@ contract TraderAccounts is Ownable {
     }
 
     // Ensure this remains private
-    function finalizeMatch(bytes32 buyID, bytes32 sellID, uint256 lowTokenValue, uint256 highTokenValue) private {
-        address buyer = ledger.orderTrader(buyID);
-        address seller = ledger.orderTrader(sellID);
-
-        uint32 buyToken = uint32(orders[sellID].tokens);
-        uint32 sellToken = uint32(orders[sellID].tokens >> 32);
-
-
+    function finalizeMatch(
+        address buyer, address seller,
+        uint32 buyToken, uint32 sellToken,
+        uint256 lowTokenValue, uint256 highTokenValue
+    ) private {
         // Subtract values
         decrementBalance(buyer, sellToken, lowTokenValue);
         decrementBalance(seller, buyToken, highTokenValue);
@@ -306,18 +303,26 @@ contract TraderAccounts is Ownable {
         require(orders[sellID].parity == uint8(OrderParity.Sell));
         require(ledger.orderState(buyID) == 2);
         require(ledger.orderState(sellID) == 2);
+        
+        // TODO: Loop through and check at all indices
         require(ledger.orderMatch(buyID)[0] == sellID);
+
+        address buyer = ledger.orderTrader(buyID);
+        address seller = ledger.orderTrader(sellID);
+
+        uint32 buyToken = uint32(orders[sellID].tokens);
+        uint32 sellToken = uint32(orders[sellID].tokens >> 32);
 
         // Price midpoint
         (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(buyID, sellID);
         
         (uint256 minVolC, int256 minVolQ) = minimumVolume(buyID, sellID, midPriceC, midPriceQ);
 
-        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, 8);
+        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, tokenDecimals[sellToken]);
 
-        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, 18);
+        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]);
 
-        finalizeMatch(buyID, sellID, lowTokenValue, highTokenValue);
+        finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
     }
- 
+
 }

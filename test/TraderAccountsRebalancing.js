@@ -7,7 +7,6 @@ const BitcoinMock = artifacts.require("BitcoinMock");
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
 const web3_1 = require("web3");
@@ -122,13 +121,13 @@ contract("TraderAccounts", function (accounts) {
         await wallet.submitOrder(...buy);
         await wallet.submitOrder(...sell);
 
-        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
-        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
+        // console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
+        // console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
 
         await wallet.submitMatch(buy[0], sell[0]);
 
-        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
-        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
+        // console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
+        // console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
 
         // (1).should.equal(0);
     })
