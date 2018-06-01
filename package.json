@@ -26,6 +26,6 @@
     "coverage": "solidity-coverage",
     "ropsten": "npm run merge && truffle migrate --network ropsten --reset",
     "kovan": "npm run merge && truffle migrate --network kovan --reset",
-    "merge": "sol-merger \"./contracts/**/*.sol\" ./build/contracts"
+    "merge": "sol-merger \"./contracts/**/*.sol\" ./.merged"
   }
 }

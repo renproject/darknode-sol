@@ -8,6 +8,7 @@ coverageEnv
 coverage.json
 .coveralls.yml
 .env
+.merged/
 build/*
 !build/contracts
 build/contracts/*
