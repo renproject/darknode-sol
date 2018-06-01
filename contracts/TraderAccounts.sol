@@ -144,13 +144,16 @@ contract TraderAccounts is Ownable {
     }
 
 
-    function priceMidPoint(bytes32 buyID, bytes32 sellID) public view returns (uint256, uint256) {
+
+    // Price/volume calculation functions
+
+    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, uint256) {
         // Normalize to same exponent before finding mid-point (mean)
         uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
         return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
     }
 
-    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, uint256 priceQ) public view returns (uint256, int256) {        
+    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, uint256 priceQ) private view returns (uint256, int256) {        
         uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
         uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
 
@@ -163,7 +166,7 @@ contract TraderAccounts is Ownable {
     }
 
     function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
-    public pure returns (uint256) {
+    private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
         uint256 c = volC * 5 * priceC * 2;
@@ -205,7 +208,7 @@ contract TraderAccounts is Ownable {
     //     }
     // }
 
-    function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) public pure returns (uint256) {
+    function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
 
@@ -247,20 +250,21 @@ contract TraderAccounts is Ownable {
 
 
 
-    function hashOrder(Order order) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                order.orderType,
-                order.parity,
-                order.expiry,
-                order.tokens,
-                order.priceC, order.priceQ,
-                order.volumeC, order.volumeQ,
-                order.minimumVolumeC, order.minimumVolumeQ,
-                order.nonceHash
-            )
-        );
-    }
+    // // Not used yet
+    // function hashOrder(Order order) private pure returns (bytes32) {
+    //     return keccak256(
+    //         abi.encodePacked(
+    //             order.orderType,
+    //             order.parity,
+    //             order.expiry,
+    //             order.tokens,
+    //             order.priceC, order.priceQ,
+    //             order.volumeC, order.volumeQ,
+    //             order.minimumVolumeC, order.minimumVolumeQ,
+    //             order.nonceHash
+    //         )
+    //     );
+    // }
 
 
 

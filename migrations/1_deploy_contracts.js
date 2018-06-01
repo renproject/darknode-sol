@@ -30,11 +30,14 @@ function deployDarknodeRegistry(deployer) {
     );
 }
 
-function deployTraderAccount(deployer) {
-    deployer.deploy(
+async function deployTraderAccount(deployer) {
+    await deployer.deploy(
         TraderAccounts,
         CONFIG.RENLEDGER.address,
     );
+    const accounts = await TraderAccounts.deployed();
+    await accounts.registerToken(1, 0x0, 18);
+    await accounts.registerToken(65536, CONFIG.REN.address, 18);
 }
 
 
@@ -46,7 +49,7 @@ function deployContract(deployer, artifact) {
 }
 
 module.exports = function (deployer) {
-    deployTraderAccount(deployer);
+    // deployTraderAccount(deployer);
     // deployDarknodeRegistry(deployer);
     // deployContract(deployer, TraderAccounts);
 };
