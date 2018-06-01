@@ -30,6 +30,21 @@ contract("RenLedger", function (accounts) {
         ledger = await renLedger.new(1, ren.address, dnr.address);
     });
 
+    it('should be able to retrieve trader from signature', async function () {
+        // Last byte can be 0x1b or 0x00
+        const signature = "0xe7c44ade11bc806ed80b645b2fe2d62d64b9a1bb5144a4d536f2038da9ac149c48292103db545dd11414f8bbde677e51e829a0d5f7211323ccdb51e175fe34ab1b";
+
+        const data = "0x55dd146decc436d869bf58f1d64f557870f4ec91807af9759fc81c690d454d57";
+        const id = "0x54c483844aaa986dfe61c75facc37e0851b823f18ea14bfef94f0f77bb2afa9d";
+
+        let prefix = await web3.toHex("Republic Protocol: open: ");
+        data.should.equal(await web3.sha3(prefix + id.slice(2), { encoding: 'hex' }));
+
+        await ren.approve(ledger.address, 1, { from: accounts[0] });
+        await ledger.openBuyOrder(signature, id, { from: accounts[0] });
+        (await ledger.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66".toLowerCase());
+    });
+
     it('should be able to open orders', async function () {
         for (i = 0; i < accounts.length; i++) {
             await ren.approve(ledger.address, 2, { from: accounts[i] });

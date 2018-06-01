@@ -17,9 +17,8 @@ const OrderParity = {
     SELL: 1,
 };
 let prefix = web3.toHex("Republic Protocol: open: ");
-console.log(prefix);
 
-contract.only("TraderAccounts", function (accounts) {
+contract("TraderAccounts", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
