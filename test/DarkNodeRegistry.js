@@ -8,7 +8,7 @@ const MINIMUM_BOND = 100;
 const MINIMUM_DARKPOOL_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
-contract.only("DarknodeRegistry", function (accounts) {
+contract("DarknodeRegistry", function (accounts) {
 
   let dnr, ren;
 
