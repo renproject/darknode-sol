@@ -1,7 +1,5 @@
 pragma solidity ^0.4.24;
 
-// pragma experimental ABIEncoderV2;
-
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -30,6 +28,7 @@ contract TraderAccounts is Ownable {
         uint256 nonceHash;
     }
 
+    // Events
     event Deposit(address trader, uint32 token, uint256 value);
     event Withdraw(address trader, uint32 token, uint256 value);
     event Transfer(address from, address to, uint32 token, uint256 value);
@@ -37,6 +36,8 @@ contract TraderAccounts is Ownable {
     event Debugi256(int256 num);
     event Debug(string msg);
 
+
+    // Storage
     mapping(bytes32 => Order) private orders;
 
     mapping(address => uint32[]) private traderTokens;
@@ -47,25 +48,44 @@ contract TraderAccounts is Ownable {
     mapping(uint32 => uint8) public tokenDecimals;
     mapping(uint32 => bool) public tokenEnabled;
     
-    // CONSTRUCTOR //
 
+    /**
+    @notice constructor
+    @param _ledger the address for the Ren Ledger
+    */
     constructor(RenLedger _ledger) public {
         ledger = _ledger;
     }
 
 
-    // Contract Registry //
+
+    // Contract Registry - TODO: Move to its own contract?
+
+    /**
+    @notice Modifier to require tokens to be registered in the token registry
+    */
     modifier onlyEnabledToken(uint32 _tokenCode) {
         require(tokenEnabled[_tokenCode]);
         _;
     }
 
+    /**
+    @notice Sets a token as being registered and stores its details (only-owner)
+    @param _tokenCode a unique 32-bit token identifier
+    @param _tokenAddress the address of the ERC20-compatible token
+    @param _tokenDecimals the decimals to use for the token
+    */
     function registerToken(uint32 _tokenCode, ERC20 _tokenAddress, uint8 _tokenDecimals) public onlyOwner {
+        // TODO: Check if contract has a .decimals() call
         tokenAddresses[_tokenCode] = _tokenAddress;
         tokenDecimals[_tokenCode] = _tokenDecimals;
         tokenEnabled[_tokenCode] = true;
     }
 
+    /**
+    @notice Sets a token as being deregistered
+    @param _tokenCode the unique 32-bit token identifier
+    */
     function deregisterToken(uint32 _tokenCode) public onlyOwner {
         tokenEnabled[_tokenCode] = false;
     }
@@ -94,6 +114,11 @@ contract TraderAccounts is Ownable {
 
     // Trader functions //
 
+    /**
+    @notice Deposits ETH or an ERC20 token into the contract
+    @param _tokenCode the token's identifier (must be a registered token)
+    @param _value the amount to deposit in the token's smallest unit
+    */
     function deposit(uint32 _tokenCode, uint256 _value) payable public onlyEnabledToken(_tokenCode) {
         address trader = msg.sender;
 
@@ -109,6 +134,12 @@ contract TraderAccounts is Ownable {
         emit Deposit(trader, _tokenCode, _value);
     }
 
+    /**
+    @notice Withdraws ETH or an ERC20 token from the contract
+    @notice TODO: Check if the account has any open orders first
+    @param _tokenCode the token's identifier (doesn't have to be registered)
+    @param _value the amount to withdraw in the token's smallest unit
+    */
     function withdraw(uint32 _tokenCode, uint256 _value) public {
         address trader = msg.sender;
 
@@ -124,14 +155,35 @@ contract TraderAccounts is Ownable {
         emit Withdraw(trader, _tokenCode, _value);
     }
 
+    /**
+    @notice Retrieves a trader's balance for a token
+    @param _trader the address of the trader to retrieve the balance of
+    @param _tokenCode the token's identifier (doesn't have to be registered)
+    @return the trader's balance in the token's smallest unit
+    */
     function getBalance(address _trader, uint32 _tokenCode) public view returns (uint256) {    
         return balances[_trader][_tokenCode];
     }
 
+    /**
+    @notice Retrieves the list of token addresses that the trader has previously
+    deposited
+    @param _trader the address of the trader
+    @return an array of addresses of the tokens
+    */
     function getTokens(address _trader) public view returns (uint32[]) {
         return traderTokens[_trader];
     }
 
+    /**
+    @notice Retrieves the list of token addresses that the trader has previosly
+    deposited and a list of the corresponding token balances
+    @param _trader the address of the trader
+    @return [
+        "the array of token addresses",
+        "the array of token balances in tokens' smallest units"
+    ]
+    */
     function getBalances(address _trader) public view returns (uint32[], uint256[]) {
         uint32[] memory tokens = getTokens(_trader);
         uint256[] memory traderBalances = new uint256[](tokens.length);
@@ -192,21 +244,6 @@ contract TraderAccounts is Ownable {
         return value;
     }
 
-    // function tupleToPrice(uint256 priceC, uint256 priceQ) pure public returns (uint256) {
-    //     // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
-    //     uint256 c = 5 * priceC;
-
-    //     // Positive and negative components of exponent        
-    //     uint256 ep = priceQ + 8;
-    //     uint256 en = 26 + 3 + 12;
-
-    //     // If (ep-en) is negative, divide instead of multiplying        
-    //     if (ep >= en) {
-    //         return c * 10 ** (ep - en);
-    //     } else {
-    //         return c / 10 ** (en - ep);
-    //     }
-    // }
 
     function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
@@ -250,7 +287,7 @@ contract TraderAccounts is Ownable {
 
 
 
-    // // Not used yet
+    // // TODO: Implemnet
     // function hashOrder(Order order) private pure returns (bytes32) {
     //     return keccak256(
     //         abi.encodePacked(
@@ -269,58 +306,78 @@ contract TraderAccounts is Ownable {
 
 
 
+    /**
+    @notice Stores the details of an order
+    @param _id (TODO: calculate based on other parameters)
+    @param _orderType one of Midpoint or Limit
+    @param _parity one of Buy or Sell
+    @param _expiry the expiry date of the order in seconds since Unix epoch
+    @param _tokens two 32-bit token codes concatenated (with the lowest first)
+    @param _priceC the constant in the price tuple
+    @param _priceQ the exponent in the price tuple
+    @param _volumeC the constant in the volume tuple
+    @param _volumeQ the exponent in the volume tuple
+    @param _minimumVolumeC the constant in the minimum-volume tuple
+    @param _minimumVolumeQ the exponent in the minimum-volume tuple
+    @param _nonceHash the keccak256 hash of a random 32 byte value
+    */
     function submitOrder(
-        bytes32 id,
-        uint8 orderType,
-        uint8 parity,
-        uint64 expiry,
-        uint64 tokens,
-        uint16 priceC, uint16 priceQ,
-        uint16 volumeC, uint16 volumeQ,
-        uint16 minimumVolumeC, uint16 minimumVolumeQ,
-        uint256 nonceHash
+        bytes32 _id,
+        uint8 _orderType,
+        uint8 _parity,
+        uint64 _expiry,
+        uint64 _tokens,
+        uint16 _priceC, uint16 _priceQ,
+        uint16 _volumeC, uint16 _volumeQ,
+        uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
+        uint256 _nonceHash
     ) public {
 
         Order memory order = Order({
-            orderType: orderType,
-            parity: parity,
-            expiry: expiry,
-            tokens: tokens,
-            priceC: priceC, priceQ: priceQ,
-            volumeC: volumeC, volumeQ: volumeQ,
-            minimumVolumeC: minimumVolumeC, minimumVolumeQ: minimumVolumeQ,
-            nonceHash: nonceHash
+            orderType: _orderType,
+            parity: _parity,
+            expiry: _expiry,
+            tokens: _tokens,
+            priceC: _priceC, priceQ: _priceQ,
+            volumeC: _volumeC, volumeQ: _volumeQ,
+            minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,
+            nonceHash: _nonceHash
         });
 
         // FIXME: Implement order hashing
         // bytes32 id = hashOrder(order);
 
-        orders[id] = order;
+        orders[_id] = order;
     }
 
-
-    function submitMatch(bytes32 buyID, bytes32 sellID) public {
+    /**
+    @notice Settles two orders that are matched. `submitOrder` must have been
+    called for each order before this function is called
+    @param _buyID the 32 byte ID of the buy order
+    @param _sellID the 32 byte ID of the sell order
+    */
+    function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
         // TODO: Verify order match
 
         // Require that the orders are confirmed to one another
-        require(orders[buyID].parity == uint8(OrderParity.Buy));
-        require(orders[sellID].parity == uint8(OrderParity.Sell));
-        require(ledger.orderState(buyID) == 2);
-        require(ledger.orderState(sellID) == 2);
+        require(orders[_buyID].parity == uint8(OrderParity.Buy));
+        require(orders[_sellID].parity == uint8(OrderParity.Sell));
+        require(ledger.orderState(_buyID) == 2);
+        require(ledger.orderState(_sellID) == 2);
         
         // TODO: Loop through and check at all indices
-        require(ledger.orderMatch(buyID)[0] == sellID);
+        require(ledger.orderMatch(_buyID)[0] == _sellID);
 
-        address buyer = ledger.orderTrader(buyID);
-        address seller = ledger.orderTrader(sellID);
+        address buyer = ledger.orderTrader(_buyID);
+        address seller = ledger.orderTrader(_sellID);
 
-        uint32 buyToken = uint32(orders[sellID].tokens);
-        uint32 sellToken = uint32(orders[sellID].tokens >> 32);
+        uint32 buyToken = uint32(orders[_sellID].tokens);
+        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
 
         // Price midpoint
-        (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(buyID, sellID);
+        (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(_buyID, _sellID);
         
-        (uint256 minVolC, int256 minVolQ) = minimumVolume(buyID, sellID, midPriceC, midPriceQ);
+        (uint256 minVolC, int256 minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
 
         uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, tokenDecimals[sellToken]);
 
