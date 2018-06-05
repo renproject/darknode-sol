@@ -240,5 +240,30 @@ contract RenLedger {
 
         return (orderbook[index], true);
     }
+
+    /**
+    * getOrder will return order details of the orders starting from the offset.
+    */
+    function getOrders(uint256 offset, uint256 limit) public view returns (bytes32[], address[], uint8[]){
+        if (offset >= orderbook.length) {
+            return;
+        }
+
+        bytes32[] orderIDs;
+        address[] traderAddresses;
+        uint8[] states;
+
+        for (uint256 i = offset; i < offset + limit; i++) {
+            if (i == orderbook.length) {
+                return (orderIDs, traderAddresses, states);
+            }
+
+            orderIDs.push(orderbook[i]);
+            traderAddresses.push(orders[orderbook[i]].trader);
+            states.push(orders[orderbook[i]].state);
+        }
+
+        return (orderIDs, traderAddresses, states);
+    }
 }
 
