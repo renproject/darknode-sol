@@ -4,7 +4,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io")
 const secretAccount = require('./secrets.json');
 const deployer = require('./deployment.json');
 
-distribute(arguments[2]);
+distribute(process.argv[2]);
 
 function distribute(value) {
     nonce = web3.eth.getTransactionCount(secretAccount.account);
@@ -13,7 +13,7 @@ function distribute(value) {
             gasPrice: web3.toHex(10 * web3.eth.gasPrice),
             gasLimit: web3.toHex(3000000),
             data: "0x",
-            value: web3.toHex(value.toNumber()),
+            value: web3.toHex(value),
             nonce: web3.toHex(nonce + i),
             to: deployer.configs[i].config.keystore.ecdsa.address,
             from: secretAccount.account
