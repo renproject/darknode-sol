@@ -375,9 +375,12 @@ contract TraderAccounts is Ownable {
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
 
         // Price midpoint
-        (uint256 midPriceC, uint256 midPriceQ) = priceMidPoint(_buyID, _sellID);
-        
-        (uint256 minVolC, int256 minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
+        uint256 midPriceC;
+        uint256 midPriceQ;
+        (midPriceC, midPriceQ) = priceMidPoint(_buyID, _sellID);
+        uint256 minVolC;
+        int256 minVolQ;
+        (minVolC, minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
 
         uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, tokenDecimals[sellToken]);
 

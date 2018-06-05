@@ -4,8 +4,6 @@ const RenLedger = artifacts.require("RenLedger");
 const TraderAccounts = artifacts.require("TraderAccounts");
 const fs = require('fs');
 
-
-
 async function deploy() {
     const republicToken = await RepublicToken.new();
     const darknodeRegistry = await DarknodeRegistry.new(republicToken.address, 0, 8, 60);

@@ -2,6 +2,8 @@ require('dotenv').config()
 
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
+console.log(process.env.MNEMONIC);
+
 module.exports = {
   networks: {
     development: {
@@ -17,10 +19,10 @@ module.exports = {
       gas: 3000000,
     },
     kovan: {
-      provider: function () {
-        return new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
-      },
-      network_id: 3,
+      // provider: function () {
+      //   return new HDWalletProvider("***REMOVED***", `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
+      // },
+      network_id: 42,
       gas: 3000000,
     },
   },
