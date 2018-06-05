@@ -260,7 +260,7 @@ contract RenLedger {
 
             orderIDs.push(orderbook[i]);
             traderAddresses.push(orders[orderbook[i]].trader);
-            states.push(orders[orderbook[i]].state);
+            states.push(uint8(orders[orderbook[i]].state));
         }
 
         return (orderIDs, traderAddresses, states);
