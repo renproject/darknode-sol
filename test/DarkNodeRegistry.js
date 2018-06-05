@@ -88,6 +88,10 @@ contract("DarknodeRegistry", function (accounts) {
     assert.equal((await dnr.isDeregistered("10")), true);
   })
 
+  it("can't deregister twice", async () => {
+    await dnr.deregister("1", { from: accounts[0] }).should.be.rejectedWith();
+  })
+
   it("can only get the Dark Nodes that are fully registered", async () => {
     const nodes = await dnr.getDarknodes.call({ gasLimit: 5000000 });
     assert.equal(nodes.length, accounts.length - 6);

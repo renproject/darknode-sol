@@ -4,10 +4,9 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("RewardVault", function (accounts) {
+contract("RewardGateway", function (accounts) {
     const ETHEREUM = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
     let rv, dnr, ren;
 
