@@ -3,13 +3,12 @@ const RenLedger = artifacts.require("RenLedger");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const BitcoinMock = artifacts.require("BitcoinMock");
+const DGXMock = artifacts.require("DGXMock");
 
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
-
-const web3_1 = require("web3");
 
 const OrderParity = {
     BUY: 0,
@@ -17,7 +16,7 @@ const OrderParity = {
 };
 let prefix = web3.toHex("Republic Protocol: open: ");
 
-contract("TraderAccounts", function (accounts) {
+contract.only("TraderAccounts", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
@@ -25,13 +24,15 @@ contract("TraderAccounts", function (accounts) {
 
     const ETH = 1;
     const BTC = 0;
-    const REN = 65536;
+    const DGX = 0x100;
+    const REN = 0x10000;
     let wallet, tokenAddresses;
 
-    beforeEach(async function () {
+    before(async function () {
         tokenAddresses = {
             [ETH]: { address: 0x0 },
             [BTC]: await BitcoinMock.new(),
+            [DGX]: await DGXMock.new(),
             [REN]: await RepublicToken.new(),
         }
 
@@ -46,9 +47,8 @@ contract("TraderAccounts", function (accounts) {
 
         await wallet.registerToken(ETH, 0x0, 18);
         await wallet.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()));
+        await wallet.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()));
         await wallet.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()));
-
-
 
         // Register darknode
         await dnr.register(darknode, "", 0, { from: darknode });
@@ -56,35 +56,37 @@ contract("TraderAccounts", function (accounts) {
     });
 
     it("can rebalance", async () => {
-        const price = 0.000095;
-        const renDeposit = 1 / 0.000095; // REN
-        const btcDeposit = renDeposit * price; // SATS
+        const buyPrice = 1;
+        const sellPrice = 0.95;
+        const renDeposit = 1; // REN
+        const dgxDeposit = 2; // DGX
 
         // Give seller some tokens
-        await tokenAddresses[REN].transfer(seller, renDeposit * 1e18 * 2);
+        await tokenAddresses[REN].transfer(seller, renDeposit * 1e18);
 
         // Approve and deposit
-        await tokenAddresses[BTC].approve(wallet.address, btcDeposit * 1e8, { from: buyer });
-        await wallet.deposit(BTC, btcDeposit * 1e8, { from: buyer });
+        await tokenAddresses[DGX].approve(wallet.address, dgxDeposit * 1e9, { from: buyer });
+        await wallet.deposit(DGX, dgxDeposit * 1e9, { from: buyer });
         await tokenAddresses[REN].approve(wallet.address, renDeposit * 1e18, { from: seller });
         await wallet.deposit(REN, renDeposit * 1e18, { from: seller });
 
-        // Overflows if BTC isn't 0
-        const BTCREN = BTC << 32 | REN;
+        // Overflows if DGX isn't 0
+        const DGXREN = 0x10000010000;
 
-        // Buying REN for BTC
-        const buyPrice = priceToTuple(price); // Price of 1 REN in BTC
-        const buyVolume = volumeToTuple(btcDeposit); // Volume in BTC
+
+        // Buying REN for DGX
+        const buyPriceT = priceToTuple(buyPrice); // Price of 1 REN in DGX
+        const buyVolume = volumeToTuple(dgxDeposit); // Volume in DGX
         let buyOrderId = await web3.sha3("BUY");
         let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
         const buy = [
             buyOrderId, // id
             0, // type
             OrderParity.BUY, // parity
-            1541026487, // FIXME: expiry
-            BTCREN, // tokens
-            buyPrice.c,
-            buyPrice.q,
+            1641026487, // FIXME: expiry
+            DGXREN, // tokens
+            buyPriceT.c,
+            buyPriceT.q,
             buyVolume.c,
             buyVolume.q,
             buyVolume.c,
@@ -94,7 +96,7 @@ contract("TraderAccounts", function (accounts) {
         const buySignature = await web3.eth.sign(buyer, buyHash);
 
 
-        const sellPrice = priceToTuple(price); // Price of 1 REN in BTC
+        const sellPriceT = priceToTuple(sellPrice); // Price of 1 REN in DGX
         const sellVolume = volumeToTuple(renDeposit); // Volume in REN
         let sellOrderId = await web3.sha3("SELL");
         let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
@@ -102,10 +104,10 @@ contract("TraderAccounts", function (accounts) {
             sellOrderId, // id
             0, // type
             OrderParity.SELL, // parity
-            1541026487, // FIXME: expiry   
-            BTCREN, // tokens
-            sellPrice.c,
-            sellPrice.q,
+            1641026487, // FIXME: expiry
+            DGXREN, // tokens
+            sellPriceT.c,
+            sellPriceT.q,
             sellVolume.c,
             sellVolume.q,
             sellVolume.c,
@@ -114,22 +116,27 @@ contract("TraderAccounts", function (accounts) {
         ];
         const sellSignature = await web3.eth.sign(seller, sellHash);
 
+
         await renLedger.openBuyOrder(buySignature, buyOrderId, { from: buyer });
         await renLedger.openSellOrder(sellSignature, sellOrderId, { from: seller });
+
+        (await renLedger.orderTrader(buyOrderId)).should.equal(buyer);
+        (await renLedger.orderTrader(sellOrderId)).should.equal(seller);
+
         await renLedger.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
 
         await wallet.submitOrder(...buy);
         await wallet.submitOrder(...sell);
 
-        // console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
-        // console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
+        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, DGX)) * 1e-9).toString()} DGX`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, DGX)) * 1e-9).toString()} DGX`);
 
         await wallet.submitMatch(buy[0], sell[0]);
 
-        // console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, BTC)) * 1e-8).toString()} BTC`);
-        // console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, BTC)) * 1e-8).toString()} BTC`);
+        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, DGX)) * 1e-9).toString()} DGX`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, DGX)) * 1e-9).toString()} DGX`);
 
-        // (1).should.equal(0);
+        throw 0;
     })
 
 });

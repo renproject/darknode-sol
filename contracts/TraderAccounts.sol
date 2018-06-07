@@ -6,6 +6,11 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenLedger.sol";
 
+/**
+@title The contract responsible for holding trader funds and settling matched
+order values
+@author Republic Protocol
+*/
 contract TraderAccounts is Ownable {
     using SafeMath for uint256;
 
@@ -13,6 +18,7 @@ contract TraderAccounts is Ownable {
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
+    enum OrderStatus {None, Submitted, Matched}
 
     // TODO: Use same constant instance across all contracts 
     address ETH = 0x0;
@@ -38,7 +44,8 @@ contract TraderAccounts is Ownable {
 
 
     // Storage
-    mapping(bytes32 => Order) private orders;
+    mapping(bytes32 => Order) public orders;
+    mapping(bytes32 => OrderStatus) private orderStatuses;
 
     mapping(address => uint32[]) private traderTokens;
     mapping(address => mapping(uint32 => bool)) private activeTraderToken;
@@ -99,7 +106,6 @@ contract TraderAccounts is Ownable {
         if (!activeTraderToken[_trader][_tokenCode]) {
             activeTraderToken[_trader][_tokenCode] = true;
             traderTokens[_trader].push(_tokenCode);
-            emit Debug256(_tokenCode);
         }
 
         balances[_trader][_tokenCode] = balances[_trader][_tokenCode].add(_value);
@@ -201,8 +207,12 @@ contract TraderAccounts is Ownable {
 
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, uint256) {
         // Normalize to same exponent before finding mid-point (mean)
-        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
-        return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
+        // Common exponent is 0 (to ensure division doesn't lose details)
+        uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);
+        uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);
+        return ((norm1 + norm2) / 2, 0);
+        // uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
+        // return ((orders[sellID].priceC + norm) / 2, orders[sellID].priceQ);
     }
 
     function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, uint256 priceQ) private view returns (uint256, int256) {        
@@ -287,7 +297,7 @@ contract TraderAccounts is Ownable {
 
 
 
-    // // TODO: Implemnet
+    // // TODO: Implement
     // function hashOrder(Order order) private pure returns (bytes32) {
     //     return keccak256(
     //         abi.encodePacked(
@@ -347,6 +357,9 @@ contract TraderAccounts is Ownable {
         // FIXME: Implement order hashing
         // bytes32 id = hashOrder(order);
 
+        require(orderStatuses[_id] == OrderStatus.None);
+        orderStatuses[_id] = OrderStatus.Submitted;
+
         orders[_id] = order;
     }
 
@@ -358,6 +371,12 @@ contract TraderAccounts is Ownable {
     */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
         // TODO: Verify order match
+
+        require(orderStatuses[_buyID] == OrderStatus.Submitted);
+        orderStatuses[_buyID] = OrderStatus.Matched;
+
+        require(orderStatuses[_sellID] == OrderStatus.Submitted);
+        orderStatuses[_sellID] = OrderStatus.Matched;
 
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
@@ -378,6 +397,7 @@ contract TraderAccounts is Ownable {
         uint256 midPriceC;
         uint256 midPriceQ;
         (midPriceC, midPriceQ) = priceMidPoint(_buyID, _sellID);
+
         uint256 minVolC;
         int256 minVolQ;
         (minVolC, minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
