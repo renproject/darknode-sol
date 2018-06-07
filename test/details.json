@@ -1,0 +1,21 @@
+{
+    "signature": "6mEbwYsrCJqgCdNlDXaw19sKb6TW4B6C5h710v3UBR4vOOSqY8qo8W412Hdpt2774nyVCFoy+wuD+iFaMe6j2gA=",
+    "id": "Y71bLxXHTYJsXGSMHbPWwwBHdJiNvlPWBLdGcZgbmHc=",
+    "type": 1,
+    "parity": 0,
+    "expiry": 1528419272,
+    "tokens": 4295032832,
+    "price": {
+        "c": 2,
+        "q": 40
+    },
+    "volume": {
+        "c": 5,
+        "q": 10
+    },
+    "minimumVolume": {
+        "c": 5,
+        "q": 10
+    },
+    "nonce": "0x860f58254e17cd5df7222bb43e3ce6c168d2adc1d32dd422cba44fc35ee428"
+}

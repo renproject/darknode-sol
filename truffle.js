@@ -19,9 +19,9 @@ module.exports = {
       gas: 3000000,
     },
     kovan: {
-      // provider: function () {
-      //   return new HDWalletProvider("***REMOVED***", `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
-      // },
+      provider: function () {
+        return new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
+      },
       network_id: 42,
       gas: 3000000,
     },
