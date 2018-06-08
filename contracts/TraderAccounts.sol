@@ -34,6 +34,14 @@ contract TraderAccounts is Ownable {
         uint256 nonceHash;
     }
 
+    struct Match {
+        bytes32 buyID;
+        bytes32 sellID;
+        uint256 price;
+        uint256 lowVolume;
+        uint256 highVolume;
+    }
+
     // Events
     event Deposit(address trader, uint32 token, uint256 value);
     event Withdraw(address trader, uint32 token, uint256 value);
@@ -48,6 +56,8 @@ contract TraderAccounts is Ownable {
     // Storage
     mapping(bytes32 => Order) public orders;
     mapping(bytes32 => OrderStatus) private orderStatuses;
+    mapping(bytes32 => Match) public matches;
+    
 
     mapping(address => uint32[]) private traderTokens;
     mapping(address => mapping(uint32 => bool)) private activeTraderToken;
@@ -433,6 +443,14 @@ contract TraderAccounts is Ownable {
         uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]);
 
         finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
+
+        matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
+            buyID: _buyID,
+            sellID: _sellID,
+            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]),
+            lowVolume: lowTokenValue,
+            highVolume: highTokenValue
+        });
     }
 
 }
