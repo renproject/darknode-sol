@@ -35,8 +35,6 @@ contract TraderAccounts is Ownable {
     }
 
     struct Match {
-        bytes32 buyID;
-        bytes32 sellID;
         uint256 price;
         uint256 lowVolume;
         uint256 highVolume;
@@ -444,11 +442,8 @@ contract TraderAccounts is Ownable {
 
         finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
 
-        emit Debug256("price", tupleToPrice(midPriceC, midPriceQ, tokenDecimals[buyToken]));
         matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
-            buyID: _buyID,
-            sellID: _sellID,
-            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[buyToken]),
+            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]),
             lowVolume: lowTokenValue,
             highVolume: highTokenValue
         });
