@@ -229,7 +229,7 @@ contract TraderAccounts is Ownable {
         return ((orders[sellID].priceC + norm) * (10 / 2), q - 1);
     }
 
-    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ) private returns (uint256, int256) {        
+    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ) private view returns (uint256, int256) {        
         uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
         uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
 
@@ -444,10 +444,11 @@ contract TraderAccounts is Ownable {
 
         finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
 
+        emit Debug256("price", tupleToPrice(midPriceC, midPriceQ, tokenDecimals[buyToken]));
         matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
             buyID: _buyID,
             sellID: _sellID,
-            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]),
+            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[buyToken]),
             lowVolume: lowTokenValue,
             highVolume: highTokenValue
         });

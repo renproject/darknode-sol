@@ -57,26 +57,26 @@ contract.only("TraderAccounts", function (accounts) {
 
     it("can rebalance", async () => {
         const buyPrice = 1;
-        const sellPrice = 1;
+        const sellPrice = 0.95;
         const renDeposit = 1; // REN
-        const dgxDeposit = 2; // ETH
+        const dgxDeposit = 2; // DGX
 
         // Give seller some tokens
         await tokenAddresses[REN].transfer(seller, renDeposit * 1e18);
 
         // Approve and deposit
-        // await tokenAddresses[ETH].approve(wallet.address, dgxDeposit * 1e18, { from: buyer });
-        await wallet.deposit(ETH, dgxDeposit * 1e18, { from: buyer, value: dgxDeposit * 1e18 });
+        await tokenAddresses[DGX].approve(wallet.address, dgxDeposit * 1e9, { from: buyer });
+        await wallet.deposit(DGX, dgxDeposit * 1e9, { from: buyer });
         await tokenAddresses[REN].approve(wallet.address, renDeposit * 1e18, { from: seller });
         await wallet.deposit(REN, renDeposit * 1e18, { from: seller });
 
-        // Overflows if ETH isn't 0
-        const ETHREN = 0x100010000;
+        // Overflows if DGX isn't 0
+        const DGXREN = 0x10000010000;
 
 
-        // Buying REN for ETH
-        const buyPriceT = priceToTuple(buyPrice); // Price of 1 REN in ETH
-        const buyVolume = volumeToTuple(dgxDeposit); // Volume in ETH
+        // Buying REN for DGX
+        const buyPriceT = priceToTuple(buyPrice); // Price of 1 REN in DGX
+        const buyVolume = volumeToTuple(dgxDeposit); // Volume in DGX
         let buyOrderId = await web3.sha3("BUY");
         let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
         const buy = [
@@ -84,7 +84,7 @@ contract.only("TraderAccounts", function (accounts) {
             0, // type
             OrderParity.BUY, // parity
             1641026487, // FIXME: expiry
-            ETHREN, // tokens
+            DGXREN, // tokens
             buyPriceT.c,
             buyPriceT.q,
             buyVolume.c,
@@ -96,7 +96,7 @@ contract.only("TraderAccounts", function (accounts) {
         const buySignature = await web3.eth.sign(buyer, buyHash);
 
 
-        const sellPriceT = priceToTuple(sellPrice); // Price of 1 REN in ETH
+        const sellPriceT = priceToTuple(sellPrice); // Price of 1 REN in DGX
         const sellVolume = volumeToTuple(renDeposit); // Volume in REN
         let sellOrderId = await web3.sha3("SELL");
         let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
@@ -105,7 +105,7 @@ contract.only("TraderAccounts", function (accounts) {
             0, // type
             OrderParity.SELL, // parity
             1641026487, // FIXME: expiry
-            ETHREN, // tokens
+            DGXREN, // tokens
             sellPriceT.c,
             sellPriceT.q,
             sellVolume.c,
@@ -128,13 +128,13 @@ contract.only("TraderAccounts", function (accounts) {
         await wallet.submitOrder(...buy);
         await wallet.submitOrder(...sell);
 
-        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, ETH)) * 1e-18).toString()} ETH`);
-        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, ETH)) * 1e-18).toString()} ETH`);
+        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, DGX)) * 1e-9).toString()} DGX`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, DGX)) * 1e-9).toString()} DGX`);
 
         await wallet.submitMatch(buy[0], sell[0]);
 
-        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, ETH)) * 1e-18).toString()} ETH`);
-        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, ETH)) * 1e-18).toString()} ETH`);
+        console.log(`Seller has ${((await wallet.getBalance(seller, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(seller, DGX)) * 1e-9).toString()} DGX`);
+        console.log(`Buyer has ${((await wallet.getBalance(buyer, REN)) * 1e-18).toString()} REN, ${((await wallet.getBalance(buyer, DGX)) * 1e-9).toString()} DGX`);
 
         throw 0;
     })
