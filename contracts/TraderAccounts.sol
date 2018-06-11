@@ -6,6 +6,11 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenLedger.sol";
 
+/**
+@title The contract responsible for holding trader funds and settling matched
+order values
+@author Republic Protocol
+*/
 contract TraderAccounts is Ownable {
     using SafeMath for uint256;
 
@@ -13,6 +18,7 @@ contract TraderAccounts is Ownable {
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
+    enum OrderStatus {None, Submitted, Matched}
 
     // TODO: Use same constant instance across all contracts 
     address ETH = 0x0;
@@ -28,17 +34,28 @@ contract TraderAccounts is Ownable {
         uint256 nonceHash;
     }
 
+    struct Match {
+        uint256 price;
+        uint256 lowVolume;
+        uint256 highVolume;
+    }
+
     // Events
     event Deposit(address trader, uint32 token, uint256 value);
     event Withdraw(address trader, uint32 token, uint256 value);
     event Transfer(address from, address to, uint32 token, uint256 value);
-    event Debug256(uint256 num);
-    event Debugi256(int256 num);
+    event Debug256(string msg, uint256 num);
+    event Debugi256(string msg, int256 num);
     event Debug(string msg);
+    event DebugTuple(string msg, uint256 c, uint256 q);
+    event DebugTupleI(string msg, uint256 c, int256 q);
 
 
     // Storage
-    mapping(bytes32 => Order) private orders;
+    mapping(bytes32 => Order) public orders;
+    mapping(bytes32 => OrderStatus) private orderStatuses;
+    mapping(bytes32 => Match) public matches;
+    
 
     mapping(address => uint32[]) private traderTokens;
     mapping(address => mapping(uint32 => bool)) private activeTraderToken;
@@ -99,7 +116,6 @@ contract TraderAccounts is Ownable {
         if (!activeTraderToken[_trader][_tokenCode]) {
             activeTraderToken[_trader][_tokenCode] = true;
             traderTokens[_trader].push(_tokenCode);
-            emit Debug256(_tokenCode);
         }
 
         balances[_trader][_tokenCode] = balances[_trader][_tokenCode].add(_value);
@@ -199,46 +215,69 @@ contract TraderAccounts is Ownable {
 
     // Price/volume calculation functions
 
-    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, uint256) {
+    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
         // Normalize to same exponent before finding mid-point (mean)
-        uint256 norm = orders[sellID].priceC * 10 ** (orders[sellID].priceQ - orders[buyID].priceQ);
-        return ((orders[buyID].priceC + norm) / 2, orders[buyID].priceQ);
+        // Common exponent is 0 (to ensure division doesn't lose details)
+        // uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);
+        // uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);
+        // return ((norm1 + norm2) / 2, 0);
+        uint256 norm = orders[buyID].priceC * 10 ** (orders[buyID].priceQ - orders[sellID].priceQ);
+        int256 q = int256(orders[sellID].priceQ);
+        // To not lose the .5 for odd numbers, multiply by 5 and subtract from q
+        return ((orders[sellID].priceC + norm) * (10 / 2), q - 1);
     }
 
-    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, uint256 priceQ) private view returns (uint256, int256) {        
+    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ) private view returns (uint256, int256) {        
         uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
         uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
 
+        // emit Debug256("BuyV", buyV);
+        // emit Debug256("SellV", sellV);
+
         if (buyV < sellV) {
             // TODO: Optimize this process, divide above
-            return (orders[buyID].volumeC * 200 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - int256(priceQ));
+            // emit Debug256("orders[buyID].volumeC", orders[buyID].volumeC);
+            // emit Debug256("priceC", priceC);
+            // FIXME: Shifts up by 100 to avoid precision errors
+            return (orders[buyID].volumeC * 200 * 100 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - priceQ - 2);
         } else {
             return (orders[sellID].volumeC, int256(orders[sellID].volumeQ));
         }
     }
 
-    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, uint256 priceQ, uint256 decimals)
+    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 decimals)
     private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
         uint256 c = volC * 5 * priceC * 2;
 
-        // Positive and negative components of exponent
-        uint256 ep = priceQ + decimals;
-        uint256 en = 26 + 12 + 3 + 12 + 1;
-        // Add volQ to positive or negative component based on its sign
-        if (volQ < 0) {
-            en += uint256(-volQ);
-        } else {
-            ep += uint256(volQ);
-        }
+        int256 e = int256(decimals) + volQ + priceQ - (26 + 12 + 3 + 12 + 1);
 
         // If (ep-en) is negative, divide instead of multiplying
         uint256 value;
-        if (ep >= en) {
-            value = c * 10 ** (ep - en);
+        if (e >= 0) {
+            value = c * 10 ** uint256(e);
         } else {
-            value = c / 10 ** (en - ep);            
+            value = c / 10 ** uint256(-e);            
+        }
+
+        return value;
+    }
+
+    function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals)
+    private pure returns (uint256) {
+        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
+        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
+        uint256 c = priceC * 5;
+
+        int256 e = int256(decimals) + priceQ - (26 + 12 + 3);
+
+        // If (ep-en) is negative, divide instead of multiplying
+        uint256 value;
+        if (e >= 0) {
+            value = c * 10 ** uint256(e);
+        } else {
+            value = c / 10 ** uint256(-e);            
         }
 
         return value;
@@ -287,7 +326,7 @@ contract TraderAccounts is Ownable {
 
 
 
-    // // TODO: Implemnet
+    // // TODO: Implement
     // function hashOrder(Order order) private pure returns (bytes32) {
     //     return keccak256(
     //         abi.encodePacked(
@@ -347,6 +386,9 @@ contract TraderAccounts is Ownable {
         // FIXME: Implement order hashing
         // bytes32 id = hashOrder(order);
 
+        require(orderStatuses[_id] == OrderStatus.None);
+        orderStatuses[_id] = OrderStatus.Submitted;
+
         orders[_id] = order;
     }
 
@@ -358,6 +400,12 @@ contract TraderAccounts is Ownable {
     */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
         // TODO: Verify order match
+
+        require(orderStatuses[_buyID] == OrderStatus.Submitted);
+        orderStatuses[_buyID] = OrderStatus.Matched;
+
+        require(orderStatuses[_sellID] == OrderStatus.Submitted);
+        orderStatuses[_sellID] = OrderStatus.Matched;
 
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
@@ -375,18 +423,30 @@ contract TraderAccounts is Ownable {
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
 
         // Price midpoint
-        uint256 midPriceC;
-        uint256 midPriceQ;
-        (midPriceC, midPriceQ) = priceMidPoint(_buyID, _sellID);
-        uint256 minVolC;
-        int256 minVolQ;
-        (minVolC, minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
+        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
+        // emit DebugTuple("MidPriceTuple", orders[_buyID].priceC, orders[_buyID].priceQ);        
+        // emit Debug256("tupleToPrice", tupleToPrice(orders[_buyID].priceC, int256(orders[_buyID].priceQ), tokenDecimals[sellToken]));
+        // emit DebugTuple("MidPriceTuple", orders[_sellID].priceC, orders[_sellID].priceQ);        
+        // emit Debug256("tupleToPrice", tupleToPrice(orders[_sellID].priceC, int256(orders[_sellID].priceQ), tokenDecimals[sellToken]));
+        // emit DebugTupleI("MidPriceTuple", midPriceC, midPriceQ);
+        // emit Debug256("MidPrice", tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]));
+
+        (uint256 minVolC, int256 minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
+        // emit Debug256("MinVol", tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]));
+        // // emit DebugTupleI("MinVolTuple", minVolC, minVolQ);
+        
 
         uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, tokenDecimals[sellToken]);
 
         uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]);
 
         finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
+
+        matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
+            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]),
+            lowVolume: lowTokenValue,
+            highVolume: highTokenValue
+        });
     }
 
 }

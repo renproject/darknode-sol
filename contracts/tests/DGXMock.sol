@@ -8,13 +8,13 @@ import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `StandardToken` functions.
  */
-contract BitcoinMock is StandardToken {
+contract DGXMock is StandardToken {
 
-    string public constant name = "Bitcoin Mock"; // solium-disable-line uppercase
-    string public constant symbol = "BTK"; // solium-disable-line uppercase
-    uint8 public constant decimals = 8; // solium-disable-line uppercase
+    string public constant name = "Digix Gold Mock"; // solium-disable-line uppercase
+    string public constant symbol = "DGX"; // solium-disable-line uppercase
+    uint8 public constant decimals = 9; // solium-disable-line uppercase
 
-    uint256 public constant INITIAL_SUPPLY = 21000000 * (10 ** uint256(decimals));
+    uint256 public constant INITIAL_SUPPLY = 1000000000 * (10 ** uint256(decimals));
 
     /**
     * @dev Constructor that gives msg.sender all of existing tokens.
