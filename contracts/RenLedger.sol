@@ -120,10 +120,12 @@ contract RenLedger {
         for (i = 0; i < _orderMatches.length; i++) {
             orders[_orderMatches[i]].state = OrderState.Confirmed;
             orders[_orderMatches[i]].matches = [_orderId];
+            orders[_orderMatches[i]].blockNumber = block.number;
         }
         orders[_orderId].state = OrderState.Confirmed;
         orders[_orderId].confirmer = msg.sender;
         orders[_orderId].matches = _orderMatches;
+        orders[_orderId].blockNumber = block.number;
     }
 
     /**
@@ -141,6 +143,7 @@ contract RenLedger {
         address trader = ECDSA.addr(data, _signature);
         require(orders[_orderId].trader == trader);
         orders[_orderId].state = OrderState.Canceled;
+        orders[_orderId].blockNumber = block.number;
     }
 
     /**
@@ -220,6 +223,13 @@ contract RenLedger {
             return 0;
         }
         return (block.number - orders[_orderId].blockNumber);
+    }
+
+    /**
+    * orderBlockNumber will return the block number when the order being last modified.
+    */
+    function orderBlockNumber(bytes32 _orderId) public view returns (uint256) {
+        return orders[_orderId].blockNumber;
     }
 
     /**

@@ -11,7 +11,7 @@ contract DarknodeRegistry {
 
     struct Epoch {
         uint256 epochhash;
-        uint256 timestamp;
+        uint256 blocknumber;
     }
 
     /**
@@ -122,7 +122,7 @@ contract DarknodeRegistry {
     * @param _minimumBond The minimum bond amount that can be submitted by a
     *                     darknode.
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
-    * @param _minimumEpochInterval The minimum amount of time between epochs.
+    * @param _minimumEpochInterval The minimum number of blocks between epochs.
     */
     constructor(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
         ren = RepublicToken(_token);
@@ -131,7 +131,7 @@ contract DarknodeRegistry {
         minimumEpochInterval = _minimumEpochInterval;
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
-            timestamp: block.timestamp
+            blocknumber: block.number
         });
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
@@ -143,16 +143,16 @@ contract DarknodeRegistry {
     * current epoch.
     */
     function epoch() public {
-        require(block.timestamp >= currentEpoch.timestamp + minimumEpochInterval);
+        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval);
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
         currentEpoch = Epoch({
             epochhash: epochhash,
-            timestamp: currentEpoch.timestamp + minimumEpochInterval
+            blocknumber: block.number
         });
-        
+
         // Update the registry information
         numDarknodes = numDarknodesNextEpoch;
 
@@ -186,7 +186,7 @@ contract DarknodeRegistry {
             owner: msg.sender,
             bond: _bond,
             publicKey: _publicKey,
-            registeredAt: currentEpoch.timestamp + minimumEpochInterval,
+            registeredAt: currentEpoch.blocknumber + minimumEpochInterval,
             deregisteredAt: 0
         });
         LinkedList.append(darknodes, _darknodeID);
@@ -206,7 +206,7 @@ contract DarknodeRegistry {
     */
     function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyOwner(_darknodeID) {
         // Flag the dark node for deregistration
-        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.timestamp + minimumEpochInterval;
+        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
         numDarknodesNextEpoch--;
 
         // Emit an event
@@ -249,7 +249,7 @@ contract DarknodeRegistry {
     function getBond(bytes20 _darknodeID) public view returns (uint256) {
         return darknodeRegistry[_darknodeID].bond;
     }
-    
+
     function getPublicKey(bytes20 _darknodeID) public view returns (bytes) {
         return darknodeRegistry[_darknodeID].publicKey;
     }
@@ -292,8 +292,8 @@ contract DarknodeRegistry {
     * refunded.
     */
     function isRegistered(bytes20 _darknodeID) public view returns (bool) {
-        return darknodeRegistry[_darknodeID].registeredAt != 0 
-        && darknodeRegistry[_darknodeID].registeredAt <= currentEpoch.timestamp
+        return darknodeRegistry[_darknodeID].registeredAt != 0
+        && darknodeRegistry[_darknodeID].registeredAt <= currentEpoch.blocknumber
         && !isDeregistered(_darknodeID);
     }
 
@@ -308,7 +308,7 @@ contract DarknodeRegistry {
     */
     function isDeregistered(bytes20 _darknodeID) public view returns (bool) {
         return darknodeRegistry[_darknodeID].deregisteredAt != 0
-        && darknodeRegistry[_darknodeID].deregisteredAt <= currentEpoch.timestamp;
+        && darknodeRegistry[_darknodeID].deregisteredAt <= currentEpoch.blocknumber;
     }
 
 }
