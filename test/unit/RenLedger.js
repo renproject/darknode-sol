@@ -297,6 +297,42 @@ contract("RenLedger", function (accounts) {
     //     dep.toNumber().should.equal(1);
     // });
 
+    it.only('should be able to retrieve orders', async function () {
+        _ledger = await renLedger.new(1, ren.address, dnr.address);
+
+        const ids = {};
+
+        for (i = 0; i < accounts.length; i++) {
+            await ren.approve(_ledger.address, 2, { from: accounts[i] });
+
+            ids[i] = await randomID();
+
+            let prefix = await web3.toHex("Republic Protocol: open: ");
+            let hash = await web3.sha3(prefix + ids[i].slice(2), { encoding: 'hex' });
+            let signature = await web3.eth.sign(accounts[i], hash);
+
+            if (i % 2 === 0) {
+                await _ledger.openBuyOrder(signature, ids[i], { from: accounts[i] });
+            } else {
+                await _ledger.openSellOrder(signature, ids[i], { from: accounts[i] });
+            }
+        }
+
+        const offset = 1;
+        const orders = await _ledger.getOrders(offset, accounts.length);
+
+        orders[0].length.should.equal(accounts.length - offset);
+
+        for (let i = 0; i < accounts.length - offset; i++) {
+            // IDs
+            orders[0][i].should.equal(ids[i + offset]);
+            // Traders
+            orders[1][i].should.equal(accounts[i + offset]);
+            // Status
+            orders[2][i].toNumber().should.equal(1);
+        }
+    });
+
 
     it('should be able to retrieve trader from signature', async function () {
         // Last byte can be 0x1b or 0x00

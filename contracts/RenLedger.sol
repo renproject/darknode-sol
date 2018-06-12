@@ -158,24 +158,24 @@ contract RenLedger {
     * buyOrder will return orderId of the given index in buy order list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function buyOrder(uint256 index) public view returns (bytes32, bool){
-        if (index >= buyOrders.length) {
+    function buyOrder(uint256 _index) public view returns (bytes32, bool){
+        if (_index >= buyOrders.length) {
             return ("", false);
         }
 
-        return (buyOrders[index], true);
+        return (buyOrders[_index], true);
     }
 
     /**
     * sellOrder will return orderId of the given index in sell order list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function sellOrder(uint256 index) public view returns (bytes32, bool){
-        if (index >= sellOrders.length) {
+    function sellOrder(uint256 _index) public view returns (bytes32, bool){
+        if (_index >= sellOrders.length) {
             return ("", false);
         }
 
-        return (sellOrders[index], true);
+        return (sellOrders[_index], true);
     }
 
     /**
@@ -251,34 +251,38 @@ contract RenLedger {
     * getOrder will return orderId of the given index in the orderbook list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function getOrder(uint256 index) public view returns (bytes32, bool){
-        if (index >= orderbook.length) {
+    function getOrder(uint256 _index) public view returns (bytes32, bool){
+        if (_index >= orderbook.length) {
             return ("", false);
         }
 
-        return (orderbook[index], true);
+        return (orderbook[_index], true);
     }
 
     /**
     * getOrder will return order details of the orders starting from the offset.
     */
-    function getOrders(uint256 offset, uint256 limit) public view returns (bytes32[], address[], uint8[]){
-        if (offset >= orderbook.length) {
+    function getOrders(uint256 _offset, uint256 _limit) public view returns (bytes32[], address[], uint8[]){
+        if (_offset >= orderbook.length) {
             return;
         }
 
-        bytes32[] orderIDs;
-        address[] traderAddresses;
-        uint8[] states;
+        // If the provided limit is more than the number of orders after the offset,
+        // decrease the limit
+        uint256 limit = _limit;
+        if (_offset + limit > orderbook.length) {
+            limit = orderbook.length - _offset;
+        }
 
-        for (uint256 i = offset; i < offset + limit; i++) {
-            if (i == orderbook.length) {
-                return (orderIDs, traderAddresses, states);
-            }
+        bytes32[] memory orderIDs = new bytes32[](limit);
+        address[] memory traderAddresses = new address[](limit);
+        uint8[] memory states = new uint8[](limit);
 
-            orderIDs.push(orderbook[i]);
-            traderAddresses.push(orders[orderbook[i]].trader);
-            states.push(uint8(orders[orderbook[i]].state));
+        for (uint256 i = 0; i < limit; i++) {
+            bytes32 order = orderbook[i + _offset];
+            orderIDs[i] = order;
+            traderAddresses[i] = orders[order].trader;
+            states[i] = uint8(orders[order].state);
         }
 
         return (orderIDs, traderAddresses, states);
