@@ -297,7 +297,7 @@ contract("RenLedger", function (accounts) {
     //     dep.toNumber().should.equal(1);
     // });
 
-    it.only('should be able to retrieve orders', async function () {
+    it('should be able to retrieve orders', async function () {
         _ledger = await renLedger.new(1, ren.address, dnr.address);
 
         const ids = {};
