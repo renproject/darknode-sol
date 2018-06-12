@@ -136,12 +136,20 @@ contract RenLedger {
      * @param _orderId Order id.
      */
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
-        require(orders[_orderId].state == OrderState.Open);
+        if (orders[_orderId].state == OrderState.Open) {
+            // recover trader address from the signature
+            bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
+            address trader = ECDSA.addr(data, _signature);
+            require(orders[_orderId].trader == trader);
+        } else {
+            // An unopened order can be canceled to ensure that it can't be opened
+            // in the future
+            // TODO: this create the possibility of a DoS attack where a node
+            // or miner submits a cancelOrder with a higher fee everytime they
+            // see an openOrder from a particular trader
+            require(orders[_orderId].state == OrderState.Undefined);
+        }
 
-        // recover trader address from the signature
-        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
-        address trader = ECDSA.addr(data, _signature);
-        require(orders[_orderId].trader == trader);
         orders[_orderId].state = OrderState.Canceled;
         orders[_orderId].blockNumber = block.number;
     }

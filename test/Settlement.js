@@ -30,7 +30,15 @@ const symbols = {
     [REN]: "REN",
 }
 
-contract.only("Settlement", function (accounts) {
+const market = (low, high) => {
+    return new BN(low).mul(new BN(2).pow(new BN(32))).add(new BN(high));
+}
+
+const randomID = async () => {
+    return await web3.sha3(Math.random().toString());
+}
+
+contract("Settlement", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
@@ -82,6 +90,23 @@ MethodID: 0x177d19c3
         await submitMatch(buy, sell, buyer, seller, darknode, wallet, tokenAddresses, renLedger);
     })
 
+    it("can rebalance", async () => {
+        const buyPrice = 1;
+        const sellPrice = 0.95;
+        const renDeposit = 1; // REN
+        const dgxDeposit = 2; // DGX
+        const tokens = market(DGX, REN);
+
+        const sell = { tokens, price: sellPrice, volume: renDeposit, minimumVolume: renDeposit }
+        const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
+
+        const [priceSettled, dgxSettled, renSettled] =
+            await submitMatch(buy, sell, buyer, seller, darknode, wallet, tokenAddresses, renLedger);
+
+        priceSettled.should.equal(0.975);
+        dgxSettled.should.equal(0.975);
+        renSettled.should.equal(1);
+    })
 });
 
 
@@ -131,42 +156,44 @@ async function submitMatch(buy, sell, buyer, seller, darknode, wallet, tokenAddr
     for (const order of [buy, sell]) {
         if (order.price !== undefined) {
             price = priceToTuple(order.price);
-            order.priceC = price.c, order.priceQ = price.Q;
+            order.priceC = price.c, order.priceQ = price.q;
         } else {
             order.price = tupleToPrice({ c: order.priceC, q: order.priceQ });
         }
         if (order.volume !== undefined) {
             volume = volumeToTuple(order.volume);
-            order.volumeC = volume.c, order.volumeQ = volume.Q
+            order.volumeC = volume.c, order.volumeQ = volume.q;
         } else {
             order.volume = tupleToVolume({ c: order.volumeC, q: order.volumeQ }).toNumber();
         }
         if (order.minimumVolume !== undefined) {
-            minimumVolume = minimumVolumeToTuple(order.minimumVolume);
-            order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.Q
+            minimumVolume = volumeToTuple(order.minimumVolume);
+            order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
         }
     }
 
-    buy.tokens.eq(sell.tokens).should.be.true;
-    const lowToken = new BN(buy.tokens.toArrayLike(Buffer, "be", 8).slice(0, 4)).toNumber();
-    const highToken = new BN(buy.tokens.toArrayLike(Buffer, "be", 8).slice(4, 8)).toNumber();
+    new BN(buy.tokens).eq(new BN(sell.tokens)).should.be.true;
+    const tokens = new BN(buy.tokens);
 
-    buy.orderID = await web3.sha3("BUY2");
+    const lowToken = new BN(tokens.toArrayLike(Buffer, "be", 8).slice(0, 4)).toNumber();
+    const highToken = new BN(tokens.toArrayLike(Buffer, "be", 8).slice(4, 8)).toNumber();
+
+    buy.orderID = await randomID();
     let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
     buy.expiry = 1641026487;
     buy.type = 0;
     buy.parity = OrderParity.BUY;
-    buy.tokens = `0x${buy.tokens.toString('hex')}`;
+    buy.tokens = `0x${tokens.toString('hex')}`;
     buy.nonce = web3.sha3(1337);
     buy.signature = await web3.eth.sign(buyer, buyHash);
 
 
-    sell.orderID = await web3.sha3("SELL2");
+    sell.orderID = await randomID();
     let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
     sell.type = 0; // type
     sell.parity = OrderParity.SELL; // parity
     sell.expiry = 1641026487; // FIXME: expiry
-    sell.tokens = `0x${sell.tokens.toString('hex')}`; // tokens
+    sell.tokens = `0x${tokens.toString('hex')}`; // tokens
     sell.nonce = web3.sha3(1337);
     const sellSignature = await web3.eth.sign(seller, sellHash);
 
@@ -231,6 +258,12 @@ async function submitMatch(buy, sell, buyer, seller, darknode, wallet, tokenAddr
     buyerHighBefore.add(highMatched).eq(buyerHighAfter).should.be.true;
     sellerLowBefore.add(lowMatched).eq(sellerLowAfter).should.be.true;
     sellerHighBefore.sub(highMatched).eq(sellerHighAfter).should.be.true;
+
+    return [
+        priceMatched.toNumber() / 10 ** lowDecimals,
+        lowMatched.toNumber() / 10 ** lowDecimals,
+        highMatched.toNumber() / 10 ** highDecimals,
+    ];
 }
 
 async function setup(darknode) {

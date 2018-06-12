@@ -33,6 +33,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can not call epoch before the minimum time interval", async () => {
+    await dnr.epoch();
     await dnr.epoch().should.be.rejectedWith();
   })
 
