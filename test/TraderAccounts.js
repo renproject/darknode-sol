@@ -1,5 +1,6 @@
 const RepublicToken = artifacts.require("RepublicToken");
 const RenLedger = artifacts.require("RenLedger");
+const RenExBalances = artifacts.require("RenExBalances");
 const TraderAccounts = artifacts.require("TraderAccounts");
 
 const BigNumber = require("bignumber.js");
@@ -24,7 +25,9 @@ contract("TraderAccounts", function (accounts) {
             [TOKEN2]: await RepublicToken.new(),
         }
         renLedger = await RenLedger.new(0, tokenAddresses[REN].address, 0x0);
-        wallet = await TraderAccounts.new(renLedger.address);
+        const renExBalances = await RenExBalances.new();
+        wallet = await TraderAccounts.new(renLedger.address, renExBalances.address);
+        await renExBalances.setTraderAccountsContract(wallet.address);
 
         await wallet.registerToken(ETH, 0x0, 18);
         await wallet.registerToken(TOKEN1, tokenAddresses[TOKEN1].address, (await tokenAddresses[TOKEN1].decimals()));

@@ -1,6 +1,7 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
 var RenLedger = artifacts.require("RenLedger.sol");
+var RenExBalances = artifacts.require("RenExBalances.sol");
 var TraderAccounts = artifacts.require("TraderAccounts.sol");
 // var RepublicToken = artifacts.require("RepublicToken.sol");
 
@@ -39,7 +40,7 @@ async function deployDarknodeRegistry(deployer) {
         CONFIG.DNR.minumumEpochInterval
     );
     const dnr = await DarknodeRegistry.deployed();
-    return dnr.address;
+    return dnr;
 }
 
 async function deployRenLedger(deployer, dnr) {
@@ -50,34 +51,39 @@ async function deployRenLedger(deployer, dnr) {
         dnr,
     );
     const ledger = await RenLedger.deployed();
-    return ledger.address;
+    return ledger;
 }
 
 
-async function deployTraderAccount(deployer, ledger) {
-    await deployer.deploy(
+async function deployTraderAccount(deployer, ledger, renExBalances) {
+    const traderAccounts = await deployer.deploy(
         TraderAccounts,
         ledger,
+        renExBalances,
     );
     const accounts = await TraderAccounts.deployed();
     await accounts.registerToken(1, 0x0, 18);
     await accounts.registerToken(0x100, CONFIG.DGX.address, 9);
     await accounts.registerToken(0x10000, CONFIG.REN.address, 18);
+    return traderAccounts;
 }
 
 
-// // Deploys a contract with no parmeters
-// function deployContract(deployer, artifact) {
-//     deployer.deploy(
-//         artifact,
-//     );
-// }
+// Deploys a contract with no parmeters
+async function deployContract(deployer, artifact) {
+    const contract = await deployer.deploy(
+        artifact,
+    );
+    return contract;
+}
 
 module.exports = async function (deployer) {
-    // const dnr = await deployDarknodeRegistry(deployer);
-    const dnr = CONFIG.DNR.address;
-    // const ledger = await deployRenLedger(deployer, dnr);
-    const ledger = CONFIG.Ledger.address;
-    await deployTraderAccount(deployer, ledger);
-    // deployContract(deployer, TraderAccounts);
+    const dnr = await deployDarknodeRegistry(deployer);
+    // const dnr = CONFIG.DNR.address;
+    const ledger = await deployRenLedger(deployer, dnr.address);
+    // const ledger = CONFIG.Ledger.address;
+    const renExBalances = await deployContract(deployer, RenExBalances);
+    const traderAccounts = await deployTraderAccount(deployer, ledger.address, renExBalances.address);
+    // TODO: Fix following line if using existing RenExBalance deployment
+    await renExBalances.setTraderAccountsContract(traderAccounts.address);
 };

@@ -1,3 +1,4 @@
+const RenExBalances = artifacts.require("RenExBalances");
 const TraderAccounts = artifacts.require("TraderAccounts");
 const RenLedger = artifacts.require("RenLedger");
 const RepublicToken = artifacts.require("RepublicToken");
@@ -281,7 +282,9 @@ async function setup(darknode) {
         0
     );
     const renLedger = await RenLedger.new(0, tokenAddresses[REN].address, dnr.address);
-    const wallet = await TraderAccounts.new(renLedger.address);
+    const renExBalances = await RenExBalances.new();
+    wallet = await TraderAccounts.new(renLedger.address, renExBalances.address);
+    await renExBalances.setTraderAccountsContract(wallet.address);
 
     await wallet.registerToken(ETH, 0x0, 18);
     await wallet.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()).toNumber());

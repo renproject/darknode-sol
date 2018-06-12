@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenLedger.sol";
+import "./RenExBalances.sol";
 
 /**
 @title The contract responsible for holding trader funds and settling matched
@@ -15,6 +16,7 @@ contract TraderAccounts is Ownable {
     using SafeMath for uint256;
 
     RenLedger ledger;
+    RenExBalances renExBalances;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -55,11 +57,6 @@ contract TraderAccounts is Ownable {
     mapping(bytes32 => Order) public orders;
     mapping(bytes32 => OrderStatus) private orderStatuses;
     mapping(bytes32 => Match) public matches;
-    
-
-    mapping(address => uint32[]) private traderTokens;
-    mapping(address => mapping(uint32 => bool)) private activeTraderToken;
-    mapping(address => mapping(uint32 => uint256)) private balances;
 
     mapping(uint32 => ERC20) public tokenAddresses;
     mapping(uint32 => uint8) public tokenDecimals;
@@ -70,8 +67,9 @@ contract TraderAccounts is Ownable {
     @notice constructor
     @param _ledger the address for the Ren Ledger
     */
-    constructor(RenLedger _ledger) public {
+    constructor(RenLedger _ledger, RenExBalances _renExBalances) public {
         ledger = _ledger;
+        renExBalances = _renExBalances;
     }
 
 
@@ -112,17 +110,11 @@ contract TraderAccounts is Ownable {
     // PRIVATE functions //
     
     function incrementBalance(address _trader, uint32 _tokenCode, uint256 _value) private {
-        // Check if it's the first time the trader
-        if (!activeTraderToken[_trader][_tokenCode]) {
-            activeTraderToken[_trader][_tokenCode] = true;
-            traderTokens[_trader].push(_tokenCode);
-        }
-
-        balances[_trader][_tokenCode] = balances[_trader][_tokenCode].add(_value);
+        return renExBalances.incrementBalance(_trader, _tokenCode, _value);
     }
 
     function decrementBalance(address _trader, uint32 _tokenCode, uint256 _value) private {
-        balances[_trader][_tokenCode] = balances[_trader][_tokenCode].sub(_value);
+        return renExBalances.decrementBalance(_trader, _tokenCode, _value);
     }
 
 
@@ -178,7 +170,7 @@ contract TraderAccounts is Ownable {
     @return the trader's balance in the token's smallest unit
     */
     function getBalance(address _trader, uint32 _tokenCode) public view returns (uint256) {    
-        return balances[_trader][_tokenCode];
+        return renExBalances.getBalance(_trader, _tokenCode);
     }
 
     /**
@@ -188,7 +180,7 @@ contract TraderAccounts is Ownable {
     @return an array of addresses of the tokens
     */
     function getTokens(address _trader) public view returns (uint32[]) {
-        return traderTokens[_trader];
+        return renExBalances.getTokens(_trader);
     }
 
     /**
@@ -201,14 +193,7 @@ contract TraderAccounts is Ownable {
     ]
     */
     function getBalances(address _trader) public view returns (uint32[], uint256[]) {
-        uint32[] memory tokens = getTokens(_trader);
-        uint256[] memory traderBalances = new uint256[](tokens.length);
-
-        for (uint256 i = 0; i < tokens.length; i++) {
-            traderBalances[i] = getBalance(_trader, tokens[i]);
-        }
-
-        return (tokens, traderBalances);
+        return renExBalances.getBalances(_trader);
     }
 
 
