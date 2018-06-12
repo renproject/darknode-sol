@@ -19,35 +19,39 @@ const CONFIG = {
     DNR: {
         minimumBond: 0, // in airen
         minimumPoolSize: 5,
-        minumumEpochInterval: 60, // in seconds
+        minumumEpochInterval: 60, // in seconds,
+        address: "0x2877a4eab06d0cea08f12db55cdb57e110632934",
     },
     Ledger: {
-        address: "0xEc78FdA0D84164a0BaEF48F622163213340e1d2d" // KOVAN
+        address: "0x972da720da8607363f5875659c75aede8fd734d2" // KOVAN
+    },
+    Accounts: {
+        address: "0xdcb3d500fd230b59ab8f9f39181554c7ddc0f30a",
     }
 };
 
-// async function deployDarknodeRegistry(deployer) {
-//     await deployer.deploy(
-//         DarknodeRegistry,
-//         CONFIG.REN.address,
-//         CONFIG.DNR.minimumBond,
-//         CONFIG.DNR.minimumPoolSize,
-//         CONFIG.DNR.minumumEpochInterval
-//     );
-//     const dnr = await DarknodeRegistry.deployed();
-//     return dnr.address;
-// }
+async function deployDarknodeRegistry(deployer) {
+    await deployer.deploy(
+        DarknodeRegistry,
+        CONFIG.REN.address,
+        CONFIG.DNR.minimumBond,
+        CONFIG.DNR.minimumPoolSize,
+        CONFIG.DNR.minumumEpochInterval
+    );
+    const dnr = await DarknodeRegistry.deployed();
+    return dnr.address;
+}
 
-// async function deployRenLedger(deployer, dnr) {
-//     await deployer.deploy(
-//         RenLedger,
-//         0,
-//         CONFIG.REN.address,
-//         dnr,
-//     );
-//     const ledger = await RenLedger.deployed();
-//     return ledger;
-// }
+async function deployRenLedger(deployer, dnr) {
+    await deployer.deploy(
+        RenLedger,
+        0,
+        CONFIG.REN.address,
+        dnr,
+    );
+    const ledger = await RenLedger.deployed();
+    return ledger.address;
+}
 
 
 async function deployTraderAccount(deployer, ledger) {
@@ -71,7 +75,9 @@ async function deployTraderAccount(deployer, ledger) {
 
 module.exports = async function (deployer) {
     // const dnr = await deployDarknodeRegistry(deployer);
+    const dnr = CONFIG.DNR.address;
     // const ledger = await deployRenLedger(deployer, dnr);
-    await deployTraderAccount(deployer, CONFIG.Ledger.address);
+    const ledger = CONFIG.Ledger.address;
+    await deployTraderAccount(deployer, ledger);
     // deployContract(deployer, TraderAccounts);
 };

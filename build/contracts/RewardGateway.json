@@ -86,22 +86,22 @@
   ],
   "bytecode": "0x6080604052336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555061049d806100536000396000f300608060405260043610610062576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806329228ba7146100675780638da5cb5b146100ea57806397416cb414610141578063f2fde38b146101a4575b600080fd5b34801561007357600080fd5b506100a8600480360381019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506101e7565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156100f657600080fd5b506100ff61021a565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b34801561014d57600080fd5b506101a2600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061023f565b005b3480156101b057600080fd5b506101e5600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061031c565b005b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561029a57600080fd5b80600160008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561037757600080fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff16141515156103b357600080fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550505600a165627a7a723058205e0ec2a14df2c063f126ceb4d98e037292359b29189e921fc7a5d5fab81401c50029",
   "deployedBytecode": "0x608060405260043610610062576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806329228ba7146100675780638da5cb5b146100ea57806397416cb414610141578063f2fde38b146101a4575b600080fd5b34801561007357600080fd5b506100a8600480360381019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506101e7565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b3480156100f657600080fd5b506100ff61021a565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b34801561014d57600080fd5b506101a2600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061023f565b005b3480156101b057600080fd5b506101e5600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061031c565b005b60016020528060005260406000206000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561029a57600080fd5b80600160008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561037757600080fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff16141515156103b357600080fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550505600a165627a7a723058205e0ec2a14df2c063f126ceb4d98e037292359b29189e921fc7a5d5fab81401c50029",
-  "sourceMap": "87:257:4:-;;;509:10:13;501:5;;:18;;;;;;;;;;;;;;;;;;87:257:4;;;;;;",
-  "deployedSourceMap": "87:257:4:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;127:46;;8:9:-1;5:2;;;30:1;27;20:12;5:2;127:46:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;238:20:13;;8:9:-1;5:2;;;30:1;27;20:12;5:2;238:20:13;;;;;;;;;;;;;;;;;;;;;;;;;;;180:162:4;;8:9:-1;5:2;;;30:1;27;20:12;5:2;180:162:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;832:169:13;;8:9:-1;5:2;;;30:1;27;20:12;5:2;832:169:13;;;;;;;;;;;;;;;;;;;;;;;;;;;;127:46:4;;;;;;;;;;;;;;;;;;;;;;:::o;238:20:13:-;;;;;;;;;;;;;:::o;180:162:4:-;653:5:13;;;;;;;;;;;639:19;;:10;:19;;;631:28;;;;;;;;316:19:4;286:12;:27;299:13;286:27;;;;;;;;;;;;;;;;:49;;;;;;;;;;;;;;;;;;180:162;;:::o;832:169:13:-;653:5;;;;;;;;;;;639:19;;:10;:19;;;631:28;;;;;;;;928:1;908:22;;:8;:22;;;;900:31;;;;;;;;965:8;937:37;;958:5;;;;;;;;;;;937:37;;;;;;;;;;;;988:8;980:5;;:16;;;;;;;;;;;;;;;;;;832:169;:::o",
+  "sourceMap": "87:257:4:-;;;509:10:14;501:5;;:18;;;;;;;;;;;;;;;;;;87:257:4;;;;;;",
+  "deployedSourceMap": "87:257:4:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;127:46;;8:9:-1;5:2;;;30:1;27;20:12;5:2;127:46:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;238:20:14;;8:9:-1;5:2;;;30:1;27;20:12;5:2;238:20:14;;;;;;;;;;;;;;;;;;;;;;;;;;;180:162:4;;8:9:-1;5:2;;;30:1;27;20:12;5:2;180:162:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;832:169:14;;8:9:-1;5:2;;;30:1;27;20:12;5:2;832:169:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;127:46:4;;;;;;;;;;;;;;;;;;;;;;:::o;238:20:14:-;;;;;;;;;;;;;:::o;180:162:4:-;653:5:14;;;;;;;;;;;639:19;;:10;:19;;;631:28;;;;;;;;316:19:4;286:12;:27;299:13;286:27;;;;;;;;;;;;;;;;:49;;;;;;;;;;;;;;;;;;180:162;;:::o;832:169:14:-;653:5;;;;;;;;;;;639:19;;:10;:19;;;631:28;;;;;;;;928:1;908:22;;:8;:22;;;;900:31;;;;;;;;965:8;937:37;;958:5;;;;;;;;;;;937:37;;;;;;;;;;;;988:8;980:5;;:16;;;;;;;;;;;;;;;;;;832:169;:::o",
   "source": "pragma solidity ^0.4.24;\n\nimport \"zeppelin-solidity/contracts/ownership/Ownable.sol\";\n\ncontract RewardGateway is Ownable {\n    mapping (address=>address) public rewardVaults;\n\n    function updateRewardVault(address _tokenAddress, address _rewardVaultAddress) onlyOwner public {\n        rewardVaults[_tokenAddress] = _rewardVaultAddress;\n    }\n}",
   "sourcePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RewardGateway.sol",
   "ast": {
     "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RewardGateway.sol",
     "exportedSymbols": {
       "RewardGateway": [
-        1925
+        2073
       ]
     },
-    "id": 1926,
+    "id": 2074,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1901,
+        "id": 2049,
         "literals": [
           "solidity",
           "^",
@@ -114,10 +114,10 @@
       {
         "absolutePath": "zeppelin-solidity/contracts/ownership/Ownable.sol",
         "file": "zeppelin-solidity/contracts/ownership/Ownable.sol",
-        "id": 1902,
+        "id": 2050,
         "nodeType": "ImportDirective",
-        "scope": 1926,
-        "sourceUnit": 4462,
+        "scope": 2074,
+        "sourceUnit": 5112,
         "src": "26:59:4",
         "symbolAliases": [],
         "unitAlias": ""
@@ -128,41 +128,41 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1903,
+              "id": 2051,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 4461,
+              "referencedDeclaration": 5111,
               "src": "113:7:4",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$4461",
+                "typeIdentifier": "t_contract$_Ownable_$5111",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 1904,
+            "id": 2052,
             "nodeType": "InheritanceSpecifier",
             "src": "113:7:4"
           }
         ],
         "contractDependencies": [
-          4461
+          5111
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1925,
+        "id": 2073,
         "linearizedBaseContracts": [
-          1925,
-          4461
+          2073,
+          5111
         ],
         "name": "RewardGateway",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1908,
+            "id": 2056,
             "name": "rewardVaults",
             "nodeType": "VariableDeclaration",
-            "scope": 1925,
+            "scope": 2073,
             "src": "127:46:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -171,9 +171,9 @@
               "typeString": "mapping(address => address)"
             },
             "typeName": {
-              "id": 1907,
+              "id": 2055,
               "keyType": {
-                "id": 1905,
+                "id": 2053,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "136:7:4",
@@ -189,7 +189,7 @@
                 "typeString": "mapping(address => address)"
               },
               "valueType": {
-                "id": 1906,
+                "id": 2054,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "145:7:4",
@@ -204,14 +204,14 @@
           },
           {
             "body": {
-              "id": 1923,
+              "id": 2071,
               "nodeType": "Block",
               "src": "276:66:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1921,
+                    "id": 2069,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -220,25 +220,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 1917,
+                        "id": 2065,
                         "name": "rewardVaults",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1908,
+                        "referencedDeclaration": 2056,
                         "src": "286:12:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
                           "typeString": "mapping(address => address)"
                         }
                       },
-                      "id": 1919,
+                      "id": 2067,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 1918,
+                        "id": 2066,
                         "name": "_tokenAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1910,
+                        "referencedDeclaration": 2058,
                         "src": "299:13:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -260,11 +260,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 1920,
+                      "id": 2068,
                       "name": "_rewardVaultAddress",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1912,
+                      "referencedDeclaration": 2060,
                       "src": "316:19:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -277,28 +277,28 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 1922,
+                  "id": 2070,
                   "nodeType": "ExpressionStatement",
                   "src": "286:49:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 1924,
+            "id": 2072,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [
               {
                 "arguments": null,
-                "id": 1915,
+                "id": 2063,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 1914,
+                  "id": 2062,
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4435,
+                  "referencedDeclaration": 5085,
                   "src": "259:9:4",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -312,15 +312,15 @@
             "name": "updateRewardVault",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1913,
+              "id": 2061,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1910,
+                  "id": 2058,
                   "name": "_tokenAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1924,
+                  "scope": 2072,
                   "src": "207:21:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -329,7 +329,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1909,
+                    "id": 2057,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "207:7:4",
@@ -343,10 +343,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1912,
+                  "id": 2060,
                   "name": "_rewardVaultAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1924,
+                  "scope": 2072,
                   "src": "230:27:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -355,7 +355,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1911,
+                    "id": 2059,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "230:7:4",
@@ -372,19 +372,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1916,
+              "id": 2064,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "276:0:4"
             },
-            "scope": 1925,
+            "scope": 2073,
             "src": "180:162:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1926,
+        "scope": 2074,
         "src": "87:257:4"
       }
     ],
@@ -394,14 +394,14 @@
     "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RewardGateway.sol",
     "exportedSymbols": {
       "RewardGateway": [
-        1925
+        2073
       ]
     },
-    "id": 1926,
+    "id": 2074,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1901,
+        "id": 2049,
         "literals": [
           "solidity",
           "^",
@@ -414,10 +414,10 @@
       {
         "absolutePath": "zeppelin-solidity/contracts/ownership/Ownable.sol",
         "file": "zeppelin-solidity/contracts/ownership/Ownable.sol",
-        "id": 1902,
+        "id": 2050,
         "nodeType": "ImportDirective",
-        "scope": 1926,
-        "sourceUnit": 4462,
+        "scope": 2074,
+        "sourceUnit": 5112,
         "src": "26:59:4",
         "symbolAliases": [],
         "unitAlias": ""
@@ -428,41 +428,41 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1903,
+              "id": 2051,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 4461,
+              "referencedDeclaration": 5111,
               "src": "113:7:4",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$4461",
+                "typeIdentifier": "t_contract$_Ownable_$5111",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 1904,
+            "id": 2052,
             "nodeType": "InheritanceSpecifier",
             "src": "113:7:4"
           }
         ],
         "contractDependencies": [
-          4461
+          5111
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1925,
+        "id": 2073,
         "linearizedBaseContracts": [
-          1925,
-          4461
+          2073,
+          5111
         ],
         "name": "RewardGateway",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1908,
+            "id": 2056,
             "name": "rewardVaults",
             "nodeType": "VariableDeclaration",
-            "scope": 1925,
+            "scope": 2073,
             "src": "127:46:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -471,9 +471,9 @@
               "typeString": "mapping(address => address)"
             },
             "typeName": {
-              "id": 1907,
+              "id": 2055,
               "keyType": {
-                "id": 1905,
+                "id": 2053,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "136:7:4",
@@ -489,7 +489,7 @@
                 "typeString": "mapping(address => address)"
               },
               "valueType": {
-                "id": 1906,
+                "id": 2054,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "145:7:4",
@@ -504,14 +504,14 @@
           },
           {
             "body": {
-              "id": 1923,
+              "id": 2071,
               "nodeType": "Block",
               "src": "276:66:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1921,
+                    "id": 2069,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -520,25 +520,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 1917,
+                        "id": 2065,
                         "name": "rewardVaults",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1908,
+                        "referencedDeclaration": 2056,
                         "src": "286:12:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
                           "typeString": "mapping(address => address)"
                         }
                       },
-                      "id": 1919,
+                      "id": 2067,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 1918,
+                        "id": 2066,
                         "name": "_tokenAddress",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1910,
+                        "referencedDeclaration": 2058,
                         "src": "299:13:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -560,11 +560,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 1920,
+                      "id": 2068,
                       "name": "_rewardVaultAddress",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1912,
+                      "referencedDeclaration": 2060,
                       "src": "316:19:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -577,28 +577,28 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 1922,
+                  "id": 2070,
                   "nodeType": "ExpressionStatement",
                   "src": "286:49:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 1924,
+            "id": 2072,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [
               {
                 "arguments": null,
-                "id": 1915,
+                "id": 2063,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 1914,
+                  "id": 2062,
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4435,
+                  "referencedDeclaration": 5085,
                   "src": "259:9:4",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -612,15 +612,15 @@
             "name": "updateRewardVault",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1913,
+              "id": 2061,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1910,
+                  "id": 2058,
                   "name": "_tokenAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1924,
+                  "scope": 2072,
                   "src": "207:21:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -629,7 +629,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1909,
+                    "id": 2057,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "207:7:4",
@@ -643,10 +643,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1912,
+                  "id": 2060,
                   "name": "_rewardVaultAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1924,
+                  "scope": 2072,
                   "src": "230:27:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -655,7 +655,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1911,
+                    "id": 2059,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "230:7:4",
@@ -672,19 +672,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1916,
+              "id": 2064,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "276:0:4"
             },
-            "scope": 1925,
+            "scope": 2073,
             "src": "180:162:4",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 1926,
+        "scope": 2074,
         "src": "87:257:4"
       }
     ],
@@ -696,5 +696,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-06-01T06:59:37.609Z"
+  "updatedAt": "2018-06-12T04:32:32.025Z"
 }
