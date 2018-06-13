@@ -27,7 +27,7 @@ contract("RenExSettlement", function (accounts) {
         [tokenAddresses, renLedger, renExSettlement, renExBalances] = await setup(darknode);
     });
 
-    it("can rebalance", async () => {
+    it("order", async () => {
 
         const sell = parseOutput(`
         Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
@@ -68,11 +68,29 @@ MethodID: 0x177d19c3
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
     })
 
-    it("can rebalance", async () => {
+    it("order", async () => {
         const buyPrice = 1;
         const sellPrice = 0.95;
         const renDeposit = 1; // REN
         const dgxDeposit = 2; // DGX
+        const tokens = market(DGX, REN);
+
+        const sell = { tokens, price: sellPrice, volume: renDeposit, minimumVolume: renDeposit }
+        const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
+
+        const [priceSettled, dgxSettled, renSettled] =
+            await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+
+        priceSettled.should.equal(0.975);
+        dgxSettled.should.equal(0.975);
+        renSettled.should.equal(1);
+    })
+
+    it.only("order", async () => {
+        const buyPrice = 1;
+        const sellPrice = 0.95;
+        const renDeposit = 2; // REN
+        const dgxDeposit = 1; // DGX
         const tokens = market(DGX, REN);
 
         const sell = { tokens, price: sellPrice, volume: renDeposit, minimumVolume: renDeposit }

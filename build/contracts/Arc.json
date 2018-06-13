@@ -178,7 +178,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 585,
-        "sourceUnit": 2074,
+        "sourceUnit": 2351,
         "src": "26:29:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -189,7 +189,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 585,
-        "sourceUnit": 2317,
+        "sourceUnit": 2594,
         "src": "56:27:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -462,7 +462,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_RewardVault_$2316",
+                  "typeIdentifier": "t_contract$_RewardVault_$2593",
                   "typeString": "contract RewardVault"
                 },
                 "typeName": {
@@ -470,10 +470,10 @@
                   "id": 25,
                   "name": "RewardVault",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 2316,
+                  "referencedDeclaration": 2593,
                   "src": "397:11:0",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                     "typeString": "contract RewardVault"
                   }
                 },
@@ -684,7 +684,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RewardGateway_$2073",
+              "typeIdentifier": "t_contract$_RewardGateway_$2350",
               "typeString": "contract RewardGateway"
             },
             "typeName": {
@@ -692,10 +692,10 @@
               "id": 41,
               "name": "RewardGateway",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2073,
+              "referencedDeclaration": 2350,
               "src": "904:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                "typeIdentifier": "t_contract$_RewardGateway_$2350",
                 "typeString": "contract RewardGateway"
               }
             },
@@ -772,7 +772,7 @@
                       "referencedDeclaration": 42,
                       "src": "1202:7:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                        "typeIdentifier": "t_contract$_RewardGateway_$2350",
                         "typeString": "contract RewardGateway"
                       }
                     },
@@ -806,10 +806,10 @@
                         "name": "RewardGateway",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2073,
+                        "referencedDeclaration": 2350,
                         "src": "1212:13:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RewardGateway_$2073_$",
+                          "typeIdentifier": "t_type$_t_contract$_RewardGateway_$2350_$",
                           "typeString": "type(contract RewardGateway)"
                         }
                       },
@@ -823,13 +823,13 @@
                       "nodeType": "FunctionCall",
                       "src": "1212:36:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                        "typeIdentifier": "t_contract$_RewardGateway_$2350",
                         "typeString": "contract RewardGateway"
                       }
                     },
                     "src": "1202:46:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                      "typeIdentifier": "t_contract$_RewardGateway_$2350",
                       "typeString": "contract RewardGateway"
                     }
                   },
@@ -960,7 +960,7 @@
                       "name": "keccak256",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5702,
+                      "referencedDeclaration": 5555,
                       "src": "1507:9:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
@@ -1104,10 +1104,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "1534:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1214,10 +1214,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "1592:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1889,7 +1889,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5708,
+                        "referencedDeclaration": 5561,
                         "src": "1935:3:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -2263,7 +2263,7 @@
                       "referencedDeclaration": 26,
                       "src": "2093:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardVault_$2316",
+                        "typeIdentifier": "t_contract$_RewardVault_$2593",
                         "typeString": "contract RewardVault"
                       }
                     },
@@ -2305,7 +2305,7 @@
                               "referencedDeclaration": 42,
                               "src": "2128:7:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                                "typeIdentifier": "t_contract$_RewardGateway_$2350",
                                 "typeString": "contract RewardGateway"
                               }
                             },
@@ -2316,7 +2316,7 @@
                             "lValueRequested": false,
                             "memberName": "rewardVaults",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2056,
+                            "referencedDeclaration": 2333,
                             "src": "2128:20:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
@@ -2349,10 +2349,10 @@
                         "name": "RewardVault",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2316,
+                        "referencedDeclaration": 2593,
                         "src": "2116:11:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RewardVault_$2316_$",
+                          "typeIdentifier": "t_type$_t_contract$_RewardVault_$2593_$",
                           "typeString": "type(contract RewardVault)"
                         }
                       },
@@ -2366,13 +2366,13 @@
                       "nodeType": "FunctionCall",
                       "src": "2116:48:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardVault_$2316",
+                        "typeIdentifier": "t_contract$_RewardVault_$2593",
                         "typeString": "contract RewardVault"
                       }
                     },
                     "src": "2093:71:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RewardVault_$2316",
+                      "typeIdentifier": "t_contract$_RewardVault_$2593",
                       "typeString": "contract RewardVault"
                     }
                   },
@@ -2718,10 +2718,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2318:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -2827,7 +2827,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "2415:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2866,10 +2866,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2379:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -2995,7 +2995,7 @@
                             "name": "sha256",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5717,
+                            "referencedDeclaration": 5570,
                             "src": "2474:6:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_sha256_pure$__$returns$_t_bytes32_$",
@@ -3034,10 +3034,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2436:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3735,10 +3735,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2926:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4379,10 +4379,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3293:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4678,10 +4678,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3611:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4729,7 +4729,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5698,
+                            "referencedDeclaration": 5551,
                             "src": "3680:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -4826,10 +4826,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3672:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4877,7 +4877,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "3740:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -4974,10 +4974,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3732:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -5145,7 +5145,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 5708,
+                          "referencedDeclaration": 5561,
                           "src": "3869:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -5391,7 +5391,7 @@
                             "stateVariable": false,
                             "storageLocation": "default",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             },
                             "typeName": {
@@ -5399,10 +5399,10 @@
                               "id": 402,
                               "name": "ERC20",
                               "nodeType": "UserDefinedTypeName",
-                              "referencedDeclaration": 5313,
+                              "referencedDeclaration": 5166,
                               "src": "4171:5:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -5439,10 +5439,10 @@
                             "name": "ERC20",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5313,
+                            "referencedDeclaration": 5166,
                             "src": "4181:5:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                               "typeString": "type(contract ERC20)"
                             }
                           },
@@ -5456,7 +5456,7 @@
                           "nodeType": "FunctionCall",
                           "src": "4181:20:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -5514,7 +5514,7 @@
                               "referencedDeclaration": 403,
                               "src": "4215:1:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -5525,7 +5525,7 @@
                             "lValueRequested": false,
                             "memberName": "transfer",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 5336,
+                            "referencedDeclaration": 5189,
                             "src": "4215:10:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -5860,7 +5860,7 @@
                             "stateVariable": false,
                             "storageLocation": "default",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             },
                             "typeName": {
@@ -5868,10 +5868,10 @@
                               "id": 429,
                               "name": "ERC20",
                               "nodeType": "UserDefinedTypeName",
-                              "referencedDeclaration": 5313,
+                              "referencedDeclaration": 5166,
                               "src": "4448:5:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -5951,10 +5951,10 @@
                             "name": "ERC20",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5313,
+                            "referencedDeclaration": 5166,
                             "src": "4458:5:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                               "typeString": "type(contract ERC20)"
                             }
                           },
@@ -5968,7 +5968,7 @@
                           "nodeType": "FunctionCall",
                           "src": "4458:35:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -6034,7 +6034,7 @@
                                   "referencedDeclaration": 26,
                                   "src": "4525:21:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                                     "typeString": "contract RewardVault"
                                   }
                                 }
@@ -6042,7 +6042,7 @@
                               "expression": {
                                 "argumentTypes": [
                                   {
-                                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                                     "typeString": "contract RewardVault"
                                   }
                                 ],
@@ -6150,7 +6150,7 @@
                               "referencedDeclaration": 430,
                               "src": "4507:1:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -6161,7 +6161,7 @@
                             "lValueRequested": false,
                             "memberName": "approve",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 5304,
+                            "referencedDeclaration": 5157,
                             "src": "4507:9:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -6366,7 +6366,7 @@
                               "referencedDeclaration": 26,
                               "src": "4583:21:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                "typeIdentifier": "t_contract$_RewardVault_$2593",
                                 "typeString": "contract RewardVault"
                               }
                             },
@@ -6377,7 +6377,7 @@
                             "lValueRequested": false,
                             "memberName": "deposit",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2183,
+                            "referencedDeclaration": 2460,
                             "src": "4583:29:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_payable$_t_bytes_memory_ptr_$_t_uint256_$returns$__$",
@@ -6659,7 +6659,7 @@
                             "referencedDeclaration": 26,
                             "src": "4697:21:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RewardVault_$2316",
+                              "typeIdentifier": "t_contract$_RewardVault_$2593",
                               "typeString": "contract RewardVault"
                             }
                           },
@@ -6670,7 +6670,7 @@
                           "lValueRequested": false,
                           "memberName": "deposit",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2183,
+                          "referencedDeclaration": 2460,
                           "src": "4697:29:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_payable$_t_bytes_memory_ptr_$_t_uint256_$returns$__$",
@@ -6863,7 +6863,7 @@
                                   "name": "msg",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 5708,
+                                  "referencedDeclaration": 5561,
                                   "src": "5012:3:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_magic_message",
@@ -6942,7 +6942,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ERC20_$5313",
+                        "typeIdentifier": "t_contract$_ERC20_$5166",
                         "typeString": "contract ERC20"
                       },
                       "typeName": {
@@ -6950,10 +6950,10 @@
                         "id": 513,
                         "name": "ERC20",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 5313,
+                        "referencedDeclaration": 5166,
                         "src": "5052:5:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ERC20_$5313",
+                          "typeIdentifier": "t_contract$_ERC20_$5166",
                           "typeString": "contract ERC20"
                         }
                       },
@@ -6990,10 +6990,10 @@
                       "name": "ERC20",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5313,
+                      "referencedDeclaration": 5166,
                       "src": "5062:5:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                        "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                         "typeString": "type(contract ERC20)"
                       }
                     },
@@ -7007,7 +7007,7 @@
                     "nodeType": "FunctionCall",
                     "src": "5062:20:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$5313",
+                      "typeIdentifier": "t_contract$_ERC20_$5166",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -7037,7 +7037,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "5108:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -7067,7 +7067,7 @@
                               "name": "this",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 5751,
+                              "referencedDeclaration": 5604,
                               "src": "5128:4:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_contract$_Arc_$584",
@@ -7130,7 +7130,7 @@
                           "referencedDeclaration": 514,
                           "src": "5096:1:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -7141,7 +7141,7 @@
                         "lValueRequested": false,
                         "memberName": "allowance",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 5284,
+                        "referencedDeclaration": 5137,
                         "src": "5096:11:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_uint256_$",
@@ -7234,7 +7234,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 5708,
+                              "referencedDeclaration": 5561,
                               "src": "5214:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -7264,7 +7264,7 @@
                                 "name": "this",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 5751,
+                                "referencedDeclaration": 5604,
                                 "src": "5234:4:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_contract$_Arc_$584",
@@ -7344,7 +7344,7 @@
                             "referencedDeclaration": 514,
                             "src": "5199:1:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             }
                           },
@@ -7355,7 +7355,7 @@
                           "lValueRequested": false,
                           "memberName": "transferFrom",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 5295,
+                          "referencedDeclaration": 5148,
                           "src": "5199:14:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -8083,7 +8083,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 585,
-        "sourceUnit": 2074,
+        "sourceUnit": 2351,
         "src": "26:29:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -8094,7 +8094,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 585,
-        "sourceUnit": 2317,
+        "sourceUnit": 2594,
         "src": "56:27:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -8367,7 +8367,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_RewardVault_$2316",
+                  "typeIdentifier": "t_contract$_RewardVault_$2593",
                   "typeString": "contract RewardVault"
                 },
                 "typeName": {
@@ -8375,10 +8375,10 @@
                   "id": 25,
                   "name": "RewardVault",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 2316,
+                  "referencedDeclaration": 2593,
                   "src": "397:11:0",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                     "typeString": "contract RewardVault"
                   }
                 },
@@ -8589,7 +8589,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RewardGateway_$2073",
+              "typeIdentifier": "t_contract$_RewardGateway_$2350",
               "typeString": "contract RewardGateway"
             },
             "typeName": {
@@ -8597,10 +8597,10 @@
               "id": 41,
               "name": "RewardGateway",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2073,
+              "referencedDeclaration": 2350,
               "src": "904:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                "typeIdentifier": "t_contract$_RewardGateway_$2350",
                 "typeString": "contract RewardGateway"
               }
             },
@@ -8677,7 +8677,7 @@
                       "referencedDeclaration": 42,
                       "src": "1202:7:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                        "typeIdentifier": "t_contract$_RewardGateway_$2350",
                         "typeString": "contract RewardGateway"
                       }
                     },
@@ -8711,10 +8711,10 @@
                         "name": "RewardGateway",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2073,
+                        "referencedDeclaration": 2350,
                         "src": "1212:13:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RewardGateway_$2073_$",
+                          "typeIdentifier": "t_type$_t_contract$_RewardGateway_$2350_$",
                           "typeString": "type(contract RewardGateway)"
                         }
                       },
@@ -8728,13 +8728,13 @@
                       "nodeType": "FunctionCall",
                       "src": "1212:36:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                        "typeIdentifier": "t_contract$_RewardGateway_$2350",
                         "typeString": "contract RewardGateway"
                       }
                     },
                     "src": "1202:46:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                      "typeIdentifier": "t_contract$_RewardGateway_$2350",
                       "typeString": "contract RewardGateway"
                     }
                   },
@@ -8865,7 +8865,7 @@
                       "name": "keccak256",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5702,
+                      "referencedDeclaration": 5555,
                       "src": "1507:9:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
@@ -9009,10 +9009,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "1534:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -9119,10 +9119,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "1592:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -9794,7 +9794,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5708,
+                        "referencedDeclaration": 5561,
                         "src": "1935:3:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -10168,7 +10168,7 @@
                       "referencedDeclaration": 26,
                       "src": "2093:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardVault_$2316",
+                        "typeIdentifier": "t_contract$_RewardVault_$2593",
                         "typeString": "contract RewardVault"
                       }
                     },
@@ -10210,7 +10210,7 @@
                               "referencedDeclaration": 42,
                               "src": "2128:7:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RewardGateway_$2073",
+                                "typeIdentifier": "t_contract$_RewardGateway_$2350",
                                 "typeString": "contract RewardGateway"
                               }
                             },
@@ -10221,7 +10221,7 @@
                             "lValueRequested": false,
                             "memberName": "rewardVaults",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2056,
+                            "referencedDeclaration": 2333,
                             "src": "2128:20:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_address_$",
@@ -10254,10 +10254,10 @@
                         "name": "RewardVault",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2316,
+                        "referencedDeclaration": 2593,
                         "src": "2116:11:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RewardVault_$2316_$",
+                          "typeIdentifier": "t_type$_t_contract$_RewardVault_$2593_$",
                           "typeString": "type(contract RewardVault)"
                         }
                       },
@@ -10271,13 +10271,13 @@
                       "nodeType": "FunctionCall",
                       "src": "2116:48:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RewardVault_$2316",
+                        "typeIdentifier": "t_contract$_RewardVault_$2593",
                         "typeString": "contract RewardVault"
                       }
                     },
                     "src": "2093:71:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RewardVault_$2316",
+                      "typeIdentifier": "t_contract$_RewardVault_$2593",
                       "typeString": "contract RewardVault"
                     }
                   },
@@ -10623,10 +10623,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2318:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -10732,7 +10732,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "2415:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -10771,10 +10771,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2379:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -10900,7 +10900,7 @@
                             "name": "sha256",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5717,
+                            "referencedDeclaration": 5570,
                             "src": "2474:6:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_sha256_pure$__$returns$_t_bytes32_$",
@@ -10939,10 +10939,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2436:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -11640,10 +11640,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "2926:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12284,10 +12284,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3293:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12583,10 +12583,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3611:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12634,7 +12634,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5698,
+                            "referencedDeclaration": 5551,
                             "src": "3680:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -12731,10 +12731,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3672:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12782,7 +12782,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "3740:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -12879,10 +12879,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        5711,
-                        5712
+                        5564,
+                        5565
                       ],
-                      "referencedDeclaration": 5711,
+                      "referencedDeclaration": 5564,
                       "src": "3732:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -13050,7 +13050,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 5708,
+                          "referencedDeclaration": 5561,
                           "src": "3869:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -13296,7 +13296,7 @@
                             "stateVariable": false,
                             "storageLocation": "default",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             },
                             "typeName": {
@@ -13304,10 +13304,10 @@
                               "id": 402,
                               "name": "ERC20",
                               "nodeType": "UserDefinedTypeName",
-                              "referencedDeclaration": 5313,
+                              "referencedDeclaration": 5166,
                               "src": "4171:5:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -13344,10 +13344,10 @@
                             "name": "ERC20",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5313,
+                            "referencedDeclaration": 5166,
                             "src": "4181:5:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                               "typeString": "type(contract ERC20)"
                             }
                           },
@@ -13361,7 +13361,7 @@
                           "nodeType": "FunctionCall",
                           "src": "4181:20:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -13419,7 +13419,7 @@
                               "referencedDeclaration": 403,
                               "src": "4215:1:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -13430,7 +13430,7 @@
                             "lValueRequested": false,
                             "memberName": "transfer",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 5336,
+                            "referencedDeclaration": 5189,
                             "src": "4215:10:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -13765,7 +13765,7 @@
                             "stateVariable": false,
                             "storageLocation": "default",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             },
                             "typeName": {
@@ -13773,10 +13773,10 @@
                               "id": 429,
                               "name": "ERC20",
                               "nodeType": "UserDefinedTypeName",
-                              "referencedDeclaration": 5313,
+                              "referencedDeclaration": 5166,
                               "src": "4448:5:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -13856,10 +13856,10 @@
                             "name": "ERC20",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5313,
+                            "referencedDeclaration": 5166,
                             "src": "4458:5:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                              "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                               "typeString": "type(contract ERC20)"
                             }
                           },
@@ -13873,7 +13873,7 @@
                           "nodeType": "FunctionCall",
                           "src": "4458:35:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -13939,7 +13939,7 @@
                                   "referencedDeclaration": 26,
                                   "src": "4525:21:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                                     "typeString": "contract RewardVault"
                                   }
                                 }
@@ -13947,7 +13947,7 @@
                               "expression": {
                                 "argumentTypes": [
                                   {
-                                    "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                    "typeIdentifier": "t_contract$_RewardVault_$2593",
                                     "typeString": "contract RewardVault"
                                   }
                                 ],
@@ -14055,7 +14055,7 @@
                               "referencedDeclaration": 430,
                               "src": "4507:1:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_ERC20_$5313",
+                                "typeIdentifier": "t_contract$_ERC20_$5166",
                                 "typeString": "contract ERC20"
                               }
                             },
@@ -14066,7 +14066,7 @@
                             "lValueRequested": false,
                             "memberName": "approve",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 5304,
+                            "referencedDeclaration": 5157,
                             "src": "4507:9:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -14271,7 +14271,7 @@
                               "referencedDeclaration": 26,
                               "src": "4583:21:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RewardVault_$2316",
+                                "typeIdentifier": "t_contract$_RewardVault_$2593",
                                 "typeString": "contract RewardVault"
                               }
                             },
@@ -14282,7 +14282,7 @@
                             "lValueRequested": false,
                             "memberName": "deposit",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2183,
+                            "referencedDeclaration": 2460,
                             "src": "4583:29:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_payable$_t_bytes_memory_ptr_$_t_uint256_$returns$__$",
@@ -14564,7 +14564,7 @@
                             "referencedDeclaration": 26,
                             "src": "4697:21:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RewardVault_$2316",
+                              "typeIdentifier": "t_contract$_RewardVault_$2593",
                               "typeString": "contract RewardVault"
                             }
                           },
@@ -14575,7 +14575,7 @@
                           "lValueRequested": false,
                           "memberName": "deposit",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2183,
+                          "referencedDeclaration": 2460,
                           "src": "4697:29:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_payable$_t_bytes_memory_ptr_$_t_uint256_$returns$__$",
@@ -14768,7 +14768,7 @@
                                   "name": "msg",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 5708,
+                                  "referencedDeclaration": 5561,
                                   "src": "5012:3:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_magic_message",
@@ -14847,7 +14847,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ERC20_$5313",
+                        "typeIdentifier": "t_contract$_ERC20_$5166",
                         "typeString": "contract ERC20"
                       },
                       "typeName": {
@@ -14855,10 +14855,10 @@
                         "id": 513,
                         "name": "ERC20",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 5313,
+                        "referencedDeclaration": 5166,
                         "src": "5052:5:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ERC20_$5313",
+                          "typeIdentifier": "t_contract$_ERC20_$5166",
                           "typeString": "contract ERC20"
                         }
                       },
@@ -14895,10 +14895,10 @@
                       "name": "ERC20",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5313,
+                      "referencedDeclaration": 5166,
                       "src": "5062:5:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ERC20_$5313_$",
+                        "typeIdentifier": "t_type$_t_contract$_ERC20_$5166_$",
                         "typeString": "type(contract ERC20)"
                       }
                     },
@@ -14912,7 +14912,7 @@
                     "nodeType": "FunctionCall",
                     "src": "5062:20:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ERC20_$5313",
+                      "typeIdentifier": "t_contract$_ERC20_$5166",
                       "typeString": "contract ERC20"
                     }
                   },
@@ -14942,7 +14942,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5708,
+                            "referencedDeclaration": 5561,
                             "src": "5108:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -14972,7 +14972,7 @@
                               "name": "this",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 5751,
+                              "referencedDeclaration": 5604,
                               "src": "5128:4:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_contract$_Arc_$584",
@@ -15035,7 +15035,7 @@
                           "referencedDeclaration": 514,
                           "src": "5096:1:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ERC20_$5313",
+                            "typeIdentifier": "t_contract$_ERC20_$5166",
                             "typeString": "contract ERC20"
                           }
                         },
@@ -15046,7 +15046,7 @@
                         "lValueRequested": false,
                         "memberName": "allowance",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 5284,
+                        "referencedDeclaration": 5137,
                         "src": "5096:11:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_uint256_$",
@@ -15139,7 +15139,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 5708,
+                              "referencedDeclaration": 5561,
                               "src": "5214:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -15169,7 +15169,7 @@
                                 "name": "this",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 5751,
+                                "referencedDeclaration": 5604,
                                 "src": "5234:4:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_contract$_Arc_$584",
@@ -15249,7 +15249,7 @@
                             "referencedDeclaration": 514,
                             "src": "5199:1:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_ERC20_$5313",
+                              "typeIdentifier": "t_contract$_ERC20_$5166",
                               "typeString": "contract ERC20"
                             }
                           },
@@ -15260,7 +15260,7 @@
                           "lValueRequested": false,
                           "memberName": "transferFrom",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 5295,
+                          "referencedDeclaration": 5148,
                           "src": "5199:14:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -15967,5 +15967,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-06-12T04:32:32.028Z"
+  "updatedAt": "2018-06-12T07:17:42.553Z"
 }

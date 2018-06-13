@@ -21,15 +21,21 @@ const CONFIG = {
     DNR: {
         minimumBond: 0, // in airen
         minimumPoolSize: 5,
-        minumumEpochInterval: 60, // in seconds,
-        address: "0x2877a4eab06d0cea08f12db55cdb57e110632934",
+        minumumEpochInterval: 1, // in seconds,
+        address: "",
     },
     Ledger: {
-        address: "0x972da720da8607363f5875659c75aede8fd734d2" // KOVAN
+        address: "" // KOVAN
     },
-    Accounts: {
-        address: "0xdcb3d500fd230b59ab8f9f39181554c7ddc0f30a",
-    }
+    RenExTokens: {
+        address: "",
+    },
+    RenExBalances: {
+        address: "",
+    },
+    RenExSettlement: {
+        address: "",
+    },
 };
 
 async function deployDarknodeRegistry(deployer) {
@@ -40,8 +46,7 @@ async function deployDarknodeRegistry(deployer) {
         CONFIG.DNR.minimumPoolSize,
         CONFIG.DNR.minumumEpochInterval
     );
-    const dnr = await DarknodeRegistry.deployed();
-    return dnr;
+    return await DarknodeRegistry.deployed();
 }
 
 async function deployRenLedger(deployer, dnr) {
@@ -51,22 +56,18 @@ async function deployRenLedger(deployer, dnr) {
         CONFIG.REN.address,
         dnr,
     );
-    const ledger = await RenLedger.deployed();
-    return ledger;
+    return await RenLedger.deployed();
 }
 
 
-async function deployRenExSettlement(deployer, ledger, renExBalances) {
-    const traderAccounts = await deployer.deploy(
+async function deployRenExSettlement(deployer, ledger, tokenContract, renExBalances) {
+    await deployer.deploy(
         RenExSettlement,
         ledger,
+        tokenContract,
         renExBalances,
     );
-    const accounts = await RenExSettlement.deployed();
-    await accounts.registerToken(1, 0x0, 18);
-    await accounts.registerToken(0x100, CONFIG.DGX.address, 9);
-    await accounts.registerToken(0x10000, CONFIG.REN.address, 18);
-    return traderAccounts;
+    return await RenExSettlement.deployed();
 }
 
 
@@ -75,16 +76,28 @@ async function deployContract(deployer, artifact) {
     const contract = await deployer.deploy(
         artifact,
     );
-    return contract;
+    return await artifact.deployed();
 }
 
 module.exports = async function (deployer) {
-    // const dnr = await deployDarknodeRegistry(deployer);
-    // // const dnr = CONFIG.DNR.address;
-    // const ledger = await deployRenLedger(deployer, dnr.address);
-    // // const ledger = CONFIG.Ledger.address;
-    // const renExBalances = await deployContract(deployer, RenExBalances);
-    // const traderAccounts = await deployRenExSettlement(deployer, ledger.address, renExBalances.address);
-    // // TODO: Fix following line if using existing RenExBalance deployment
-    // await renExBalances.setRenExSettlementContract(traderAccounts.address);
+    const dnr = await deployDarknodeRegistry(deployer);
+    // const dnr = CONFIG.DNR.address;
+    const ledger = await deployRenLedger(deployer, dnr.address);
+    // const ledger = CONFIG.Ledger.address;
+
+    // // RENEXTOKENS
+    const renExTokens = await deployContract(deployer, RenExTokens);
+    await renExTokens.registerToken(1, 0x0, 18);
+    await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
+    await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
+
+    const renExBalances = await deployContract(deployer, RenExBalances);
+
+    // const renExTokens = CONFIG.RenExTokens.address;
+    // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
+
+    const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
+    // const renExSettlement = CONFIG.RenExSettlement.address;
+
+    await renExBalances.setRenExSettlementContract(renExSettlement.address);
 };
