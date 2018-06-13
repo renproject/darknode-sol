@@ -120,12 +120,10 @@ contract RenLedger {
         for (i = 0; i < _orderMatches.length; i++) {
             orders[_orderMatches[i]].state = OrderState.Confirmed;
             orders[_orderMatches[i]].matches = [_orderId];
-            orders[_orderMatches[i]].blockNumber = block.number;
         }
         orders[_orderId].state = OrderState.Confirmed;
         orders[_orderId].confirmer = msg.sender;
         orders[_orderId].matches = _orderMatches;
-        orders[_orderId].blockNumber = block.number;
     }
 
     /**
@@ -151,7 +149,6 @@ contract RenLedger {
         }
 
         orders[_orderId].state = OrderState.Canceled;
-        orders[_orderId].blockNumber = block.number;
     }
 
     /**
