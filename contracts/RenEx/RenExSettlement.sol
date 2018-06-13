@@ -4,19 +4,21 @@ import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-import "./RenLedger.sol";
+import "../RenLedger.sol";
 import "./RenExBalances.sol";
+import "./RenExTokens.sol";
 
 /**
 @title The contract responsible for holding trader funds and settling matched
 order values
 @author Republic Protocol
 */
-contract TraderAccounts is Ownable {
+contract RenExSettlement is Ownable {
     using SafeMath for uint256;
 
-    RenLedger ledger;
-    RenExBalances renExBalances;
+    RenLedger renLedgerContract;
+    RenExTokens renExTokensContract;
+    RenExBalances renExBalancesContract;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -43,8 +45,6 @@ contract TraderAccounts is Ownable {
     }
 
     // Events
-    event Deposit(address trader, uint32 token, uint256 value);
-    event Withdraw(address trader, uint32 token, uint256 value);
     event Transfer(address from, address to, uint32 token, uint256 value);
     event Debug256(string msg, uint256 num);
     event Debugi256(string msg, int256 num);
@@ -58,146 +58,29 @@ contract TraderAccounts is Ownable {
     mapping(bytes32 => OrderStatus) private orderStatuses;
     mapping(bytes32 => Match) public matches;
 
-    mapping(uint32 => ERC20) public tokenAddresses;
-    mapping(uint32 => uint8) public tokenDecimals;
-    mapping(uint32 => bool) public tokenEnabled;
-    
-
     /**
     @notice constructor
-    @param _ledger the address for the Ren Ledger
+    @param _renLedgerContract the address for the Ren Ledger
     */
-    constructor(RenLedger _ledger, RenExBalances _renExBalances) public {
-        ledger = _ledger;
-        renExBalances = _renExBalances;
+    constructor(RenLedger _renLedgerContract, RenExBalances _renExBalancesContract, RenExTokens _renExTokensContract) public {
+        renLedgerContract = _renLedgerContract;
+        renExBalancesContract = _renExBalancesContract;
+        renExTokensContract = _renExTokensContract;
+    }
+
+
+    /********** WITHDRAWAL FUNCTIONS ******************************************/
+
+    function isWithdrawalInvalid(address _trader, address _token, uint256 amount) public returns (bool) {
+        // In the future, this will return true (i.e. invalid withdrawal) if the
+        // trader has open orders for that token
+        return false;
     }
 
 
 
-    // Contract Registry - TODO: Move to its own contract?
-
-    /**
-    @notice Modifier to require tokens to be registered in the token registry
-    */
-    modifier onlyEnabledToken(uint32 _tokenCode) {
-        require(tokenEnabled[_tokenCode]);
-        _;
-    }
-
-    /**
-    @notice Sets a token as being registered and stores its details (only-owner)
-    @param _tokenCode a unique 32-bit token identifier
-    @param _tokenAddress the address of the ERC20-compatible token
-    @param _tokenDecimals the decimals to use for the token
-    */
-    function registerToken(uint32 _tokenCode, ERC20 _tokenAddress, uint8 _tokenDecimals) public onlyOwner {
-        // TODO: Check if contract has a .decimals() call
-        tokenAddresses[_tokenCode] = _tokenAddress;
-        tokenDecimals[_tokenCode] = _tokenDecimals;
-        tokenEnabled[_tokenCode] = true;
-    }
-
-    /**
-    @notice Sets a token as being deregistered
-    @param _tokenCode the unique 32-bit token identifier
-    */
-    function deregisterToken(uint32 _tokenCode) public onlyOwner {
-        tokenEnabled[_tokenCode] = false;
-    }
-
-
-
-    // PRIVATE functions //
+    /********** SETTLEMENT FUNCTIONS ******************************************/
     
-    function incrementBalance(address _trader, uint32 _tokenCode, uint256 _value) private {
-        return renExBalances.incrementBalance(_trader, _tokenCode, _value);
-    }
-
-    function decrementBalance(address _trader, uint32 _tokenCode, uint256 _value) private {
-        return renExBalances.decrementBalance(_trader, _tokenCode, _value);
-    }
-
-
-
-
-    // Trader functions //
-
-    /**
-    @notice Deposits ETH or an ERC20 token into the contract
-    @param _tokenCode the token's identifier (must be a registered token)
-    @param _value the amount to deposit in the token's smallest unit
-    */
-    function deposit(uint32 _tokenCode, uint256 _value) payable public onlyEnabledToken(_tokenCode) {
-        address trader = msg.sender;
-
-        ERC20 token = tokenAddresses[_tokenCode];
-
-        if (address(token) == ETH) {
-            require(msg.value == _value);
-        } else {
-            require(token.transferFrom(trader, this, _value));
-        }
-        incrementBalance(trader, _tokenCode, _value);
-
-        emit Deposit(trader, _tokenCode, _value);
-    }
-
-    /**
-    @notice Withdraws ETH or an ERC20 token from the contract
-    @notice TODO: Check if the account has any open orders first
-    @param _tokenCode the token's identifier (doesn't have to be registered)
-    @param _value the amount to withdraw in the token's smallest unit
-    */
-    function withdraw(uint32 _tokenCode, uint256 _value) public {
-        address trader = msg.sender;
-
-        ERC20 token = tokenAddresses[_tokenCode];
-
-        decrementBalance(trader, _tokenCode, _value);
-        if (address(token) == ETH) {
-            trader.transfer(_value);
-        } else {
-            require(token.transfer(trader, _value));
-        }
-
-        emit Withdraw(trader, _tokenCode, _value);
-    }
-
-    /**
-    @notice Retrieves a trader's balance for a token
-    @param _trader the address of the trader to retrieve the balance of
-    @param _tokenCode the token's identifier (doesn't have to be registered)
-    @return the trader's balance in the token's smallest unit
-    */
-    function getBalance(address _trader, uint32 _tokenCode) public view returns (uint256) {    
-        return renExBalances.getBalance(_trader, _tokenCode);
-    }
-
-    /**
-    @notice Retrieves the list of token addresses that the trader has previously
-    deposited
-    @param _trader the address of the trader
-    @return an array of addresses of the tokens
-    */
-    function getTokens(address _trader) public view returns (uint32[]) {
-        return renExBalances.getTokens(_trader);
-    }
-
-    /**
-    @notice Retrieves the list of token addresses that the trader has previosly
-    deposited and a list of the corresponding token balances
-    @param _trader the address of the trader
-    @return [
-        "the array of token addresses",
-        "the array of token balances in tokens' smallest units"
-    ]
-    */
-    function getBalances(address _trader) public view returns (uint32[], uint256[]) {
-        return renExBalances.getBalances(_trader);
-    }
-
-
-
     // Price/volume calculation functions
 
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
@@ -297,13 +180,16 @@ contract TraderAccounts is Ownable {
         uint32 buyToken, uint32 sellToken,
         uint256 lowTokenValue, uint256 highTokenValue
     ) private {
+        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        
+        address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);
+
         // Subtract values
-        decrementBalance(buyer, sellToken, lowTokenValue);
-        decrementBalance(seller, buyToken, highTokenValue);
+        renExBalancesContract.decrementBalance(buyer, sellTokenAddress, lowTokenValue);
+        renExBalancesContract.decrementBalance(seller, buyTokenAddress, highTokenValue);
 
         // Add values
-        incrementBalance(seller, sellToken, lowTokenValue);
-        incrementBalance(buyer, buyToken, highTokenValue);
+        renExBalancesContract.incrementBalance(seller, sellTokenAddress, lowTokenValue);
+        renExBalancesContract.incrementBalance(buyer, buyTokenAddress, highTokenValue);
 
         emit Transfer(buyer, seller, sellToken, lowTokenValue);
         emit Transfer(seller, buyer, buyToken, highTokenValue);
@@ -395,17 +281,24 @@ contract TraderAccounts is Ownable {
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
-        require(ledger.orderState(_buyID) == 2);
-        require(ledger.orderState(_sellID) == 2);
+        require(renLedgerContract.orderState(_buyID) == 2);
+        require(renLedgerContract.orderState(_sellID) == 2);
         
         // TODO: Loop through and check at all indices
-        require(ledger.orderMatch(_buyID)[0] == _sellID);
-
-        address buyer = ledger.orderTrader(_buyID);
-        address seller = ledger.orderTrader(_sellID);
+        require(renLedgerContract.orderMatch(_buyID)[0] == _sellID);
 
         uint32 buyToken = uint32(orders[_sellID].tokens);
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
+
+        require(renExTokensContract.tokenIsRegistered(buyToken));
+        require(renExTokensContract.tokenIsRegistered(sellToken));
+
+        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(buyToken);
+        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);
+
+
+        address buyer = renLedgerContract.orderTrader(_buyID);
+        address seller = renLedgerContract.orderTrader(_sellID);
 
         // Price midpoint
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
@@ -421,14 +314,14 @@ contract TraderAccounts is Ownable {
         // // emit DebugTupleI("MinVolTuple", minVolC, minVolQ);
         
 
-        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, tokenDecimals[sellToken]);
+        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, sellTokenDecimals);
 
-        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]);
+        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, buyTokenDecimals);
 
         finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
 
         matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
-            price: tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]),
+            price: tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals),
             lowVolume: lowTokenValue,
             highVolume: highTokenValue
         });
