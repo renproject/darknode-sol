@@ -1,6 +1,7 @@
 const RepublicToken = artifacts.require("RepublicToken");
 const RenExSettlement = artifacts.require("RenExSettlement");
 const RenExBalances = artifacts.require("RenExBalances");
+const WithdrawBlock = artifacts.require("WithdrawBlock");
 
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
@@ -8,9 +9,9 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("RenExBalances", function (accounts) {
+contract.only("RenExBalances", function (accounts) {
 
-    let renExBalances;
+    let renExBalances, renExSettlement;
     let ETH, REN, TOKEN1, TOKEN2;
 
     beforeEach(async function () {
@@ -147,6 +148,50 @@ contract("RenExBalances", function (accounts) {
 
         // Balance should be (previous - fee1 - fee2)
         (await web3.eth.getBalance(accounts[0])).should.be.bignumber.equal(previous.sub(fee1).sub(fee2));
+    })
+
+    it("only the settlement contract can call `incrementBalance` and `decrementBalance`", async () => {
+        await renExBalances.incrementBalance(
+            accounts[1],
+            REN.address,
+            1,
+            { from: accounts[1] }
+        ).should.be.rejected;
+
+        await renExBalances.decrementBalance(
+            accounts[1],
+            REN.address,
+            0,
+            { from: accounts[1] }
+        ).should.be.rejected;
+    });
+
+    it("deposits validates the transfer", async () => {
+        // Token
+        await TOKEN1.approve(renExBalances.address, 1, { from: accounts[1] });
+        await renExBalances.deposit(TOKEN1.address, 2, { from: accounts[1] })
+            .should.be.rejected;
+
+        // ETH
+        await renExBalances.deposit(ETH.address, 2, { from: accounts[1], value: 1 })
+            .should.be.rejected;
+    });
+
+    it("the RenExSettlement contract can approve and reject withdrawals", async () => {
+        const renExSettlementAlt = await WithdrawBlock.new();
+        await renExBalances.setRenExSettlementContract(renExSettlementAlt.address);
+
+        const deposit = 10;
+        await TOKEN1.approve(renExBalances.address, deposit, { from: accounts[0] });
+        await renExBalances.deposit(TOKEN1.address, deposit, { from: accounts[0] });
+
+        // Withdrawal should not go through
+        await renExBalances.withdraw(TOKEN1.address, deposit, { from: accounts[0] })
+            .should.be.rejected;
+
+        // Can withdraw after reverting settlement contract update
+        await renExBalances.setRenExSettlementContract(renExSettlement.address);
+        await renExBalances.withdraw(TOKEN1.address, deposit, { from: accounts[0] });
     })
 });
 
