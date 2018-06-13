@@ -65,7 +65,7 @@ contract RenExBalances is Ownable {
     @notice Increments a trader's balance of a token - can only be called by the
     owner, intended to be the RenEx settlement contract
     @param _trader the address of the trader
-    @param _tokenCode the token's identifier
+    @param _token the token's address
     @param _value the number of tokens to increment the balance by (in the token's smallest unit)
     */
     function incrementBalance(address _trader, address _token, uint256 _value) public onlyRenExSettlementContract {
@@ -88,7 +88,7 @@ contract RenExBalances is Ownable {
     @notice Decrements a trader's balance of a token - can only be called by the
     owner, intended to be the RenEx settlement contract
     @param _trader the address of the trader
-    @param _tokenCode the token's identifier
+    @param _token the token's address
     @param _value the number of tokens to decrement the balance by (in the token's smallest unit)
     */
     function decrementBalance(address _trader, address _token, uint256 _value) public onlyRenExSettlementContract {
@@ -106,7 +106,7 @@ contract RenExBalances is Ownable {
 
     /**
     @notice Deposits ETH or an ERC20 token into the contract
-    @param _tokenCode the token's identifier (must be a registered token)
+    @param _token the token's address (must be a registered token)
     @param _value the amount to deposit in the token's smallest unit
     */
     function deposit(ERC20 _token, uint256 _value) payable public {
@@ -123,7 +123,7 @@ contract RenExBalances is Ownable {
     /**
     @notice Withdraws ETH or an ERC20 token from the contract
     @notice TODO: Check if the account has any open orders first
-    @param _tokenCode the token's identifier (doesn't have to be registered)
+    @param _token the token's address
     @param _value the amount to withdraw in the token's smallest unit
     */
     function withdraw(ERC20 _token, uint256 _value) public {
@@ -131,9 +131,9 @@ contract RenExBalances is Ownable {
 
         require(balances[trader][_token] >= _value);
 
-        // Check if the trader is allowed to withdraw (if the settlement contract
-        // is not set this won't revert)
-        require(!settlementContract.isWithdrawalInvalid(trader, _token, _value));
+        // Check if the trader is allowed to withdraw (throws if settlement
+        // contract is not set)
+        require(settlementContract.traderCanWithdraw(trader, _token, _value));
 
         privateDecrementBalance(trader, _token, _value);
         if (address(_token) == ETH) {
@@ -147,8 +147,8 @@ contract RenExBalances is Ownable {
     /********** READ-ONLY FUNCTIONS *******************************************/
 
     /**
-    @notice Retrieves the list of token addresses that the trader has previosly
-    deposited and a list of the corresponding token balances
+    @notice Retrieves the list of token addresses that the trader has previously
+    had balances for and a list of the corresponding token balances
     @param _trader the address of the trader
     @return [
         "the array of token addresses",

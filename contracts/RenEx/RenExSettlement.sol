@@ -24,9 +24,6 @@ contract RenExSettlement is Ownable {
     enum OrderParity {Buy, Sell}
     enum OrderStatus {None, Submitted, Matched}
 
-    // TODO: Use same constant instance across all contracts 
-    address ETH = 0x0;
-
     struct Order {
         uint8 parity;
         uint8 orderType;
@@ -36,6 +33,7 @@ contract RenExSettlement is Ownable {
         uint256 volumeC; uint256 volumeQ;
         uint256 minimumVolumeC; uint256 minimumVolumeQ;
         uint256 nonceHash;
+        address trader;
     }
 
     struct Match {
@@ -60,7 +58,9 @@ contract RenExSettlement is Ownable {
 
     /**
     @notice constructor
-    @param _renLedgerContract the address for the Ren Ledger
+    @param _renLedgerContract the address of the RenLedger contract
+    @param _renExBalancesContract the address of the RenExBalances contract
+    @param _renExTokensContract the address of the RenExTokens contract
     */
     constructor(RenLedger _renLedgerContract, RenExBalances _renExBalancesContract, RenExTokens _renExTokensContract) public {
         renLedgerContract = _renLedgerContract;
@@ -71,10 +71,10 @@ contract RenExSettlement is Ownable {
 
     /********** WITHDRAWAL FUNCTIONS ******************************************/
 
-    function isWithdrawalInvalid(address _trader, address _token, uint256 amount) public returns (bool) {
+    function traderCanWithdraw(address _trader, address _token, uint256 amount) public returns (bool) {
         // In the future, this will return true (i.e. invalid withdrawal) if the
         // trader has open orders for that token
-        return false;
+        return true;
     }
 
 
@@ -106,7 +106,7 @@ contract RenExSettlement is Ownable {
             // TODO: Optimize this process, divide above
             // emit Debug256("orders[buyID].volumeC", orders[buyID].volumeC);
             // emit Debug256("priceC", priceC);
-            // FIXME: Shifts up by 100 to avoid precision errors
+            // FIXME: Shifts up by 100 to avoid precision errors (-2 in exponent)
             return (orders[buyID].volumeC * 200 * 100 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - priceQ - 2);
         } else {
             return (orders[sellID].volumeC, int256(orders[sellID].volumeQ));
@@ -251,7 +251,8 @@ contract RenExSettlement is Ownable {
             priceC: _priceC, priceQ: _priceQ,
             volumeC: _volumeC, volumeQ: _volumeQ,
             minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,
-            nonceHash: _nonceHash
+            nonceHash: _nonceHash,
+            trader: 0x0 // Set after ID is calculated
         });
 
         // FIXME: Implement order hashing
@@ -260,23 +261,15 @@ contract RenExSettlement is Ownable {
         require(orderStatuses[_id] == OrderStatus.None);
         orderStatuses[_id] = OrderStatus.Submitted;
 
+        order.trader = renLedgerContract.orderTrader(_id);
+
+
         orders[_id] = order;
     }
 
-    /**
-    @notice Settles two orders that are matched. `submitOrder` must have been
-    called for each order before this function is called
-    @param _buyID the 32 byte ID of the buy order
-    @param _sellID the 32 byte ID of the sell order
-    */
-    function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
-        // TODO: Verify order match
-
+    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {
         require(orderStatuses[_buyID] == OrderStatus.Submitted);
-        orderStatuses[_buyID] = OrderStatus.Matched;
-
         require(orderStatuses[_sellID] == OrderStatus.Submitted);
-        orderStatuses[_sellID] = OrderStatus.Matched;
 
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
@@ -292,33 +285,37 @@ contract RenExSettlement is Ownable {
 
         require(renExTokensContract.tokenIsRegistered(buyToken));
         require(renExTokensContract.tokenIsRegistered(sellToken));
+    }
+
+    /**
+    @notice Settles two orders that are matched. `submitOrder` must have been
+    called for each order before this function is called
+    @param _buyID the 32 byte ID of the buy order
+    @param _sellID the 32 byte ID of the sell order
+    */
+    function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
+        // Verify match
+        verifyMatch(_buyID, _sellID);
+
+        uint32 buyToken = uint32(orders[_sellID].tokens);
+        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
+
+        orderStatuses[_buyID] = OrderStatus.Matched;
+        orderStatuses[_sellID] = OrderStatus.Matched;
 
         uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(buyToken);
         uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);
 
-
-        address buyer = renLedgerContract.orderTrader(_buyID);
-        address seller = renLedgerContract.orderTrader(_sellID);
-
         // Price midpoint
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
-        // emit DebugTuple("MidPriceTuple", orders[_buyID].priceC, orders[_buyID].priceQ);        
-        // emit Debug256("tupleToPrice", tupleToPrice(orders[_buyID].priceC, int256(orders[_buyID].priceQ), tokenDecimals[sellToken]));
-        // emit DebugTuple("MidPriceTuple", orders[_sellID].priceC, orders[_sellID].priceQ);        
-        // emit Debug256("tupleToPrice", tupleToPrice(orders[_sellID].priceC, int256(orders[_sellID].priceQ), tokenDecimals[sellToken]));
-        // emit DebugTupleI("MidPriceTuple", midPriceC, midPriceQ);
-        // emit Debug256("MidPrice", tupleToPrice(midPriceC, midPriceQ, tokenDecimals[sellToken]));
 
         (uint256 minVolC, int256 minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
-        // emit Debug256("MinVol", tupleToVolume(minVolC, minVolQ, tokenDecimals[buyToken]));
-        // // emit DebugTupleI("MinVolTuple", minVolC, minVolQ);
-        
 
         uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, sellTokenDecimals);
 
         uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, buyTokenDecimals);
 
-        finalizeMatch(buyer, seller, buyToken, sellToken, lowTokenValue, highTokenValue);
+        finalizeMatch(orders[_buyID].trader, orders[_sellID].trader, buyToken, sellToken, lowTokenValue, highTokenValue);
 
         matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
             price: tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals),
@@ -326,5 +323,4 @@ contract RenExSettlement is Ownable {
             highVolume: highTokenValue
         });
     }
-
 }

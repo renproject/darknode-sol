@@ -78,12 +78,12 @@ async function deployContract(deployer, artifact) {
 }
 
 module.exports = async function (deployer) {
-    const dnr = await deployDarknodeRegistry(deployer);
-    // const dnr = CONFIG.DNR.address;
-    const ledger = await deployRenLedger(deployer, dnr.address);
-    // const ledger = CONFIG.Ledger.address;
-    const renExBalances = await deployContract(deployer, RenExBalances);
-    const traderAccounts = await deployTraderAccount(deployer, ledger.address, renExBalances.address);
-    // TODO: Fix following line if using existing RenExBalance deployment
-    await renExBalances.setTraderAccountsContract(traderAccounts.address);
+    // const dnr = await deployDarknodeRegistry(deployer);
+    // // const dnr = CONFIG.DNR.address;
+    // const ledger = await deployRenLedger(deployer, dnr.address);
+    // // const ledger = CONFIG.Ledger.address;
+    // const renExBalances = await deployContract(deployer, RenExBalances);
+    // const traderAccounts = await deployTraderAccount(deployer, ledger.address, renExBalances.address);
+    // // TODO: Fix following line if using existing RenExBalance deployment
+    // await renExBalances.setTraderAccountsContract(traderAccounts.address);
 };

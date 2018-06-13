@@ -21,19 +21,10 @@ contract RenExTokens is Ownable {
     
     /**
     @notice constructor
-    @param _ledger the address for the Ren Ledger
     */
     constructor() public {
     }
 
-
-    // /**
-    // @notice Modifier to require tokens to be registered in the token registry
-    // */
-    // modifier onlyEnabledToken(uint32 _tokenCode) {
-    //     require(tokenIsRegistered[_tokenCode]);
-    //     _;
-    // }
 
     /**
     @notice Sets a token as being registered and stores its details (only-owner)
