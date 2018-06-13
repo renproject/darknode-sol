@@ -131,8 +131,7 @@ contract RenExBalances is Ownable {
 
         require(traderBalances[trader][_token] >= _value);
 
-        // Check if the trader is allowed to withdraw (throws if settlement
-        // contract is not set)
+        // Check if the trader is allowed to withdraw this token
         require(settlementContract.traderCanWithdraw(trader, _token, _value));
 
         privateDecrementBalance(trader, _token, _value);

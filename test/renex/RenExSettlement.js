@@ -16,34 +16,8 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
-const BTC = 0x0;
-const ETH = 0x1;
-const DGX = 0x100;
-const REN = 0x10000;
-const OrderParity = {
-    BUY: 0,
-    SELL: 1,
-};
-let prefix = web3.toHex("Republic Protocol: open: ");
-const symbols = {
-    [BTC]: "BTC",
-    [ETH]: "ETH",
-    [DGX]: "DGX",
-    [REN]: "REN",
-}
-
-const market = (low, high) => {
-    return new BN(low).mul(new BN(2).pow(new BN(32))).add(new BN(high));
-}
-
-const randomID = async () => {
-    return await web3.sha3(Math.random().toString());
-}
-
 contract("RenExSettlement", function (accounts) {
 
-    const buyer = accounts[0];
-    const seller = accounts[1];
     const darknode = accounts[2];
     let tokenAddresses, renLedger, renExSettlement, renExBalances;
 
@@ -89,7 +63,7 @@ MethodID: 0x177d19c3
 [11]: 0000000000000000000000000000000000000000000000000000000000000000
 `)
 
-        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+        await submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
     })
 
     it("can rebalance", async () => {
@@ -103,7 +77,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
 
         const [priceSettled, dgxSettled, renSettled] =
-            await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+            await submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
 
         priceSettled.should.equal(0.975);
         dgxSettled.should.equal(0.975);
@@ -123,6 +97,29 @@ MethodID: 0x177d19c3
 
 
 
+const BTC = 0x0;
+const ETH = 0x1;
+const DGX = 0x100;
+const REN = 0x10000;
+const OrderParity = {
+    BUY: 0,
+    SELL: 1,
+};
+let prefix = web3.toHex("Republic Protocol: open: ");
+const symbols = {
+    [BTC]: "BTC",
+    [ETH]: "ETH",
+    [DGX]: "DGX",
+    [REN]: "REN",
+}
+
+const market = (low, high) => {
+    return new BN(low).mul(new BN(2).pow(new BN(32))).add(new BN(high));
+}
+
+const randomID = async () => {
+    return await web3.sha3(Math.random().toString());
+}
 
 
 
@@ -149,7 +146,11 @@ function getLine(scraped, lineno) {
 
 
 
-async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger) {
+async function submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger) {
+
+    const buyer = accounts[0];
+    const seller = accounts[1];
+
     (sell.parity === undefined || sell.parity !== buy.parity).should.be.true;
     if (buy.parity === 1) {
         sell, buy = buy, sell;
