@@ -9,7 +9,7 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract.only("RenExBalances", function (accounts) {
+contract("RenExBalances", function (accounts) {
 
     let renExBalances, renExSettlement;
     let ETH, REN, TOKEN1, TOKEN2;

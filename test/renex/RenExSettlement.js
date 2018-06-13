@@ -18,6 +18,8 @@ chai.should();
 
 contract("RenExSettlement", function (accounts) {
 
+    const buyer = accounts[0];
+    const seller = accounts[1];
     const darknode = accounts[2];
     let tokenAddresses, renLedger, renExSettlement, renExBalances;
 
@@ -63,7 +65,7 @@ MethodID: 0x177d19c3
 [11]: 0000000000000000000000000000000000000000000000000000000000000000
 `)
 
-        await submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
     })
 
     it("can rebalance", async () => {
@@ -77,7 +79,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
 
         const [priceSettled, dgxSettled, renSettled] =
-            await submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+            await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
 
         priceSettled.should.equal(0.975);
         dgxSettled.should.equal(0.975);
@@ -146,10 +148,7 @@ function getLine(scraped, lineno) {
 
 
 
-async function submitMatch(buy, sell, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger) {
-
-    const buyer = accounts[0];
-    const seller = accounts[1];
+async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger) {
 
     (sell.parity === undefined || sell.parity !== buy.parity).should.be.true;
     if (buy.parity === 1) {
