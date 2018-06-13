@@ -2,7 +2,8 @@
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
 var RenLedger = artifacts.require("RenLedger.sol");
 var RenExBalances = artifacts.require("RenExBalances.sol");
-var TraderAccounts = artifacts.require("TraderAccounts.sol");
+var RenExTokens = artifacts.require("RenExTokens.sol");
+var RenExSettlement = artifacts.require("RenExSettlement.sol");
 // var RepublicToken = artifacts.require("RepublicToken.sol");
 
 // Put any configs here
@@ -55,13 +56,13 @@ async function deployRenLedger(deployer, dnr) {
 }
 
 
-async function deployTraderAccount(deployer, ledger, renExBalances) {
+async function deployRenExSettlement(deployer, ledger, renExBalances) {
     const traderAccounts = await deployer.deploy(
-        TraderAccounts,
+        RenExSettlement,
         ledger,
         renExBalances,
     );
-    const accounts = await TraderAccounts.deployed();
+    const accounts = await RenExSettlement.deployed();
     await accounts.registerToken(1, 0x0, 18);
     await accounts.registerToken(0x100, CONFIG.DGX.address, 9);
     await accounts.registerToken(0x10000, CONFIG.REN.address, 18);
@@ -83,7 +84,7 @@ module.exports = async function (deployer) {
     // const ledger = await deployRenLedger(deployer, dnr.address);
     // // const ledger = CONFIG.Ledger.address;
     // const renExBalances = await deployContract(deployer, RenExBalances);
-    // const traderAccounts = await deployTraderAccount(deployer, ledger.address, renExBalances.address);
+    // const traderAccounts = await deployRenExSettlement(deployer, ledger.address, renExBalances.address);
     // // TODO: Fix following line if using existing RenExBalance deployment
-    // await renExBalances.setTraderAccountsContract(traderAccounts.address);
+    // await renExBalances.setRenExSettlementContract(traderAccounts.address);
 };

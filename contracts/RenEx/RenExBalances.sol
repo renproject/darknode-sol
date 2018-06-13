@@ -25,7 +25,7 @@ contract RenExBalances is Ownable {
 
     // Storage
     mapping(address => address[]) public traderTokens;
-    mapping(address => mapping(address => uint256)) public balances;
+    mapping(address => mapping(address => uint256)) public traderBalances;
     mapping(address => mapping(address => bool)) private activeTraderToken;
 
     /**
@@ -79,7 +79,7 @@ contract RenExBalances is Ownable {
             traderTokens[_trader].push(_token);
         }
 
-        balances[_trader][_token] = balances[_trader][_token].add(_value);
+        traderBalances[_trader][_token] = traderBalances[_trader][_token].add(_value);
         
         emit BalanceIncreased(_trader, _token, _value);
     }
@@ -96,7 +96,7 @@ contract RenExBalances is Ownable {
     }
 
     function privateDecrementBalance(address _trader, ERC20 _token, uint256 _value) private {
-        balances[_trader][_token] = balances[_trader][_token].sub(_value);
+        traderBalances[_trader][_token] = traderBalances[_trader][_token].sub(_value);
 
         emit BalanceDecreased(_trader, _token, _value);
     }
@@ -129,7 +129,7 @@ contract RenExBalances is Ownable {
     function withdraw(ERC20 _token, uint256 _value) public {
         address trader = msg.sender;
 
-        require(balances[trader][_token] >= _value);
+        require(traderBalances[trader][_token] >= _value);
 
         // Check if the trader is allowed to withdraw (throws if settlement
         // contract is not set)
@@ -157,13 +157,13 @@ contract RenExBalances is Ownable {
     */
     function getBalances(address _trader) public view returns (address[], uint256[]) {
         address[] memory tokens = traderTokens[_trader];
-        uint256[] memory traderBalances = new uint256[](tokens.length);
+        uint256[] memory tokenBalances = new uint256[](tokens.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
-            traderBalances[i] = balances[_trader][tokens[i]];
+            tokenBalances[i] = traderBalances[_trader][tokens[i]];
         }
 
-        return (tokens, traderBalances);
+        return (tokens, tokenBalances);
     }
 
 }

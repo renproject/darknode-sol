@@ -8,8 +8,7 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("TraderAccounts", function (accounts) {
-
+contract("RenExBalances", function (accounts) {
 
     let renExBalances;
     let ETH, REN, TOKEN1, TOKEN2;
@@ -21,7 +20,7 @@ contract("TraderAccounts", function (accounts) {
         TOKEN2 = await RepublicToken.new();
 
         renExBalances = await RenExBalances.new();
-        renExSettlement = await RenExSettlement.new(0x0, renExBalances.address, 0x0);
+        renExSettlement = await RenExSettlement.new(0x0, 0x0, renExBalances.address);
         await renExBalances.setRenExSettlementContract(renExSettlement.address);
     });
 

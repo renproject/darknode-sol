@@ -62,10 +62,10 @@ contract RenExSettlement is Ownable {
     @param _renExBalancesContract the address of the RenExBalances contract
     @param _renExTokensContract the address of the RenExTokens contract
     */
-    constructor(RenLedger _renLedgerContract, RenExBalances _renExBalancesContract, RenExTokens _renExTokensContract) public {
+    constructor(RenLedger _renLedgerContract, RenExTokens _renExTokensContract, RenExBalances _renExBalancesContract) public {
         renLedgerContract = _renLedgerContract;
-        renExBalancesContract = _renExBalancesContract;
         renExTokensContract = _renExTokensContract;
+        renExBalancesContract = _renExBalancesContract;
     }
 
 
