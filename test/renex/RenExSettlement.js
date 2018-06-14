@@ -104,6 +104,15 @@ MethodID: 0x177d19c3
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
             .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */])
     })
+
+    it("order", async () => {
+        const tokens = market(DGX, REN);
+        const buy = { tokens, priceC: 1999, priceQ: 40, volume: 2 /* DGX */ };
+        const sell = { tokens, priceC: 1999, priceQ: 40, volume: 1 /* REN */ };
+
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+            .should.eql([999.5, 2 /* DGX */, 0.002001000500250125 /* REN */])
+    })
 });
 
 
