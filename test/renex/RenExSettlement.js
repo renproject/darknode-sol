@@ -69,39 +69,40 @@ MethodID: 0x177d19c3
     })
 
     it("order", async () => {
-        const buyPrice = 1;
-        const sellPrice = 0.95;
-        const renDeposit = 1; // REN
-        const dgxDeposit = 2; // DGX
         const tokens = market(DGX, REN);
+        const buy = { tokens, price: 1, volume: 2 /* DGX */ };
+        const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
 
-        const sell = { tokens, price: sellPrice, volume: renDeposit, minimumVolume: renDeposit }
-        const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
-
-        const [priceSettled, dgxSettled, renSettled] =
-            await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
-
-        priceSettled.should.equal(0.975);
-        dgxSettled.should.equal(0.975);
-        renSettled.should.equal(1);
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+            .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */])
     })
 
     it("order", async () => {
-        const buyPrice = 1;
-        const sellPrice = 0.95;
-        const renDeposit = 2; // REN
-        const dgxDeposit = 1; // DGX
         const tokens = market(DGX, REN);
+        const buy = { tokens, price: 1, volume: 1 /* DGX */ };
+        const sell = { tokens, price: 0.95, volume: 2 /* REN */ };
 
-        const sell = { tokens, price: sellPrice, volume: renDeposit, minimumVolume: renDeposit }
-        const buy = { tokens, price: buyPrice, volume: dgxDeposit, minimumVolume: dgxDeposit }
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+            .should.eql([0.975, 1 /* DGX */, 1.0256410256410258 /* REN */]);
+    })
 
-        const [priceSettled, dgxSettled, renSettled] =
-            await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+    it("order", async () => {
+        const tokens = market(DGX, REN);
+        const buy = { tokens, price: 0.5, volume: 1 /* DGX */ };
+        const sell = { tokens, price: 0.5, volume: 2 /* REN */ };
 
-        priceSettled.should.equal(0.975);
-        dgxSettled.should.equal(0.9984);
-        renSettled.should.equal(1.024);
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+            .should.eql([0.5, 1 /* DGX */, 2 /* REN */])
+    })
+
+    it("order", async () => {
+        const tokens = market(DGX, REN);
+        const buy = { tokens, price: 1, volume: 1 /* DGX */ };
+        // More precise than the number of decimals DGX has
+        const sell = { tokens, price: 0.0000000001, volume: 2 /* REN */ };
+
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+            .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */])
     })
 });
 
@@ -186,9 +187,15 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
         } else {
             order.volume = tupleToVolume({ c: order.volumeC, q: order.volumeQ }).toNumber();
         }
-        if (order.minimumVolume !== undefined) {
-            minimumVolume = volumeToTuple(order.minimumVolume);
-            order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
+
+        if (order.minimumVolumeC === undefined || order.minimumVolumeQ === undefined) {
+            if (order.minimumVolume !== undefined) {
+                minimumVolume = volumeToTuple(order.minimumVolume);
+                order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
+            } else {
+                minimumVolume = volumeToTuple(order.volume);
+                order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
+            }
         }
     }
 
@@ -338,8 +345,8 @@ function priceToTuple(priceI) {
     const shift = 10 ** 12;
     const exponentOffset = 26;
     const step = 0.005;
-    const tuple = floatToTuple(shift, exponentOffset, step, price);
-    console.assert(1 <= tuple.c && tuple.c <= 1999, `Expected c (${tuple.c}) to be in [1,1999] in priceToTuple(${price})`);
+    const tuple = floatToTuple(shift, exponentOffset, step, price, 1999);
+    console.assert(0 <= tuple.c && tuple.c <= 1999, `Expected c (${tuple.c}) to be in [1,1999] in priceToTuple(${price})`);
     console.assert(0 <= tuple.q && tuple.q <= 52, `Expected c (${tuple.c}) to be in [0,52] in priceToTuple(${price})`);
     return tuple;
 }
@@ -363,8 +370,8 @@ function volumeToTuple(volumeI) {
     const shift = 10 ** 12;
     const exponentOffset = 0;
     const step = 0.2;
-    const tuple = floatToTuple(shift, exponentOffset, step, volume);
-    console.assert(1 <= tuple.c && tuple.c <= 49, `Expected c (${tuple.c}) to be in [1,49] in volumeToTuple(${volume})`);
+    const tuple = floatToTuple(shift, exponentOffset, step, volume, 49);
+    console.assert(0 <= tuple.c && tuple.c <= 49, `Expected c (${tuple.c}) to be in [1,49] in volumeToTuple(${volume})`);
     console.assert(0 <= tuple.q && tuple.q <= 52, `Expected c (${tuple.c}) to be in [0,52] in volumeToTuple(${volume})`);
     return tuple;
 }
@@ -384,7 +391,7 @@ const normalizeVolume = (v) => {
 }
 
 
-function floatToTuple(shift, exponentOffset, step, value) {
+function floatToTuple(shift, exponentOffset, step, value, max) {
     const shifted = value.times(shift);
 
     const digits = -Math.floor(Math.log10(step)) + 1;
@@ -396,8 +403,14 @@ function floatToTuple(shift, exponentOffset, step, value) {
 
     // Simplify again if possible - e.g. [1910,32] becomes [191,33]
     let expAdd;
-    [c, expAdd] = significantDigits(c, digits, true);
+    [c, expAdd] = significantDigits(c, digits, false);
     exp += expAdd;
+
+    // TODO: Fixme
+    while (c > max) {
+        c /= 10;
+        exp++;
+    }
 
     const q = exponentOffset + exp;
 

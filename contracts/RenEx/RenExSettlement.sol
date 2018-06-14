@@ -91,30 +91,31 @@ contract RenExSettlement is Ownable {
         // return ((norm1 + norm2) / 2, 0);
         uint256 norm = orders[buyID].priceC * 10 ** (orders[buyID].priceQ - orders[sellID].priceQ);
         int256 q = int256(orders[sellID].priceQ);
-        // To not lose the .5 for odd numbers, multiply by 5 and subtract from q
-        return ((orders[sellID].priceC + norm) * (10 / 2), q - 1);
-    }
-
-    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ) private view returns (uint256, int256) {        
-        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 12);
-        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 12);
-
-        // emit Debug256("BuyV", buyV);
-        // emit Debug256("SellV", sellV);
-
-        if (buyV < sellV) {
-            // TODO: Optimize this process, divide above
-            // FIXME: This loses precision when dividing by priceC.
-            // As a temporary solution, we multiply by 100 and subtract 2 from
-            // the exponent. We could improve this by shifting by the entire
-            // exponent as long as the constant doesn't overflow.
-            return (orders[buyID].volumeC * 200 * 100 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - priceQ - 2);
+        uint256 sum = (orders[sellID].priceC + norm);
+        if (sum % 2 == 0) {
+            return (sum / 2, q);
         } else {
-            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ));
+            // To not lose the .5 for odd numbers, multiply by 5 and subtract from q
+            return (sum * (10 / 2), q - 1);
         }
     }
 
-    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 decimals)
+    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)
+    private view returns (uint256, int256, uint256) {        
+        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);
+        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);
+
+        if (buyV < sellV) {
+            // Instead of dividing the constant by priceC, we delay the division
+            // until the recombining c and q, to ensure that minimal precision
+            // is lost
+            return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);
+        } else {
+            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);
+        }
+    }
+
+    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 divideC, uint256 decimals)
     private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
@@ -129,6 +130,8 @@ contract RenExSettlement is Ownable {
         } else {
             value = c / 10 ** uint256(-e);            
         }
+
+        value = value / divideC;
 
         return value;
     }
@@ -153,7 +156,7 @@ contract RenExSettlement is Ownable {
     }
 
 
-    function tupleToVolume(uint256 volC, int256 volQ, uint256 decimals) private pure returns (uint256) {
+    function tupleToVolume(uint256 volC, int256 volQ, uint256 divideC, uint256 decimals) private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
 
@@ -167,12 +170,17 @@ contract RenExSettlement is Ownable {
             ep += uint256(volQ);
         }
 
-        // If (ep-en) is negative, divide instead of multiplying                
+        // If (ep-en) is negative, divide instead of multiplying  
+        uint256 value;              
         if (ep >= en) {
-            return c * 10 ** (ep - en);
+            value = c * 10 ** (ep - en);
         } else {
-            return c / 10 ** (en - ep);
+            value = c / 10 ** (en - ep);
         }
+
+        value = value / divideC;
+
+        return value;
     }
 
     // Ensure this remains private
@@ -310,11 +318,11 @@ contract RenExSettlement is Ownable {
         // Price midpoint
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
 
-        (uint256 minVolC, int256 minVolQ) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
+        (uint256 minVolC, int256 minVolQ, uint256 divideC) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
 
-        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, sellTokenDecimals);
+        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, divideC, sellTokenDecimals);
 
-        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, buyTokenDecimals);
+        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);
 
         finalizeMatch(orders[_buyID].trader, orders[_sellID].trader, buyToken, sellToken, lowTokenValue, highTokenValue);
 
