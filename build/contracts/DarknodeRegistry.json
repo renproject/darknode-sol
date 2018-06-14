@@ -404,7 +404,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 571,
-        "sourceUnit": 3343,
+        "sourceUnit": 3392,
         "src": "26:36:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -415,7 +415,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 571,
-        "sourceUnit": 2833,
+        "sourceUnit": 2882,
         "src": "63:29:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -647,7 +647,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+              "typeIdentifier": "t_contract$_RepublicToken_$2881",
               "typeString": "contract RepublicToken"
             },
             "typeName": {
@@ -655,10 +655,10 @@
               "id": 20,
               "name": "RepublicToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2832,
+              "referencedDeclaration": 2881,
               "src": "896:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                "typeIdentifier": "t_contract$_RepublicToken_$2881",
                 "typeString": "contract RepublicToken"
               }
             },
@@ -722,7 +722,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_List_$2915_storage",
+              "typeIdentifier": "t_struct$_List_$2964_storage",
               "typeString": "struct LinkedList.List"
             },
             "typeName": {
@@ -730,10 +730,10 @@
               "id": 26,
               "name": "LinkedList.List",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2915,
+              "referencedDeclaration": 2964,
               "src": "1001:15:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_List_$2915_storage_ptr",
+                "typeIdentifier": "t_struct$_List_$2964_storage_ptr",
                 "typeString": "struct LinkedList.List"
               }
             },
@@ -1179,7 +1179,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4202,
+                            "referencedDeclaration": 4251,
                             "src": "2365:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -1218,10 +1218,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2318:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1364,10 +1364,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2522:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1510,10 +1510,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2700:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1656,10 +1656,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2880:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1802,10 +1802,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "3110:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1900,7 +1900,7 @@
                       "referencedDeclaration": 21,
                       "src": "3690:3:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                        "typeIdentifier": "t_contract$_RepublicToken_$2881",
                         "typeString": "contract RepublicToken"
                       }
                     },
@@ -1934,10 +1934,10 @@
                         "name": "RepublicToken",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2832,
+                        "referencedDeclaration": 2881,
                         "src": "3696:13:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RepublicToken_$2832_$",
+                          "typeIdentifier": "t_type$_t_contract$_RepublicToken_$2881_$",
                           "typeString": "type(contract RepublicToken)"
                         }
                       },
@@ -1951,13 +1951,13 @@
                       "nodeType": "FunctionCall",
                       "src": "3696:21:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                        "typeIdentifier": "t_contract$_RepublicToken_$2881",
                         "typeString": "contract RepublicToken"
                       }
                     },
                     "src": "3690:27:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                      "typeIdentifier": "t_contract$_RepublicToken_$2881",
                       "typeString": "contract RepublicToken"
                     }
                   },
@@ -2154,7 +2154,7 @@
                                       "name": "block",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 4192,
+                                      "referencedDeclaration": 4241,
                                       "src": "3933:5:0",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_magic_block",
@@ -2213,7 +2213,7 @@
                                 "name": "blockhash",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4193,
+                                "referencedDeclaration": 4242,
                                 "src": "3923:9:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_blockhash_view$_t_uint256_$returns$_t_bytes32_$",
@@ -2277,7 +2277,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "3978:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -2604,7 +2604,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "4310:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -2706,10 +2706,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "4302:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -2792,7 +2792,7 @@
                                 "name": "block",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4192,
+                                "referencedDeclaration": 4241,
                                 "src": "4423:5:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_block",
@@ -2851,7 +2851,7 @@
                           "name": "blockhash",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4193,
+                          "referencedDeclaration": 4242,
                           "src": "4413:9:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_blockhash_view$_t_uint256_$returns$_t_bytes32_$",
@@ -2957,7 +2957,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "4581:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -3196,10 +3196,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5749:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3250,7 +3250,7 @@
                                 "name": "msg",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4202,
+                                "referencedDeclaration": 4251,
                                 "src": "5810:3:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_message",
@@ -3280,7 +3280,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 4237,
+                                  "referencedDeclaration": 4286,
                                   "src": "5830:4:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_DarknodeRegistry_$570",
@@ -3343,7 +3343,7 @@
                               "referencedDeclaration": 21,
                               "src": "5796:3:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                                "typeIdentifier": "t_contract$_RepublicToken_$2881",
                                 "typeString": "contract RepublicToken"
                               }
                             },
@@ -3354,7 +3354,7 @@
                             "lValueRequested": false,
                             "memberName": "allowance",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 4085,
+                            "referencedDeclaration": 4134,
                             "src": "5796:13:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_uint256_$",
@@ -3408,10 +3408,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5788:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3451,7 +3451,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4202,
+                              "referencedDeclaration": 4251,
                               "src": "5881:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -3481,7 +3481,7 @@
                                 "name": "this",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4237,
+                                "referencedDeclaration": 4286,
                                 "src": "5901:4:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_contract$_DarknodeRegistry_$570",
@@ -3561,7 +3561,7 @@
                             "referencedDeclaration": 21,
                             "src": "5864:3:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                              "typeIdentifier": "t_contract$_RepublicToken_$2881",
                               "typeString": "contract RepublicToken"
                             }
                           },
@@ -3572,7 +3572,7 @@
                           "lValueRequested": false,
                           "memberName": "transferFrom",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2831,
+                          "referencedDeclaration": 2880,
                           "src": "5864:16:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -3605,10 +3605,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5856:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3694,7 +3694,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4202,
+                            "referencedDeclaration": 4251,
                             "src": "6036:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -3877,7 +3877,7 @@
                         "referencedDeclaration": 27,
                         "src": "6251:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       },
@@ -3898,7 +3898,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         },
                         {
@@ -3912,10 +3912,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "6233:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -3926,10 +3926,10 @@
                       "lValueRequested": false,
                       "memberName": "append",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3287,
+                      "referencedDeclaration": 3336,
                       "src": "6233:17:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$__$",
                         "typeString": "function (struct LinkedList.List storage pointer,bytes20)"
                       }
                     },
@@ -4716,10 +4716,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "7646:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -4757,7 +4757,7 @@
                         "referencedDeclaration": 27,
                         "src": "7743:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       },
@@ -4778,7 +4778,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         },
                         {
@@ -4792,10 +4792,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "7725:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -4806,10 +4806,10 @@
                       "lValueRequested": false,
                       "memberName": "remove",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3239,
+                      "referencedDeclaration": 3288,
                       "src": "7725:17:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$__$",
                         "typeString": "function (struct LinkedList.List storage pointer,bytes20)"
                       }
                     },
@@ -5033,7 +5033,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4202,
+                              "referencedDeclaration": 4251,
                               "src": "8040:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -5088,7 +5088,7 @@
                             "referencedDeclaration": 21,
                             "src": "8027:3:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                              "typeIdentifier": "t_contract$_RepublicToken_$2881",
                               "typeString": "contract RepublicToken"
                             }
                           },
@@ -5099,7 +5099,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2802,
+                          "referencedDeclaration": 2851,
                           "src": "8027:12:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -5132,10 +5132,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "8019:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -5172,7 +5172,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4202,
+                          "referencedDeclaration": 4251,
                           "src": "8116:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -6044,7 +6044,7 @@
                         "referencedDeclaration": 27,
                         "src": "8787:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       }
@@ -6052,7 +6052,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       ],
@@ -6062,10 +6062,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "8770:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -6076,10 +6076,10 @@
                       "lValueRequested": false,
                       "memberName": "begin",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 2945,
+                      "referencedDeclaration": 2994,
                       "src": "8770:16:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$returns$_t_bytes20_$",
+                        "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$returns$_t_bytes20_$",
                         "typeString": "function (struct LinkedList.List storage pointer) view returns (bytes20)"
                       }
                     },
@@ -6216,7 +6216,7 @@
                                       "referencedDeclaration": 27,
                                       "src": "9030:9:0",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_List_$2915_storage",
+                                        "typeIdentifier": "t_struct$_List_$2964_storage",
                                         "typeString": "struct LinkedList.List storage ref"
                                       }
                                     },
@@ -6237,7 +6237,7 @@
                                   "expression": {
                                     "argumentTypes": [
                                       {
-                                        "typeIdentifier": "t_struct$_List_$2915_storage",
+                                        "typeIdentifier": "t_struct$_List_$2964_storage",
                                         "typeString": "struct LinkedList.List storage ref"
                                       },
                                       {
@@ -6251,10 +6251,10 @@
                                       "name": "LinkedList",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 3342,
+                                      "referencedDeclaration": 3391,
                                       "src": "9014:10:0",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                                        "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                                         "typeString": "type(library LinkedList)"
                                       }
                                     },
@@ -6265,10 +6265,10 @@
                                     "lValueRequested": false,
                                     "memberName": "next",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 2982,
+                                    "referencedDeclaration": 3031,
                                     "src": "9014:15:0",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
+                                      "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
                                       "typeString": "function (struct LinkedList.List storage pointer,bytes20) view returns (bytes20)"
                                     }
                                   },
@@ -6412,7 +6412,7 @@
                                 "referencedDeclaration": 27,
                                 "src": "9152:9:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_List_$2915_storage",
+                                  "typeIdentifier": "t_struct$_List_$2964_storage",
                                   "typeString": "struct LinkedList.List storage ref"
                                 }
                               },
@@ -6433,7 +6433,7 @@
                             "expression": {
                               "argumentTypes": [
                                 {
-                                  "typeIdentifier": "t_struct$_List_$2915_storage",
+                                  "typeIdentifier": "t_struct$_List_$2964_storage",
                                   "typeString": "struct LinkedList.List storage ref"
                                 },
                                 {
@@ -6447,10 +6447,10 @@
                                 "name": "LinkedList",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 3342,
+                                "referencedDeclaration": 3391,
                                 "src": "9136:10:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                                  "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                                   "typeString": "type(library LinkedList)"
                                 }
                               },
@@ -6461,10 +6461,10 @@
                               "lValueRequested": false,
                               "memberName": "next",
                               "nodeType": "MemberAccess",
-                              "referencedDeclaration": 2982,
+                              "referencedDeclaration": 3031,
                               "src": "9136:15:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
+                                "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
                                 "typeString": "function (struct LinkedList.List storage pointer,bytes20) view returns (bytes20)"
                               }
                             },
@@ -7863,7 +7863,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 571,
-        "sourceUnit": 3343,
+        "sourceUnit": 3392,
         "src": "26:36:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -7874,7 +7874,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 571,
-        "sourceUnit": 2833,
+        "sourceUnit": 2882,
         "src": "63:29:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -8106,7 +8106,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+              "typeIdentifier": "t_contract$_RepublicToken_$2881",
               "typeString": "contract RepublicToken"
             },
             "typeName": {
@@ -8114,10 +8114,10 @@
               "id": 20,
               "name": "RepublicToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2832,
+              "referencedDeclaration": 2881,
               "src": "896:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                "typeIdentifier": "t_contract$_RepublicToken_$2881",
                 "typeString": "contract RepublicToken"
               }
             },
@@ -8181,7 +8181,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_List_$2915_storage",
+              "typeIdentifier": "t_struct$_List_$2964_storage",
               "typeString": "struct LinkedList.List"
             },
             "typeName": {
@@ -8189,10 +8189,10 @@
               "id": 26,
               "name": "LinkedList.List",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2915,
+              "referencedDeclaration": 2964,
               "src": "1001:15:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_List_$2915_storage_ptr",
+                "typeIdentifier": "t_struct$_List_$2964_storage_ptr",
                 "typeString": "struct LinkedList.List"
               }
             },
@@ -8638,7 +8638,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4202,
+                            "referencedDeclaration": 4251,
                             "src": "2365:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -8677,10 +8677,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2318:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -8823,10 +8823,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2522:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -8969,10 +8969,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2700:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -9115,10 +9115,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "2880:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -9261,10 +9261,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "3110:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -9359,7 +9359,7 @@
                       "referencedDeclaration": 21,
                       "src": "3690:3:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                        "typeIdentifier": "t_contract$_RepublicToken_$2881",
                         "typeString": "contract RepublicToken"
                       }
                     },
@@ -9393,10 +9393,10 @@
                         "name": "RepublicToken",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2832,
+                        "referencedDeclaration": 2881,
                         "src": "3696:13:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_RepublicToken_$2832_$",
+                          "typeIdentifier": "t_type$_t_contract$_RepublicToken_$2881_$",
                           "typeString": "type(contract RepublicToken)"
                         }
                       },
@@ -9410,13 +9410,13 @@
                       "nodeType": "FunctionCall",
                       "src": "3696:21:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                        "typeIdentifier": "t_contract$_RepublicToken_$2881",
                         "typeString": "contract RepublicToken"
                       }
                     },
                     "src": "3690:27:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                      "typeIdentifier": "t_contract$_RepublicToken_$2881",
                       "typeString": "contract RepublicToken"
                     }
                   },
@@ -9613,7 +9613,7 @@
                                       "name": "block",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 4192,
+                                      "referencedDeclaration": 4241,
                                       "src": "3933:5:0",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_magic_block",
@@ -9672,7 +9672,7 @@
                                 "name": "blockhash",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4193,
+                                "referencedDeclaration": 4242,
                                 "src": "3923:9:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_blockhash_view$_t_uint256_$returns$_t_bytes32_$",
@@ -9736,7 +9736,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "3978:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -10063,7 +10063,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "4310:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -10165,10 +10165,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "4302:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -10251,7 +10251,7 @@
                                 "name": "block",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4192,
+                                "referencedDeclaration": 4241,
                                 "src": "4423:5:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_block",
@@ -10310,7 +10310,7 @@
                           "name": "blockhash",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4193,
+                          "referencedDeclaration": 4242,
                           "src": "4413:9:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_blockhash_view$_t_uint256_$returns$_t_bytes32_$",
@@ -10416,7 +10416,7 @@
                             "name": "block",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4192,
+                            "referencedDeclaration": 4241,
                             "src": "4581:5:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
@@ -10655,10 +10655,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5749:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -10709,7 +10709,7 @@
                                 "name": "msg",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4202,
+                                "referencedDeclaration": 4251,
                                 "src": "5810:3:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_magic_message",
@@ -10739,7 +10739,7 @@
                                   "name": "this",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 4237,
+                                  "referencedDeclaration": 4286,
                                   "src": "5830:4:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_contract$_DarknodeRegistry_$570",
@@ -10802,7 +10802,7 @@
                               "referencedDeclaration": 21,
                               "src": "5796:3:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                                "typeIdentifier": "t_contract$_RepublicToken_$2881",
                                 "typeString": "contract RepublicToken"
                               }
                             },
@@ -10813,7 +10813,7 @@
                             "lValueRequested": false,
                             "memberName": "allowance",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 4085,
+                            "referencedDeclaration": 4134,
                             "src": "5796:13:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$_t_address_$_t_address_$returns$_t_uint256_$",
@@ -10867,10 +10867,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5788:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -10910,7 +10910,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4202,
+                              "referencedDeclaration": 4251,
                               "src": "5881:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -10940,7 +10940,7 @@
                                 "name": "this",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4237,
+                                "referencedDeclaration": 4286,
                                 "src": "5901:4:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_contract$_DarknodeRegistry_$570",
@@ -11020,7 +11020,7 @@
                             "referencedDeclaration": 21,
                             "src": "5864:3:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                              "typeIdentifier": "t_contract$_RepublicToken_$2881",
                               "typeString": "contract RepublicToken"
                             }
                           },
@@ -11031,7 +11031,7 @@
                           "lValueRequested": false,
                           "memberName": "transferFrom",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2831,
+                          "referencedDeclaration": 2880,
                           "src": "5864:16:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -11064,10 +11064,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "5856:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -11153,7 +11153,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4202,
+                            "referencedDeclaration": 4251,
                             "src": "6036:3:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -11336,7 +11336,7 @@
                         "referencedDeclaration": 27,
                         "src": "6251:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       },
@@ -11357,7 +11357,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         },
                         {
@@ -11371,10 +11371,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "6233:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -11385,10 +11385,10 @@
                       "lValueRequested": false,
                       "memberName": "append",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3287,
+                      "referencedDeclaration": 3336,
                       "src": "6233:17:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$__$",
                         "typeString": "function (struct LinkedList.List storage pointer,bytes20)"
                       }
                     },
@@ -12175,10 +12175,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "7646:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12216,7 +12216,7 @@
                         "referencedDeclaration": 27,
                         "src": "7743:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       },
@@ -12237,7 +12237,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         },
                         {
@@ -12251,10 +12251,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "7725:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -12265,10 +12265,10 @@
                       "lValueRequested": false,
                       "memberName": "remove",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3239,
+                      "referencedDeclaration": 3288,
                       "src": "7725:17:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$__$",
                         "typeString": "function (struct LinkedList.List storage pointer,bytes20)"
                       }
                     },
@@ -12492,7 +12492,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4202,
+                              "referencedDeclaration": 4251,
                               "src": "8040:3:0",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -12547,7 +12547,7 @@
                             "referencedDeclaration": 21,
                             "src": "8027:3:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_RepublicToken_$2832",
+                              "typeIdentifier": "t_contract$_RepublicToken_$2881",
                               "typeString": "contract RepublicToken"
                             }
                           },
@@ -12558,7 +12558,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 2802,
+                          "referencedDeclaration": 2851,
                           "src": "8027:12:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -12591,10 +12591,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4205,
-                        4206
+                        4254,
+                        4255
                       ],
-                      "referencedDeclaration": 4205,
+                      "referencedDeclaration": 4254,
                       "src": "8019:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -12631,7 +12631,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4202,
+                          "referencedDeclaration": 4251,
                           "src": "8116:3:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -13503,7 +13503,7 @@
                         "referencedDeclaration": 27,
                         "src": "8787:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       }
@@ -13511,7 +13511,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_List_$2915_storage",
+                          "typeIdentifier": "t_struct$_List_$2964_storage",
                           "typeString": "struct LinkedList.List storage ref"
                         }
                       ],
@@ -13521,10 +13521,10 @@
                         "name": "LinkedList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3342,
+                        "referencedDeclaration": 3391,
                         "src": "8770:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                          "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                           "typeString": "type(library LinkedList)"
                         }
                       },
@@ -13535,10 +13535,10 @@
                       "lValueRequested": false,
                       "memberName": "begin",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 2945,
+                      "referencedDeclaration": 2994,
                       "src": "8770:16:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$returns$_t_bytes20_$",
+                        "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$returns$_t_bytes20_$",
                         "typeString": "function (struct LinkedList.List storage pointer) view returns (bytes20)"
                       }
                     },
@@ -13675,7 +13675,7 @@
                                       "referencedDeclaration": 27,
                                       "src": "9030:9:0",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_struct$_List_$2915_storage",
+                                        "typeIdentifier": "t_struct$_List_$2964_storage",
                                         "typeString": "struct LinkedList.List storage ref"
                                       }
                                     },
@@ -13696,7 +13696,7 @@
                                   "expression": {
                                     "argumentTypes": [
                                       {
-                                        "typeIdentifier": "t_struct$_List_$2915_storage",
+                                        "typeIdentifier": "t_struct$_List_$2964_storage",
                                         "typeString": "struct LinkedList.List storage ref"
                                       },
                                       {
@@ -13710,10 +13710,10 @@
                                       "name": "LinkedList",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 3342,
+                                      "referencedDeclaration": 3391,
                                       "src": "9014:10:0",
                                       "typeDescriptions": {
-                                        "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                                        "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                                         "typeString": "type(library LinkedList)"
                                       }
                                     },
@@ -13724,10 +13724,10 @@
                                     "lValueRequested": false,
                                     "memberName": "next",
                                     "nodeType": "MemberAccess",
-                                    "referencedDeclaration": 2982,
+                                    "referencedDeclaration": 3031,
                                     "src": "9014:15:0",
                                     "typeDescriptions": {
-                                      "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
+                                      "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
                                       "typeString": "function (struct LinkedList.List storage pointer,bytes20) view returns (bytes20)"
                                     }
                                   },
@@ -13871,7 +13871,7 @@
                                 "referencedDeclaration": 27,
                                 "src": "9152:9:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_struct$_List_$2915_storage",
+                                  "typeIdentifier": "t_struct$_List_$2964_storage",
                                   "typeString": "struct LinkedList.List storage ref"
                                 }
                               },
@@ -13892,7 +13892,7 @@
                             "expression": {
                               "argumentTypes": [
                                 {
-                                  "typeIdentifier": "t_struct$_List_$2915_storage",
+                                  "typeIdentifier": "t_struct$_List_$2964_storage",
                                   "typeString": "struct LinkedList.List storage ref"
                                 },
                                 {
@@ -13906,10 +13906,10 @@
                                 "name": "LinkedList",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 3342,
+                                "referencedDeclaration": 3391,
                                 "src": "9136:10:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_type$_t_contract$_LinkedList_$3342_$",
+                                  "typeIdentifier": "t_type$_t_contract$_LinkedList_$3391_$",
                                   "typeString": "type(library LinkedList)"
                                 }
                               },
@@ -13920,10 +13920,10 @@
                               "lValueRequested": false,
                               "memberName": "next",
                               "nodeType": "MemberAccess",
-                              "referencedDeclaration": 2982,
+                              "referencedDeclaration": 3031,
                               "src": "9136:15:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2915_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
+                                "typeIdentifier": "t_function_internal_view$_t_struct$_List_$2964_storage_ptr_$_t_bytes20_$returns$_t_bytes20_$",
                                 "typeString": "function (struct LinkedList.List storage pointer,bytes20) view returns (bytes20)"
                               }
                             },
@@ -15314,5 +15314,5 @@
     }
   },
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-06-14T00:56:25.610Z"
+  "updatedAt": "2018-06-14T04:47:48.152Z"
 }

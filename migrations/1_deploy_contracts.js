@@ -31,10 +31,10 @@ const CONFIG = {
         address: "0x45bca0ddc49415c45ac8d3cdc0b793e0c3324f25",
     },
     RenExBalances: {
-        address: "0x5bc537A67F782ae0ae154B6fcB6dB6ebE1B77313",
+        address: "0x5288b814fa54a783d50d0ff4f0d49bfe91af8890",
     },
     RenExSettlement: {
-        address: "0xdebe9b6e1f4b29ffa472694ad1befc5309e72f89",
+        address: "0x4eb0a25895a740a2e81402901cf94155b87c19b8",
     },
 };
 
@@ -91,21 +91,13 @@ module.exports = async function (deployer) {
     // // await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
     // // await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
 
-    // const renExBalances = await deployContract(deployer, RenExBalances);
-    // // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
+    // // const renExBalances = await deployContract(deployer, RenExBalances);
+    // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
 
     // const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
 
-    // await renExTokens.deregisterToken(1);
-    // await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
-
-
-    // console.log(ledger.address);
-    // console.log(renExTokens.address);
-    // console.log(renExBalances.address);
-
-    // const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
-    // // const renExSettlement = CONFIG.RenExSettlement.address;
+    // // const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
+    // const renExSettlement = RenExTokens.at(CONFIG.RenExSettlement.address);
 
     // await renExBalances.setRenExSettlementContract(renExSettlement.address);
 };
