@@ -71,7 +71,7 @@ contract RenLedger {
      * @param _orderId Order id or the buy order.
      */
     function openBuyOrder(bytes _signature, bytes32 _orderId, address _settlement) public {
-        openOrder(_signature, _orderId);
+        openOrder(_signature, _orderId, _settlement);
         buyOrders.push(_orderId);
         orders[_orderId].priority = buyOrders.length;
     }
@@ -85,7 +85,7 @@ contract RenLedger {
      * @param _orderId Order id or the buy order.
      */
     function openSellOrder(bytes _signature, bytes32 _orderId, address _settlement) public {
-        openOrder(_signature, _orderId);
+        openOrder(_signature, _orderId, _settlement);
         sellOrders.push(_orderId);
         orders[_orderId].priority = buyOrders.length;
     }
@@ -278,7 +278,7 @@ contract RenLedger {
         return (orderIDs, traderAddresses, states);
     }
 
-    function openOrder(bytes _signature, bytes32 _orderId) private {
+    function openOrder(bytes _signature, bytes32 _orderId, address _settlement) private {
         require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
         require(orders[_orderId].state == OrderState.Undefined);
@@ -290,6 +290,7 @@ contract RenLedger {
         orders[_orderId].trader = trader;
         orders[_orderId].broker = msg.sender;
         orders[_orderId].blockNumber = block.number;
+        orders[_orderID].settlement = _settlement;
         orderbook.push(_orderId);
     }
 }
