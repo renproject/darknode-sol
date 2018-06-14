@@ -16,7 +16,7 @@ contract RenExBalances is Ownable {
     RenExSettlement public settlementContract;
 
     // TODO: Use same constant instance across all contracts 
-    address ETH = 0x0;
+    address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
     // Events
     event BalanceDecreased(address trader, ERC20 token, uint256 value);
@@ -112,7 +112,7 @@ contract RenExBalances is Ownable {
     function deposit(ERC20 _token, uint256 _value) payable public {
         address trader = msg.sender;
 
-        if (address(_token) == ETH) {
+        if (address(_token) == ETHEREUM) {
             require(msg.value == _value);
         } else {
             require(_token.transferFrom(trader, this, _value));
@@ -135,7 +135,7 @@ contract RenExBalances is Ownable {
         require(settlementContract.traderCanWithdraw(trader, _token, _value));
 
         privateDecrementBalance(trader, _token, _value);
-        if (address(_token) == ETH) {
+        if (address(_token) == ETHEREUM) {
             trader.transfer(_value);
         } else {
             require(_token.transfer(trader, _value));

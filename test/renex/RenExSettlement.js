@@ -28,6 +28,55 @@ contract("RenExSettlement", function (accounts) {
     });
 
     it("order", async () => {
+        await renLedger.openBuyOrder(
+            "0xee83f7cb5f09dc8f4ad6bd3f994382de3d54e3688c00fb6d0c635143df78cb123d2b6503e401e2a09f653e7f46eed1fd3c76b8073ce5aaedc1a906026e677b7d01",
+            "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
+        )
+
+        await renLedger.openSellOrder(
+            "0xfc4c02d195720b5600d3f32f9551a27c15209bcbd1c4c0797fc981270653c9bd5071dc5e8eb40c97ab6ff92a835f5a9b78b607dfb1000fad5bcb74ba2f25e51e00",
+            "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8",
+        )
+
+        await renLedger.confirmOrder("0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d", ["0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8"], { from: darknode })
+
+        await renExSettlement.submitOrder(
+            "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x000000000000000000000000000000000000000000000000000000005b21c0a3",
+            "0x0000000000000000000000000000000000000000000000000000010000010000",
+            "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "0x0000000000000000000000000000000000000000000000000000000000000028",
+            "0x0000000000000000000000000000000000000000000000000000000000000005",
+            "0x000000000000000000000000000000000000000000000000000000000000000c",
+            "0x0000000000000000000000000000000000000000000000000000000000000005",
+            "0x000000000000000000000000000000000000000000000000000000000000000c",
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+        )
+
+        await renExSettlement.submitOrder(
+            "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "0x000000000000000000000000000000000000000000000000000000005b21c0a3",
+            "0x0000000000000000000000000000000000000000000000000000010000010000",
+            "0x0000000000000000000000000000000000000000000000000000000000000002",
+            "0x0000000000000000000000000000000000000000000000000000000000000028",
+            "0x0000000000000000000000000000000000000000000000000000000000000005",
+            "0x000000000000000000000000000000000000000000000000000000000000000c",
+            "0x0000000000000000000000000000000000000000000000000000000000000005",
+            "0x000000000000000000000000000000000000000000000000000000000000000c",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+        )
+
+        // await renExSettlement.submitMatch(
+        //     "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
+        //     "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8"
+        // )
+    })
+
+    it("order", async () => {
 
         const sell = parseOutput(`
         Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
@@ -308,7 +357,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
 async function setup(darknode) {
     const tokenAddresses = {
         [BTC]: await BitcoinMock.new(),
-        [ETH]: { address: 0x0, decimals: () => new BigNumber(18), approve: () => null },
+        [ETH]: { address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", decimals: () => new BigNumber(18), approve: () => null },
         [DGX]: await DGXMock.new(),
         [REN]: await RepublicToken.new(),
     };
@@ -325,7 +374,7 @@ async function setup(darknode) {
     const renExSettlement = await RenExSettlement.new(renLedger.address, renExTokens.address, renExBalances.address);
     await renExBalances.setRenExSettlementContract(renExSettlement.address);
 
-    await renExTokens.registerToken(ETH, 0x0, 18);
+    await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
     await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()).toNumber());
     await renExTokens.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()).toNumber());
     await renExTokens.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()).toNumber());

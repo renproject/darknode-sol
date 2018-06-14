@@ -87,14 +87,18 @@ module.exports = async function (deployer) {
 
     // // // // RENEXTOKENS
     // // const renExTokens = await deployContract(deployer, RenExTokens);
-    // // await renExTokens.registerToken(1, 0x0, 18);
+    // // await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);    
     // // await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
     // // await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
 
-    // // const renExBalances = await deployContract(deployer, RenExBalances);
+    // const renExBalances = await deployContract(deployer, RenExBalances);
+    // // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
 
     // const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
-    // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
+
+    // await renExTokens.deregisterToken(1);
+    // await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
+
 
     // console.log(ledger.address);
     // console.log(renExTokens.address);

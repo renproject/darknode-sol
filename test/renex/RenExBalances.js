@@ -15,7 +15,7 @@ contract("RenExBalances", function (accounts) {
     let ETH, REN, TOKEN1, TOKEN2;
 
     beforeEach(async function () {
-        ETH = { address: 0x0 };
+        ETH = { address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" };
         REN = await RepublicToken.new();
         TOKEN1 = await RepublicToken.new();
         TOKEN2 = await RepublicToken.new();
