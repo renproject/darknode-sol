@@ -100,8 +100,8 @@ MethodID: 0x177d19c3
             await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
 
         priceSettled.should.equal(0.975);
-        dgxSettled.should.equal(0.975);
-        renSettled.should.equal(1);
+        dgxSettled.should.equal(0.9984);
+        renSettled.should.equal(1.024);
     })
 });
 

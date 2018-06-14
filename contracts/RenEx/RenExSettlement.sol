@@ -104,9 +104,10 @@ contract RenExSettlement is Ownable {
 
         if (buyV < sellV) {
             // TODO: Optimize this process, divide above
-            // emit Debug256("orders[buyID].volumeC", orders[buyID].volumeC);
-            // emit Debug256("priceC", priceC);
-            // FIXME: Shifts up by 100 to avoid precision errors (-2 in exponent)
+            // FIXME: This loses precision when dividing by priceC.
+            // As a temporary solution, we multiply by 100 and subtract 2 from
+            // the exponent. We could improve this by shifting by the entire
+            // exponent as long as the constant doesn't overflow.
             return (orders[buyID].volumeC * 200 * 100 / priceC, int256(orders[buyID].volumeQ + 26 + 12) - priceQ - 2);
         } else {
             return (orders[sellID].volumeC, int256(orders[sellID].volumeQ));

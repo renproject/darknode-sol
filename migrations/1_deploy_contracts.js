@@ -80,28 +80,28 @@ async function deployContract(deployer, artifact) {
 }
 
 module.exports = async function (deployer) {
-    // const dnr = await deployDarknodeRegistry(deployer);
-    const dnr = DarknodeRegistry.at(CONFIG.DNR.address);
-    // const ledger = await deployRenLedger(deployer, dnr.address);
-    const ledger = RenLedger.at(CONFIG.Ledger.address);
+    // // const dnr = await deployDarknodeRegistry(deployer);
+    // const dnr = DarknodeRegistry.at(CONFIG.DNR.address);
+    // // const ledger = await deployRenLedger(deployer, dnr.address);
+    // const ledger = RenLedger.at(CONFIG.Ledger.address);
 
-    // // // RENEXTOKENS
-    // const renExTokens = await deployContract(deployer, RenExTokens);
-    // await renExTokens.registerToken(1, 0x0, 18);
-    // await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
-    // await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
+    // // // // RENEXTOKENS
+    // // const renExTokens = await deployContract(deployer, RenExTokens);
+    // // await renExTokens.registerToken(1, 0x0, 18);
+    // // await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
+    // // await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
 
-    // const renExBalances = await deployContract(deployer, RenExBalances);
+    // // const renExBalances = await deployContract(deployer, RenExBalances);
 
-    const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
-    const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
+    // const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
+    // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
 
-    console.log(ledger.address);
-    console.log(renExTokens.address);
-    console.log(renExBalances.address);
+    // console.log(ledger.address);
+    // console.log(renExTokens.address);
+    // console.log(renExBalances.address);
 
-    const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
-    // const renExSettlement = CONFIG.RenExSettlement.address;
+    // const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
+    // // const renExSettlement = CONFIG.RenExSettlement.address;
 
-    await renExBalances.setRenExSettlementContract(renExSettlement.address);
+    // await renExBalances.setRenExSettlementContract(renExSettlement.address);
 };

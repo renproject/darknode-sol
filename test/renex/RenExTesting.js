@@ -16,7 +16,7 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
-contract.only("RenExSettlement", function (accounts) {
+contract("RenExSettlement", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
