@@ -65,7 +65,6 @@ contract RenExSettlement is Ownable {
     // Storage
     mapping(bytes32 => Order) public orders;
     mapping(bytes32 => OrderStatus) private orderStatuses;
-    mapping(bytes32 => Match) public matches;
 
     /**
     @notice constructor
@@ -335,12 +334,14 @@ contract RenExSettlement is Ownable {
         // Verify match
         (uint32 buyToken, uint32 sellToken) = verifyMatch(_buyID, _sellID);
 
-        settlementDetails(
+        (uint256 lowTokenValue, uint256 highTokenValue) = settlementDetails(
             _buyID,
             _sellID,
             buyToken,
             sellToken
         );
+
+        settleFunds(_buyID, _sellID, buyToken, sellToken, lowTokenValue, highTokenValue);
 
         orderStatuses[_buyID] = OrderStatus.Matched;
         orderStatuses[_sellID] = OrderStatus.Matched;
@@ -351,7 +352,7 @@ contract RenExSettlement is Ownable {
         bytes32 _sellID,
         uint32 _buyToken,
         uint32 _sellToken
-    ) private returns (uint256, uint256) {
+    ) private view returns (uint256, uint256) {
         uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(_buyToken);
         uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(_sellToken);
 
@@ -364,6 +365,35 @@ contract RenExSettlement is Ownable {
 
         uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);
 
-        settleFunds(_buyID, _sellID, _buyToken, _sellToken, lowTokenValue, highTokenValue);
+        return (lowTokenValue, highTokenValue);
+    }
+
+    function getSettlementDetails(bytes32 _buyID, bytes32 _sellID)
+    external view returns (uint256, uint256, uint256, uint256, uint256) {
+        uint32 buyToken = uint32(orders[_sellID].tokens);
+        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
+
+        (uint256 lowTokenValue, uint256 highTokenValue) = settlementDetails(
+            _buyID,
+            _sellID,
+            buyToken,
+            sellToken
+        );
+
+        uint256 lowTokenValueFinal = (lowTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
+
+        uint256 highTokenValueFinal = (highTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
+
+        uint256 midPrice = getMidPrice(_buyID, _sellID);
+
+        return (midPrice, lowTokenValueFinal, highTokenValueFinal, lowTokenValue - lowTokenValueFinal, highTokenValue - highTokenValueFinal);
+    }
+
+    function getMidPrice(bytes32 _buyID, bytes32 _sellID) public view returns (uint256) {
+        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
+        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
+
+        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);
+        return tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals);
     }
 }
