@@ -49,8 +49,8 @@ contract("RenLedger", function (accounts) {
             let buySignature = await web3.eth.sign(accounts[i], buyHash);
             let sellSignature = await web3.eth.sign(accounts[i], sellHash);
 
-            await ledger.openBuyOrder(buySignature, buyOrderId, { from: accounts[i] });
-            await ledger.openSellOrder(sellSignature, sellOrderId, { from: accounts[i] });
+            await ledger.openBuyOrder(buySignature, buyOrderId, 0x0, { from: accounts[i] });
+            await ledger.openSellOrder(sellSignature, sellOrderId, 0x0, { from: accounts[i] });
 
         }
     });
@@ -62,7 +62,7 @@ contract("RenLedger", function (accounts) {
             let hash = await web3.sha3(prefix + orderID.slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
 
-            await ledger.openBuyOrder(signature, orderID, { from: accounts[i] }).should.be.rejectedWith();
+            await ledger.openBuyOrder(signature, orderID, 0x0, { from: accounts[i] }).should.be.rejectedWith();
         }
     });
 
@@ -77,7 +77,7 @@ contract("RenLedger", function (accounts) {
             let signature = await web3.eth.sign(accounts[i], hash);
 
             // Only the first account can open the order
-            const promise = ledger.openBuyOrder(signature, orderID, { from: accounts[i] });
+            const promise = ledger.openBuyOrder(signature, orderID, 0x0, { from: accounts[i] });
             if (i > 0) {
                 await promise.should.be.rejectedWith();
             } else {
@@ -98,9 +98,9 @@ contract("RenLedger", function (accounts) {
             let signature = await web3.eth.sign(accounts[i], hash);
 
             if (i % 2 === 0) {
-                await ledger.openBuyOrder(signature, ids[i], { from: accounts[i] });
+                await ledger.openBuyOrder(signature, ids[i], 0x0, { from: accounts[i] });
             } else {
-                await ledger.openSellOrder(signature, ids[i], { from: accounts[i] });
+                await ledger.openSellOrder(signature, ids[i], 0x0, { from: accounts[i] });
             }
         }
 
@@ -140,9 +140,9 @@ contract("RenLedger", function (accounts) {
             let signature = await web3.eth.sign(accounts[i], hash);
 
             if (i % 2 === 0) {
-                await ledger.openBuyOrder(signature, ids[i], { from: accounts[i] });
+                await ledger.openBuyOrder(signature, ids[i], 0x0, { from: accounts[i] });
             } else {
-                await ledger.openSellOrder(signature, ids[i], { from: accounts[i] });
+                await ledger.openSellOrder(signature, ids[i], 0x0, { from: accounts[i] });
             }
         }
 
@@ -172,13 +172,13 @@ contract("RenLedger", function (accounts) {
             let prefix = await web3.toHex("Republic Protocol: open: ");
             let hash = await web3.sha3(prefix + buyIDs[i].slice(2), { encoding: 'hex' });
             let signature = await web3.eth.sign(accounts[i], hash);
-            await ledger.openBuyOrder(signature, buyIDs[i], { from: accounts[i] });
+            await ledger.openBuyOrder(signature, buyIDs[i], 0x0, { from: accounts[i] });
 
             // Open the matched order
             prefix = await web3.toHex("Republic Protocol: open: ");
             hash = await web3.sha3(prefix + sellIDs[i].slice(2), { encoding: 'hex' });
             signature = await web3.eth.sign(accounts[i], hash);
-            await ledger.openSellOrder(signature, sellIDs[i], { from: accounts[i] });
+            await ledger.openSellOrder(signature, sellIDs[i], 0x0, { from: accounts[i] });
         }
 
         // Register all nodes
@@ -312,9 +312,9 @@ contract("RenLedger", function (accounts) {
             let signature = await web3.eth.sign(accounts[i], hash);
 
             if (i % 2 === 0) {
-                await _ledger.openBuyOrder(signature, ids[i], { from: accounts[i] });
+                await _ledger.openBuyOrder(signature, ids[i], 0x0, { from: accounts[i] });
             } else {
-                await _ledger.openSellOrder(signature, ids[i], { from: accounts[i] });
+                await _ledger.openSellOrder(signature, ids[i], 0x0, { from: accounts[i] });
             }
         }
 
@@ -345,7 +345,7 @@ contract("RenLedger", function (accounts) {
         data.should.equal(await web3.sha3(prefix + id.slice(2), { encoding: 'hex' }));
 
         await ren.approve(ledger.address, 1, { from: accounts[0] });
-        await ledger.openBuyOrder(signature, id, { from: accounts[0] });
+        await ledger.openBuyOrder(signature, id, 0x0, { from: accounts[0] });
         (await ledger.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66".toLowerCase());
     });
 });

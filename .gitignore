@@ -26,6 +26,8 @@ build/contracts/*
 !build/contracts/RepublicToken.json
 !build/contracts/RewardGateway.json
 !build/contracts/RewardVault.json
-!build/contracts/TraderAccounts.json
+!build/contracts/RenExSettlement.json
+!build/contracts/RenExTokens.json
+!build/contracts/RenExBalances.json
 !build/contracts/TraderRegistry.json
 !build/contracts/Utils.json
