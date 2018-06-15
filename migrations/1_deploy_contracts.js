@@ -1,6 +1,6 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
-var RenLedger = artifacts.require("RenLedger.sol");
+var Orderbook = artifacts.require("Orderbook.sol");
 var RenExBalances = artifacts.require("RenExBalances.sol");
 var RenExTokens = artifacts.require("RenExTokens.sol");
 var RenExSettlement = artifacts.require("RenExSettlement.sol");
@@ -49,14 +49,14 @@ async function deployDarknodeRegistry(deployer) {
     return await DarknodeRegistry.deployed();
 }
 
-async function deployRenLedger(deployer, dnr) {
+async function deployOrderbook(deployer, dnr) {
     await deployer.deploy(
-        RenLedger,
+        Orderbook,
         0,
         CONFIG.REN.address,
         dnr,
     );
-    return await RenLedger.deployed();
+    return await Orderbook.deployed();
 }
 
 
@@ -82,8 +82,8 @@ async function deployContract(deployer, artifact) {
 module.exports = async function (deployer) {
     // // const dnr = await deployDarknodeRegistry(deployer);
     // const dnr = DarknodeRegistry.at(CONFIG.DNR.address);
-    // // const ledger = await deployRenLedger(deployer, dnr.address);
-    // const ledger = RenLedger.at(CONFIG.Ledger.address);
+    // // const ledger = await deployOrderbook(deployer, dnr.address);
+    // const ledger = Orderbook.at(CONFIG.Ledger.address);
 
     // // // // RENEXTOKENS
     // // const renExTokens = await deployContract(deployer, RenExTokens);

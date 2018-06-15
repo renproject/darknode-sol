@@ -4,10 +4,10 @@ import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
 
 /**
- * @notice RenLedger is responsible for storing the orders and their priorities.
+ * @notice Orderbook is responsible for storing the orders and their priorities.
  * It's used as an consensus of which order should be executed.
  */
-contract RenLedger {
+contract Orderbook {
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -49,7 +49,7 @@ contract RenLedger {
     }
 
     /**
-     * @notice The RenLedger constructor.
+     * @notice The Orderbook constructor.
      *
      * @param _fee The fee rate of opening an order.
      * @param _token The address of the RepublicToken contract.

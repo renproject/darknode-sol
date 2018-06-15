@@ -1,19 +1,19 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
-const RenLedger = artifacts.require("RenLedger");
+const Orderbook = artifacts.require("Orderbook");
 const TraderAccounts = artifacts.require("TraderAccounts");
 const fs = require('fs');
 
 async function deploy() {
     const republicToken = await RepublicToken.new();
     const darknodeRegistry = await DarknodeRegistry.new(republicToken.address, 0, 8, 60);
-    const renLedger = await RenLedger.new(0, republicToken.address, darknodeRegistry.address);
-    const traderAccounts = await TraderAccounts.new(renLedger.address);
+    const orderbook = await Orderbook.new(0, republicToken.address, darknodeRegistry.address);
+    const traderAccounts = await TraderAccounts.new(orderbook.address);
 
     contracts = {
         "republicToken": republicToken.address,
         "darknodeRegistry": darknodeRegistry.address,
-        "renLedger": renLedger.address,
+        "orderbook": orderbook.address,
         "traderAccounts": traderAccounts.address,
     }
 

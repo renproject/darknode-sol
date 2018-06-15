@@ -35,7 +35,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -92,7 +92,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -149,7 +149,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -206,7 +206,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -263,7 +263,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -320,7 +320,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -377,7 +377,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [
@@ -434,7 +434,7 @@
           "uri": "https://kovan.infura.io",
           "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
           "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
-          "renLedgerAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
         },
         "logs": {
           "plugins": [

@@ -2,7 +2,7 @@ const RenExTokens = artifacts.require("RenExTokens");
 const RenExBalances = artifacts.require("RenExBalances");
 const RenExSettlement = artifacts.require("RenExSettlement");
 const RewardVault = artifacts.require("RewardVault");
-const RenLedger = artifacts.require("RenLedger");
+const Orderbook = artifacts.require("Orderbook");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const BitcoinMock = artifacts.require("BitcoinMock");
@@ -22,10 +22,10 @@ contract("RenExSettlement", function (accounts) {
     const buyer = accounts[0];
     const seller = accounts[1];
     const darknode = accounts[2];
-    let tokenAddresses, renLedger, renExSettlement, renExBalances;
+    let tokenAddresses, orderbook, renExSettlement, renExBalances;
 
     before(async function () {
-        [tokenAddresses, renLedger, renExSettlement, renExBalances] = await setup(darknode);
+        [tokenAddresses, orderbook, renExSettlement, renExBalances] = await setup(darknode);
     });
 
     it("order 1", async () => {
@@ -66,7 +66,7 @@ MethodID: 0x177d19c3
 [11]: fda940ba5250d10bd3c701ef3e627a7b0bd0fd5143c45a35981f247fa1db3812
 `)
 
-        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook);
     })
 
 
@@ -109,7 +109,7 @@ MethodID: 0x177d19c3
 [11]: 0000000000000000000000000000000000000000000000000000000000000000
 `)
 
-        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook);
     })
 
 
@@ -118,7 +118,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, price: 1, volume: 2 /* DGX */ };
         const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
 
-        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */])
     })
 
@@ -127,7 +127,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, price: 1, volume: 1 /* DGX */ };
         const sell = { tokens, price: 0.95, volume: 2 /* REN */ };
 
-        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.975, 1 /* DGX */, 1.0256410256410258 /* REN */]);
     })
 
@@ -136,7 +136,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, price: 0.5, volume: 1 /* DGX */ };
         const sell = { tokens, price: 0.5, volume: 2 /* REN */ };
 
-        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.5, 1 /* DGX */, 2 /* REN */])
     })
 
@@ -146,7 +146,7 @@ MethodID: 0x177d19c3
         // More precise than the number of decimals DGX has
         const sell = { tokens, price: 0.0000000001, volume: 2 /* REN */ };
 
-        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */])
     })
 
@@ -155,7 +155,7 @@ MethodID: 0x177d19c3
         const buy = { tokens, priceC: 1999, priceQ: 40, volume: 2 /* DGX */ };
         const sell = { tokens, priceC: 1999, priceQ: 40, volume: 1 /* REN */ };
 
-        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger))
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([999.5, 2 /* DGX */, 0.002001000500250125 /* REN */])
     })
 });
@@ -219,7 +219,7 @@ function getLine(scraped, lineno) {
 
 
 
-async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger) {
+async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook) {
 
     (sell.parity === undefined || sell.parity !== buy.parity).should.be.true;
     if (buy.parity === 1) {
@@ -316,14 +316,14 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     }
 
 
-    await renLedger.openBuyOrder(buy.signature, buy.orderID, renExSettlement.address, { from: buyer });
+    await orderbook.openBuyOrder(buy.signature, buy.orderID, renExSettlement.address, { from: buyer });
 
-    await renLedger.openSellOrder(sellSignature, sell.orderID, renExSettlement.address, { from: seller });
+    await orderbook.openSellOrder(sellSignature, sell.orderID, renExSettlement.address, { from: seller });
 
-    (await renLedger.orderTrader(buy.orderID)).should.equal(buyer);
-    (await renLedger.orderTrader(sell.orderID)).should.equal(seller);
+    (await orderbook.orderTrader(buy.orderID)).should.equal(buyer);
+    (await orderbook.orderTrader(sell.orderID)).should.equal(seller);
 
-    await renLedger.confirmOrder(buy.orderID, [sell.orderID], { from: darknode });
+    await orderbook.confirmOrder(buy.orderID, [sell.orderID], { from: darknode });
 
     await renExSettlement.submitOrder(buy.type, buy.parity, buy.expiry, buy.tokens, buy.priceC, buy.priceQ, buy.volumeC, buy.volumeQ, buy.minimumVolumeC, buy.minimumVolumeQ, buy.nonceHash);
     await renExSettlement.submitOrder(sell.type, sell.parity, sell.expiry, sell.tokens, sell.priceC, sell.priceQ, sell.volumeC, sell.volumeQ, sell.minimumVolumeC, sell.minimumVolumeQ, sell.nonceHash);
@@ -389,11 +389,11 @@ async function setup(darknode) {
         1,
         0
     );
-    const renLedger = await RenLedger.new(0, tokenAddresses[REN].address, dnr.address);
+    const orderbook = await Orderbook.new(0, tokenAddresses[REN].address, dnr.address);
     const rewardVault = await RewardVault.new(dnr.address);
     const renExBalances = await RenExBalances.new(rewardVault.address);
     const renExTokens = await RenExTokens.new();
-    const renExSettlement = await RenExSettlement.new(renLedger.address, renExTokens.address, renExBalances.address);
+    const renExSettlement = await RenExSettlement.new(orderbook.address, renExTokens.address, renExBalances.address);
     await renExBalances.setRenExSettlementContract(renExSettlement.address);
 
     await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
@@ -405,7 +405,7 @@ async function setup(darknode) {
     await dnr.register(darknode, "", 0, { from: darknode });
     await dnr.epoch();
 
-    return [tokenAddresses, renLedger, renExSettlement, renExBalances];
+    return [tokenAddresses, orderbook, renExSettlement, renExBalances];
 }
 
 

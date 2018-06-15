@@ -22,7 +22,7 @@ build/contracts/*
 !build/contracts/Gateway.json
 !build/contracts/LibRewardVault.json
 !build/contracts/LinkedList.json
-!build/contracts/RenLedger.json
+!build/contracts/Orderbook.json
 !build/contracts/RepublicToken.json
 !build/contracts/RewardGateway.json
 !build/contracts/RewardVault.json

@@ -1,6 +1,6 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
-const renLedger = artifacts.require("RenLedger");
+const orderbook = artifacts.require("Orderbook");
 const chai = require("chai");
 const BigNumber = require("bignumber.js");
 
@@ -15,7 +15,7 @@ const randomID = async () => {
     return await web3.sha3(Math.random().toString());
 }
 
-contract("RenLedger", function (accounts) {
+contract("Orderbook", function (accounts) {
 
     let ren, dnr, ledger;
 
@@ -33,7 +33,7 @@ contract("RenLedger", function (accounts) {
         for (i = 0; i < accounts.length; i++) {
             await ren.transfer(accounts[i], 10000);
         }
-        ledger = await renLedger.new(1, ren.address, dnr.address);
+        ledger = await orderbook.new(1, ren.address, dnr.address);
     });
 
     it('should be able to open orders', async function () {
@@ -298,7 +298,7 @@ contract("RenLedger", function (accounts) {
     // });
 
     it('should be able to retrieve orders', async function () {
-        _ledger = await renLedger.new(1, ren.address, dnr.address);
+        _ledger = await orderbook.new(1, ren.address, dnr.address);
 
         const ids = {};
 

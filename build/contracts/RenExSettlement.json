@@ -122,7 +122,7 @@
     {
       "inputs": [
         {
-          "name": "_renLedgerContract",
+          "name": "_orderbookContract",
           "type": "address"
         },
         {
@@ -407,7 +407,7 @@
   "deployedBytecode": "0x60806040526004361061008e576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063177d19c3146100935780631f88d9c7146101645780632a337d30146101d65780638da5cb5b146102155780639c3f1e901461026c5780639fe9ada31461035e578063a3bdaedc146103b1578063f2fde38b14610436575b600080fd5b34801561009f57600080fd5b506101626004803603810190808035600019169060200190929190803560ff169060200190929190803560ff169060200190929190803567ffffffffffffffff169060200190929190803567ffffffffffffffff169060200190929190803561ffff169060200190929190803561ffff169060200190929190803561ffff169060200190929190803561ffff169060200190929190803561ffff169060200190929190803561ffff16906020019092919080359060200190929190505050610479565b005b34801561017057600080fd5b506101a160048036038101908080356000191690602001909291908035600019169060200190929190505050610814565b604051808363ffffffff1663ffffffff1681526020018263ffffffff1663ffffffff1681526020019250505060405180910390f35b3480156101e257600080fd5b5061021360048036038101908080356000191690602001909291908035600019169060200190929190505050610eb5565b005b34801561022157600080fd5b5061022a611366565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b34801561027857600080fd5b5061029b600480360381019080803560001916906020019092919050505061138b565b604051808d60ff1660ff1681526020018c60ff1660ff1681526020018b67ffffffffffffffff1667ffffffffffffffff1681526020018a67ffffffffffffffff1667ffffffffffffffff1681526020018981526020018881526020018781526020018681526020018581526020018481526020018381526020018273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019c5050505050505050505050505060405180910390f35b34801561036a57600080fd5b5061038d600480360381019080803560001916906020019092919050505061144d565b60405180848152602001838152602001828152602001935050505060405180910390f35b3480156103bd57600080fd5b5061041c600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050611477565b604051808215151515815260200191505060405180910390f35b34801561044257600080fd5b50610477600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050611484565b005b6104816120b8565b610180604051908101604052808c60ff1681526020018d60ff1681526020018b67ffffffffffffffff1681526020018a67ffffffffffffffff1681526020018961ffff1681526020018861ffff1681526020018761ffff1681526020018661ffff1681526020018561ffff1681526020018461ffff168152602001838152602001600073ffffffffffffffffffffffffffffffffffffffff1681525090506000600281111561052c57fe5b600560008f6000191660001916815260200190815260200160002060009054906101000a900460ff16600281111561056057fe5b14151561056c57600080fd5b6001600560008f6000191660001916815260200190815260200160002060006101000a81548160ff021916908360028111156105a457fe5b0217905550600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b1a080108e6040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808260001916600019168152602001915050602060405180830381600087803b15801561064257600080fd5b505af1158015610656573d6000803e3d6000fd5b505050506040513d602081101561066c57600080fd5b810190808051906020019092919050505081610160019073ffffffffffffffffffffffffffffffffffffffff16908173ffffffffffffffffffffffffffffffffffffffff168152505080600460008f6000191660001916815260200190815260200160002060008201518160000160006101000a81548160ff021916908360ff16021790555060208201518160000160016101000a81548160ff021916908360ff16021790555060408201518160000160026101000a81548167ffffffffffffffff021916908367ffffffffffffffff160217905550606082015181600001600a6101000a81548167ffffffffffffffff021916908367ffffffffffffffff1602179055506080820151816001015560a0820151816002015560c0820151816003015560e082015181600401556101008201518160050155610120820151816006015561014082015181600701556101608201518160080160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555090505050505050505050505050505050565b6000806000806001600281111561082757fe5b60056000886000191660001916815260200190815260200160002060009054906101000a900460ff16600281111561085b57fe5b14151561086757600080fd5b6001600281111561087457fe5b60056000876000191660001916815260200190815260200160002060009054906101000a900460ff1660028111156108a857fe5b1415156108b457600080fd5b600060018111156108c157fe5b60ff1660046000886000191660001916815260200190815260200160002060000160009054906101000a900460ff1660ff161415156108ff57600080fd5b60018081111561090b57fe5b60ff1660046000876000191660001916815260200190815260200160002060000160009054906101000a900460ff1660ff1614151561094957600080fd5b6002600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663aab14d04886040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808260001916600019168152602001915050602060405180830381600087803b1580156109e457600080fd5b505af11580156109f8573d6000803e3d6000fd5b505050506040513d6020811015610a0e57600080fd5b810190808051906020019092919050505060ff16141515610a2e57600080fd5b6002600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663aab14d04876040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808260001916600019168152602001915050602060405180830381600087803b158015610ac957600080fd5b505af1158015610add573d6000803e3d6000fd5b505050506040513d6020811015610af357600080fd5b810190808051906020019092919050505060ff16141515610b1357600080fd5b8460001916600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663af3e8a40886040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808260001916600019168152602001915050600060405180830381600087803b158015610bb157600080fd5b505af1158015610bc5573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f820116820180604052506020811015610bef57600080fd5b810190808051640100000000811115610c0757600080fd5b82810190506020810184811115610c1d57600080fd5b8151856020820283011164010000000082111715610c3a57600080fd5b50509291905050506000815181101515610c5057fe5b9060200190602002015160001916141515610c6a57600080fd5b600460008660001916600019168152602001908152602001600020600001600a9054906101000a900467ffffffffffffffff1691506020600460008760001916600019168152602001908152602001600020600001600a9054906101000a900467ffffffffffffffff1667ffffffffffffffff169060020a90049050600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663329ed381836040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b158015610d8357600080fd5b505af1158015610d97573d6000803e3d6000fd5b505050506040513d6020811015610dad57600080fd5b81019080805190602001909291905050501515610dc957600080fd5b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663329ed381826040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b158015610e6657600080fd5b505af1158015610e7a573d6000803e3d6000fd5b505050506040513d6020811015610e9057600080fd5b81019080805190602001909291905050501515610eac57600080fd5b50509250929050565b6000806000806000806000806000806000610ed08d8d610814565b5050600460008d60001916600019168152602001908152602001600020600001600a9054906101000a900467ffffffffffffffff169a506020600460008e60001916600019168152602001908152602001600020600001600a9054906101000a900467ffffffffffffffff1667ffffffffffffffff169060020a900499506002600560008f6000191660001916815260200190815260200160002060006101000a81548160ff02191690836002811115610f8657fe5b02179055506002600560008e6000191660001916815260200190815260200160002060006101000a81548160ff02191690836002811115610fc357fe5b0217905550600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c865992b8c6040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b15801561106557600080fd5b505af1158015611079573d6000803e3d6000fd5b505050506040513d602081101561108f57600080fd5b810190808051906020019092919050505060ff169850600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c865992b8b6040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b15801561114257600080fd5b505af1158015611156573d6000803e3d6000fd5b505050506040513d602081101561116c57600080fd5b810190808051906020019092919050505060ff16975061118c8d8d6115d9565b9650965061119c8d8d89896116cc565b9450945094506111b685858989878d63ffffffff16611821565b91506111ca8585858c63ffffffff16611886565b9050611256600460008f6000191660001916815260200190815260200160002060080160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16600460008f6000191660001916815260200190815260200160002060080160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff168d8d8686611900565b60606040519081016040528061127389898c63ffffffff1661206b565b815260200183815260200182815250600660008f8f6040516020018083600019166000191681526020018260001916600019168152602001925050506040516020818303038152906040526040518082805190602001908083835b6020831015156112f357805182526020820191506020810190506020830392506112ce565b6001836020036101000a03801982511681845116808217855250505050505090500191505060405180910390206000191660001916815260200190815260200160002060008201518160000155602082015181600101556040820151816002015590505050505050505050505050505050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60046020528060005260406000206000915090508060000160009054906101000a900460ff16908060000160019054906101000a900460ff16908060000160029054906101000a900467ffffffffffffffff169080600001600a9054906101000a900467ffffffffffffffff16908060010154908060020154908060030154908060040154908060050154908060060154908060070154908060080160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1690508c565b60066020528060005260406000206000915090508060000154908060010154908060020154905083565b6000600190509392505050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415156114df57600080fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415151561151b57600080fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b6000806000806000600460008760001916600019168152602001908152602001600020600201546004600089600019166000191681526020019081526020016000206002015403600a0a600460008960001916600019168152602001908152602001600020600101540292506004600087600019166000191681526020019081526020016000206002015491508260046000886000191660001916815260200190815260200160002060010154019050600060028281151561169757fe5b0614156116b5576002818115156116aa57fe5b0482945094506116c2565b6005810260018303945094505b5050509250929050565b600080600080600061171e600460008b6000191660001916815260200190815260200160002060030154600460008c60001916600019168152602001908152602001600020600401546001600c611886565b915061176c600460008a6000191660001916815260200190815260200160002060030154600460008b600019166000191681526020019081526020016000206004015489896001600c611821565b9050808210156117cb5760c8600460008b60001916600019168152602001908152602001600020600301540286600c601a600460008e600019166000191681526020019081526020016000206004015401010388945094509450611815565b60046000896000191660001916815260200190815260200160002060030154600460008a600019166000191681526020019081526020016000206004015460018090509450945094505b50509450945094915050565b60008060008060028860058c02020292506036878a8701010391506000821215156118535781600a0a83029050611868565b81600003600a0a8381151561186457fe5b0490505b858181151561187357fe5b0490508093505050509695505050505050565b6000806000806000886002029350859250600d915060008812156118b15787600003820191506118b7565b87830192505b81831015156118cf57818303600a0a840290506118e3565b828203600a0a848115156118df57fe5b0490505b86818115156118ee57fe5b04905080945050505050949350505050565b600080600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166329debc9f876040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b1580156119a057600080fd5b505af11580156119b4573d6000803e3d6000fd5b505050506040513d60208110156119ca57600080fd5b81019080805190602001909291905050509150600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166329debc9f866040518263ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808263ffffffff1663ffffffff168152602001915050602060405180830381600087803b158015611a7a57600080fd5b505af1158015611a8e573d6000803e3d6000fd5b505050506040513d6020811015611aa457600080fd5b81019080805190602001909291905050509050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166352fedefa8983876040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018281526020019350505050600060405180830381600087803b158015611bb057600080fd5b505af1158015611bc4573d6000803e3d6000fd5b50505050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166352fedefa8884866040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018281526020019350505050600060405180830381600087803b158015611cc157600080fd5b505af1158015611cd5573d6000803e3d6000fd5b50505050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16632b15e8578883876040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018281526020019350505050600060405180830381600087803b158015611dd257600080fd5b505af1158015611de6573d6000803e3d6000fd5b50505050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16632b15e8578984866040518463ffffffff167c0100000000000000000000000000000000000000000000000000000000028152600401808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018281526020019350505050600060405180830381600087803b158015611ee357600080fd5b505af1158015611ef7573d6000803e3d6000fd5b505050507fe6d64cac65c05a9715c20bfc2ed8851bfe1c155b6cd1ee42d313d0880fc48b9f88888787604051808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018363ffffffff1663ffffffff16815260200182815260200194505050505060405180910390a17fe6d64cac65c05a9715c20bfc2ed8851bfe1c155b6cd1ee42d313d0880fc48b9f87898886604051808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018363ffffffff1663ffffffff16815260200182815260200194505050505060405180910390a15050505050505050565b60008060008060058702925060298686010391506000821215156120965781600a0a830290506120ab565b81600003600a0a838115156120a757fe5b0490505b8093505050509392505050565b61018060405190810160405280600060ff168152602001600060ff168152602001600067ffffffffffffffff168152602001600067ffffffffffffffff16815260200160008152602001600081526020016000815260200160008152602001600081526020016000815260200160008152602001600073ffffffffffffffffffffffffffffffffffffffff16815250905600a165627a7a72305820378063e2209eea27ff2e3b96f3474d4154cdac23499dae2891a59a3badc244730029",
   "sourceMap": "413:11868:2:-;;;1882:284;8:9:-1;5:2;;;30:1;27;20:12;5:2;1882:284:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;509:10:11;501:5;;:18;;;;;;;;;;;;;;;;;;2033::2;2013:17;;:38;;;;;;;;;;;;;;;;;;2083:20;2061:19;;:42;;;;;;;;;;;;;;;;;;2137:22;2113:21;;:46;;;;;;;;;;;;;;;;;;1882:284;;;413:11868;;;;;;",
   "deployedSourceMap": "413:11868:2:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8708:1046;;8:9:-1;5:2;;;30:1;27;20:12;5:2;8708:1046:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;9760:940;;8:9:-1;5:2;;;30:1;27;20:12;5:2;9760:940:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;10958:1321;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10958:1321:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;238:20:11;;8:9:-1;5:2;;;30:1;27;20:12;5:2;238:20:11;;;;;;;;;;;;;;;;;;;;;;;;;;;1476:39:2;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1476:39:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1580:40;;8:9:-1;5:2;;;30:1;27;20:12;5:2;1580:40:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2255:256;;8:9:-1;5:2;;;30:1;27;20:12;5:2;2255:256:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;832:169:11;;8:9:-1;5:2;;;30:1;27;20:12;5:2;832:169:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;8708:1046:2;9037:18;;:::i;:::-;9058:403;;;;;;;;;9121:7;9058:403;;;;;;9089:10;9058:403;;;;;;9150:7;9058:403;;;;;;9179:7;9058:403;;;;;;9208:7;9058:403;;;;;;9225:7;9058:403;;;;;;9255:8;9058:403;;;;;;9274:8;9058:403;;;;;;9312:15;9058:403;;;;;;9345:15;9058:403;;;;;;9385:10;9058:403;;;;9417:3;9058:403;;;;;9037:424;;9587:16;9565:38;;;;;;;;:13;:18;9579:3;9565:18;;;;;;;;;;;;;;;;;;;;;;;;;;;:38;;;;;;;;;9557:47;;;;;;;;9635:21;9614:13;:18;9628:3;9614:18;;;;;;;;;;;;;;;;;;:42;;;;;;;;;;;;;;;;;;;;;;;;9682:17;;;;;;;;;;;:29;;;9712:3;9682:34;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;9682:34:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;9682:34:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;9682:34:2;;;;;;;;;;;;;;;;9667:5;:12;;:49;;;;;;;;;;;9742:5;9728:6;:11;9735:3;9728:11;;;;;;;;;;;;;;;;;:19;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8708:1046;;;;;;;;;;;;;:::o;9760:940::-;9835:6;9843;10446:15;10504:16;9894:21;9869:46;;;;;;;;:13;:21;9883:6;9869:21;;;;;;;;;;;;;;;;;;;;;;;;;;;:46;;;;;;;;;9861:55;;;;;;;;9960:21;9934:47;;;;;;;;:13;:22;9948:7;9934:22;;;;;;;;;;;;;;;;;;;;;;;;;;;:47;;;;;;;;;9926:56;;;;;;;;10096:15;10090:22;;;;;;;;10065:47;;:6;:14;10072:6;10065:14;;;;;;;;;;;;;;;;;:21;;;;;;;;;;;;:47;;;10057:56;;;;;;;;10163:16;10157:23;;;;;;;;10131:49;;:6;:15;10138:7;10131:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;:49;;;10123:58;;;;;;;;10239:1;10199:17;;;;;;;;;;;:28;;;10228:6;10199:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10199:36:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;10199:36:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;10199:36:2;;;;;;;;;;;;;;;;:41;;;10191:50;;;;;;;;10300:1;10259:17;;;;;;;;;;;:28;;;10288:7;10259:37;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10259:37:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;10259:37:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;10259:37:2;;;;;;;;;;;;;;;;:42;;;10251:51;;;;;;;;10427:7;10384:50;;;:17;;;;;;;;;;;:28;;;10413:6;10384:36;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10384:36:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;10384:36:2;;;;;;39:16:-1;36:1;17:17;2:54;10384:36:2;101:4:-1;97:9;90:4;84;80:15;76:31;69:5;65:43;126:6;120:4;113:20;0:138;13:2;8:3;5:11;2:2;;;29:1;26;19:12;2:2;10384:36:2;;;;;;20:11:-1;15:3;12:20;9:2;;;45:1;42;35:12;9:2;73:11;68:3;64:21;57:28;;126:4;121:3;117:14;163:9;145:16;142:31;139:2;;;186:1;183;176:12;139:2;224:3;218:10;339:9;333:2;319:12;315:21;297:16;293:44;290:59;268:11;254:12;251:29;239:119;236:2;;;371:1;368;361:12;236:2;0:383;;10384:36:2;;;;;;10421:1;10384:39;;;;;;;;;;;;;;;;;;:50;;;;10376:59;;;;;;;;10471:6;:15;10478:7;10471:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;10446:48;;10556:2;10530:6;:15;10537:7;10530:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;:28;;;;;;;10504:55;;10578:19;;;;;;;;;;;:37;;;10616:8;10578:47;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10578:47:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;10578:47:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;10578:47:2;;;;;;;;;;;;;;;;10570:56;;;;;;;;10644:19;;;;;;;;;;;:37;;;10682:9;10644:48;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;10644:48:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;10644:48:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;10644:48:2;;;;;;;;;;;;;;;;10636:57;;;;;;;;9760:940;;;;;;;:::o;10958:1321::-;11092:15;11150:16;11324:23;11403:24;11512:17;11531:16;11593:15;11610:14;11626:15;11708:21;11830:22;11053:28;11065:6;11073:7;11053:11;:28::i;:::-;;;11117:6;:15;11124:7;11117:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;11092:48;;11202:2;11176:6;:15;11183:7;11176:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;:28;;;;;;;11150:55;;11240:19;11216:13;:21;11230:6;11216:21;;;;;;;;;;;;;;;;;;:43;;;;;;;;;;;;;;;;;;;;;;;;11294:19;11269:13;:22;11283:7;11269:22;;;;;;;;;;;;;;;;;;:44;;;;;;;;;;;;;;;;;;;;;;;;11350:19;;;;;;;;;;;:33;;;11384:8;11350:43;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;11350:43:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;11350:43:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;11350:43:2;;;;;;;;;;;;;;;;11324:69;;;;11430:19;;;;;;;;;;;:33;;;11464:9;11430:44;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;11430:44:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;11430:44:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;11430:44:2;;;;;;;;;;;;;;;;11403:71;;;;11551:30;11565:6;11573:7;11551:13;:30::i;:::-;11511:70;;;;11645:52;11659:6;11667:7;11676:9;11687;11645:13;:52::i;:::-;11592:105;;;;;;11732:87;11752:7;11761;11770:9;11781;11792:7;11801:17;11732:87;;:19;:87::i;:::-;11708:111;;11855:58;11869:7;11878;11887;11896:16;11855:58;;:13;:58::i;:::-;11830:83;;11924:112;11938:6;:14;11945:6;11938:14;;;;;;;;;;;;;;;;;:21;;;;;;;;;;;;11961:6;:15;11968:7;11961:15;;;;;;;;;;;;;;;;;:22;;;;;;;;;;;;11985:8;11995:9;12006:13;12021:14;11924:13;:112::i;:::-;12103:169;;;;;;;;;12130:53;12143:9;12154;12165:17;12130:53;;:12;:53::i;:::-;12103:169;;;;12208:13;12103:169;;;;12247:14;12103:169;;;12047:7;:53;12082:6;12090:7;12065:33;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;49:4:-1;39:7;30;26:21;22:32;13:7;6:49;12065:33:2;;;12055:44;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;51:19;36:153;;;182:3;176:10;171:3;164:23;98:2;93:3;89:12;82:19;;123:2;118:3;114:12;107:19;;148:2;143:3;139:12;132:19;;36:153;;;274:1;267:3;263:2;259:12;254:3;250:22;246:30;315:4;311:9;305:3;299:10;295:26;356:4;350:3;344:10;340:21;389:7;380;377:20;372:3;365:33;3:399;;;12055:44:2;;;;;;;;;;;;;;;;12047:53;;;;;;;;;;;;;;;;;:225;;;;;;;;;;;;;;;;;;;;;;;;;;;10958:1321;;;;;;;;;;;;;:::o;238:20:11:-;;;;;;;;;;;;;:::o;1476:39:2:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;1580:40::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;2255:256::-;2347:4;2500;2493:11;;2255:256;;;;;:::o;832:169:11:-;653:5;;;;;;;;;;;639:19;;:10;:19;;;631:28;;;;;;;;928:1;908:22;;:8;:22;;;;900:31;;;;;;;;965:8;937:37;;958:5;;;;;;;;;;;937:37;;;;;;;;;;;;988:8;980:5;;:16;;;;;;;;;;;;;;;;;;832:169;:::o;2648:871:2:-;2724:7;2733:6;3101:12;3201:8;3251:11;3169:6;:14;3176:6;3169:14;;;;;;;;;;;;;;;;;:21;;;3146:6;:13;3153:5;3146:13;;;;;;;;;;;;;;;;;:20;;;:44;3139:2;:52;3116:6;:13;3123:5;3116:13;;;;;;;;;;;;;;;;;:20;;;:75;3101:90;;3219:6;:14;3226:6;3219:14;;;;;;;;;;;;;;;;;:21;;;3201:40;;3290:4;3266:6;:14;3273:6;3266:14;;;;;;;;;;;;;;;;;:21;;;:28;3251:44;;3320:1;3315;3309:3;:7;;;;;;;;:12;3305:208;;;3351:1;3345:3;:7;;;;;;;;3354:1;3337:19;;;;;;3305:208;3487:6;3480:3;:14;3500:1;3496;:5;3472:30;;;;2648:871;;;;;;;;;:::o;3525:802::-;3636:7;3645:6;3653:7;3680:12;3779:13;3695:74;3709:6;:13;3716:5;3709:13;;;;;;;;;;;;;;;;;:21;;;3739:6;:13;3746:5;3739:13;;;;;;;;;;;;;;;;;:21;;;3763:1;3766:2;3695:13;:74::i;:::-;3680:89;;3795:98;3815:6;:14;3822:6;3815:14;;;;;;;;;;;;;;;;;:22;;;3846:6;:14;3853:6;3846:14;;;;;;;;;;;;;;;;;:22;;;3871:6;3879;3887:1;3890:2;3795:19;:98::i;:::-;3779:114;;3915:5;3908:4;:12;3904:417;;;4151:3;4127:6;:13;4134:5;4127:13;;;;;;;;;;;;;;;;;:21;;;:27;4198:6;4192:2;4187;4163:6;:13;4170:5;4163:13;;;;;;;;;;;;;;;;;:21;;;:26;:31;4156:48;4206:6;4119:94;;;;;;;;3904:417;4252:6;:14;4259:6;4252:14;;;;;;;;;;;;;;;;;:22;;;4283:6;:14;4290:6;4283:14;;;;;;;;;;;;;;;;;:22;;;4308:1;4244:66;;;;;;;;;3525:802;;;;;;;;;;;:::o;4333:700::-;4481:7;4622:9;4666:8;4810:13;4654:1;4645:6;4641:1;4634:4;:8;:17;:21;4622:33;;4713:20;4703:6;4696:4;4684:8;4677:23;:32;:57;4666:68;;4842:1;4837;:6;;4833:137;;;4885:1;4871:2;:16;4867:1;:20;4859:28;;4833:137;;;4945:1;4944:2;;4930;:17;4926:1;:21;;;;;;;;4918:29;;4833:137;4996:7;4988:5;:15;;;;;;;;4980:23;;5021:5;5014:12;;4333:700;;;;;;;;;;;:::o;5634:839::-;5741:7;5820:9;5923:10;5954;6249:13;5836:4;5832:1;:8;5820:20;;5936:8;5923:21;;5967:6;5954:19;;6074:1;6067:4;:8;6063:109;;;6106:4;6105:5;;6091:20;;;;6063:109;;;6156:4;6142:19;;;;6063:109;6296:2;6290;:8;;6286:124;;;6338:2;6333;:7;6326:2;:15;6322:1;:19;6314:27;;6286:124;;;6396:2;6391;:7;6384:2;:15;6380:1;:19;;;;;;;;6372:27;;6286:124;6436:7;6428:5;:15;;;;;;;;6420:23;;6461:5;6454:12;;5634:839;;;;;;;;;;:::o;6514:885::-;6698:23;6786:24;6724:19;;;;;;;;;;;:34;;;6759:8;6724:44;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;6724:44:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;6724:44:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;6724:44:2;;;;;;;;;;;;;;;;6698:70;;6813:19;;;;;;;;;;;:34;;;6848:9;6813:45;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;6813:45:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;6813:45:2;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;6813:45:2;;;;;;;;;;;;;;;;6786:72;;6896:21;;;;;;;;;;;:38;;;6935:5;6942:16;6960:13;6896:78;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;6896:78:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;6896:78:2;;;;6984:21;;;;;;;;;;;:38;;;7023:6;7031:15;7048:14;6984:79;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;6984:79:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;6984:79:2;;;;7096:21;;;;;;;;;;;:38;;;7135:6;7143:16;7161:13;7096:79;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;7096:79:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;7096:79:2;;;;7185:21;;;;;;;;;;;:38;;;7224:5;7231:15;7248:14;7185:78;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;7185:78:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;7185:78:2;;;;7279:49;7288:5;7295:6;7303:9;7314:13;7279:49;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;7343;7352:6;7360:5;7367:8;7377:14;7343:49;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;6514:885;;;;;;;;:::o;5039:588::-;5136:7;5277:9;5310:8;5438:13;5298:1;5289:6;:10;5277:22;;5350:11;5340:6;5328:8;5321:25;:41;5310:52;;5470:1;5465;:6;;5461:137;;;5513:1;5499:2;:16;5495:1;:20;5487:28;;5461:137;;;5573:1;5572:2;;5558;:17;5554:1;:21;;;;;;;;5546:29;;5461:137;5615:5;5608:12;;5039:588;;;;;;;;:::o;413:11868::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o",
-  "source": "pragma solidity ^0.4.24;\n\nimport \"zeppelin-solidity/contracts/token/ERC20/ERC20.sol\";\nimport \"zeppelin-solidity/contracts/math/SafeMath.sol\";\nimport \"zeppelin-solidity/contracts/ownership/Ownable.sol\";\n\nimport \"../RenLedger.sol\";\nimport \"./RenExBalances.sol\";\nimport \"./RenExTokens.sol\";\n\n/**\n@title The contract responsible for holding trader funds and settling matched\norder values\n@author Republic Protocol\n*/\ncontract RenExSettlement is Ownable {\n    using SafeMath for uint256;\n\n    RenLedger renLedgerContract;\n    RenExTokens renExTokensContract;\n    RenExBalances renExBalancesContract;\n\n    enum OrderType {Midpoint, Limit}\n    enum OrderParity {Buy, Sell}\n    enum OrderStatus {None, Submitted, Matched}\n\n    struct Order {\n        uint8 parity;\n        uint8 orderType;\n        uint64 expiry;\n        uint64 tokens;        \n        uint256 priceC; uint256 priceQ;\n        uint256 volumeC; uint256 volumeQ;\n        uint256 minimumVolumeC; uint256 minimumVolumeQ;\n        uint256 nonceHash;\n        address trader;\n    }\n\n    struct Match {\n        uint256 price;\n        uint256 lowVolume;\n        uint256 highVolume;\n    }\n\n    // Events\n    event Transfer(address from, address to, uint32 token, uint256 value);\n    event Debug256(string msg, uint256 num);\n    event Debugi256(string msg, int256 num);\n    event Debug(string msg);\n    event DebugTuple(string msg, uint256 c, uint256 q);\n    event DebugTupleI(string msg, uint256 c, int256 q);\n\n\n    // Storage\n    mapping(bytes32 => Order) public orders;\n    mapping(bytes32 => OrderStatus) private orderStatuses;\n    mapping(bytes32 => Match) public matches;\n\n    /**\n    @notice constructor\n    @param _renLedgerContract the address of the RenLedger contract\n    @param _renExBalancesContract the address of the RenExBalances contract\n    @param _renExTokensContract the address of the RenExTokens contract\n    */\n    constructor(RenLedger _renLedgerContract, RenExTokens _renExTokensContract, RenExBalances _renExBalancesContract) public {\n        renLedgerContract = _renLedgerContract;\n        renExTokensContract = _renExTokensContract;\n        renExBalancesContract = _renExBalancesContract;\n    }\n\n\n    /********** WITHDRAWAL FUNCTIONS ******************************************/\n\n    function traderCanWithdraw(address _trader, address _token, uint256 amount) public returns (bool) {\n        // In the future, this will return true (i.e. invalid withdrawal) if the\n        // trader has open orders for that token\n        return true;\n    }\n\n\n\n    /********** SETTLEMENT FUNCTIONS ******************************************/\n    \n    // Price/volume calculation functions\n\n    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {\n        // Normalize to same exponent before finding mid-point (mean)\n        // Common exponent is 0 (to ensure division doesn't lose details)\n        // uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);\n        // uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);\n        // return ((norm1 + norm2) / 2, 0);\n        uint256 norm = orders[buyID].priceC * 10 ** (orders[buyID].priceQ - orders[sellID].priceQ);\n        int256 q = int256(orders[sellID].priceQ);\n        uint256 sum = (orders[sellID].priceC + norm);\n        if (sum % 2 == 0) {\n            return (sum / 2, q);\n        } else {\n            // To not lose the .5 for odd numbers, multiply by 5 and subtract from q\n            return (sum * (10 / 2), q - 1);\n        }\n    }\n\n    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)\n    private view returns (uint256, int256, uint256) {        \n        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);\n        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);\n\n        if (buyV < sellV) {\n            // Instead of dividing the constant by priceC, we delay the division\n            // until the recombining c and q, to ensure that minimal precision\n            // is lost\n            return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);\n        } else {\n            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);\n        }\n    }\n\n    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 divideC, uint256 decimals)\n    private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)\n        uint256 c = volC * 5 * priceC * 2;\n\n        int256 e = int256(decimals) + volQ + priceQ - (26 + 12 + 3 + 12 + 1);\n\n        // If (ep-en) is negative, divide instead of multiplying\n        uint256 value;\n        if (e >= 0) {\n            value = c * 10 ** uint256(e);\n        } else {\n            value = c / 10 ** uint256(-e);            \n        }\n\n        value = value / divideC;\n\n        return value;\n    }\n\n    function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals)\n    private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)\n        uint256 c = priceC * 5;\n\n        int256 e = int256(decimals) + priceQ - (26 + 12 + 3);\n\n        // If (ep-en) is negative, divide instead of multiplying\n        uint256 value;\n        if (e >= 0) {\n            value = c * 10 ** uint256(e);\n        } else {\n            value = c / 10 ** uint256(-e);            \n        }\n\n        return value;\n    }\n\n\n    function tupleToVolume(uint256 volC, int256 volQ, uint256 divideC, uint256 decimals) private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        uint256 c = 2 * volC;\n\n        // Positive and negative components of exponent                \n        uint256 ep = decimals;\n        uint256 en = 12 + 1;\n        // Add volQ to positive or negative component based on its sign        \n        if (volQ < 0) {\n            en += uint256(-volQ);\n        } else {\n            ep += uint256(volQ);\n        }\n\n        // If (ep-en) is negative, divide instead of multiplying  \n        uint256 value;              \n        if (ep >= en) {\n            value = c * 10 ** (ep - en);\n        } else {\n            value = c / 10 ** (en - ep);\n        }\n\n        value = value / divideC;\n\n        return value;\n    }\n\n    // Ensure this remains private\n    function finalizeMatch(\n        address buyer, address seller,\n        uint32 buyToken, uint32 sellToken,\n        uint256 lowTokenValue, uint256 highTokenValue\n    ) private {\n        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        \n        address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);\n\n        // Subtract values\n        renExBalancesContract.decrementBalance(buyer, sellTokenAddress, lowTokenValue);\n        renExBalancesContract.decrementBalance(seller, buyTokenAddress, highTokenValue);\n\n        // Add values\n        renExBalancesContract.incrementBalance(seller, sellTokenAddress, lowTokenValue);\n        renExBalancesContract.incrementBalance(buyer, buyTokenAddress, highTokenValue);\n\n        emit Transfer(buyer, seller, sellToken, lowTokenValue);\n        emit Transfer(seller, buyer, buyToken, highTokenValue);\n    }\n\n\n\n    // // TODO: Implement\n    // function hashOrder(Order order) private pure returns (bytes32) {\n    //     return keccak256(\n    //         abi.encodePacked(\n    //             order.orderType,\n    //             order.parity,\n    //             order.expiry,\n    //             order.tokens,\n    //             order.priceC, order.priceQ,\n    //             order.volumeC, order.volumeQ,\n    //             order.minimumVolumeC, order.minimumVolumeQ,\n    //             order.nonceHash\n    //         )\n    //     );\n    // }\n\n\n\n\n    /**\n    @notice Stores the details of an order\n    @param _id (TODO: calculate based on other parameters)\n    @param _orderType one of Midpoint or Limit\n    @param _parity one of Buy or Sell\n    @param _expiry the expiry date of the order in seconds since Unix epoch\n    @param _tokens two 32-bit token codes concatenated (with the lowest first)\n    @param _priceC the constant in the price tuple\n    @param _priceQ the exponent in the price tuple\n    @param _volumeC the constant in the volume tuple\n    @param _volumeQ the exponent in the volume tuple\n    @param _minimumVolumeC the constant in the minimum-volume tuple\n    @param _minimumVolumeQ the exponent in the minimum-volume tuple\n    @param _nonceHash the keccak256 hash of a random 32 byte value\n    */\n    function submitOrder(\n        bytes32 _id,\n        uint8 _orderType,\n        uint8 _parity,\n        uint64 _expiry,\n        uint64 _tokens,\n        uint16 _priceC, uint16 _priceQ,\n        uint16 _volumeC, uint16 _volumeQ,\n        uint16 _minimumVolumeC, uint16 _minimumVolumeQ,\n        uint256 _nonceHash\n    ) public {\n\n        Order memory order = Order({\n            orderType: _orderType,\n            parity: _parity,\n            expiry: _expiry,\n            tokens: _tokens,\n            priceC: _priceC, priceQ: _priceQ,\n            volumeC: _volumeC, volumeQ: _volumeQ,\n            minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,\n            nonceHash: _nonceHash,\n            trader: 0x0 // Set after ID is calculated\n        });\n\n        // FIXME: Implement order hashing\n        // bytes32 id = hashOrder(order);\n\n        require(orderStatuses[_id] == OrderStatus.None);\n        orderStatuses[_id] = OrderStatus.Submitted;\n\n        order.trader = renLedgerContract.orderTrader(_id);\n\n\n        orders[_id] = order;\n    }\n\n    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {\n        require(orderStatuses[_buyID] == OrderStatus.Submitted);\n        require(orderStatuses[_sellID] == OrderStatus.Submitted);\n\n        // Require that the orders are confirmed to one another\n        require(orders[_buyID].parity == uint8(OrderParity.Buy));\n        require(orders[_sellID].parity == uint8(OrderParity.Sell));\n        require(renLedgerContract.orderState(_buyID) == 2);\n        require(renLedgerContract.orderState(_sellID) == 2);\n        \n        // TODO: Loop through and check at all indices\n        require(renLedgerContract.orderMatch(_buyID)[0] == _sellID);\n\n        uint32 buyToken = uint32(orders[_sellID].tokens);\n        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);\n\n        require(renExTokensContract.tokenIsRegistered(buyToken));\n        require(renExTokensContract.tokenIsRegistered(sellToken));\n    }\n\n    /**\n    @notice Settles two orders that are matched. `submitOrder` must have been\n    called for each order before this function is called\n    @param _buyID the 32 byte ID of the buy order\n    @param _sellID the 32 byte ID of the sell order\n    */\n    function submitMatch(bytes32 _buyID, bytes32 _sellID) public {\n        // Verify match\n        verifyMatch(_buyID, _sellID);\n\n        uint32 buyToken = uint32(orders[_sellID].tokens);\n        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);\n\n        orderStatuses[_buyID] = OrderStatus.Matched;\n        orderStatuses[_sellID] = OrderStatus.Matched;\n\n        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(buyToken);\n        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);\n\n        // Price midpoint\n        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);\n\n        (uint256 minVolC, int256 minVolQ, uint256 divideC) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);\n\n        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, divideC, sellTokenDecimals);\n\n        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);\n\n        finalizeMatch(orders[_buyID].trader, orders[_sellID].trader, buyToken, sellToken, lowTokenValue, highTokenValue);\n\n        matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({\n            price: tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals),\n            lowVolume: lowTokenValue,\n            highVolume: highTokenValue\n        });\n    }\n}",
+  "source": "pragma solidity ^0.4.24;\n\nimport \"zeppelin-solidity/contracts/token/ERC20/ERC20.sol\";\nimport \"zeppelin-solidity/contracts/math/SafeMath.sol\";\nimport \"zeppelin-solidity/contracts/ownership/Ownable.sol\";\n\nimport \"../Orderbook.sol\";\nimport \"./RenExBalances.sol\";\nimport \"./RenExTokens.sol\";\n\n/**\n@title The contract responsible for holding trader funds and settling matched\norder values\n@author Republic Protocol\n*/\ncontract RenExSettlement is Ownable {\n    using SafeMath for uint256;\n\n    Orderbook orderbookContract;\n    RenExTokens renExTokensContract;\n    RenExBalances renExBalancesContract;\n\n    enum OrderType {Midpoint, Limit}\n    enum OrderParity {Buy, Sell}\n    enum OrderStatus {None, Submitted, Matched}\n\n    struct Order {\n        uint8 parity;\n        uint8 orderType;\n        uint64 expiry;\n        uint64 tokens;        \n        uint256 priceC; uint256 priceQ;\n        uint256 volumeC; uint256 volumeQ;\n        uint256 minimumVolumeC; uint256 minimumVolumeQ;\n        uint256 nonceHash;\n        address trader;\n    }\n\n    struct Match {\n        uint256 price;\n        uint256 lowVolume;\n        uint256 highVolume;\n    }\n\n    // Events\n    event Transfer(address from, address to, uint32 token, uint256 value);\n    event Debug256(string msg, uint256 num);\n    event Debugi256(string msg, int256 num);\n    event Debug(string msg);\n    event DebugTuple(string msg, uint256 c, uint256 q);\n    event DebugTupleI(string msg, uint256 c, int256 q);\n\n\n    // Storage\n    mapping(bytes32 => Order) public orders;\n    mapping(bytes32 => OrderStatus) private orderStatuses;\n    mapping(bytes32 => Match) public matches;\n\n    /**\n    @notice constructor\n    @param _orderbookContract the address of the Orderbook contract\n    @param _renExBalancesContract the address of the RenExBalances contract\n    @param _renExTokensContract the address of the RenExTokens contract\n    */\n    constructor(Orderbook _orderbookContract, RenExTokens _renExTokensContract, RenExBalances _renExBalancesContract) public {\n        orderbookContract = _orderbookContract;\n        renExTokensContract = _renExTokensContract;\n        renExBalancesContract = _renExBalancesContract;\n    }\n\n\n    /********** WITHDRAWAL FUNCTIONS ******************************************/\n\n    function traderCanWithdraw(address _trader, address _token, uint256 amount) public returns (bool) {\n        // In the future, this will return true (i.e. invalid withdrawal) if the\n        // trader has open orders for that token\n        return true;\n    }\n\n\n\n    /********** SETTLEMENT FUNCTIONS ******************************************/\n    \n    // Price/volume calculation functions\n\n    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {\n        // Normalize to same exponent before finding mid-point (mean)\n        // Common exponent is 0 (to ensure division doesn't lose details)\n        // uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);\n        // uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);\n        // return ((norm1 + norm2) / 2, 0);\n        uint256 norm = orders[buyID].priceC * 10 ** (orders[buyID].priceQ - orders[sellID].priceQ);\n        int256 q = int256(orders[sellID].priceQ);\n        uint256 sum = (orders[sellID].priceC + norm);\n        if (sum % 2 == 0) {\n            return (sum / 2, q);\n        } else {\n            // To not lose the .5 for odd numbers, multiply by 5 and subtract from q\n            return (sum * (10 / 2), q - 1);\n        }\n    }\n\n    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)\n    private view returns (uint256, int256, uint256) {        \n        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);\n        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);\n\n        if (buyV < sellV) {\n            // Instead of dividing the constant by priceC, we delay the division\n            // until the recombining c and q, to ensure that minimal precision\n            // is lost\n            return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);\n        } else {\n            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);\n        }\n    }\n\n    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 divideC, uint256 decimals)\n    private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)\n        uint256 c = volC * 5 * priceC * 2;\n\n        int256 e = int256(decimals) + volQ + priceQ - (26 + 12 + 3 + 12 + 1);\n\n        // If (ep-en) is negative, divide instead of multiplying\n        uint256 value;\n        if (e >= 0) {\n            value = c * 10 ** uint256(e);\n        } else {\n            value = c / 10 ** uint256(-e);            \n        }\n\n        value = value / divideC;\n\n        return value;\n    }\n\n    function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals)\n    private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)\n        uint256 c = priceC * 5;\n\n        int256 e = int256(decimals) + priceQ - (26 + 12 + 3);\n\n        // If (ep-en) is negative, divide instead of multiplying\n        uint256 value;\n        if (e >= 0) {\n            value = c * 10 ** uint256(e);\n        } else {\n            value = c / 10 ** uint256(-e);            \n        }\n\n        return value;\n    }\n\n\n    function tupleToVolume(uint256 volC, int256 volQ, uint256 divideC, uint256 decimals) private pure returns (uint256) {\n        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)\n        uint256 c = 2 * volC;\n\n        // Positive and negative components of exponent                \n        uint256 ep = decimals;\n        uint256 en = 12 + 1;\n        // Add volQ to positive or negative component based on its sign        \n        if (volQ < 0) {\n            en += uint256(-volQ);\n        } else {\n            ep += uint256(volQ);\n        }\n\n        // If (ep-en) is negative, divide instead of multiplying  \n        uint256 value;              \n        if (ep >= en) {\n            value = c * 10 ** (ep - en);\n        } else {\n            value = c / 10 ** (en - ep);\n        }\n\n        value = value / divideC;\n\n        return value;\n    }\n\n    // Ensure this remains private\n    function finalizeMatch(\n        address buyer, address seller,\n        uint32 buyToken, uint32 sellToken,\n        uint256 lowTokenValue, uint256 highTokenValue\n    ) private {\n        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        \n        address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);\n\n        // Subtract values\n        renExBalancesContract.decrementBalance(buyer, sellTokenAddress, lowTokenValue);\n        renExBalancesContract.decrementBalance(seller, buyTokenAddress, highTokenValue);\n\n        // Add values\n        renExBalancesContract.incrementBalance(seller, sellTokenAddress, lowTokenValue);\n        renExBalancesContract.incrementBalance(buyer, buyTokenAddress, highTokenValue);\n\n        emit Transfer(buyer, seller, sellToken, lowTokenValue);\n        emit Transfer(seller, buyer, buyToken, highTokenValue);\n    }\n\n\n\n    // // TODO: Implement\n    // function hashOrder(Order order) private pure returns (bytes32) {\n    //     return keccak256(\n    //         abi.encodePacked(\n    //             order.orderType,\n    //             order.parity,\n    //             order.expiry,\n    //             order.tokens,\n    //             order.priceC, order.priceQ,\n    //             order.volumeC, order.volumeQ,\n    //             order.minimumVolumeC, order.minimumVolumeQ,\n    //             order.nonceHash\n    //         )\n    //     );\n    // }\n\n\n\n\n    /**\n    @notice Stores the details of an order\n    @param _id (TODO: calculate based on other parameters)\n    @param _orderType one of Midpoint or Limit\n    @param _parity one of Buy or Sell\n    @param _expiry the expiry date of the order in seconds since Unix epoch\n    @param _tokens two 32-bit token codes concatenated (with the lowest first)\n    @param _priceC the constant in the price tuple\n    @param _priceQ the exponent in the price tuple\n    @param _volumeC the constant in the volume tuple\n    @param _volumeQ the exponent in the volume tuple\n    @param _minimumVolumeC the constant in the minimum-volume tuple\n    @param _minimumVolumeQ the exponent in the minimum-volume tuple\n    @param _nonceHash the keccak256 hash of a random 32 byte value\n    */\n    function submitOrder(\n        bytes32 _id,\n        uint8 _orderType,\n        uint8 _parity,\n        uint64 _expiry,\n        uint64 _tokens,\n        uint16 _priceC, uint16 _priceQ,\n        uint16 _volumeC, uint16 _volumeQ,\n        uint16 _minimumVolumeC, uint16 _minimumVolumeQ,\n        uint256 _nonceHash\n    ) public {\n\n        Order memory order = Order({\n            orderType: _orderType,\n            parity: _parity,\n            expiry: _expiry,\n            tokens: _tokens,\n            priceC: _priceC, priceQ: _priceQ,\n            volumeC: _volumeC, volumeQ: _volumeQ,\n            minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,\n            nonceHash: _nonceHash,\n            trader: 0x0 // Set after ID is calculated\n        });\n\n        // FIXME: Implement order hashing\n        // bytes32 id = hashOrder(order);\n\n        require(orderStatuses[_id] == OrderStatus.None);\n        orderStatuses[_id] = OrderStatus.Submitted;\n\n        order.trader = orderbookContract.orderTrader(_id);\n\n\n        orders[_id] = order;\n    }\n\n    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {\n        require(orderStatuses[_buyID] == OrderStatus.Submitted);\n        require(orderStatuses[_sellID] == OrderStatus.Submitted);\n\n        // Require that the orders are confirmed to one another\n        require(orders[_buyID].parity == uint8(OrderParity.Buy));\n        require(orders[_sellID].parity == uint8(OrderParity.Sell));\n        require(orderbookContract.orderState(_buyID) == 2);\n        require(orderbookContract.orderState(_sellID) == 2);\n        \n        // TODO: Loop through and check at all indices\n        require(orderbookContract.orderMatch(_buyID)[0] == _sellID);\n\n        uint32 buyToken = uint32(orders[_sellID].tokens);\n        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);\n\n        require(renExTokensContract.tokenIsRegistered(buyToken));\n        require(renExTokensContract.tokenIsRegistered(sellToken));\n    }\n\n    /**\n    @notice Settles two orders that are matched. `submitOrder` must have been\n    called for each order before this function is called\n    @param _buyID the 32 byte ID of the buy order\n    @param _sellID the 32 byte ID of the sell order\n    */\n    function submitMatch(bytes32 _buyID, bytes32 _sellID) public {\n        // Verify match\n        verifyMatch(_buyID, _sellID);\n\n        uint32 buyToken = uint32(orders[_sellID].tokens);\n        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);\n\n        orderStatuses[_buyID] = OrderStatus.Matched;\n        orderStatuses[_sellID] = OrderStatus.Matched;\n\n        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(buyToken);\n        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);\n\n        // Price midpoint\n        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);\n\n        (uint256 minVolC, int256 minVolQ, uint256 divideC) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);\n\n        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, divideC, sellTokenDecimals);\n\n        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);\n\n        finalizeMatch(orders[_buyID].trader, orders[_sellID].trader, buyToken, sellToken, lowTokenValue, highTokenValue);\n\n        matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({\n            price: tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals),\n            lowVolume: lowTokenValue,\n            highVolume: highTokenValue\n        });\n    }\n}",
   "sourcePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RenEx/RenExSettlement.sol",
   "ast": {
     "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RenEx/RenExSettlement.sol",
@@ -464,8 +464,8 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RenLedger.sol",
-        "file": "../RenLedger.sol",
+        "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/Orderbook.sol",
+        "file": "../Orderbook.sol",
         "id": 956,
         "nodeType": "ImportDirective",
         "scope": 1920,
@@ -561,26 +561,26 @@
           {
             "constant": false,
             "id": 965,
-            "name": "renLedgerContract",
+            "name": "orderbookContract",
             "nodeType": "VariableDeclaration",
             "scope": 1919,
             "src": "488:27:2",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RenLedger_$2736",
-              "typeString": "contract RenLedger"
+              "typeIdentifier": "t_contract$_Orderbook_$2736",
+              "typeString": "contract Orderbook"
             },
             "typeName": {
               "contractScope": null,
               "id": 964,
-              "name": "RenLedger",
+              "name": "Orderbook",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 2736,
               "src": "488:9:2",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                "typeString": "contract RenLedger"
+                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                "typeString": "contract Orderbook"
               }
             },
             "value": null,
@@ -1776,14 +1776,14 @@
                     "leftHandSide": {
                       "argumentTypes": null,
                       "id": 1074,
-                      "name": "renLedgerContract",
+                      "name": "orderbookContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 965,
                       "src": "2013:17:2",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RenLedger_$2736",
-                        "typeString": "contract RenLedger"
+                        "typeIdentifier": "t_contract$_Orderbook_$2736",
+                        "typeString": "contract Orderbook"
                       }
                     },
                     "nodeType": "Assignment",
@@ -1791,20 +1791,20 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "id": 1075,
-                      "name": "_renLedgerContract",
+                      "name": "_orderbookContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 1067,
                       "src": "2033:18:2",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RenLedger_$2736",
-                        "typeString": "contract RenLedger"
+                        "typeIdentifier": "t_contract$_Orderbook_$2736",
+                        "typeString": "contract Orderbook"
                       }
                     },
                     "src": "2013:38:2",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RenLedger_$2736",
-                      "typeString": "contract RenLedger"
+                      "typeIdentifier": "t_contract$_Orderbook_$2736",
+                      "typeString": "contract Orderbook"
                     }
                   },
                   "id": 1077,
@@ -1905,7 +1905,7 @@
                 }
               ]
             },
-            "documentation": "@notice constructor\n@param _renLedgerContract the address of the RenLedger contract\n@param _renExBalancesContract the address of the RenExBalances contract\n@param _renExTokensContract the address of the RenExTokens contract",
+            "documentation": "@notice constructor\n@param _orderbookContract the address of the Orderbook contract\n@param _renExBalancesContract the address of the RenExBalances contract\n@param _renExTokensContract the address of the RenExTokens contract",
             "id": 1087,
             "implemented": true,
             "isConstructor": true,
@@ -1920,26 +1920,26 @@
                 {
                   "constant": false,
                   "id": 1067,
-                  "name": "_renLedgerContract",
+                  "name": "_orderbookContract",
                   "nodeType": "VariableDeclaration",
                   "scope": 1087,
                   "src": "1894:28:2",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_RenLedger_$2736",
-                    "typeString": "contract RenLedger"
+                    "typeIdentifier": "t_contract$_Orderbook_$2736",
+                    "typeString": "contract Orderbook"
                   },
                   "typeName": {
                     "contractScope": null,
                     "id": 1066,
-                    "name": "RenLedger",
+                    "name": "Orderbook",
                     "nodeType": "UserDefinedTypeName",
                     "referencedDeclaration": 2736,
                     "src": "1894:9:2",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RenLedger_$2736",
-                      "typeString": "contract RenLedger"
+                      "typeIdentifier": "t_contract$_Orderbook_$2736",
+                      "typeString": "contract Orderbook"
                     }
                   },
                   "value": null,
@@ -9531,14 +9531,14 @@
                         "expression": {
                           "argumentTypes": null,
                           "id": 1650,
-                          "name": "renLedgerContract",
+                          "name": "orderbookContract",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 965,
                           "src": "9682:17:2",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_RenLedger_$2736",
-                            "typeString": "contract RenLedger"
+                            "typeIdentifier": "t_contract$_Orderbook_$2736",
+                            "typeString": "contract Orderbook"
                           }
                         },
                         "id": 1651,
@@ -10678,14 +10678,14 @@
                             "expression": {
                               "argumentTypes": null,
                               "id": 1717,
-                              "name": "renLedgerContract",
+                              "name": "orderbookContract",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 965,
                               "src": "10199:17:2",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                "typeString": "contract RenLedger"
+                                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                "typeString": "contract Orderbook"
                               }
                             },
                             "id": 1718,
@@ -10824,14 +10824,14 @@
                             "expression": {
                               "argumentTypes": null,
                               "id": 1726,
-                              "name": "renLedgerContract",
+                              "name": "orderbookContract",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 965,
                               "src": "10259:17:2",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                "typeString": "contract RenLedger"
+                                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                "typeString": "contract Orderbook"
                               }
                             },
                             "id": 1727,
@@ -10972,14 +10972,14 @@
                               "expression": {
                                 "argumentTypes": null,
                                 "id": 1735,
-                                "name": "renLedgerContract",
+                                "name": "orderbookContract",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
                                 "referencedDeclaration": 965,
                                 "src": "10384:17:2",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                  "typeString": "contract RenLedger"
+                                  "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                  "typeString": "contract Orderbook"
                                 }
                               },
                               "id": 1736,
@@ -13808,8 +13808,8 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/RenLedger.sol",
-        "file": "../RenLedger.sol",
+        "absolutePath": "/home/noah/github/republicprotocol/republic-sol/contracts/Orderbook.sol",
+        "file": "../Orderbook.sol",
         "id": 956,
         "nodeType": "ImportDirective",
         "scope": 1920,
@@ -13905,26 +13905,26 @@
           {
             "constant": false,
             "id": 965,
-            "name": "renLedgerContract",
+            "name": "orderbookContract",
             "nodeType": "VariableDeclaration",
             "scope": 1919,
             "src": "488:27:2",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_RenLedger_$2736",
-              "typeString": "contract RenLedger"
+              "typeIdentifier": "t_contract$_Orderbook_$2736",
+              "typeString": "contract Orderbook"
             },
             "typeName": {
               "contractScope": null,
               "id": 964,
-              "name": "RenLedger",
+              "name": "Orderbook",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 2736,
               "src": "488:9:2",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                "typeString": "contract RenLedger"
+                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                "typeString": "contract Orderbook"
               }
             },
             "value": null,
@@ -15120,14 +15120,14 @@
                     "leftHandSide": {
                       "argumentTypes": null,
                       "id": 1074,
-                      "name": "renLedgerContract",
+                      "name": "orderbookContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 965,
                       "src": "2013:17:2",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RenLedger_$2736",
-                        "typeString": "contract RenLedger"
+                        "typeIdentifier": "t_contract$_Orderbook_$2736",
+                        "typeString": "contract Orderbook"
                       }
                     },
                     "nodeType": "Assignment",
@@ -15135,20 +15135,20 @@
                     "rightHandSide": {
                       "argumentTypes": null,
                       "id": 1075,
-                      "name": "_renLedgerContract",
+                      "name": "_orderbookContract",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 1067,
                       "src": "2033:18:2",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_RenLedger_$2736",
-                        "typeString": "contract RenLedger"
+                        "typeIdentifier": "t_contract$_Orderbook_$2736",
+                        "typeString": "contract Orderbook"
                       }
                     },
                     "src": "2013:38:2",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RenLedger_$2736",
-                      "typeString": "contract RenLedger"
+                      "typeIdentifier": "t_contract$_Orderbook_$2736",
+                      "typeString": "contract Orderbook"
                     }
                   },
                   "id": 1077,
@@ -15249,7 +15249,7 @@
                 }
               ]
             },
-            "documentation": "@notice constructor\n@param _renLedgerContract the address of the RenLedger contract\n@param _renExBalancesContract the address of the RenExBalances contract\n@param _renExTokensContract the address of the RenExTokens contract",
+            "documentation": "@notice constructor\n@param _orderbookContract the address of the Orderbook contract\n@param _renExBalancesContract the address of the RenExBalances contract\n@param _renExTokensContract the address of the RenExTokens contract",
             "id": 1087,
             "implemented": true,
             "isConstructor": true,
@@ -15264,26 +15264,26 @@
                 {
                   "constant": false,
                   "id": 1067,
-                  "name": "_renLedgerContract",
+                  "name": "_orderbookContract",
                   "nodeType": "VariableDeclaration",
                   "scope": 1087,
                   "src": "1894:28:2",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_RenLedger_$2736",
-                    "typeString": "contract RenLedger"
+                    "typeIdentifier": "t_contract$_Orderbook_$2736",
+                    "typeString": "contract Orderbook"
                   },
                   "typeName": {
                     "contractScope": null,
                     "id": 1066,
-                    "name": "RenLedger",
+                    "name": "Orderbook",
                     "nodeType": "UserDefinedTypeName",
                     "referencedDeclaration": 2736,
                     "src": "1894:9:2",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_RenLedger_$2736",
-                      "typeString": "contract RenLedger"
+                      "typeIdentifier": "t_contract$_Orderbook_$2736",
+                      "typeString": "contract Orderbook"
                     }
                   },
                   "value": null,
@@ -22875,14 +22875,14 @@
                         "expression": {
                           "argumentTypes": null,
                           "id": 1650,
-                          "name": "renLedgerContract",
+                          "name": "orderbookContract",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 965,
                           "src": "9682:17:2",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_RenLedger_$2736",
-                            "typeString": "contract RenLedger"
+                            "typeIdentifier": "t_contract$_Orderbook_$2736",
+                            "typeString": "contract Orderbook"
                           }
                         },
                         "id": 1651,
@@ -24022,14 +24022,14 @@
                             "expression": {
                               "argumentTypes": null,
                               "id": 1717,
-                              "name": "renLedgerContract",
+                              "name": "orderbookContract",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 965,
                               "src": "10199:17:2",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                "typeString": "contract RenLedger"
+                                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                "typeString": "contract Orderbook"
                               }
                             },
                             "id": 1718,
@@ -24168,14 +24168,14 @@
                             "expression": {
                               "argumentTypes": null,
                               "id": 1726,
-                              "name": "renLedgerContract",
+                              "name": "orderbookContract",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 965,
                               "src": "10259:17:2",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                "typeString": "contract RenLedger"
+                                "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                "typeString": "contract Orderbook"
                               }
                             },
                             "id": 1727,
@@ -24316,14 +24316,14 @@
                               "expression": {
                                 "argumentTypes": null,
                                 "id": 1735,
-                                "name": "renLedgerContract",
+                                "name": "orderbookContract",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
                                 "referencedDeclaration": 965,
                                 "src": "10384:17:2",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_contract$_RenLedger_$2736",
-                                  "typeString": "contract RenLedger"
+                                  "typeIdentifier": "t_contract$_Orderbook_$2736",
+                                  "typeString": "contract Orderbook"
                                 }
                               },
                               "id": 1736,

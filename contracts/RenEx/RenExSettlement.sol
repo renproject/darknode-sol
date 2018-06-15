@@ -4,7 +4,7 @@ import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-import "../RenLedger.sol";
+import "../Orderbook.sol";
 import "./RenExBalances.sol";
 import "./RenExTokens.sol";
 
@@ -23,7 +23,7 @@ contract RenExSettlement is Ownable {
     // Republic Protocol settlement identifier
     uint32 constant public identifier = 1;
 
-    RenLedger renLedgerContract;
+    Orderbook orderbookContract;
     RenExTokens renExTokensContract;
     RenExBalances renExBalancesContract;
 
@@ -68,16 +68,16 @@ contract RenExSettlement is Ownable {
 
     /**
     @notice constructor
-    @param _renLedgerContract the address of the RenLedger contract
+    @param _orderbookContract the address of the Orderbook contract
     @param _renExBalancesContract the address of the RenExBalances contract
     @param _renExTokensContract the address of the RenExTokens contract
     */
     constructor(
-        RenLedger _renLedgerContract,
+        Orderbook _orderbookContract,
         RenExTokens _renExTokensContract,
         RenExBalances _renExBalancesContract
     ) public {
-        renLedgerContract = _renLedgerContract;
+        orderbookContract = _orderbookContract;
         renExTokensContract = _renExTokensContract;
         renExBalancesContract = _renExBalancesContract;
     }
@@ -294,7 +294,7 @@ contract RenExSettlement is Ownable {
         require(orderStatuses[orderID] == OrderStatus.None);
         orderStatuses[orderID] = OrderStatus.Submitted;
 
-        order.trader = renLedgerContract.orderTrader(orderID);
+        order.trader = orderbookContract.orderTrader(orderID);
         require(order.trader != 0x0);
 
         orders[orderID] = order;
@@ -307,11 +307,11 @@ contract RenExSettlement is Ownable {
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
-        require(renLedgerContract.orderState(_buyID) == 2);
-        require(renLedgerContract.orderState(_sellID) == 2);
+        require(orderbookContract.orderState(_buyID) == 2);
+        require(orderbookContract.orderState(_sellID) == 2);
         
         // TODO: Loop through and check at all indices
-        require(renLedgerContract.orderMatch(_buyID)[0] == _sellID);
+        require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
 
         uint32 buyToken = uint32(orders[_sellID].tokens);
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
