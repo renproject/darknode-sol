@@ -1,4 +1,5 @@
 const RepublicToken = artifacts.require("RepublicToken");
+const RewardVault = artifacts.require("RewardVault");
 const RenExSettlement = artifacts.require("RenExSettlement");
 const RenExBalances = artifacts.require("RenExBalances");
 const WithdrawBlock = artifacts.require("WithdrawBlock");
@@ -20,7 +21,8 @@ contract("RenExBalances", function (accounts) {
         TOKEN1 = await RepublicToken.new();
         TOKEN2 = await RepublicToken.new();
 
-        renExBalances = await RenExBalances.new();
+        rewardVault = await RewardVault.new(0x0);
+        renExBalances = await RenExBalances.new(rewardVault.address);
         renExSettlement = await RenExSettlement.new(0x0, 0x0, renExBalances.address);
         await renExBalances.setRenExSettlementContract(renExSettlement.address);
     });
@@ -158,10 +160,12 @@ contract("RenExBalances", function (accounts) {
             { from: accounts[1] }
         ).should.be.rejected;
 
-        await renExBalances.decrementBalance(
+        await renExBalances.decrementBalanceWithFee(
             accounts[1],
             REN.address,
             0,
+            0,
+            accounts[1],
             { from: accounts[1] }
         ).should.be.rejected;
     });

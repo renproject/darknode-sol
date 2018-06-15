@@ -1,6 +1,7 @@
 const RenExTokens = artifacts.require("RenExTokens");
 const RenExBalances = artifacts.require("RenExBalances");
 const RenExSettlement = artifacts.require("RenExSettlement");
+const RewardVault = artifacts.require("RewardVault");
 const RenLedger = artifacts.require("RenLedger");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -191,11 +192,6 @@ const market = (low, high) => {
     return new BN(low).mul(new BN(2).pow(new BN(32))).add(new BN(high));
 }
 
-const randomID = async () => {
-    return await web3.sha3(Math.random().toString());
-}
-
-
 
 
 
@@ -280,7 +276,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         buy.orderID = getOrderID(buy);
     }
-    console.log(`Buy orderID: ${buy.orderID}`);
     let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
     buy.signature = await web3.eth.sign(buyer, buyHash);
 
@@ -294,7 +289,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         sell.orderID = getOrderID(sell);
     }
-    console.log(`Sell orderID: ${sell.orderID}`);
     let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
     const sellSignature = await web3.eth.sign(seller, sellHash);
 
@@ -334,9 +328,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     await renExSettlement.submitOrder(buy.type, buy.parity, buy.expiry, buy.tokens, buy.priceC, buy.priceQ, buy.volumeC, buy.volumeQ, buy.minimumVolumeC, buy.minimumVolumeQ, buy.nonceHash);
     await renExSettlement.submitOrder(sell.type, sell.parity, sell.expiry, sell.tokens, sell.priceC, sell.priceQ, sell.volumeC, sell.volumeQ, sell.minimumVolumeC, sell.minimumVolumeQ, sell.nonceHash);
 
-    console.log(`BUYER: price: ${buy.price} ${symbols[lowToken]}/${symbols[highToken]}, offering ${buy.volume} ${symbols[lowToken]}`)
-    console.log(`SELLR: price: ${sell.price} ${symbols[lowToken]}/${symbols[highToken]}, offering ${sell.volume} ${symbols[highToken]}`)
-
     const buyerLowBefore = await renExBalances.traderBalances(buyer, lowTokenInstance.address);
     const buyerHighBefore = await renExBalances.traderBalances(buyer, highTokenInstance.address);
     const sellerLowBefore = await renExBalances.traderBalances(seller, lowTokenInstance.address);
@@ -344,28 +335,43 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
 
     await renExSettlement.submitMatch(buy.orderID, sell.orderID);
 
-    const matchID = web3.sha3(buy.orderID + sell.orderID.slice(2), { encoding: 'hex' });
-    const match = await renExSettlement.matches(matchID);
+    // const matchID = web3.sha3(buy.orderID + sell.orderID.slice(2), { encoding: 'hex' });
+    const match = await renExSettlement.getSettlementDetails(buy.orderID, sell.orderID);
     const priceMatched = match[0];
-    const lowMatched = match[1];
-    const highMatched = match[2];
-
-    console.log(`MATCH: price: ${priceMatched.toNumber() / 10 ** lowDecimals} ${symbols[lowToken]}/${symbols[highToken]}, ${lowMatched.toNumber() / 10 ** lowDecimals} ${symbols[lowToken]} for ${highMatched.toNumber() / 10 ** highDecimals} ${symbols[highToken]}`)
+    const lowMatched = new BigNumber(match[1]);
+    const highMatched = new BigNumber(match[2]);
+    const lowFee = new BigNumber(match[3]);
+    const highFee = new BigNumber(match[4]);
 
     const buyerLowAfter = await renExBalances.traderBalances(buyer, lowTokenInstance.address);
     const buyerHighAfter = await renExBalances.traderBalances(buyer, highTokenInstance.address);
     const sellerLowAfter = await renExBalances.traderBalances(seller, lowTokenInstance.address);
     const sellerHighAfter = await renExBalances.traderBalances(seller, highTokenInstance.address);
 
-    buyerLowBefore.sub(lowMatched).eq(buyerLowAfter).should.be.true;
-    buyerHighBefore.add(highMatched).eq(buyerHighAfter).should.be.true;
-    sellerLowBefore.add(lowMatched).eq(sellerLowAfter).should.be.true;
-    sellerHighBefore.sub(highMatched).eq(sellerHighAfter).should.be.true;
+    const lowSum = lowMatched.plus(lowFee);
+    const highSum = highMatched.plus(highFee);
+
+    buyerLowBefore.sub(lowSum).toFixed().should.equal(buyerLowAfter.toFixed());
+    buyerHighBefore.add(highMatched).toFixed().should.equal(buyerHighAfter.toFixed());
+    sellerLowBefore.add(lowMatched).toFixed().should.equal(sellerLowAfter.toFixed());
+    sellerHighBefore.sub(highSum).toFixed().should.equal(sellerHighAfter.toFixed());
+
+    const expectedLowFees = lowSum
+        .multipliedBy(2)
+        .dividedBy(1000)
+        .integerValue(BigNumber.ROUND_CEIL);
+    const expectedHighFees = highSum
+        .multipliedBy(2)
+        .dividedBy(1000)
+        .integerValue(BigNumber.ROUND_CEIL);
+
+    lowFee.toFixed().should.equal(expectedLowFees.toFixed());
+    highFee.toFixed().should.equal(expectedHighFees.toFixed());
 
     return [
         priceMatched.toNumber() / 10 ** lowDecimals,
-        lowMatched.toNumber() / 10 ** lowDecimals,
-        highMatched.toNumber() / 10 ** highDecimals,
+        lowSum.toNumber() / 10 ** lowDecimals,
+        highSum.toNumber() / 10 ** highDecimals,
     ];
 }
 
@@ -384,7 +390,8 @@ async function setup(darknode) {
         0
     );
     const renLedger = await RenLedger.new(0, tokenAddresses[REN].address, dnr.address);
-    const renExBalances = await RenExBalances.new();
+    const rewardVault = await RewardVault.new(dnr.address);
+    const renExBalances = await RenExBalances.new(rewardVault.address);
     const renExTokens = await RenExTokens.new();
     const renExSettlement = await RenExSettlement.new(renLedger.address, renExTokens.address, renExBalances.address);
     await renExBalances.setRenExSettlementContract(renExSettlement.address);

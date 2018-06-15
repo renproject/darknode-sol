@@ -1,116 +1,54 @@
 pragma solidity ^0.4.24;
 
-import "./libraries/LibRewardVault.sol";
+import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+
+import "./DarknodeRegistry.sol";
 
 contract RewardVault {
     // Constant address for ethereum
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
-    // Reward Vault object
-    LibRewardVault.RewardVault private vault;
+    DarknodeRegistry darknodeRegistry;
 
-    // ERC20 token object
-    ERC20 private token;
+    mapping(address => mapping(address => uint256)) public darknodeBalances;
 
-    /** 
-    * @notice The RewardVault constructor.
-    *
-    * @param _rewardeeCount Number of rewardees in each reward round.
-    * @param _challengeCount Number of challenges in each reward round.
-    * @param _threshold The threshold value for each reward round.
-    * @param _dnrAddress The address of the DarknodeRegistry contract.
-    * @param _tokenAddress The address of the ERC20 contract, 
-    *       `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` for ether.
-    */
-    constructor(uint256 _rewardeeCount, uint256 _challengeCount, uint256 _threshold, address _dnrAddress, address _tokenAddress) public {    
-        vault = LibRewardVault.RewardVault({
-            currentNonce: 0,
-            rewardeeCount : _rewardeeCount,
-            challengeCount : _challengeCount,
-            threshold : _threshold,
-            rewardPerProof : _threshold/(_rewardeeCount * _challengeCount),
-            dnrAddress : _dnrAddress,
-            tokenAddress : _tokenAddress
-        });
-
-        if (_tokenAddress != ETHEREUM) {
-            token = ERC20(_tokenAddress);
-        }
+    constructor(DarknodeRegistry _darknodeRegistry) public {
+        darknodeRegistry = _darknodeRegistry;
     }
 
     /** 
     * @notice The traders deposit fees into the reward vault.
     *
-    * @param _challenge challenge for the trader's order.
-    * @param _value the amount of fees.
+    * @param _token the address of the ERC20 token
+    * @param _value the amount of fees in the smallest unit of the token
     */
-    function deposit(bytes _challenge, uint256 _value) public payable {
-        if (vault.tokenAddress == ETHEREUM) {
+    function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
+        if (address(_token) == ETHEREUM) {
             require(msg.value == _value);
         } else {
-            require(token.allowance(msg.sender, address(this)) == _value);
-            require(token.transferFrom(msg.sender, address(this), _value));
+            require(_token.transferFrom(msg.sender, address(this), _value));
         }
-        LibRewardVault.deposit(vault, _challenge, _value);
+
+        // TODO: Use safe math
+        darknodeBalances[_darknode][_token] += _value;
     }
 
     /** 
     * @notice The darknodes withdraw rewards from the reward vault.
     *
-    * @param _challengeID the id of the challenge.
-    * @param _proof the proof, proving the computation done.
-    * @param _rewardRoundNonce the nonce of the reward round
+    * @param _token the address of the ERC20 token
     */
-    function withdraw(bytes32 _challengeID, bytes _proof, uint256 _rewardRoundNonce) public {
-        require(LibRewardVault.withdraw(vault, _challengeID, _proof, _rewardRoundNonce, msg.sender));
-        if (vault.tokenAddress == ETHEREUM) {
-            msg.sender.transfer(vault.rewardPerProof);
+    function withdraw(address _darknode, ERC20 _token) public {
+        address darknodeOwner = darknodeRegistry.getOwner(bytes20(_darknode));
+
+        uint256 value = darknodeBalances[darknodeOwner][_token];
+        darknodeBalances[darknodeOwner][_token] = 0;
+
+        if (address(_token) == ETHEREUM) {
+            darknodeOwner.transfer(value);
         } else {
-            require(token.transfer(msg.sender, vault.rewardPerProof));
+            require(_token.transfer(darknodeOwner, value));
         }
-    }
-
-    /** 
-    * @notice Once a threshold is reached for a particular reward round, 
-    *       a random sample of orderIDs, and a random sample of darknodes 
-    *       are chosen.
-    *
-    * @param _nonce the nonce of the reward round
-    */
-    function finalize(uint256 _nonce) public {
-        LibRewardVault.finalize(vault, _nonce);
-    }
-
-    /** 
-    * @notice Checks whether a reward round is finalizable.
-    *
-    * @param _nonce the nonce of the reward round
-    * 
-    */
-    function isFinalizable(uint256 _nonce) public view returns (bool) {
-        return (vault.rewardRounds[_nonce].balance == vault.threshold && !vault.rewardRounds[_nonce].finalized);
-    }
-
-    /** 
-    * @notice Returns the list of rewardees in the given reward round.
-    *
-    * @param _nonce the nonce of the reward round
-    * 
-    */
-    function rewardees(uint256 _nonce) public view returns (address[]) {
-        require(vault.rewardRounds[_nonce].finalized);
-        return vault.rewardRounds[_nonce].rewardees;
-    }
-
-    /** 
-    * @notice Returns the list of challenges in the given reward round.
-    *
-    * @param _nonce the nonce of the reward round
-    *
-    */
-    function challengeIds(uint256 _nonce) public view returns (bytes32[]) {
-        require(vault.rewardRounds[_nonce].finalized);
-        return vault.rewardRounds[_nonce].challenges;
     }
  
 }
