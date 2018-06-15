@@ -22,7 +22,6 @@ contract RenLedger {
         address trader;
         address broker;
         address confirmer;
-        address settlement;
         uint256 priority;
         uint256 blockNumber;
         bytes32[] matches;
@@ -70,8 +69,8 @@ contract RenLedger {
      * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
      * @param _orderId Order id or the buy order.
      */
-    function openBuyOrder(bytes _signature, bytes32 _orderId, address _settlement) public {
-        openOrder(_signature, _orderId, _settlement);
+    function openBuyOrder(bytes _signature, bytes32 _orderId) public {
+        openOrder(_signature, _orderId);
         buyOrders.push(_orderId);
         orders[_orderId].priority = buyOrders.length;
     }
@@ -82,12 +81,12 @@ contract RenLedger {
      *         the the trader address from the signature.
      *
      * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
-     * @param _orderId Order id or the buy order.
+     * @param _orderId Order id or the sell order.
      */
-    function openSellOrder(bytes _signature, bytes32 _orderId, address _settlement) public {
-        openOrder(_signature, _orderId, _settlement);
+    function openSellOrder(bytes _signature, bytes32 _orderId) public {
+        openOrder(_signature, _orderId);
         sellOrders.push(_orderId);
-        orders[_orderId].priority = buyOrders.length;
+        orders[_orderId].priority = sellOrders.length;
     }
 
     /**
@@ -227,13 +226,6 @@ contract RenLedger {
     }
 
     /**
-    * getSettlement will return the settlement layer of the order 
-    */
-    function getSettlement(bytes32 _orderId) public view returns (address){
-        return orders[_orderId].settlement;
-    }
-
-    /**
     * getOrdersCount will return the number of orders in the orderbook
     */
     function getOrdersCount() public view returns (uint256){
@@ -281,7 +273,7 @@ contract RenLedger {
         return (orderIDs, traderAddresses, states);
     }
 
-    function openOrder(bytes _signature, bytes32 _orderId, address _settlement) private {
+    function openOrder(bytes _signature, bytes32 _orderId) private {
         require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
         require(orders[_orderId].state == OrderState.Undefined);
@@ -293,7 +285,6 @@ contract RenLedger {
         orders[_orderId].trader = trader;
         orders[_orderId].broker = msg.sender;
         orders[_orderId].blockNumber = block.number;
-        orders[_orderId].settlement = _settlement;
         orderbook.push(_orderId);
     }
 }
