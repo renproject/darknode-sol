@@ -29,9 +29,9 @@ contract RenExSettlement is Ownable {
         uint8 orderType;
         uint64 expiry;
         uint64 tokens;        
-        uint256 priceC; uint256 priceQ;
-        uint256 volumeC; uint256 volumeQ;
-        uint256 minimumVolumeC; uint256 minimumVolumeQ;
+        uint64 priceC; uint64 priceQ;
+        uint64 volumeC; uint64 volumeQ;
+        uint64 minimumVolumeC; uint64 minimumVolumeQ;
         uint256 nonceHash;
         address trader;
     }
@@ -45,6 +45,9 @@ contract RenExSettlement is Ownable {
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
     event Debug256(string msg, uint256 num);
+    event Debug32(string msg, bytes32 b);
+    event DebugAddress(string msg, address addr);
+    event DebugBytes(string msg, bytes b);
     event Debugi256(string msg, int256 num);
     event Debug(string msg);
     event DebugTuple(string msg, uint256 c, uint256 q);
@@ -206,28 +209,28 @@ contract RenExSettlement is Ownable {
 
 
 
-    // // TODO: Implement
-    // function hashOrder(Order order) private pure returns (bytes32) {
-    //     return keccak256(
-    //         abi.encodePacked(
-    //             order.orderType,
-    //             order.parity,
-    //             order.expiry,
-    //             order.tokens,
-    //             order.priceC, order.priceQ,
-    //             order.volumeC, order.volumeQ,
-    //             order.minimumVolumeC, order.minimumVolumeQ,
-    //             order.nonceHash
-    //         )
-    //     );
-    // }
+    // TODO: Implement
+    function hashOrder(Order order) private view returns (bytes) {
+        return 
+            abi.encodePacked(
+                order.orderType,
+                order.parity,
+                uint32(1), // RENEX's code
+                order.expiry,
+                order.tokens,
+                order.priceC, order.priceQ,
+                order.volumeC, order.volumeQ,
+                order.minimumVolumeC, order.minimumVolumeQ,
+                order.nonceHash
+            // )
+        );
+    }
 
 
 
 
     /**
     @notice Stores the details of an order
-    @param _id (TODO: calculate based on other parameters)
     @param _orderType one of Midpoint or Limit
     @param _parity one of Buy or Sell
     @param _expiry the expiry date of the order in seconds since Unix epoch
@@ -241,7 +244,6 @@ contract RenExSettlement is Ownable {
     @param _nonceHash the keccak256 hash of a random 32 byte value
     */
     function submitOrder(
-        bytes32 _id,
         uint8 _orderType,
         uint8 _parity,
         uint64 _expiry,
@@ -264,16 +266,18 @@ contract RenExSettlement is Ownable {
             trader: 0x0 // Set after ID is calculated
         });
 
-        // FIXME: Implement order hashing
-        // bytes32 id = hashOrder(order);
+        bytes memory orderBytes = hashOrder(order);
+        emit DebugBytes("orderBytes", orderBytes);
+        bytes32 orderID = keccak256(orderBytes);
+        emit Debug32("orderID", orderID);
 
-        require(orderStatuses[_id] == OrderStatus.None);
-        orderStatuses[_id] = OrderStatus.Submitted;
+        require(orderStatuses[orderID] == OrderStatus.None);
+        orderStatuses[orderID] = OrderStatus.Submitted;
 
-        order.trader = renLedgerContract.orderTrader(_id);
+        order.trader = renLedgerContract.orderTrader(orderID);
+        require(order.trader != 0x0);
 
-
-        orders[_id] = order;
+        orders[orderID] = order;
     }
 
     function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {

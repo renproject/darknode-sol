@@ -290,7 +290,7 @@ contract RenLedger {
         orders[_orderId].trader = trader;
         orders[_orderId].broker = msg.sender;
         orders[_orderId].blockNumber = block.number;
-        orders[_orderID].settlement = _settlement;
+        orders[_orderId].settlement = _settlement;
         orderbook.push(_orderId);
     }
 }

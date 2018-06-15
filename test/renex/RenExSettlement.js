@@ -27,62 +27,56 @@ contract("RenExSettlement", function (accounts) {
         [tokenAddresses, renLedger, renExSettlement, renExBalances] = await setup(darknode);
     });
 
-    it("order", async () => {
-        await renLedger.openBuyOrder(
-            "0xee83f7cb5f09dc8f4ad6bd3f994382de3d54e3688c00fb6d0c635143df78cb123d2b6503e401e2a09f653e7f46eed1fd3c76b8073ce5aaedc1a906026e677b7d01",
-            "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
-        )
-
-        await renLedger.openSellOrder(
-            "0xfc4c02d195720b5600d3f32f9551a27c15209bcbd1c4c0797fc981270653c9bd5071dc5e8eb40c97ab6ff92a835f5a9b78b607dfb1000fad5bcb74ba2f25e51e00",
-            "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8",
-        )
-
-        await renLedger.confirmOrder("0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d", ["0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8"], { from: darknode })
-
-        await renExSettlement.submitOrder(
-            "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
-            "0x0000000000000000000000000000000000000000000000000000000000000001",
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "0x000000000000000000000000000000000000000000000000000000005b21c0a3",
-            "0x0000000000000000000000000000000000000000000000000000010000010000",
-            "0x0000000000000000000000000000000000000000000000000000000000000002",
-            "0x0000000000000000000000000000000000000000000000000000000000000028",
-            "0x0000000000000000000000000000000000000000000000000000000000000005",
-            "0x000000000000000000000000000000000000000000000000000000000000000c",
-            "0x0000000000000000000000000000000000000000000000000000000000000005",
-            "0x000000000000000000000000000000000000000000000000000000000000000c",
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        )
-
-        await renExSettlement.submitOrder(
-            "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8",
-            "0x0000000000000000000000000000000000000000000000000000000000000001",
-            "0x0000000000000000000000000000000000000000000000000000000000000001",
-            "0x000000000000000000000000000000000000000000000000000000005b21c0a3",
-            "0x0000000000000000000000000000000000000000000000000000010000010000",
-            "0x0000000000000000000000000000000000000000000000000000000000000002",
-            "0x0000000000000000000000000000000000000000000000000000000000000028",
-            "0x0000000000000000000000000000000000000000000000000000000000000005",
-            "0x000000000000000000000000000000000000000000000000000000000000000c",
-            "0x0000000000000000000000000000000000000000000000000000000000000005",
-            "0x000000000000000000000000000000000000000000000000000000000000000c",
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-        )
-
-        // await renExSettlement.submitMatch(
-        //     "0x0df993f660f54781d6c5fbf8c2511b6a82b92e06a5e60563b3a206f6a878418d",
-        //     "0xb520c497951fc91ced08bde0130e47f2d30a7fe312784dffe243118e0e98bee8"
-        // )
-    })
-
-    it("order", async () => {
+    it("order 1", async () => {
 
         const sell = parseOutput(`
         Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
 
 MethodID: 0x177d19c3
-[0]:  0af673072171578f5238b6c4800c37e2803035d9dec456a1f72367b1245d92de
+[0]:  e83bb7dea518a6603f141a120f6e1a83f6655158931fcea63f67084ac1bba181
+[1]:  0000000000000000000000000000000000000000000000000000000000000001
+[2]:  0000000000000000000000000000000000000000000000000000000000000001
+[3]:  000000000000000000000000000000000000000000000000000000005a758820
+[4]:  0000000000000000000000000000000000000000000000000000000100010000
+[5]:  0000000000000000000000000000000000000000000000000000000000000001
+[6]:  0000000000000000000000000000000000000000000000000000000000000002
+[7]:  0000000000000000000000000000000000000000000000000000000000000001
+[8]:  0000000000000000000000000000000000000000000000000000000000000003
+[9]:  0000000000000000000000000000000000000000000000000000000000000001
+[10]: 0000000000000000000000000000000000000000000000000000000000000003
+[11]: fda940ba5250d10bd3c701ef3e627a7b0bd0fd5143c45a35981f247fa1db3812
+        `);
+
+        const buy = parseOutput(`
+        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
+
+MethodID: 0x177d19c3
+[0]:  a2cd3f1d4e22af998905cebc124a202b7fa388eff22a20e71206b3e9a5f261d8
+[1]:  0000000000000000000000000000000000000000000000000000000000000001
+[2]:  0000000000000000000000000000000000000000000000000000000000000000
+[3]:  000000000000000000000000000000000000000000000000000000005a758820
+[4]:  0000000000000000000000000000000000000000000000000000000100010000
+[5]:  0000000000000000000000000000000000000000000000000000000000000001
+[6]:  0000000000000000000000000000000000000000000000000000000000000002
+[7]:  0000000000000000000000000000000000000000000000000000000000000001
+[8]:  0000000000000000000000000000000000000000000000000000000000000003
+[9]:  0000000000000000000000000000000000000000000000000000000000000001
+[10]: 0000000000000000000000000000000000000000000000000000000000000003
+[11]: fda940ba5250d10bd3c701ef3e627a7b0bd0fd5143c45a35981f247fa1db3812
+`)
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
+    })
+
+
+
+    it("order 2", async () => {
+
+        const sell = parseOutput(`
+        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
+
+MethodID: 0x177d19c3
+[0]:  d4689a4c1fa40e8bb713dbcde5c9ebf7a9ddecef45ae6e9dcb94924499a6451f
 [1]:  0000000000000000000000000000000000000000000000000000000000000001
 [2]:  0000000000000000000000000000000000000000000000000000000000000001
 [3]:  000000000000000000000000000000000000000000000000000000005b1b2867
@@ -100,7 +94,7 @@ MethodID: 0x177d19c3
         Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
 
 MethodID: 0x177d19c3
-[0]:  fa6dc7a09cfafec63bdaa6d0f725a08ab877ebf03b5e6cfb024107ff779a66d2
+[0]:  eb83a73990d7fbcbe2a95df9d53a9d0fd1705cdc27ff7b8f8908aba04e5f5a63
 [1]:  0000000000000000000000000000000000000000000000000000000000000001
 [2]:  0000000000000000000000000000000000000000000000000000000000000000
 [3]:  000000000000000000000000000000000000000000000000000000005b1b3144
@@ -117,7 +111,8 @@ MethodID: 0x177d19c3
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, renLedger);
     })
 
-    it("order", async () => {
+
+    it("order 3", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, price: 1, volume: 2 /* DGX */ };
         const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
@@ -126,7 +121,7 @@ MethodID: 0x177d19c3
             .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */])
     })
 
-    it("order", async () => {
+    it("order 4", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, price: 1, volume: 1 /* DGX */ };
         const sell = { tokens, price: 0.95, volume: 2 /* REN */ };
@@ -135,7 +130,7 @@ MethodID: 0x177d19c3
             .should.eql([0.975, 1 /* DGX */, 1.0256410256410258 /* REN */]);
     })
 
-    it("order", async () => {
+    it("order 5", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, price: 0.5, volume: 1 /* DGX */ };
         const sell = { tokens, price: 0.5, volume: 2 /* REN */ };
@@ -144,7 +139,7 @@ MethodID: 0x177d19c3
             .should.eql([0.5, 1 /* DGX */, 2 /* REN */])
     })
 
-    it("order", async () => {
+    it("order 6", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, price: 1, volume: 1 /* DGX */ };
         // More precise than the number of decimals DGX has
@@ -154,7 +149,7 @@ MethodID: 0x177d19c3
             .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */])
     })
 
-    it("order", async () => {
+    it("order 7", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, priceC: 1999, priceQ: 40, volume: 2 /* DGX */ };
         const sell = { tokens, priceC: 1999, priceQ: 40, volume: 1 /* REN */ };
@@ -207,7 +202,9 @@ const randomID = async () => {
 
 function parseOutput(scraped) {
     return {
+        orderID: '0x' + getLine(scraped, 0).toArrayLike(Buffer, "be", 32).toString('hex'),
         parity: getLine(scraped, 2).toNumber(),
+        expiry: getLine(scraped, 3).toNumber(),
         tokens: getLine(scraped, 4),
         priceC: getLine(scraped, 5).toNumber(),
         priceQ: getLine(scraped, 6).toNumber(),
@@ -215,6 +212,7 @@ function parseOutput(scraped) {
         volumeQ: getLine(scraped, 8).toNumber(),
         minimumVolumeC: getLine(scraped, 9).toNumber(),
         minimumVolumeQ: getLine(scraped, 10).toNumber(),
+        nonceHash: '0x' + getLine(scraped, 11).toArrayLike(Buffer, "be", 32).toString('hex'),
     }
 }
 function getLine(scraped, lineno) {
@@ -255,6 +253,13 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
                 order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
             }
         }
+
+        if (order.nonceHash === undefined) {
+            if (order.nonce === undefined) {
+                order.nonce = randomNonce();
+            }
+            order.nonceHash = web3.sha3(order.nonce, { encoding: 'hex' });
+        }
     }
 
     new BN(buy.tokens).eq(new BN(sell.tokens)).should.be.true;
@@ -266,23 +271,31 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     const lowTokenInstance = tokenAddresses[lowToken];
     const highTokenInstance = tokenAddresses[highToken];
 
-    buy.orderID = await randomID();
-    let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
-    buy.expiry = 1641026487;
-    buy.type = 0;
+    buy.expiry = buy.expiry || 1641026487;
+    buy.type = 1;
     buy.parity = OrderParity.BUY;
     buy.tokens = `0x${tokens.toString('hex')}`;
-    buy.nonce = web3.sha3(1337);
+    if (buy.orderID !== undefined) {
+        buy.orderID.should.equal(getOrderID(buy));
+    } else {
+        buy.orderID = getOrderID(buy);
+    }
+    console.log(`Buy orderID: ${buy.orderID}`);
+    let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
     buy.signature = await web3.eth.sign(buyer, buyHash);
 
 
-    sell.orderID = await randomID();
-    let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
-    sell.type = 0; // type
+    sell.type = 1; // type
     sell.parity = OrderParity.SELL; // parity
-    sell.expiry = 1641026487; // FIXME: expiry
+    sell.expiry = sell.expiry || 1641026487; // FIXME: expiry
     sell.tokens = `0x${tokens.toString('hex')}`; // tokens
-    sell.nonce = web3.sha3(1337);
+    if (sell.orderID !== undefined) {
+        sell.orderID.should.equal(getOrderID(sell));
+    } else {
+        sell.orderID = getOrderID(sell);
+    }
+    console.log(`Sell orderID: ${sell.orderID}`);
+    let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
     const sellSignature = await web3.eth.sign(seller, sellHash);
 
     const highDecimals = (await highTokenInstance.decimals()).toNumber();
@@ -308,16 +321,18 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
         await renExBalances.deposit(highTokenInstance.address, highDeposit, { from: seller, value: highDeposit });
     }
 
-    await renLedger.openBuyOrder(buy.signature, buy.orderID, { from: buyer });
-    await renLedger.openSellOrder(sellSignature, sell.orderID, { from: seller });
+
+    await renLedger.openBuyOrder(buy.signature, buy.orderID, renExSettlement.address, { from: buyer });
+
+    await renLedger.openSellOrder(sellSignature, sell.orderID, renExSettlement.address, { from: seller });
 
     (await renLedger.orderTrader(buy.orderID)).should.equal(buyer);
     (await renLedger.orderTrader(sell.orderID)).should.equal(seller);
 
     await renLedger.confirmOrder(buy.orderID, [sell.orderID], { from: darknode });
 
-    await renExSettlement.submitOrder(buy.orderID, buy.type, buy.parity, buy.expiry, buy.tokens, buy.priceC, buy.priceQ, buy.volumeC, buy.volumeQ, buy.minimumVolumeC, buy.minimumVolumeQ, buy.nonce);
-    await renExSettlement.submitOrder(sell.orderID, sell.type, sell.parity, sell.expiry, sell.tokens, sell.priceC, sell.priceQ, sell.volumeC, sell.volumeQ, sell.minimumVolumeC, sell.minimumVolumeQ, sell.nonce);
+    await renExSettlement.submitOrder(buy.type, buy.parity, buy.expiry, buy.tokens, buy.priceC, buy.priceQ, buy.volumeC, buy.volumeQ, buy.minimumVolumeC, buy.minimumVolumeQ, buy.nonceHash);
+    await renExSettlement.submitOrder(sell.type, sell.parity, sell.expiry, sell.tokens, sell.priceC, sell.priceQ, sell.volumeC, sell.volumeQ, sell.minimumVolumeC, sell.minimumVolumeQ, sell.nonceHash);
 
     console.log(`BUYER: price: ${buy.price} ${symbols[lowToken]}/${symbols[highToken]}, offering ${buy.volume} ${symbols[lowToken]}`)
     console.log(`SELLR: price: ${sell.price} ${symbols[lowToken]}/${symbols[highToken]}, offering ${sell.volume} ${symbols[highToken]}`)
@@ -386,6 +401,35 @@ async function setup(darknode) {
     return [tokenAddresses, renLedger, renExSettlement, renExBalances];
 }
 
+
+const PRIME = new BN('17012364981921935471');
+function randomNonce() {
+    let nonce = PRIME;
+    while (nonce.gte(PRIME)) {
+        nonce = new BN(Math.floor(Math.random() * 10000000));
+    }
+    return nonce.toString('hex');
+}
+
+
+
+function getOrderID(order) {
+    const bytes = Buffer.concat([
+        new BN(order.type).toArrayLike(Buffer, "be", 1),
+        new BN(order.parity).toArrayLike(Buffer, "be", 1),
+        new BN(1).toArrayLike(Buffer, "be", 4), // RENEX
+        new BN(order.expiry).toArrayLike(Buffer, "be", 8),
+        new BN(order.tokens.slice(2), 'hex').toArrayLike(Buffer, "be", 8),
+        new BN(order.priceC).toArrayLike(Buffer, "be", 8),
+        new BN(order.priceQ).toArrayLike(Buffer, "be", 8),
+        new BN(order.volumeC).toArrayLike(Buffer, "be", 8),
+        new BN(order.volumeQ).toArrayLike(Buffer, "be", 8),
+        new BN(order.minimumVolumeC).toArrayLike(Buffer, "be", 8),
+        new BN(order.minimumVolumeQ).toArrayLike(Buffer, "be", 8),
+        new Buffer(order.nonceHash.slice(2), 'hex'),
+    ]);
+    return web3.sha3('0x' + bytes.toString('hex'), { encoding: 'hex' });
+}
 
 
 
