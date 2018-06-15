@@ -4,9 +4,6 @@ import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-import "../RenLedger.sol";
-import "./RenExBalances.sol";
-
 /**
 @title The contract responsible for holding trader funds and settling matched
 order values
@@ -33,7 +30,6 @@ contract RenExTokens is Ownable {
     @param _tokenDecimals the decimals to use for the token
     */
     function registerToken(uint32 _tokenCode, ERC20 _tokenAddress, uint8 _tokenDecimals) public onlyOwner {
-        // TODO: Check if contract has a .decimals() call
         tokenAddresses[_tokenCode] = _tokenAddress;
         tokenDecimals[_tokenCode] = _tokenDecimals;
         tokenIsRegistered[_tokenCode] = true;
