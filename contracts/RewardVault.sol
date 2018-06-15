@@ -1,10 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
 contract RewardVault {
+    using SafeMath for uint256;
+
     // Constant address for ethereum
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
@@ -30,7 +33,7 @@ contract RewardVault {
         }
 
         // TODO: Use safe math
-        darknodeBalances[_darknode][_token] += _value;
+        darknodeBalances[_darknode][_token].add(_value);
     }
 
     /** 
