@@ -16,6 +16,13 @@ order values
 contract RenExSettlement is Ownable {
     using SafeMath for uint256;
 
+    // Fees are 0.2%
+    uint256 FEES_NUMERATOR = 2;
+    uint256 FEES_DENOMINATOR = 1000;
+
+    // Republic Protocol settlement identifier
+    uint32 constant public identifier = 1;
+
     RenLedger renLedgerContract;
     RenExTokens renExTokensContract;
     RenExBalances renExBalancesContract;
@@ -34,6 +41,7 @@ contract RenExSettlement is Ownable {
         uint64 minimumVolumeC; uint64 minimumVolumeQ;
         uint256 nonceHash;
         address trader;
+        address submitter;
     }
 
     struct Match {
@@ -65,7 +73,11 @@ contract RenExSettlement is Ownable {
     @param _renExBalancesContract the address of the RenExBalances contract
     @param _renExTokensContract the address of the RenExTokens contract
     */
-    constructor(RenLedger _renLedgerContract, RenExTokens _renExTokensContract, RenExBalances _renExBalancesContract) public {
+    constructor(
+        RenLedger _renLedgerContract,
+        RenExTokens _renExTokensContract,
+        RenExBalances _renExBalancesContract
+    ) public {
         renLedgerContract = _renLedgerContract;
         renExTokensContract = _renExTokensContract;
         renExBalancesContract = _renExBalancesContract;
@@ -92,7 +104,7 @@ contract RenExSettlement is Ownable {
         // uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);
         // uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);
         // return ((norm1 + norm2) / 2, 0);
-        uint256 norm = orders[buyID].priceC * 10 ** (orders[buyID].priceQ - orders[sellID].priceQ);
+        uint256 norm = orders[buyID].priceC * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
         int256 q = int256(orders[sellID].priceQ);
         uint256 sum = (orders[sellID].priceC + norm);
         if (sum % 2 == 0) {
@@ -187,42 +199,53 @@ contract RenExSettlement is Ownable {
     }
 
     // Ensure this remains private
-    function finalizeMatch(
-        address buyer, address seller,
+    function settleFunds(
+        bytes32 _buyID, bytes32 _sellID,
         uint32 buyToken, uint32 sellToken,
         uint256 lowTokenValue, uint256 highTokenValue
     ) private {
         address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        
         address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);
+        
+        address buySubmitter = orders[_buyID].submitter;
+        address sellSubmitter = orders[_sellID].submitter;
+
+        uint256 lowTokenValueFinal = (lowTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
+
+        uint256 highTokenValueFinal = (highTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
 
         // Subtract values
-        renExBalancesContract.decrementBalance(buyer, sellTokenAddress, lowTokenValue);
-        renExBalancesContract.decrementBalance(seller, buyTokenAddress, highTokenValue);
+        renExBalancesContract.decrementBalanceWithFee(
+            orders[_buyID].trader, sellTokenAddress, lowTokenValueFinal, lowTokenValue - lowTokenValueFinal, buySubmitter
+        );
+        renExBalancesContract.decrementBalanceWithFee(
+            orders[_sellID].trader, buyTokenAddress, highTokenValueFinal, highTokenValue - highTokenValueFinal, sellSubmitter
+        );
 
         // Add values
-        renExBalancesContract.incrementBalance(seller, sellTokenAddress, lowTokenValue);
-        renExBalancesContract.incrementBalance(buyer, buyTokenAddress, highTokenValue);
+        renExBalancesContract.incrementBalance(orders[_sellID].trader, sellTokenAddress, lowTokenValueFinal);
+        renExBalancesContract.incrementBalance(orders[_buyID].trader, buyTokenAddress, highTokenValueFinal);
 
-        emit Transfer(buyer, seller, sellToken, lowTokenValue);
-        emit Transfer(seller, buyer, buyToken, highTokenValue);
+        // emit Transfer(buyer, seller, sellToken, lowTokenValueFinal);
+        // emit Transfer(seller, buyer, buyToken, highTokenValueFinal);
     }
 
 
 
     // TODO: Implement
-    function hashOrder(Order order) private view returns (bytes) {
-        return 
+    function hashOrder(Order order) private pure returns (bytes32) {
+        return keccak256(
             abi.encodePacked(
                 order.orderType,
                 order.parity,
-                uint32(1), // RENEX's code
+                identifier,
                 order.expiry,
                 order.tokens,
                 order.priceC, order.priceQ,
                 order.volumeC, order.volumeQ,
                 order.minimumVolumeC, order.minimumVolumeQ,
                 order.nonceHash
-            // )
+            )
         );
     }
 
@@ -263,13 +286,11 @@ contract RenExSettlement is Ownable {
             volumeC: _volumeC, volumeQ: _volumeQ,
             minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,
             nonceHash: _nonceHash,
-            trader: 0x0 // Set after ID is calculated
+            trader: 0x0,
+            submitter: msg.sender
         });
 
-        bytes memory orderBytes = hashOrder(order);
-        emit DebugBytes("orderBytes", orderBytes);
-        bytes32 orderID = keccak256(orderBytes);
-        emit Debug32("orderID", orderID);
+        bytes32 orderID = hashOrder(order);
 
         require(orderStatuses[orderID] == OrderStatus.None);
         orderStatuses[orderID] = OrderStatus.Submitted;
@@ -298,6 +319,10 @@ contract RenExSettlement is Ownable {
 
         require(renExTokensContract.tokenIsRegistered(buyToken));
         require(renExTokensContract.tokenIsRegistered(sellToken));
+
+        return (buyToken, sellToken);
+
+        // TODO: Compare prices and volumes/minimum volumes
     }
 
     /**
@@ -308,16 +333,27 @@ contract RenExSettlement is Ownable {
     */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
         // Verify match
-        verifyMatch(_buyID, _sellID);
+        (uint32 buyToken, uint32 sellToken) = verifyMatch(_buyID, _sellID);
 
-        uint32 buyToken = uint32(orders[_sellID].tokens);
-        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
+        settlementDetails(
+            _buyID,
+            _sellID,
+            buyToken,
+            sellToken
+        );
 
         orderStatuses[_buyID] = OrderStatus.Matched;
         orderStatuses[_sellID] = OrderStatus.Matched;
+    }
 
-        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(buyToken);
-        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);
+    function settlementDetails(
+        bytes32 _buyID,
+        bytes32 _sellID,
+        uint32 _buyToken,
+        uint32 _sellToken
+    ) private returns (uint256, uint256) {
+        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(_buyToken);
+        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(_sellToken);
 
         // Price midpoint
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
@@ -328,12 +364,6 @@ contract RenExSettlement is Ownable {
 
         uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);
 
-        finalizeMatch(orders[_buyID].trader, orders[_sellID].trader, buyToken, sellToken, lowTokenValue, highTokenValue);
-
-        matches[keccak256(abi.encodePacked(_buyID, _sellID))] = Match({
-            price: tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals),
-            lowVolume: lowTokenValue,
-            highVolume: highTokenValue
-        });
+        settleFunds(_buyID, _sellID, _buyToken, _sellToken, lowTokenValue, highTokenValue);
     }
 }

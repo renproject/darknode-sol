@@ -5,6 +5,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenExSettlement.sol";
+import "../RewardVault.sol";
 
 /**
 @title The contract responsible for holding RenEx trader funds
@@ -14,6 +15,7 @@ contract RenExBalances is Ownable {
     using SafeMath for uint256;
 
     RenExSettlement public settlementContract;
+    RewardVault public rewardVaultContract;
 
     // TODO: Use same constant instance across all contracts 
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
@@ -21,7 +23,8 @@ contract RenExBalances is Ownable {
     // Events
     event BalanceDecreased(address trader, ERC20 token, uint256 value);
     event BalanceIncreased(address trader, ERC20 token, uint256 value);
-    event RenExSettlementContractChanged(address indexed previousOwner, address indexed newOwner);
+    event RenExSettlementContractChanged(address indexed newRenExSettlementContract);
+    event RewardVaultContractChanged(address indexed newRewardVaultContract);
 
     // Storage
     mapping(address => address[]) public traderTokens;
@@ -31,7 +34,8 @@ contract RenExBalances is Ownable {
     /**
     @notice After deployment, setRenExSettlementContract should be called
     */
-    constructor() public {
+    constructor(RewardVault _rewardVaultContract) public {
+        rewardVaultContract = _rewardVaultContract;
     }
 
 
@@ -54,8 +58,18 @@ contract RenExBalances is Ownable {
     @param _newSettlementContract the address of the new settlement contract
     */
     function setRenExSettlementContract(RenExSettlement _newSettlementContract) public onlyOwner {
-        emit RenExSettlementContractChanged(settlementContract, _newSettlementContract);
+        emit RenExSettlementContractChanged(_newSettlementContract);
         settlementContract = _newSettlementContract;
+    }
+
+    /**
+    @notice Updates the address of the reward vault contract (can only be called
+    by the owner of the contract)
+    @param _newRewardVaultContract the address of the new reward vault contract
+    */
+    function setRewardVault(RewardVault _newRewardVaultContract) public onlyOwner {
+        emit RewardVaultContractChanged(_newRewardVaultContract);
+        rewardVaultContract = _newRewardVaultContract;
     }
 
 
@@ -91,8 +105,15 @@ contract RenExBalances is Ownable {
     @param _token the token's address
     @param _value the number of tokens to decrement the balance by (in the token's smallest unit)
     */
-    function decrementBalance(address _trader, address _token, uint256 _value) public onlyRenExSettlementContract {
-        privateDecrementBalance(_trader, ERC20(_token), _value);
+    function decrementBalanceWithFee(address _trader, address _token, uint256 _value, uint256 _fee, address feePayee)
+    public onlyRenExSettlementContract {
+        if (address(_token) == ETHEREUM) {
+            rewardVaultContract.deposit.value(_fee)(feePayee, ERC20(_token), _fee);
+        } else {
+            ERC20(_token).approve(rewardVaultContract, _fee);
+            rewardVaultContract.deposit(feePayee, ERC20(_token), _fee);
+        }
+        privateDecrementBalance(_trader, ERC20(_token), _value + _fee);
     }
 
     function privateDecrementBalance(address _trader, ERC20 _token, uint256 _value) private {
