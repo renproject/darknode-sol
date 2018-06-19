@@ -86,7 +86,7 @@ contract RenExSettlement is Ownable {
     /********** WITHDRAWAL FUNCTIONS ******************************************/
 
     function traderCanWithdraw(address _trader, address _token, uint256 amount) public returns (bool) {
-        // In the future, this will return true (i.e. invalid withdrawal) if the
+        // In the future, this will return false (i.e. invalid withdrawal) if the
         // trader has open orders for that token
         return true;
     }
@@ -231,7 +231,10 @@ contract RenExSettlement is Ownable {
 
 
 
-    // TODO: Implement
+    /**
+    @notice Calculates the ID of the order
+    @param order the order to hash
+    */
     function hashOrder(Order order) private pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
@@ -296,6 +299,7 @@ contract RenExSettlement is Ownable {
 
         order.trader = orderbookContract.orderTrader(orderID);
         require(order.trader != 0x0);
+        emit DebugAddress("trader", order.trader);
 
         orders[orderID] = order;
     }

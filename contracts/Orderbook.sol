@@ -62,7 +62,7 @@ contract Orderbook {
     }
 
     /**
-     * @notice openBuyOrder opens a new buy order in the ledger. The order must not be opened.
+     * @notice openBuyOrder opens a new buy order in the orderbook. The order must not be opened.
      *         It requires certain allowance of REN as opening fee. It will recover and store
      *         the the trader address from the signature.
      *
@@ -76,7 +76,7 @@ contract Orderbook {
     }
 
     /**
-     * @notice openSellOrder opens a new sell order in the ledger. The order must not be opened.
+     * @notice openSellOrder opens a new sell order in the orderbook. The order must not be opened.
      *         It requires certain allowance of REN as opening fee. It will recover and store
      *         the the trader address from the signature.
      *
@@ -114,7 +114,7 @@ contract Orderbook {
     }
 
     /**
-     * @notice cancelOrder cancels a opened order in the ledger. It will recover and store the the
+     * @notice cancelOrder cancels a opened order in the orderbook. It will recover and store the the
                trader address from the signature.
      *
      * @param _signature  Signature of the message "Republic Protocol: cancel: {orderId}"

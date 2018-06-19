@@ -25,7 +25,7 @@ const CONFIG = {
         minumumEpochInterval: 1, // in seconds,
         address: "0x9979cd31b0de1f495a4f53d64039e5f69ff06e15",
     },
-    Ledger: {
+    Orderbook: {
         address: "0x51dE68D7767DBa16A21ADE748849e67E765e063C" // KOVAN
     },
     RenExTokens: {
@@ -61,10 +61,10 @@ async function deployOrderbook(deployer, dnr) {
 }
 
 
-async function deployRenExSettlement(deployer, ledger, tokenContract, renExBalances) {
+async function deployRenExSettlement(deployer, orderbook, tokenContract, renExBalances) {
     await deployer.deploy(
         RenExSettlement,
-        ledger,
+        orderbook,
         tokenContract,
         renExBalances,
     );
@@ -81,28 +81,26 @@ async function deployContract(deployer, artifact) {
 }
 
 module.exports = async function (deployer) {
-    const dnr = await deployDarknodeRegistry(deployer);
-    // const dnr = DarknodeRegistry.at(CONFIG.DNR.address);
-    const ledger = await deployOrderbook(deployer, dnr.address);
-    // const ledger = Orderbook.at(CONFIG.Ledger.address);
+    // const dnr = await deployDarknodeRegistry(deployer);
+    // // const dnr = DarknodeRegistry.at(CONFIG.DNR.address);
+    // const orderbook = await deployOrderbook(deployer, dnr.address);
+    // // const orderbook = Orderbook.at(CONFIG.Orderbook.address);
 
-    // // RENEXTOKENS
-    const renExTokens = await deployContract(deployer, RenExTokens);
-    await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);    
-    await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
-    await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
+    // // // RENEXTOKENS
+    // const renExTokens = await deployContract(deployer, RenExTokens);
+    // await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);    
+    // await renExTokens.registerToken(0x100, CONFIG.DGX.address, 9);
+    // await renExTokens.registerToken(0x10000, CONFIG.REN.address, 18);
 
-    const rewardVault = await RewardVault.new()
+    // const rewardVault = await RewardVault.new()
 
-    const renExBalances = await RenExBalances.new(rewardVault.address);
-    // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
+    // const renExBalances = await RenExBalances.new(rewardVault.address);
+    // // const renExBalances = RenExBalances.at(CONFIG.RenExBalances.address);
 
-    // const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
+    // // const renExTokens = RenExTokens.at(CONFIG.RenExTokens.address);
 
-    const renExSettlement = await deployRenExSettlement(deployer, ledger.address, renExTokens.address, renExBalances.address);
-    // const renExSettlement = RenExTokens.at(CONFIG.RenExSettlement.address);
+    // const renExSettlement = await deployRenExSettlement(deployer, orderbook.address, renExTokens.address, renExBalances.address);
+    // // const renExSettlement = RenExTokens.at(CONFIG.RenExSettlement.address);
 
-    await renExBalances.setRenExSettlementContract(renExSettlement.address);
-
-    
+    // await renExBalances.setRenExSettlementContract(renExSettlement.address);
 };
