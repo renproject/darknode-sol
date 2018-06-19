@@ -14,14 +14,15 @@ module.exports = {
         return new HDWalletProvider(process.env.MNEMONIC, `https://ropsten.infura.io/${process.env.INFURA_TOKEN}`);
       },
       network_id: 3,
-      gas: 3000000,
+      gas: 5000000,
     },
     kovan: {
       provider: function () {
         return new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
       },
       network_id: 42,
-      gas: 3000000,
+      gas: 5000000,
+      gasPrice: 10000000000,
     },
   },
   mocha: {
