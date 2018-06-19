@@ -33,7 +33,7 @@ contract RewardVault {
         }
 
         // TODO: Use safe math
-        darknodeBalances[_darknode][_token].add(_value);
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
 
     /** 
@@ -44,8 +44,8 @@ contract RewardVault {
     function withdraw(address _darknode, ERC20 _token) public {
         address darknodeOwner = darknodeRegistry.getOwner(bytes20(_darknode));
 
-        uint256 value = darknodeBalances[darknodeOwner][_token];
-        darknodeBalances[darknodeOwner][_token] = 0;
+        uint256 value = darknodeBalances[_darknode][_token];
+        darknodeBalances[_darknode][_token] = 0;
 
         if (address(_token) == ETHEREUM) {
             darknodeOwner.transfer(value);
