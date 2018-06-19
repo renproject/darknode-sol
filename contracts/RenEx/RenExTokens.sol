@@ -15,7 +15,7 @@ contract RenExTokens is Ownable {
     mapping(uint32 => ERC20) public tokenAddresses;
     mapping(uint32 => uint8) public tokenDecimals;
     mapping(uint32 => bool) public tokenIsRegistered;
-    
+
     /**
     @notice constructor
     */

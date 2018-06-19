@@ -103,6 +103,7 @@ contract Orderbook {
         }
 
         for (i = 0; i < _orderMatches.length; i++) {
+            // TODO: Require that the order type is the opposite to _orderId's
             orders[_orderMatches[i]].state = OrderState.Confirmed;
             orders[_orderMatches[i]].matches = [_orderId];
             orders[_orderMatches[i]].blockNumber = block.number;
@@ -274,7 +275,7 @@ contract Orderbook {
     }
 
     function openOrder(bytes _signature, bytes32 _orderId) private {
-        require(ren.allowance(msg.sender, this) >= fee);
+        // require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
         require(orders[_orderId].state == OrderState.Undefined);
 
