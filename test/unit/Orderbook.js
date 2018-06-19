@@ -82,49 +82,29 @@ contract("Orderbook", function (accounts) {
     });
 
     it('should be able to open orders', async function () {
+        await ren.approve(orderbook.address, 2 * accounts.length, { from: broker });
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(orderbook.address, 2, { from: accounts[i] });
-
-            let buyOrderId = await randomID();
-            let sellOrderId = await randomID();
-
-            let buyHash = await web3.sha3(openPrefix + buyOrderId.slice(2), { encoding: 'hex' });
-            let sellHash = await web3.sha3(openPrefix + sellOrderId.slice(2), { encoding: 'hex' });
-            let buySignature = await web3.eth.sign(accounts[i], buyHash);
-            let sellSignature = await web3.eth.sign(accounts[i], sellHash);
-
-            await orderbook.openBuyOrder(buySignature, buyOrderId, { from: accounts[i] });
-            await orderbook.openSellOrder(sellSignature, sellOrderId, { from: accounts[i] });
-
+            steps.openBuyOrder(orderbook, broker, accounts[i]);
+            steps.openSellOrder(orderbook, broker, accounts[i]);
         }
     });
 
     it('should be rejected when trying to open an order without no REN allowance', async function () {
-        for (i = 0; i < accounts.length; i++) {
-            let orderID = await randomID();
-            let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-
-            await orderbook.openBuyOrder(signature, orderID, { from: accounts[i] }).should.be.rejectedWith();
-        }
+        await ren.approve(orderbook.address, 0, { from: broker });
+        await steps.openBuyOrder(orderbook, broker, accounts[0]).should.be.rejectedWith();
+        await steps.openSellOrder(orderbook, broker, accounts[0]).should.be.rejectedWith();
     });
 
     it('should be rejected when trying to open an opened order', async function () {
-        const orderID = await randomID();
-
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(orderbook.address, 1, { from: accounts[i] });
+            await ren.approve(orderbook.address, 2, { from: broker });
 
-            let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
+            const orderID = await steps.openBuyOrder(orderbook, broker, accounts[0])
+            await steps.openBuyOrder(orderbook, broker, accounts[0], orderID)
+                .should.be.rejectedWith();
 
-            // Only the first account can open the order
-            const promise = orderbook.openBuyOrder(signature, orderID, { from: accounts[i] });
-            if (i > 0) {
-                await promise.should.be.rejectedWith();
-            } else {
-                await promise;
-            }
+            await steps.openSellOrder(orderbook, broker, accounts[0], orderID)
+                .should.be.rejectedWith();
         }
     });
 
@@ -134,22 +114,13 @@ contract("Orderbook", function (accounts) {
         await ren.approve(orderbook.address, accounts.length * 2, { from: broker });
 
         for (i = 0; i < accounts.length; i++) {
-            ids[i] = await randomID();
-            let hash = await web3.sha3(openPrefix + ids[i].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-
-            if (i % 2 === 0) {
-                await orderbook.openBuyOrder(signature, ids[i], { from: broker });
-            } else {
-                await orderbook.openSellOrder(signature, ids[i], { from: broker });
-            }
+            ids[i] = (i % 2 === 0) ?
+                await steps.openBuyOrder(orderbook, broker, accounts[i]) :
+                await steps.openSellOrder(orderbook, broker, accounts[i]);
         }
 
         for (i = 0; i < accounts.length; i++) {
-            let hash = await web3.sha3(closePrefix + ids[i].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-
-            await orderbook.cancelOrder(signature, ids[i], { from: broker });
+            await steps.cancelOrder(orderbook, broker, accounts[i], ids[i]);
         }
     });
 
@@ -157,11 +128,7 @@ contract("Orderbook", function (accounts) {
         await ren.approve(orderbook.address, 1, { from: broker });
 
         let orderID = await randomID();
-        let hash = await web3.sha3(closePrefix + orderID.slice(2), { encoding: 'hex' });
-        let signature = await web3.eth.sign(accounts[0], hash);
-
-        await orderbook.cancelOrder(signature, orderID, { from: broker });
-
+        await steps.cancelOrder(orderbook, broker, accounts[0], orderID);
     });
 
     it('should not be able to cancel confirmed orders', async function () {
@@ -182,25 +149,17 @@ contract("Orderbook", function (accounts) {
     it('should be rejected when trying to cancel orders signed by someone else', async function () {
         const ids = {};
 
-        for (i = 0; i < accounts.length; i++) {
-            await ren.approve(orderbook.address, 1, { from: accounts[i] });
-            ids[i] = await randomID();
-            let hash = await web3.sha3(openPrefix + ids[i].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
+        await ren.approve(orderbook.address, accounts.length, { from: broker });
 
-            if (i % 2 === 0) {
-                await orderbook.openBuyOrder(signature, ids[i], { from: accounts[i] });
-            } else {
-                await orderbook.openSellOrder(signature, ids[i], { from: accounts[i] });
-            }
+        for (i = 0; i < accounts.length; i++) {
+            ids[i] = (i % 2 === 0) ?
+                await steps.openBuyOrder(orderbook, broker, accounts[i]) :
+                await steps.openSellOrder(orderbook, broker, accounts[i]);
         }
 
         for (i = 0; i < accounts.length; i++) {
             await ren.approve(orderbook.address, 1, { from: accounts[i] });
-
-            let hash = await web3.sha3(closePrefix + ids[(i + 1) % accounts.length].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-            await orderbook.cancelOrder(signature, ids[(i + 1) % accounts.length], { from: accounts[i] }).should.be.rejectedWith();
+            await steps.cancelOrder(orderbook, broker, accounts[(i + 1) % accounts.length], ids[i]).should.be.rejectedWith();
         }
     });
 
@@ -208,22 +167,13 @@ contract("Orderbook", function (accounts) {
         const buyIDs = {};
         const sellIDs = {};
 
-        // Open a bunch of orders
+        await ren.approve(orderbook.address, 2 * (accounts.length / 2), { from: broker });
+
+        // Open orders
         for (i = 0; i < accounts.length / 2; i++) {
-            await ren.approve(orderbook.address, 2, { from: accounts[i] });
 
-            buyIDs[i] = await randomID();
-            sellIDs[i] = await randomID();
-
-            // Open a mock order
-            let hash = await web3.sha3(openPrefix + buyIDs[i].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-            await orderbook.openBuyOrder(signature, buyIDs[i], { from: accounts[i] });
-
-            // Open the matched order
-            hash = await web3.sha3(openPrefix + sellIDs[i].slice(2), { encoding: 'hex' });
-            signature = await web3.eth.sign(accounts[i], hash);
-            await orderbook.openSellOrder(signature, sellIDs[i], { from: accounts[i] });
+            buyIDs[i] = await steps.openBuyOrder(orderbook, broker, accounts[i]);
+            sellIDs[i] = await steps.openSellOrder(orderbook, broker, accounts[accounts.length - 1 - i]);
         }
 
         // Confirm orders
@@ -273,18 +223,15 @@ contract("Orderbook", function (accounts) {
 
     it("should be able to get the depth of orderID", async function () {
 
-        await ren.approve(orderbook.address, 1, { from: accounts[1] });
+        await ren.approve(orderbook.address, 1, { from: broker });
 
         let orderID = await randomID();
 
         (await orderbook.orderDepth.call(orderID))
             .toNumber().should.equal(0);
 
-        let prefix = await web3.toHex("Republic Protocol: open: ");
-        let hash = await web3.sha3(prefix + orderID.slice(2), { encoding: 'hex' });
-        let signature = await web3.eth.sign(accounts[1], hash);
+        await steps.openBuyOrder(orderbook, broker, accounts[0], orderID);
 
-        await orderbook.openBuyOrder(signature, orderID, { from: accounts[1] });
         (await orderbook.orderDepth.call(orderID))
             .toNumber().should.equal(1);
     });
@@ -294,24 +241,16 @@ contract("Orderbook", function (accounts) {
 
         const ids = {};
 
+
+        await ren.approve(_orderbook.address, 2 * accounts.length, { from: broker });
         for (i = 0; i < accounts.length; i++) {
-            await ren.approve(_orderbook.address, 2, { from: accounts[i] });
-
-            ids[i] = await randomID();
-
-            let prefix = await web3.toHex("Republic Protocol: open: ");
-            let hash = await web3.sha3(prefix + ids[i].slice(2), { encoding: 'hex' });
-            let signature = await web3.eth.sign(accounts[i], hash);
-
-            if (i % 2 === 0) {
-                await _orderbook.openBuyOrder(signature, ids[i], { from: accounts[i] });
-            } else {
-                await _orderbook.openSellOrder(signature, ids[i], { from: accounts[i] });
-            }
+            ids[i] = (i % 2 === 0) ?
+                await steps.openBuyOrder(_orderbook, broker, accounts[i]) :
+                await steps.openSellOrder(_orderbook, broker, accounts[i]);
         }
 
         const offset = 1;
-        const orders = await _orderbook.getOrders(offset, accounts.length);
+        const orders = await _orderbook.getOrders(offset, accounts.length - offset);
 
         orders[0].length.should.equal(accounts.length - offset);
 
