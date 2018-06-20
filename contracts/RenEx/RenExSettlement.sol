@@ -300,7 +300,7 @@ contract RenExSettlement is Ownable {
         require(orderbookContract.orderState(orderID) == 2);
 
         order.trader = orderbookContract.orderTrader(orderID);
-        require(order.trader != 0x0);
+        assert(order.trader != 0x0);
         emit DebugAddress("trader", order.trader);
 
         orders[orderID] = order;

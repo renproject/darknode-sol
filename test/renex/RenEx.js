@@ -31,9 +31,6 @@ contract("RenExSettlement", function (accounts) {
     it("order 1", async () => {
 
         const sell = parseOutput(`
-        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
-
-MethodID: 0x177d19c3
 [0]:  0000000000000000000000000000000000000000000000000000000000000001
 [1]:  0000000000000000000000000000000000000000000000000000000000000001
 [2]:  000000000000000000000000000000000000000000000000000000005a758820
@@ -48,9 +45,6 @@ MethodID: 0x177d19c3
         `);
 
         const buy = parseOutput(`
-        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
-
-MethodID: 0x177d19c3
 [0]:  0000000000000000000000000000000000000000000000000000000000000001
 [1]:  0000000000000000000000000000000000000000000000000000000000000000
 [2]:  000000000000000000000000000000000000000000000000000000005a758820
@@ -72,9 +66,6 @@ MethodID: 0x177d19c3
     it("order 2", async () => {
 
         const sell = parseOutput(`
-        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
-
-MethodID: 0x177d19c3
 [0]:  0000000000000000000000000000000000000000000000000000000000000001
 [1]:  0000000000000000000000000000000000000000000000000000000000000001
 [2]:  000000000000000000000000000000000000000000000000000000005b1b2867
@@ -89,9 +80,6 @@ MethodID: 0x177d19c3
         `);
 
         const buy = parseOutput(`
-        Function: submitOrder(bytes32 _id, uint8 _orderType, uint8 _parity, uint64 _expiry, uint64 _tokens, uint16 _priceC, uint16 _priceQ, uint16 _volumeC, uint16 _volumeQ, uint16 _minimumVolumeC, uint16 _minimumVolumeQ, uint256 _nonceHash)
-
-MethodID: 0x177d19c3
 [0]:  0000000000000000000000000000000000000000000000000000000000000001
 [1]:  0000000000000000000000000000000000000000000000000000000000000000
 [2]:  000000000000000000000000000000000000000000000000000000005b1b3144
@@ -149,10 +137,10 @@ MethodID: 0x177d19c3
     it("order 7", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, priceC: 1999, priceQ: 40, volume: 2 /* DGX */ };
-        const sell = { tokens, priceC: 1999, priceQ: 40, volume: 1 /* REN */ };
+        const sell = { tokens, priceC: 1998, priceQ: 40, volume: 1 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([999.5, 2 /* DGX */, 0.002001000500250125 /* REN */])
+            .should.eql([999.25, 2 /* DGX */, 0.002001501125844383 /* REN */])
     })
 });
 

@@ -115,12 +115,12 @@ contract("RenExBalances", function (accounts) {
         await renExBalances.deposit(TOKEN1.address, deposit1, { from: accounts[0] });
 
         // Withdraw more than deposited amount
-        renExBalances.withdraw(TOKEN1.address, deposit1 * 2, { from: accounts[0] })
+        await renExBalances.withdraw(TOKEN1.address, deposit1 * 2, { from: accounts[0] })
             .should.be.rejected;
 
         // Token transfer fails
         await TOKEN1.pause();
-        renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
+        await renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
             .should.be.rejected;
         await TOKEN1.unpause();
 
@@ -128,7 +128,7 @@ contract("RenExBalances", function (accounts) {
         await renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] });
 
         // Withdraw again
-        renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
+        await renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
             .should.be.rejected;
     })
 
