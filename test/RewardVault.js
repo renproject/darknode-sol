@@ -111,12 +111,25 @@ contract("Reward Vault", function (accounts) {
             .should.be.rejected;
     });
 
-    it("checks success withdraws before updating balances", async () => {
+    it("checks success of ERC20 withdrawal before updating balances", async () => {
         await TOKEN1.approve(rewardVault.address, 10);
         await rewardVault.deposit(darknode1, TOKEN1.address, 10);
         await TOKEN1.pause();
 
         await rewardVault.withdraw(darknode1, TOKEN1.address)
+            .should.be.rejected;
+    });
+
+    it("checks success of ETH withdrawal before updating balances", async () => {
+        const reverter = await Reverter.new();
+        darknode3 = accounts[5];
+        await ren.approve(reverter.address, MINIMUM_BOND);
+        await reverter.register(dnr.address, ren.address, darknode3, "", MINIMUM_BOND);
+        await dnr.epoch();
+
+        await rewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });
+
+        await rewardVault.withdraw(darknode3, ETH.address)
             .should.be.rejected;
     });
 
