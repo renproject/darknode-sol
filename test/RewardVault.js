@@ -2,8 +2,9 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const BitcoinMock = artifacts.require("BitcoinMock");
 const RepublicToken = artifacts.require("RepublicToken");
 const RewardVault = artifacts.require("RewardVault");
-const chai = require("chai");
+const Reverter = artifacts.require("Reverter");
 
+const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
@@ -100,6 +101,25 @@ contract("Reward Vault", function (accounts) {
             }
         }
     });
+
+
+    it("checks that deposit amounts are valid", async () => {
+        await rewardVault.deposit(darknode1, TOKEN1.address, 1)
+            .should.be.rejected;
+
+        await rewardVault.deposit(darknode1, ETH.address, 1)
+            .should.be.rejected;
+    });
+
+    it("checks success withdraws before updating balances", async () => {
+        await TOKEN1.approve(rewardVault.address, 10);
+        await rewardVault.deposit(darknode1, TOKEN1.address, 10);
+        await TOKEN1.pause();
+
+        await rewardVault.withdraw(darknode1, TOKEN1.address)
+            .should.be.rejected;
+    });
+
 
 });
 
