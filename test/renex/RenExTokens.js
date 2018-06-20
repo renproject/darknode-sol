@@ -9,7 +9,7 @@ chai.use(require("chai-as-promised"));
 chai.use(require("chai-bignumber")());
 chai.should();
 
-contract("RenExBalances", function (accounts) {
+contract("RenExTokens", function (accounts) {
 
     const BTC = 0x0;
     const ETH = 0x1;

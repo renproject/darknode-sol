@@ -43,15 +43,15 @@ contract("Gateway", function (accounts) {
   });
 
   it("anyone other than the owner cannot update the DarknodeRegistry address", async () => {
-    await gateway.updateDarknodeRegistry("", { from: accounts[1] }).should.be.rejectedWith();
+    await gateway.updateDarknodeRegistry("", { from: accounts[1] }).should.be.rejected;
   });
 
   it("anyone other than the owner cannot update the TraderRegistry address", async () => {
-    await gateway.updateTraderRegistry("", { from: accounts[1] }).should.be.rejectedWith();
+    await gateway.updateTraderRegistry("", { from: accounts[1] }).should.be.rejected;
   });
 
   it("anyone other than the owner cannot update the MinimumDarkPoolSize", async () => {
-    await gateway.updateMinimumDarkPoolSize(10, { from: accounts[1] }).should.be.rejectedWith();
+    await gateway.updateMinimumDarkPoolSize(10, { from: accounts[1] }).should.be.rejected;
   });
 
   it("the owner should be able to change the ownership of the contract", async () => {
@@ -60,11 +60,11 @@ contract("Gateway", function (accounts) {
   })
 
   it("anyone other than the owner should not be able to change the ownership of the contract", async () => {
-    await gateway.transferOwnership(accounts[1], { from: accounts[0] }).should.be.rejectedWith();
+    await gateway.transferOwnership(accounts[1], { from: accounts[0] }).should.be.rejected;
   })
 
   it("should not be able to give the ownership to 0x0 address", async () => {
-    await gateway.transferOwnership("", { from: accounts[1] }).should.be.rejectedWith();
+    await gateway.transferOwnership("", { from: accounts[1] }).should.be.rejected;
   })
 
 });

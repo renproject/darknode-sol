@@ -28,13 +28,13 @@ contract("DarknodeRegistry", function (accounts) {
   it("can not register a Dark Node with a bond less than the minimum bond", async () => {
     const lowBond = MINIMUM_BOND - 1;
     await ren.approve(dnr.address, lowBond, { from: accounts[0] });
-    await dnr.register("", "", lowBond).should.be.rejectedWith();
-    await dnr.register("", "", MINIMUM_BOND).should.be.rejectedWith();
+    await dnr.register("", "", lowBond).should.be.rejected;
+    await dnr.register("", "", MINIMUM_BOND).should.be.rejected;
   })
 
   it("can not call epoch before the minimum time interval", async () => {
     await dnr.epoch();
-    await dnr.epoch().should.be.rejectedWith();
+    await dnr.epoch().should.be.rejected;
   })
 
   it("can register multiple Dark Nodes, call an epoch and check registration", async () => {
@@ -54,11 +54,11 @@ contract("DarknodeRegistry", function (accounts) {
 
   it("can not register a node twice", async () => {
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
-    await dnr.register("1", "1", MINIMUM_BOND).should.be.rejectedWith();
+    await dnr.register("1", "1", MINIMUM_BOND).should.be.rejected;
   })
 
   it("can not deregister a node which is not registered", async () => {
-    await dnr.deregister("").should.be.rejectedWith();
+    await dnr.deregister("").should.be.rejected;
   })
 
   it("can get the owner of the Dark Node", async () => {
@@ -90,7 +90,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can't deregister twice", async () => {
-    await dnr.deregister("1", { from: accounts[0] }).should.be.rejectedWith();
+    await dnr.deregister("1", { from: accounts[0] }).should.be.rejected;
   })
 
   it("can only get the Dark Nodes that are fully registered", async () => {
@@ -103,7 +103,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("should fail to refund before deregistering", async () => {
-    await dnr.refund("4", { from: accounts[3] }).should.be.rejectedWith();
+    await dnr.refund("4", { from: accounts[3] }).should.be.rejected;
   })
 
   it("can deregister a Dark Node, call an epoch, call refund and check deregistration", async () => {
@@ -127,24 +127,24 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("should fail to refund twice", async () => {
-    await dnr.refund("3").should.be.rejectedWith();
+    await dnr.refund("3").should.be.rejected;
   })
 
   it("should throw if refund fails", async () => {
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
-    await dnr.register("1", "1", MINIMUM_BOND);
+    await dnr.register("3", "1", MINIMUM_BOND);
     await waitForEpoch(dnr);
-    await dnr.deregister("1");
+    await dnr.deregister("3");
     await waitForEpoch(dnr);
 
     await ren.pause();
-    await dnr.refund("1").should.be.rejectedWith();
+    await dnr.refund("3").should.be.rejected;
     await ren.unpause();
-    await dnr.refund("1");
+    await dnr.refund("3");
   })
 
   it("should not refund for an address which is never registered", async () => {
-    await dnr.refund("").should.be.rejectedWith();
+    await dnr.refund("").should.be.rejected;
   })
 });
 

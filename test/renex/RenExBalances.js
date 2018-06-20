@@ -27,6 +27,13 @@ contract("RenExBalances", function (accounts) {
         await renExBalances.setRenExSettlementContract(renExSettlement.address);
     });
 
+    it("can update Reward Vault address", async () => {
+        await renExBalances.setRewardVault(0x0);
+        await renExBalances.setRewardVault(rewardVault.address, { from: accounts[1] })
+            .should.be.rejected;
+        await renExBalances.setRewardVault(rewardVault.address);
+    })
+
     it("can hold tokens for a trader", async () => {
         const deposit1 = 100;
         const deposit2 = 50;
@@ -109,14 +116,20 @@ contract("RenExBalances", function (accounts) {
 
         // Withdraw more than deposited amount
         renExBalances.withdraw(TOKEN1.address, deposit1 * 2, { from: accounts[0] })
-            .should.be.rejectedWith(Error);
+            .should.be.rejected;
+
+        // Token transfer fails
+        await TOKEN1.pause();
+        renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
+            .should.be.rejected;
+        await TOKEN1.unpause();
 
         // Withdraw
         await renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] });
 
         // Withdraw again
         renExBalances.withdraw(TOKEN1.address, deposit1, { from: accounts[0] })
-            .should.be.rejectedWith(Error);
+            .should.be.rejected;
     })
 
     it("can deposit and withdraw multiple times", async () => {
