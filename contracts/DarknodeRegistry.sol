@@ -91,14 +91,6 @@ contract DarknodeRegistry {
     }
 
     /**
-    * @notice Only allow registered dark nodes.
-    */
-    modifier onlyRegistered(bytes20 _darknodeID) {
-        require(isRegistered(_darknodeID));
-        _;
-    }
-
-    /**
     * @notice Only allow deregistered dark nodes.
     */
     modifier onlyDeregistered(bytes20 _darknodeID) {

@@ -297,6 +297,8 @@ contract RenExSettlement is Ownable {
         require(orderStatuses[orderID] == OrderStatus.None);
         orderStatuses[orderID] = OrderStatus.Submitted;
 
+        require(orderbookContract.orderState(orderID) == 2);
+
         order.trader = orderbookContract.orderTrader(orderID);
         require(order.trader != 0x0);
         emit DebugAddress("trader", order.trader);
@@ -311,8 +313,6 @@ contract RenExSettlement is Ownable {
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
-        require(orderbookContract.orderState(_buyID) == 2);
-        require(orderbookContract.orderState(_sellID) == 2);
         
         // TODO: Loop through and check at all indices
         require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
