@@ -52,6 +52,7 @@ contract RenExSettlement is Ownable {
 
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
+    event Debugi256(string message, int256 value);
 
     // Storage
     mapping(bytes32 => Order) public orders;
@@ -114,6 +115,7 @@ contract RenExSettlement is Ownable {
             // Instead of dividing the constant by priceC, we delay the division
             // until the recombining c and q, to ensure that minimal precision
             // is lost
+            emit Debugi256("i256", int256(orders[buyID].volumeQ + 26 + 12) - priceQ);
             return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);
         } else {
             return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);

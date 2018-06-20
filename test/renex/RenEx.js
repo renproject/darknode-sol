@@ -148,9 +148,8 @@ contract("RenExSettlement", function (accounts) {
         const buy = { tokens, priceC: 200, priceQ: 40, volumeC: 1, volumeQ: 0 /* ETH */ };
         const sell = { tokens, priceC: 200, priceQ: 40, volume: 1 /* REN */ };
 
-        // TODO: Verify - should ETH volume be 2e-14?
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([100, 2e-13 /* ETH */, 2e-16 /* REN */]);
+            .should.eql([100, 2e-13 /* ETH */, 2e-15 /* REN */]);
     })
 });
 
