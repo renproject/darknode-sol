@@ -178,7 +178,7 @@ contract DarknodeRegistry {
     function register(bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darknodeID) {
         // REN allowance
         require(_bond >= minimumBond);
-        require(ren.allowance(msg.sender, address(this)) >= _bond);
+        // require(ren.allowance(msg.sender, address(this)) >= _bond);
         require(ren.transferFrom(msg.sender, address(this), _bond));
 
         // Flag this dark node for registration
@@ -223,7 +223,6 @@ contract DarknodeRegistry {
     function refund(bytes20 _darknodeID) public onlyOwner(_darknodeID) onlyDeregistered(_darknodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darknodeID].bond;
-        require(amount > 0);
 
         // Erase the dark node from the registry
         LinkedList.remove(darknodes, _darknodeID);

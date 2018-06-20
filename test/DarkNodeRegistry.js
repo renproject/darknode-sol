@@ -130,6 +130,19 @@ contract("DarknodeRegistry", function (accounts) {
     await dnr.refund("3").should.be.rejectedWith();
   })
 
+  it("should throw if refund fails", async () => {
+    await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
+    await dnr.register("1", "1", MINIMUM_BOND);
+    await waitForEpoch(dnr);
+    await dnr.deregister("1");
+    await waitForEpoch(dnr);
+
+    await ren.pause();
+    await dnr.refund("1").should.be.rejectedWith();
+    await ren.unpause();
+    await dnr.refund("1");
+  })
+
   it("should not refund for an address which is never registered", async () => {
     await dnr.refund("").should.be.rejectedWith();
   })
