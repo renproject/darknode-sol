@@ -151,6 +151,26 @@ contract("RenExSettlement", function (accounts) {
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([100, 2e-13 /* ETH */, 2e-15 /* REN */]);
     })
+
+    it("order 9", async () => {
+        const tokens = market(ETH, REN);
+        // Highest possible price, lowest possible volume
+        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* ETH */ };
+        const sell = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* REN */ };
+
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
+            .should.eql([999500000000000, 2e-13 /* ETH */, 0 /* REN */]);
+    })
+
+    it("order 9", async () => {
+        const tokens = market(ETH, REN);
+        // Highest possible price, lowest possible volume
+        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 13 /* ETH */ };
+        const sell = { tokens, priceC: 1999, priceQ: 52, volume: 1 /* REN */ };
+
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
+            .should.eql([999500000000000, 2 /* ETH */, 2.001e-15 /* REN */]);
+    })
 });
 
 
