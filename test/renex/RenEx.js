@@ -103,7 +103,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */])
+            .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */]);
     })
 
     it("order 4", async () => {
@@ -121,7 +121,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.5, volume: 2 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.5, 1 /* DGX */, 2 /* REN */])
+            .should.eql([0.5, 1 /* DGX */, 2 /* REN */]);
     })
 
     it("order 6", async () => {
@@ -131,7 +131,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.0000000001, volume: 2 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */])
+            .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */]);
     })
 
     it("order 7", async () => {
@@ -140,7 +140,17 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, priceC: 1998, priceQ: 40, volume: 1 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([999.25, 2 /* DGX */, 0.002001501125844383 /* REN */])
+            .should.eql([999.25, 2 /* DGX */, 0.002001501125844383 /* REN */]);
+    })
+
+    it("order 8", async () => {
+        const tokens = market(ETH, REN);
+        const buy = { tokens, priceC: 200, priceQ: 40, volumeC: 1, volumeQ: 0 /* ETH */ };
+        const sell = { tokens, priceC: 200, priceQ: 40, volume: 1 /* REN */ };
+
+        // TODO: Verify - should ETH volume be 2e-14?
+        (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
+            .should.eql([100, 2e-13 /* ETH */, 2e-16 /* REN */]);
     })
 });
 
@@ -221,7 +231,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
             volume = volumeToTuple(order.volume);
             order.volumeC = volume.c, order.volumeQ = volume.q;
         } else {
-            order.volume = tupleToVolume({ c: order.volumeC, q: order.volumeQ }).toNumber();
+            order.volume = tupleToVolume({ c: order.volumeC, q: order.volumeQ }).toFixed();
         }
 
         if (order.minimumVolumeC === undefined || order.minimumVolumeQ === undefined) {
@@ -229,8 +239,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
                 minimumVolume = volumeToTuple(order.minimumVolume);
                 order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
             } else {
-                minimumVolume = volumeToTuple(order.volume);
-                order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
+                order.minimumVolumeC = order.volumeC, order.minimumVolumeQ = order.volumeQ;
             }
         }
 
@@ -440,7 +449,7 @@ function priceToTuple(priceI) {
     const step = 0.005;
     const tuple = floatToTuple(shift, exponentOffset, step, price, 1999);
     console.assert(0 <= tuple.c && tuple.c <= 1999, `Expected c (${tuple.c}) to be in [1,1999] in priceToTuple(${price})`);
-    console.assert(0 <= tuple.q && tuple.q <= 52, `Expected c (${tuple.c}) to be in [0,52] in priceToTuple(${price})`);
+    console.assert(0 <= tuple.q && tuple.q <= 52, `Expected q (${tuple.q}) to be in [0,52] in priceToTuple(${price})`);
     return tuple;
 }
 
@@ -465,7 +474,7 @@ function volumeToTuple(volumeI) {
     const step = 0.2;
     const tuple = floatToTuple(shift, exponentOffset, step, volume, 49);
     console.assert(0 <= tuple.c && tuple.c <= 49, `Expected c (${tuple.c}) to be in [1,49] in volumeToTuple(${volume})`);
-    console.assert(0 <= tuple.q && tuple.q <= 52, `Expected c (${tuple.c}) to be in [0,52] in volumeToTuple(${volume})`);
+    console.assert(0 <= tuple.q && tuple.q <= 52, `Expected q (${tuple.q}) to be in [0,52] in volumeToTuple(${volume})`);
     return tuple;
 }
 

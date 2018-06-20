@@ -52,15 +52,6 @@ contract RenExSettlement is Ownable {
 
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
-    event Debug256(string msg, uint256 num);
-    event Debug32(string msg, bytes32 b);
-    event DebugAddress(string msg, address addr);
-    event DebugBytes(string msg, bytes b);
-    event Debugi256(string msg, int256 num);
-    event Debug(string msg);
-    event DebugTuple(string msg, uint256 c, uint256 q);
-    event DebugTupleI(string msg, uint256 c, int256 q);
-
 
     // Storage
     mapping(bytes32 => Order) public orders;
@@ -300,8 +291,9 @@ contract RenExSettlement is Ownable {
         require(orderbookContract.orderState(orderID) == 2);
 
         order.trader = orderbookContract.orderTrader(orderID);
-        assert(order.trader != 0x0);
-        emit DebugAddress("trader", order.trader);
+
+        // Trader should not be 0x0
+        // assert(order.trader != 0x0);
 
         orders[orderID] = order;
     }
