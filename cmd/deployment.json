@@ -1,0 +1,464 @@
+{
+  "configs": [
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0xc6b3746e1b325A5f6a6963225BE18b37c14c6ff1",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "y/3ees8t3J58bTQ5jUu0T8/Fmtdxk+jR+IX03mJodG8=",
+            "x": "BG8PgSde0FN6xf+s+OCiLo31ZVaM4ilSRDFwPXYCsVQ=",
+            "y": "pgTRAkdaPyQ9HtAPqxTKvsEQwZlMQTV+573r8XEHTU8="
+          },
+          "id": "f560a150-cb06-4352-9acb-20344bc7c3e6",
+          "rsa": {
+            "d": "MW6IJqb7d8uCtWHba1aBHuk0S6lsp3VbWivAGt2uHgrXNQEExToS4xBcE3JG2uy/s0IrUXL/YUY5byeMftQi1fFuLaHsvZ9H0fDwN18YfNu6+YFSBKiDgRCLdbx1Iz+g77681hLGbk2MWLBxrDH9hKg9iuUUpSHYvBoUbfpyxRY9Wa7vpTNqI4M7yng/ADXuyp0xCyTWbNmuzo1CILGFbboOIcp79rxJp/9IpKwxqMERaqUZYNyGE3l1rG7/KKgrJ1Ig8y5d2Rq+eO6U2ML+vvTf5T/p7yWaVZSpjUFLNgyXcJdJ894qLrnYmhN1OuRN7EpXMBKb4DVXKwpf4ONYOQ==",
+            "e": 65537,
+            "n": "2DgRuKsIgUolF4mBRrfAQlVh5pI6R0h5x/oGTFYy4KEbwxv3SlJSi4L74QMQRPPUDgrgZsLCwFBIQ2dzLvI0sdYBLhUxbBHLSxsnA0Bt1AY3af1cUMH2oTDBYm5kBEAcJabsYcs2eLrC6+c7P4mFQ9gxZeUHxxymqAD3RSDERsK25CTX9GoQ7MzmhBU1WJV3L22fP/3gAqya9K99+p3l9OD2ODR7cHooaFmECunLMdYyvVdONLNGls7EDdhvqKTjSJQg+JpnSAtxR6lyQw+WaOBT04BW93ZqJ6RjcSaEtSsgvFvUuvByAmh7zW4upcacqcGggE8EMQ4JEXHVCd6xNw==",
+            "primes": [
+              "4SE9GPM8b5bueYIxq5eFmvF3fQeCC0p7uM+GTKDgnmQEvVWiSzLA58Sw+kFQrqS8VCB0RTEOKHzwWKPRia8fEv46rBuk6cKJ+0XcrNfyOV0VPBrdWxXO6uPzXhcQw6vhea7fNDVPNXm+l25w0q3Ut4Phr1lPI5ssCla1gu8ZDBs=",
+              "9d4IcXLif0RiK8cp2y2pclVent/lCXgq8XwCEjzaVz8hJlCuE7iEQxPlw3zeFQjB36SVdtgLCW1OzxiMnt5ZrwP7/cSoPm6Mjplv/2/MibFUS8e+dIH/XMO7+IWN8kFZsB9Li/KenxaC6cnlXYATx6W1PGAE4mZUI++xa9TnSRU="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MJpR3iD7vLq4GRkiyCf36uxamYCic",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-7ad76705",
+      "avz": "us-east-1a",
+      "instance": "t2.medium",
+      "ip": "54.83.142.110",
+      "is_bootstrap": true
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x434ed5199FcDE51a6c25e46773cdADd6f701ECf4",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "8hAyMjHimYBQhb11ozIRddC2xRtv+IV1CPNVCcn5mOY=",
+            "x": "/QgwjbxaCj4gUKLX2Kz+H8DiTgC2RbWULyomuGtGOgE=",
+            "y": "KCvP9rPkv7YmykL4HtXFu3OZoF9lgoOrmCUkjOeOPsg="
+          },
+          "id": "4afbf99c-5bdc-438b-8b62-086adc2c83d4",
+          "rsa": {
+            "d": "CPzJndXe4Z0FkNASIezJrq8sSJ3BbPZRIu8u8uzDjAwmwH0m2Dx+TJePTRjB+QRTEsx6qz1PV6Sab6amX2pjF6Lh2BXUI9njf+3iIPFx/RFfG3YvD53xYEd++/hwOc2E/vCMwGrlLDu0TOcnha2LxkR3fk0L2FBCNdfOR9Tzkra09y3flkKTDyU523y4g9ICt+/gq0To8V0MP/D0Z/Xq0IsKrTeC3MYvuP/039fcMwbWgAfRUdQsVI9qy/h0H3nNsVJafUmKUI/Oj9J12nT9keOIYsqwBVt/yz4jKPy3XgOc7M7voNAdEpZxaZd9PvamY5pdMJ5/05SzmVul42kdwQ==",
+            "e": 65537,
+            "n": "v/w2Sg2+idaLVZTFwdQ+XtyI08duCVLzFmOetzbxtzajRBSjVA3lY54ydCf5eQQDQ7ex3/TeCQHXoqK2vk+lYkrjNbWWq2Ro9G77kCb2Mlh2jqBrSi4kkO2U0OP62MLR+nR1kSjaNiTCTbjxYjeG06EF564SeH+1vr/tR1y84n3efHjzl+vy074K9033s0KThvc8xynCqRRIDKCjUsycC709SQQAgZcph+zhIbpmT4LEE/PMgg3Zb2stRWRr8W5P5UTh0Y55XehidHRBp58OG+OVLLGibEvy4Q817/PjZABFz+94T4Y54Hko2HZw8xLgPfINL8426ja8O8c2KBUkfw==",
+            "primes": [
+              "0s0zeC9FObEMoy144rjSyhARV7v7BXgYRHDyWLMHNIpYYRuqAYKP9iT4AzGRo/Sq9d6IoRhFzC8ZZS1tk441H5ZNL6075zGY189OB941+oCdXRvzIuufPy6Gwd+nXI1c2cLBh/unQTh7Y5I6QWhBPzwjLfOv1ryJKWxujkqp+dk=",
+              "6SYwjsGWQiuuUV3PaGAGcC+WvbryTzEm73/gqVZ7aPgPewd0BftE6AXcreRqggfQq0HojbzD3cuFkb2TX+c8GFmk7+s+6XHkJDWV5e85AwL77sa5lzJHeWSanDBZ2Q0grG78K8JepagIHg3Ayd9FVWM0muWy3YBojUw9BBA8Ahc="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MGzFA6kTmSYSU7BjZGYK1jTZmmNJ7",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-331d3bd8",
+      "avz": "eu-central-1c",
+      "instance": "t2.medium",
+      "ip": "35.159.11.84",
+      "is_bootstrap": true
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x270DbC5087d00577Ca35A87972dBcC72756810C5",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "2oQNlnx0OuZVIla35xnScWjf4BQvUidoHPQuWeQxo1o=",
+            "x": "njXv/SHtIjB6bIPQV2FeU8r0/aLf0uk+0gbd9gkWnuc=",
+            "y": "lAoKgnb9Z0p0dpx6aok1a5DPI4Khp7nRdJqDlOmogzA="
+          },
+          "id": "cb77817e-6ba2-437d-a3ae-30c919238091",
+          "rsa": {
+            "d": "Dt1Zj0TAAEZJH71EKi5tLufo3/v4QOQWuVGqn/tynfYH+JriWo+i6hupuxJppKDL0XeYziYT0710ObRdPSraWuQa3LEYrxt8pm7Rr6LQYh82wnK+6aQj9kEbGRIu6Nm2nXGFmo7NFO9Sfyc9XcpxCzvTVReduh+lWuczdNg1vWLVUA4zqWRe1f4TVmktv7I6yjQ+qI2EZ63j3vRG4/GgXxRGimCVGh4WO3gRZEgXum8QMeYQlJ1YnxXv2KzBKDbSB4FP5kGDEbS0V/a5q8PdCgSOmiHB+1ZcpUFuIvx1NLC6LPksS+YzV6C61slXz1Yi7petC1RnGp1yWHJTM8gsZQ==",
+            "e": 65537,
+            "n": "19ygrinSVncWonuKqU0NogMM++gwYOfeub1m0pFAAk5G1DM4aPDTHbMvaDZFCWJxdwhaodRvDqan+MXMA2ihbMSYS44smPC6Kr2U7dHTsbJWM+6bG69Qg+O21bL3YTSNw8QLWXpy6O+TAGHSyrlsuTMkL5bg19wexq67wyv+uqo8a82IC9GM2LxL8ictDquUdTqGClo2fkTatf9fOBYfM5m6nF6tcncflmvo5UOkxnTCUbdvIaC6cceTQcNPOnYll6AIeFhU0WED1Akw4JO7fA1mwgxjwH13efWowS0RSer5Q3LvOZNh4WxcI+jg9TX24iNc2WDZCUQm6mR6PJInkQ==",
+            "primes": [
+              "6rEG9Cvf00VxSLWcqovn7YyhCmwTNJQzCI6XzA1BjX1yFaPIMeyqhcGJhuGYFX3G5ql6JGYj1CtKUEcxlTt0LVdMzUaENUHJY//oVcqi6XZbbmphdwzIaGZLctc3aFHGN2coCQj6c28bwyhqI0GQFcHOi4TncmKDZPQNm0Nvw8c=",
+              "63XwZmeD5HBa/YlRQ+S6xnrVrQmIz5aNu96su0JmDQxlnBW8zSq+rvVe5vU8CaqnsjF/zZ18CQX2FvtxWJneRqB0ZHVO25eL76jX3xXaid/wciYR0T3esi7U9YHkZ50ajerZ4zxsupwPc2ax7gy1k7ZHHGB5fWWoe0n4gB91iec="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MGbQzE9Umw4enrwgpNGdZUqPcbz9r",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-1118397e",
+      "avz": "ap-south-1b",
+      "instance": "t2.medium",
+      "ip": "13.126.252.99",
+      "is_bootstrap": true
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x4A2C38569E507b1DdF8F163eEDa298D117CE40aF",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "r3WEompiqgTdk4UmbvIuqmtFMU9rmT7YxeoKYuLvQY4=",
+            "x": "+mQdJnxcXtEu5j+xr8KY1VAbLGzvY1ZrN0xCLTfAniU=",
+            "y": "kGSAzVx+dKPedzXYPtLqtkC10zBq44+WpwZrmgE1Vmg="
+          },
+          "id": "00a032c9-752e-4bc5-a296-62e23e06f1a7",
+          "rsa": {
+            "d": "l9USIm5I1ACa1MEwlAL0wvJwl4JnR9+o8Ay1hOeab7Rw0vlZsqYkaEsWGtWl3hqdG5sKscH7A3saloLNq4RzTzrghkmxL2Rp6oFpYTaHSY8yztLtwbYD+5rKySQskkFQu1QR4DfOhKzHz47yvJqVHtyZHSs97rtmqJRz6NO3Wjt6ayGSaV7zFHUOVxSseqofmq2dv7cBKYzChDzGKKeMrEG2fxgMVX/D4MqBtV8htJxZnvpXMZAUtQhzGtVlyYihj620LnpevhEJm5r/R7HviE9hyHbm+OpKAcWuzxCxglJYy8r1PXcSWsxVTck9ColS8a/HRPTfyCJEyrPoebHtUQ==",
+            "e": 65537,
+            "n": "t4UZ8RxR/lXbst76350Um8i9BFpmZkBgKhqbnblpZJgNEO1W42RlgMsNGf/rF6bf8oQupsEU0G6pMeXVspaUUS5SF5IB4l3SHLZls8lUDkoP2F3/KaCuvOXs6mxFK7l54u3mKARpzMAbevHQQ6xwZTw9jobxfa+LTisXCEs0HpiM3+etOOpv3Y3nG9Z0XQ2HCtSK0X+TRirDCA3rqp5hRpOu1SAah8Uq6CRTtBGtthEzzotm3HJPczbeHheY9YZ8izsCkDzMdxxN6CtOvYXtRQIOVvrWWq14HCNFjHkInWSynFZ/nEfD2hmxvSIa/o1GHm4hZL4tTEerGfFvSchLXw==",
+            "primes": [
+              "6Tq5ipntFwy/qvCGKzKGrulnwdd+lqoLrxO5VLgZv2ixbRtU8Iw9mrieWiWRWsgX/n/JlUKP96TcYl9eNxbtHtW1ukriIOv2yUNqpMvgEIhYWG8MHSQgwibhuz3AP1WN3sQkvQq8TrM4E66f5kDpot5Ubc7YSDFUkABsqVdsbXc=",
+              "yW/zdHPzw9pdp15LoLpaOcBk3+qYJL53Ic/Rfi0/yt+Hnu/Yt5ga/0Xz9m6AEFva0fGgl+REz8WkRhWzIggUWV5d4fsEf5qdbfV2Xj80owkNGJH3Z3QB0jmRJAATJZHyfWA0loelrmUcb7S5PCZVvdFYwGQqqeOjUt1OzUa261k="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MH5ntFNfCSzm86YHCRBX5neTELgsQ",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-e8da8984",
+      "avz": "sa-east-1c",
+      "instance": "t2.medium",
+      "ip": "54.233.239.4",
+      "is_bootstrap": false
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x3728879cCb484E57a88BF8AA7616b788BE2E2610",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "JvPDCRQPEFbg6yisrgzHeRe9wgE2nZ5cXgxKvfwtZf0=",
+            "x": "+m8o5WHVYeff2O+TaxXHEII4StyoHOmkiXsyaiv9Noo=",
+            "y": "nbcXV4rjoYu3jbAO2b5iSl9glqVPZS2z20z4DFobLnY="
+          },
+          "id": "2c549ce3-b371-48ee-a0c4-9e1b73d75c2a",
+          "rsa": {
+            "d": "TS36ijxvBwvHoQewXlm8vhbiJ4lpJlt5yw+nyAPo8GADN2EpHuOGSGGe3Oeo6/BBL3juZMdQlivf2E4KmNRcUMpO6KoJnz3e2mdqd5Q5snQY1f2kilLX5224xWtTL+o6k+IP4O7ILVc2RCc+XZNB9TQ6/OOiA0lQWm0NpU/04hiq+QifmKzIVE9n30ARsXBI7WNHkaLmEg7+sf4n91UeMHKdYcI9yuQk3Hh6rP1sCMVMARz5edib49svDaSx9kz6ctr0Wrl4soM+v95fcfA4N3T7+1ZlXvtjguz4X+z6zYxl+VbNsRXh07Mg7y2uGg1IMd7aPoneJvLO6XS8XnWd6Q==",
+            "e": 65537,
+            "n": "u2Eg1Y+JX9RwVNCTi8oCxH8VGHHPQI0eAtvbRsN8Gt3WE6dQcLWG6aMEBqmVef00GanoHhkgICKAXx6Ls5cfU2K4p5pbjDgzXZ/h8ksVjZtkL3q5AWqsbuXFMY/o5AlubY98BE/TDIgRGjU+7AFJDAbn50DzwYQG8IRkPrh+3zonfQ4k9dee1Fab22219sAuiXUqvnyjrVtmK0ERMxhIHAPjFIwyalfdu1gmo85oGH1HsLgv3LEZhr7jch/LfHpnBDlRDzVwBmkm2DId7kbvk2FMj+AFTZfZpAvltRiGjlXc5RuPfHqGzQDjWsN1pGKlbyTz2RECaxvSMDi3U5BLyQ==",
+            "primes": [
+              "yeQYWR3Yy7XAvm8LvEaTg0u6BVMArAZsSQmn/cqt1WpS/76CykY1dqeGK/vwNmTimQvdCmEEkFbkQclQwnpOIIxgmriF3fAthddgvJ0F1Kpf1usPCBgvEeSra1Xcc/EE7IpPJlXmL3qxgZyaFrx0M3YGtk2AojyjwwifKkdP3xc=",
+              "7ZlhmYfMcDbY0T1/FL1zo/+v/AF9wMo4y0wm+DuWCgSz4u8pj3fk4B7AZ5bafF+fuFntKN7VZMjVRixA79RglGMLkh1GGYM840OSW9U7Krtb+er47WB+2ncWoF+tUZ5UOYhU0BsIURXVarYdGxT3ITzlmnPCVCYJ153Ex2Eq+B8="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MGpRkYHtqccWVB7QGL6uwVMXPJgHm",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-b64866ca",
+      "avz": "ap-southeast-1a",
+      "instance": "t2.medium",
+      "ip": "13.229.99.88",
+      "is_bootstrap": false
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x681aaEace26f48F6F08788A9A730ab8eE2fD9E20",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "7bmUHwiQW/ejA4gcUDWo/6CeUWGDhxmULzy/wizGm/w=",
+            "x": "RETzkt1yBpt4f9G+UxclQxYCG7SdoxvwqLQiUVMbtyE=",
+            "y": "8o2/ML7HSTEbiFp/750rgBqLLVukWFRXi6IpEvBF/fU="
+          },
+          "id": "67155d0c-789c-47df-aea2-b9d9eb62ff2c",
+          "rsa": {
+            "d": "ROGgCwaBSftoKvaziOp4E6wX9QaSiYNfFsIXqz3jPEQGDGo+kxYy+QcxA3267S+Lej+ktV/GDwZ1EHDcsk56qN5x2mpW0AjaxfRhp1SJ5jdhY64yjvLhAp7Wp9lTaqWhuHmJg0VZxmXRUxRDs28o7gj4VTGN4JnTYqMnc+FUogEJ3JWVllMjiHVNVU4ogDvsoeeIFC2spXmiqnJB6uYCkyccL3LDAyztFO4CBtXV3R1iTvziGfx+yI3iiwUp/DK3MeNGSv3wjX6f7kh/7SwzxKqwlHCpOmero3DZtJzJlG5JGnz7vENHI0xXN8lweCngYHf+ykPCi31ASAvFhERbIQ==",
+            "e": 65537,
+            "n": "4vNi48HQxdlJ3dP9k1MW7G08q9/sBtHrdf7spcmXV4vJYn+8bFM4F0wM2mp3meT0m3XC4UJqXn/NOdmv9ncqCdI+Oa+7WwAgUIE2EFJiffaz4wLY7ZnwckjwS14IXYCQiHcm0FpcotPqi00W3coUK4aJTQAnxU7ushQG7/yb3+et0P4qSSV0Z0zM8GK2qUzjDb0LHjNAUcx5iNC9FrsLmN75If1gNfp+FVIUsF/UiPoGrM93OBCQ6I7eCj+dVOvjgJ/GUFB+IZOnUMYTn8SMaPBLdKiRY2Tt8JewEorKJFrvS9j+/xT3c/a61DNNwwFFaNMVMDtvR5loH53b6h/YfQ==",
+            "primes": [
+              "6JfkLnXWIznc34pdtE7RwEwRRxnF0aQ3vlKfkmBx0FhZVBAa+UnfJ47anaL5oV4QvhI/SeYsjDkLVynVs6s5O/hXcjUiq2MK+rsdWzcJP8qjfr9Jb9o7qvgRsscyF9CzzqS5R0S32qwtEt/CAP0TdBPvzq8yJdF0PayWBEZ1Lhk=",
+              "+cohH9mh8ftzovm8mrE4ZJbqC2YaJuLv3OrjzLt19kQXVJk6PB30IdmA8CL79fHrSTDlmFLs7WpuXfn9jxdNyTtC9ZjniEjv5myZB2kGp5yo20nnHwZ3WB1xCPLe6rVDAPt5Q+gKKMFO0RlbymQPWa+x2clfTPIz/sOmBaL/wgU="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MHVyfB2r1FGkvewU1KE5SDiDZcAtP",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-fbb66399",
+      "avz": "ap-southeast-2b",
+      "instance": "t2.medium",
+      "ip": "13.211.219.222",
+      "is_bootstrap": false
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x545893aeed88c9aa38AF53754e17A64C4ad23028",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "muK+iq64H6M18ypULGndSwwxVZs8yu6/HNVZTYgo8ik=",
+            "x": "hm3pfk2yetosdf7uCWcZK0gFske7E5xDxdLDPUKkSBU=",
+            "y": "451mb42N5CY3RPZQv9J8zFY3Z4Ahnum5W6vyVsAT3TE="
+          },
+          "id": "ced6cd7b-d16a-4e5b-a3be-377a905c1728",
+          "rsa": {
+            "d": "DXDaySLXflOb/kkaXoAwoMRjRmEkYDmHyq7kHrZBH2QDo2GqVmemOme5JwZ1DR5L8k3Be2lby+5kAzagsstLauMojt3z14tbLTChJCil2ydxjPx9qwsw/YGzOhUAKxpwEy/AElrpyEqu4QqeB3WitJahDKMrEWycdc8jBLuXuxVtfAtcLcoCfd9lcXXWrVPw+ywx6Cjs9j4kmZOZBJDaTgeYfn0WkCRvi9PWBWg7Cw0WWApMum15tM/A/U+kPQrbcWk2Kt+JkeUW+pLil7Oj1jikWk6WiZdHh/3LlcJUVV91XzsmgaWMtABQLmElETI7V6EGVr/HVewt99kE2q7JkQ==",
+            "e": 65537,
+            "n": "rOxpb1jIRoNiF8aKe8Gjx5BvgS1EhCqeA1nli7pwQJW2MesuI0dLLzzJXCX/LLHBg0BqmYWJ3VVUnB/1N2GBd29wK79oTfSttZzQGJ1MrfLEnrVAzkphIM0T/ZlkNs8CmCn538kg07LELrZHd31x/XQr/Jf0+T/rNyjzBxECcj6WRmPqeuoeWFMuPoUMujzinB8z0pZ7//Hus+Ge2Nss2Tpnl0RUJe4zFCyn6S8Kbb51EUtRh0w81XG30r14AuIqhn74ymTnCEzMt5BVVFDjPxHEcbYBv8AcJL0d0SmYLF65sFQFfk6PYWP0eC01aKwTzg6v/7aOaaDJ4xilq7+vdw==",
+            "primes": [
+              "wggS24Pce0RKRO5Ms0Ys4qxWjiiuujH/khkv9BRI9n7Zoqa4jeOslQ1g8ej9pphz2d6RcDK64VFiu9m+tZl3NBcdmFxiRNXSr2rOwtoCHU6vLeNtYMWGHBhQ4XWNz3tw6Z/oL+wxJvEieWPScjq7omGxCjCrFUc3AqBUykoIKm0=",
+              "5CaNwWntW+w9AplTyCg/H6RXhMdp3JUAl4R4pdWqFwzJ+jS2if3CL41pBG/Y6w5GNtUEnw6z7SQZJVRT0FkuOt6DEaAUTRfou4UmOZjZ5x1KCOOR28RcuGvXTPbmwpMwNnMYn/VqlRZy7DgrjOL+Yw6r8mi4JVLiMgBg62C60vM="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MHE1fcesby8AJ4DgJUQaKLppNBFpB",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-fbb66399",
+      "avz": "ap-southeast-2a",
+      "instance": "t2.medium",
+      "ip": "13.236.178.9",
+      "is_bootstrap": false
+    },
+    {
+      "config": {
+        "keystore": {
+          "ecdsa": {
+            "address": "0x774Ac182859dB4D1E375897aeb9FD4C364B22C26",
+            "curveParams": {
+              "b": "Bw==",
+              "bits": 256,
+              "n": "/////////////////////rqu3OavSKA7v9JejNA2QUE=",
+              "name": "s256",
+              "p": "/////////////////////////////////////v///C8=",
+              "x": "eb5mfvncu6xVoGKVzocLBwKb/NstzijZWfKBWxb4F5g=",
+              "y": "SDradyajxGVdpPv8DhEIqP0XtEimhVQZnEfQj/sQ1Lg="
+            },
+            "d": "UGE9yqq3yq2mT7PlN0AnNz3mXw3xrD277FhgLUMQa1w=",
+            "x": "eEp6TkebZ2KZZPmgzR+OK5uXFdW50uFTDdmABW76GoQ=",
+            "y": "anBLrxxiokZEuWHg8lD4OKoU8Ju9Ug5PmOYVhdBijRk="
+          },
+          "id": "421ff2a5-49b5-4b0a-863b-bff28b725947",
+          "rsa": {
+            "d": "BDi2Nz0e2tljJ9yFyLzDmGu2jgp3mU/4Z62P1jD+NHenXAQC9fAKIDY4RnGxsND3/kihDH5zXBfIXc5olNJsF44Cp3xeDzC6d8AFScMwMZ3hEEoiwAFcVJs8/hlMuW7Xoe7RwYW9qpoOVSnbOcnyUPBBkzwo3pH3xYZHlvoUPCobRoEP/vtdRb60WFfC4zVFk+ZUb5Frp7Df5oGnOkXNF7Ke1dyIGBB05Izk0aOhh/hHm9rLNzpVKQF+B29fo2ksmDZFkeJeXNRxzlM1zaO2hOcE0lvxpqX3emypM7KKMTBrRwL6TW7zhh4fgwkHyR0K1eFPy074V0Omy6m0Gh2RoQ==",
+            "e": 65537,
+            "n": "1872zfIKYLKFpBRMIg5xqMxGo/K/qA0fewBNbf57TKbnknIEYgv+c+NXmI40a5BWHa2YYvH+HJV1VZ8HbzoXjv8+M7k4OUSf2I8vFUMWIF0wwe/VS4EQxGgoNGBp+x72+BpL8x6XCFTas8HGa0RQc4iwbC2MueCEfdBMIeF9c+T5km7yFX2D/Yyw/L4nd9I9niiI4iK2MUPodR5Oomk4pY8xGZQCc5nLmbzAKmFd8R7e/T+0txLUyf/LVH/imOmIpfm/CgyMxlSZlGQAPSExBdXpOYQBueydmW0I/Sz8p9zkjhEMipZAhX4Ww/ZuvDKRgTSIZLkGh50RmHiLqIafIw==",
+            "primes": [
+              "2YkOTlZyGFqykZWWGVLFHv5XDr05UBsh1alaO8V8uSum6QpDJ74aLF9uygwe0N+QTbBWUT6PE6LWr7pzb+yLqDmCiSyWZSmzW5o55c04IfkarEm2L52CVCs3DWtu5tE2Bulc9AZSZQne4WOpIRqS1WvnX24MFfQnV6j0AZoVx0k=",
+              "/fe8y6zNESfZTlH34mtPQlWNhCYjdqNoC7sUzPyrIIZYZlDwnRYJnW3d3NngeGF4SWLMBTa1MxtyySUml6icLaA2J9sT2+P0++0ueIUshYqgiPE/pBCCn54bss+yhoRCIUBowCwm6T9i+gmHcr6c8wNM01+PDnt/suI9GRGzlws="
+            ]
+          },
+          "version": "3"
+        },
+        "ethereum": {
+          "network": "kovan",
+          "uri": "https://kovan.infura.io",
+          "republicTokenAddress": "0x596F8c39aEc9fb72D0F591DEe4408516f4C9DdA4",
+          "darknodeRegistryAddress": "0x7b0E5c2945020996408fDf73Ef1846D7C0DCAc78",
+          "orderbookAddress": "0x9aC38a5F17Aae6d473B0F87Bd6E42e8958043C70"
+        },
+        "logs": {
+          "plugins": [
+            {
+              "file": {
+                "path": "/home/ubuntu/.darknode/darknode.out"
+              }
+            }
+          ]
+        },
+        "address": "8MHiFTCL15DSSf6BywEBa124rPHvXf",
+        "bootstrapMultiAddresses": [],
+        "host": "0.0.0.0",
+        "port": "18514"
+      },
+      "ami": "ami-f3211396",
+      "avz": "us-east-2a",
+      "instance": "t2.medium",
+      "ip": "18.218.111.104",
+      "is_bootstrap": false
+    }
+  ],
+  "blockchain": {
+    "ren_ledger_address": null,
+    "darknode_registry_address": null
+  }
+}
