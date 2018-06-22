@@ -4,30 +4,33 @@ import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
 
 /**
- * @notice Orderbook is responsible for storing the orders and their priorities.
- * It's used as an consensus of which order should be executed.
- */
+  * @notice The Orderbook contract stores the state and priority of orders and
+  * allows the Darknodes to easily reach consensus. Eventually, this contract
+  * will only store a subset of order states, such as cancelation, to improve
+  * the throughput of orders.
+  */
 contract Orderbook {
 
-    enum OrderType {Midpoint, Limit}
-    enum OrderParity {Buy, Sell}
+    /**
+      * @notice OrderState enumerates the possible states of an order. All
+      * orders default to the Undefined state.
+      */
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
     /**
-    * @notice Order stores the relevant data of an order.
-    */
+      * @notice Order stores a subset of the public data associated with an
+      * order.
+      */
     struct Order {
-        OrderParity parity;
-        OrderState state;
-        address trader;
-        address broker;
-        address confirmer;
-        uint256 priority;
-        uint256 blockNumber;
-        bytes32[] matches;
+        OrderState state;    // State of the order
+        address trader;      // Trader that owns the order
+        address broker;      // Broker that approved this order
+        address confirmer;   // Darknode that confirmed the order in a match
+        uint256 priority;    // Logical time priority of this order
+        uint256 blockNumber; // Block number of the most recent state change
+        bytes32[] matches;   // Orders confirmed in a match with this order
     }
 
-    // buyOrders/sellOrders store all the buy/sell orders in a list .
     bytes32[] public buyOrders;
     bytes32[] public sellOrders;
     bytes32[] orderbook;
@@ -35,25 +38,24 @@ contract Orderbook {
     mapping(bytes32 => Order) private orders;
 
     uint256 public fee;
-    // Republic ERC20 token contract is used to transfer bonds.
     RepublicToken private ren;
-    // DarknodeRegistry is used to check registration of the order confirmer.
     DarknodeRegistry private darknodeRegistry;
 
     /**
-    * @notice Only allow registered dark nodes.
-    */
+      * @notice Only allow registered dark nodes.
+      */
     modifier onlyDarknode(address _sender) {
         require(darknodeRegistry.isRegistered(bytes20(_sender)));
         _;
     }
 
     /**
-     * @notice The Orderbook constructor.
-     *
-     * @param _fee The fee rate of opening an order.
-     * @param _token The address of the RepublicToken contract.
-     * @param _registry The address of the darknodeRegistry contract.
+      * @notice The Orderbook constructor.
+      *
+      * @param _fee The fee in REN for opening an order. This is given in AI,
+      *             the smallest denomination of REN.
+      * @param _token The address of the RepublicToken contract.
+      * @param _registry The address of the DarknodeRegistry contract.
      */
     constructor(uint256 _fee, address _token, address _registry) public {
         fee = _fee;
@@ -62,13 +64,14 @@ contract Orderbook {
     }
 
     /**
-     * @notice openBuyOrder opens a new buy order in the orderbook. The order must not be opened.
-     *         It requires certain allowance of REN as opening fee. It will recover and store
-     *         the the trader address from the signature.
-     *
-     * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
-     * @param _orderId Order id or the buy order.
-     */
+      * @notice Open a buy order in the orderbook. The order must be in the
+      * Undefined state and an allowance of REN is required to pay the opening
+      * fee.
+      *
+      * @param _signature Signature of the message that defines the trader. The
+      *                   message is "Republic Protocol: open: {orderId}".
+      * @param _orderId The hash of the order.
+      */
     function openBuyOrder(bytes _signature, bytes32 _orderId) public {
         openOrder(_signature, _orderId);
         buyOrders.push(_orderId);
@@ -76,13 +79,14 @@ contract Orderbook {
     }
 
     /**
-     * @notice openSellOrder opens a new sell order in the orderbook. The order must not be opened.
-     *         It requires certain allowance of REN as opening fee. It will recover and store
-     *         the the trader address from the signature.
-     *
-     * @param _signature  Signature of the message "Republic Protocol: open: {orderId}"
-     * @param _orderId Order id or the sell order.
-     */
+      * @notice Open a sell order in the orderbook. The order must be in the
+      * Undefined state and an allowance of REN is required to pay the opening
+      * fee.
+      *
+      * @param _signature Signature of a message that defines the trader. The
+      *                   message is "Republic Protocol: open: {orderId}".
+      * @param _orderId The hash of the order.
+      */
     function openSellOrder(bytes _signature, bytes32 _orderId) public {
         openOrder(_signature, _orderId);
         sellOrders.push(_orderId);
@@ -90,12 +94,14 @@ contract Orderbook {
     }
 
     /**
-     * @notice confirmOrder confirms a match is found between one order and a list of orders.
-     *         It requires the  sender address to be registered in the darknodeRegistry,
-     *
-     * @param _orderId Order ID .
-     * @param _orderMatches A list of matched order
-     */
+      * @notice Confirm an order match between orders. The confirmer must be a
+      * registered Darknode and the orders must be in the Open state. A
+      * malicious confirmation by a Darknode will result in a bond slash of the
+      * Darknode.
+      *
+      * @param _orderId The hash of the order.
+      * @param _orderMatches The hashes of the matching order.
+      */
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
         require(orders[_orderId].state == OrderState.Open);
         for (uint256 i = 0; i < _orderMatches.length; i++) {
@@ -115,24 +121,26 @@ contract Orderbook {
     }
 
     /**
-     * @notice cancelOrder cancels a opened order in the orderbook. It will recover and store the the
-               trader address from the signature.
-     *
-     * @param _signature  Signature of the message "Republic Protocol: cancel: {orderId}"
-     * @param _orderId Order id.
-     */
+      * @notice Cancel an order in the orderbook. The order must be in the
+      * Undefined or Open state.
+      *
+      * @param _signature Signature of a message from the trader. The message
+      *                   is "Republic Protocol: cancel: {orderId}".
+      * @param _orderId The hash of the order.
+      */
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
         if (orders[_orderId].state == OrderState.Open) {
-            // recover trader address from the signature
+            // Recover trader address from the signature
             bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
             address trader = ECDSA.addr(data, _signature);
             require(orders[_orderId].trader == trader);
         } else {
-            // An unopened order can be canceled to ensure that it can't be opened
-            // in the future
-            // TODO: this create the possibility of a DoS attack where a node
+            // An unopened order can be canceled to ensure that it cannot be
+            // opened in the future.
+            // FIXME: This create the possibility of a DoS attack where a node
             // or miner submits a cancelOrder with a higher fee everytime they
-            // see an openOrder from a particular trader
+            // see an openOrder from a particular trader. To solve this, order
+            // cancelations should be stored against a specific trader.
             require(orders[_orderId].state == OrderState.Undefined);
         }
 
@@ -141,9 +149,9 @@ contract Orderbook {
     }
 
     /**
-    * buyOrder will return orderId of the given index in buy order list and true if exists.
-    * Otherwise it will return empty bytes and false.
-    */
+     * @return The order hash at the given index in buy order list and a bool
+     * flag defining whether or not an order actually exists at that index.
+     */
     function buyOrder(uint256 _index) public view returns (bytes32, bool){
         if (_index >= buyOrders.length) {
             return ("", false);

@@ -16,16 +16,23 @@ order values
 contract RenExSettlement is Ownable {
     using SafeMath for uint256;
 
-    // Fees are 0.2%
-    uint256 FEES_NUMERATOR = 2;
-    uint256 FEES_DENOMINATOR = 1000;
+    /** 
+      * @notice Fees are in RenEx are 0.2% and to represent this in integers it
+      * is broken into a numerator and denominator.
+      */
+    uint256 constant public FEES_NUMERATOR = 2;
+    uint256 constant public FEES_DENOMINATOR = 1000;
 
-    // Republic Protocol settlement identifier
-    uint32 constant public identifier = 1;
+    /**
+      * @notice This is a Republic Protocol settlement identifier for the
+      * RenExSettlement contract. It is used in orders to specify which
+      * settlement layer is being used.
+      */
+    uint32 constant public SETTLEMENT_IDENTIFIER = 1;
 
-    Orderbook orderbookContract;
-    RenExTokens renExTokensContract;
-    RenExBalances renExBalancesContract;
+    Orderbook private orderbookContract;
+    RenExTokens private renExTokensContract;
+    RenExBalances private renExBalancesContract;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -59,11 +66,13 @@ contract RenExSettlement is Ownable {
     mapping(bytes32 => OrderStatus) private orderStatuses;
 
     /**
-    @notice constructor
-    @param _orderbookContract the address of the Orderbook contract
-    @param _renExBalancesContract the address of the RenExBalances contract
-    @param _renExTokensContract the address of the RenExTokens contract
-    */
+      * @notice constructor
+      *
+      * @param _orderbookContract The address of the Orderbook contract.
+      * @param _renExBalancesContract The address of the RenExBalances
+      *                               contract.
+      * @param _renExTokensContract The address of the RenExTokens contract.
+      */
     constructor(
         Orderbook _orderbookContract,
         RenExTokens _renExTokensContract,
@@ -74,7 +83,6 @@ contract RenExSettlement is Ownable {
         renExBalancesContract = _renExBalancesContract;
     }
 
-
     /********** WITHDRAWAL FUNCTIONS ******************************************/
 
     function traderCanWithdraw(address _trader, address _token, uint256 amount) public returns (bool) {
@@ -82,8 +90,6 @@ contract RenExSettlement is Ownable {
         // trader has open orders for that token
         return true;
     }
-
-
 
     /********** SETTLEMENT FUNCTIONS ******************************************/
     
@@ -233,7 +239,7 @@ contract RenExSettlement is Ownable {
             abi.encodePacked(
                 order.orderType,
                 order.parity,
-                identifier,
+                SETTLEMENT_IDENTIFIER,
                 order.expiry,
                 order.tokens,
                 order.priceC, order.priceQ,
@@ -248,19 +254,19 @@ contract RenExSettlement is Ownable {
 
 
     /**
-    @notice Stores the details of an order
-    @param _orderType one of Midpoint or Limit
-    @param _parity one of Buy or Sell
-    @param _expiry the expiry date of the order in seconds since Unix epoch
-    @param _tokens two 32-bit token codes concatenated (with the lowest first)
-    @param _priceC the constant in the price tuple
-    @param _priceQ the exponent in the price tuple
-    @param _volumeC the constant in the volume tuple
-    @param _volumeQ the exponent in the volume tuple
-    @param _minimumVolumeC the constant in the minimum-volume tuple
-    @param _minimumVolumeQ the exponent in the minimum-volume tuple
-    @param _nonceHash the keccak256 hash of a random 32 byte value
-    */
+      * @notice Stores the details of an order
+      * @param _orderType one of Midpoint or Limit
+      * @param _parity one of Buy or Sell
+      * @param _expiry the expiry date of the order in seconds since Unix epoch
+      * @param _tokens two 32-bit token codes concatenated (with the lowest first)
+      * @param _priceC the constant in the price tuple
+      * @param _priceQ the exponent in the price tuple
+      * @param _volumeC the constant in the volume tuple
+      * @param _volumeQ the exponent in the volume tuple
+      * @param _minimumVolumeC the constant in the minimum-volume tuple
+      * @param _minimumVolumeQ the exponent in the minimum-volume tuple
+      * @param _nonceHash the keccak256 hash of a random 32 byte value
+      */
     function submitOrder(
         uint8 _orderType,
         uint8 _parity,
@@ -323,11 +329,12 @@ contract RenExSettlement is Ownable {
     }
 
     /**
-    @notice Settles two orders that are matched. `submitOrder` must have been
-    called for each order before this function is called
-    @param _buyID the 32 byte ID of the buy order
-    @param _sellID the 32 byte ID of the sell order
-    */
+      * @notice Settles two orders that are matched. `submitOrder` must have been
+      * called for each order before this function is called.
+      *
+      * @param _buyID the 32 byte ID of the buy order
+      * @param _sellID the 32 byte ID of the sell order
+      */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
         // Verify match
         (uint32 buyToken, uint32 sellToken) = verifyMatch(_buyID, _sellID);

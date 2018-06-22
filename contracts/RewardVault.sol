@@ -8,41 +8,61 @@ import "./DarknodeRegistry.sol";
 contract RewardVault {
     using SafeMath for uint256;
 
-    // Constant address for ethereum
+    /**
+      * @notice The special address for Ether.
+      */
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
     DarknodeRegistry darknodeRegistry;
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
+    /**
+      * @notice The constructor.
+      *
+      * @param _darknodeRegistry The DarknodeRegistry contract that is used by
+      *                          the vault to lookup Darknode owners.
+      */
     constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
     }
 
     /** 
-    * @notice The traders deposit fees into the reward vault.
-    *
-    * @param _token the address of the ERC20 token
-    * @param _value the amount of fees in the smallest unit of the token
-    */
+      * @notice Deposit fees into the vault for a Darknode. The Darknode
+      * registration is not checked (to reduce gas fees); the caller must be
+      * careful not to call this function for a Darknode that is not registered
+      * otherwise any fees deposited to that Darknode can be withdrawn by a
+      * malicious adversary (by registering the Darknode before the honest
+      * party and claiming ownership).
+      *
+      * @param _darknode The address of the Darknode that will receive the
+      *                  fees.
+      * @param _token The address of the ERC20 token being used to pay the fee.
+      *               A special address is used for Ether.
+      * @param _value The amount of fees in the smallest unit of the token.
+      */
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value);
         } else {
             require(_token.transferFrom(msg.sender, address(this), _value));
         }
-
-        // TODO: Use safe math
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
 
     /** 
-    * @notice The darknodes withdraw rewards from the reward vault.
-    *
-    * @param _token the address of the ERC20 token
-    */
+      * @notice Withdraw fees earned by a Darknode. The fees will be sent to
+      * the owner of the Darknode. If a Darknode is not registered the fees
+      * cannot be withdrawn.
+      *
+      * @param _darknode The address of the Darknode whose fees are being
+      *                  withdrawn. The owner of this Darknode will receive the
+      *                  fees.
+      * @param _token The address of the ERC20 token to withdraw.
+      */
     function withdraw(address _darknode, ERC20 _token) public {
         address darknodeOwner = darknodeRegistry.getOwner(bytes20(_darknode));
+        require(darknodeOwner != 0x0);
 
         uint256 value = darknodeBalances[_darknode][_token];
         darknodeBalances[_darknode][_token] = 0;
