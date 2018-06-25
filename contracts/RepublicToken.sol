@@ -3,6 +3,9 @@ pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
+/*
+@notice This is NOT the vesion deployed for the REN token
+*/
 contract RepublicToken is PausableToken, BurnableToken {
 
     string public constant name = "Republic Token";

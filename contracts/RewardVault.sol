@@ -14,7 +14,7 @@ contract RewardVault is Ownable {
       */
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
-    DarknodeRegistry darknodeRegistry;
+    DarknodeRegistry public darknodeRegistry;
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 

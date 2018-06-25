@@ -25,6 +25,42 @@ contract("DarknodeRegistry", function (accounts) {
     }
   });
 
+  it("can update minimum bond", async () => {
+    await dnr.updateMinimumBond(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumBond()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumBond(MINIMUM_BOND, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateMinimumBond(MINIMUM_BOND);
+    (await dnr.minimumBond()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumBond()).toNumber().should.equal(MINIMUM_BOND);
+  });
+
+  it("can update minimum dark pool size", async () => {
+    await dnr.updateMinimumDarkPoolSize(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE);
+    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(MINIMUM_DARKPOOL_SIZE);
+  });
+
+  it("can update minimum epoch interval", async () => {
+    await dnr.updateEpochInterval(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(0x1);
+    await dnr.updateEpochInterval(MINIMUM_EPOCH_INTERVAL, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateEpochInterval(MINIMUM_EPOCH_INTERVAL);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(MINIMUM_EPOCH_INTERVAL);
+  });
+
   it("can not register a Dark Node with a bond less than the minimum bond", async () => {
     const lowBond = MINIMUM_BOND - 1;
     await ren.approve(dnr.address, lowBond, { from: accounts[0] });

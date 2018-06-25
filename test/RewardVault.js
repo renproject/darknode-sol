@@ -60,6 +60,15 @@ contract("Reward Vault", function (accounts) {
             .should.equal(darknodeOperator);
     });
 
+    it("can update the darknode registry address", async () => {
+        await rewardVault.updateDarknodeRegistry(0x0);
+        (await rewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        await rewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+            .should.be.rejected;
+        await rewardVault.updateDarknodeRegistry(dnr.address);
+        (await rewardVault.darknodeRegistry()).should.equal(dnr.address);
+    });
+
     it("can deposit and withdaw funds", async () => {
         let sum = {
             [darknode1]: {

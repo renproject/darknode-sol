@@ -40,8 +40,8 @@ contract Orderbook is Ownable {
     mapping(bytes32 => Order) private orders;
 
     uint256 public fee;
-    RepublicToken private ren;
-    DarknodeRegistry private darknodeRegistry;
+    RepublicToken public ren;
+    DarknodeRegistry public darknodeRegistry;
 
     /**
       * @notice Only allow registered dark nodes.
@@ -56,7 +56,7 @@ contract Orderbook is Ownable {
       *
       * @param _fee The fee in REN for opening an order. This is given in AI,
       *             the smallest denomination of REN.
-      * @param _token The address of the RepublicToken contract.
+      * @param _renAddress The address of the RepublicToken contract.
       * @param _darknodeRegistry The address of the DarknodeRegistry contract.
      */
     constructor(uint256 _fee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {

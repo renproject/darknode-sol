@@ -45,6 +45,10 @@ contract DarknodeRegistry is Ownable {
     uint256 public minimumDarkPoolSize;
     uint256 public minimumEpochInterval;
 
+    uint256 public nextMinimumBond;
+    uint256 public nextMinimumDarkPoolSize;
+    uint256 public nextMinimumEpochInterval;
+
     // The current epoch and the minimum time interval until the next epoch.
     Epoch public currentEpoch;
 
@@ -75,6 +79,10 @@ contract DarknodeRegistry is Ownable {
     * @notice Emitted when a new epoch has begun
     */
     event NewEpoch();
+
+    event MinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
+    event MinimumDarkPoolSizeUpdated(uint256 previousMinimumDarkPoolSize, uint256 nextMinimumDarkPoolSize);
+    event MinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
 
     /**
     * @notice Only allow the owner that registered the darknode to pass.
@@ -131,16 +139,16 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = 0;
     }
 
-    function updateMinimumBond(uint256 _newMinimumBond) public onlyOwner {
-        minimumBond = _newMinimumBond;
+    function updateMinimumBond(uint256 _nextMinimumBond) public onlyOwner {
+        nextMinimumBond = _nextMinimumBond;
     }
 
-    function updateMinimumDarkPoolSize(uint256 _newMinimumDarkPoolSize) public onlyOwner {
-        minimumDarkPoolSize = _newMinimumDarkPoolSize;
+    function updateMinimumDarkPoolSize(uint256 _nextMinimumDarkPoolSize) public onlyOwner {
+        nextMinimumDarkPoolSize = _nextMinimumDarkPoolSize;
     }
 
-    function updateEpochInterval(uint256 _newMinimumEpochInterval) public onlyOwner {
-        minimumEpochInterval = _newMinimumEpochInterval;
+    function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
+        nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
 
     /**
@@ -161,6 +169,21 @@ contract DarknodeRegistry is Ownable {
 
         // Update the registry information
         numDarknodes = numDarknodesNextEpoch;
+
+        if (nextMinimumBond != minimumBond) {
+            emit MinimumBondUpdated(minimumBond, nextMinimumBond);
+            minimumBond = nextMinimumBond;
+        }
+
+        if (nextMinimumDarkPoolSize != minimumDarkPoolSize) {
+            emit MinimumDarkPoolSizeUpdated(minimumDarkPoolSize, nextMinimumDarkPoolSize);
+            minimumDarkPoolSize = nextMinimumDarkPoolSize;
+        }
+
+        if (nextMinimumEpochInterval != minimumEpochInterval) {
+            emit MinimumEpochIntervalUpdated(minimumEpochInterval, nextMinimumEpochInterval);
+            minimumEpochInterval = nextMinimumEpochInterval;
+        }
 
         // Emit an event
         emit NewEpoch();
