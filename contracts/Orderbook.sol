@@ -1,5 +1,7 @@
 pragma solidity 0.4.24;
 
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
 import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
 
@@ -9,7 +11,7 @@ import "./libraries/ECDSA.sol";
   * will only store a subset of order states, such as cancelation, to improve
   * the throughput of orders.
   */
-contract Orderbook {
+contract Orderbook is Ownable {
 
     /**
       * @notice OrderState enumerates the possible states of an order. All
@@ -55,12 +57,20 @@ contract Orderbook {
       * @param _fee The fee in REN for opening an order. This is given in AI,
       *             the smallest denomination of REN.
       * @param _token The address of the RepublicToken contract.
-      * @param _registry The address of the DarknodeRegistry contract.
+      * @param _darknodeRegistry The address of the DarknodeRegistry contract.
      */
-    constructor(uint256 _fee, address _token, address _registry) public {
+    constructor(uint256 _fee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {
         fee = _fee;
-        ren = RepublicToken(_token);
-        darknodeRegistry = DarknodeRegistry(_registry);
+        ren = _renAddress;
+        darknodeRegistry = _darknodeRegistry;
+    }
+
+    function updateFee(uint256 _newFee) public onlyOwner {
+        fee = _newFee;
+    }
+
+    function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+        darknodeRegistry = _newDarknodeRegistry;
     }
 
     /**

@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
@@ -7,7 +9,7 @@ import "./RepublicToken.sol";
  * @notice DarknodeRegistry is responsible for the registration and
  * deregistration of dark nodes.
  */
-contract DarknodeRegistry {
+contract DarknodeRegistry is Ownable {
 
     struct Epoch {
         uint256 epochhash;
@@ -77,7 +79,7 @@ contract DarknodeRegistry {
     /**
     * @notice Only allow the owner that registered the darknode to pass.
     */
-    modifier onlyOwner(bytes20 _darknodeID) {
+    modifier onlyOperator(bytes20 _darknodeID) {
         require(darknodeRegistry[_darknodeID].owner == msg.sender);
         _;
     }
@@ -110,14 +112,14 @@ contract DarknodeRegistry {
     /** 
     * @notice The DarknodeRegistry constructor.
     *
-    * @param _token The address of the RepublicToken contract.
+    * @param _renAddress The address of the RepublicToken contract.
     * @param _minimumBond The minimum bond amount that can be submitted by a
     *                     darknode.
     * @param _minimumDarkPoolSize The minimum size of a dark pool.
     * @param _minimumEpochInterval The minimum number of blocks between epochs.
     */
-    constructor(address _token, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
-        ren = RepublicToken(_token);
+    constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+        ren = _renAddress;
         minimumBond = _minimumBond;
         minimumDarkPoolSize = _minimumDarkPoolSize;
         minimumEpochInterval = _minimumEpochInterval;
@@ -127,6 +129,18 @@ contract DarknodeRegistry {
         });
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
+    }
+
+    function updateMinimumBond(uint256 _newMinimumBond) public onlyOwner {
+        minimumBond = _newMinimumBond;
+    }
+
+    function updateMinimumDarkPoolSize(uint256 _newMinimumDarkPoolSize) public onlyOwner {
+        minimumDarkPoolSize = _newMinimumDarkPoolSize;
+    }
+
+    function updateEpochInterval(uint256 _newMinimumEpochInterval) public onlyOwner {
+        minimumEpochInterval = _newMinimumEpochInterval;
     }
 
     /**
@@ -196,7 +210,7 @@ contract DarknodeRegistry {
     * @param _darknodeID The dark node ID that will be deregistered. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyOwner(_darknodeID) {
+    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyOperator(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
         numDarknodesNextEpoch--;
@@ -212,7 +226,7 @@ contract DarknodeRegistry {
     * @param _darknodeID The dark node ID that will be refunded. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function refund(bytes20 _darknodeID) public onlyOwner(_darknodeID) onlyDeregistered(_darknodeID) {
+    function refund(bytes20 _darknodeID) public onlyOperator(_darknodeID) onlyDeregistered(_darknodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darknodeID].bond;
 

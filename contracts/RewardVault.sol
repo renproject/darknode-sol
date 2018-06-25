@@ -1,11 +1,12 @@
 pragma solidity ^0.4.24;
 
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-contract RewardVault {
+contract RewardVault is Ownable {
     using SafeMath for uint256;
 
     /**
@@ -25,6 +26,10 @@ contract RewardVault {
       */
     constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
+    }
+
+    function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+        darknodeRegistry = _newDarknodeRegistry;
     }
 
     /** 
