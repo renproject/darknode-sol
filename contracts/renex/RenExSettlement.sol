@@ -30,9 +30,11 @@ contract RenExSettlement is Ownable {
       */
     uint32 constant public SETTLEMENT_IDENTIFIER = 1;
 
-    Orderbook private orderbookContract;
-    RenExTokens private renExTokensContract;
-    RenExBalances private renExBalancesContract;
+    Orderbook public orderbookContract;
+    RenExTokens public renExTokensContract;
+    RenExBalances public renExBalancesContract;
+
+    uint256 public submissionGasPriceFee;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -75,11 +77,32 @@ contract RenExSettlement is Ownable {
     constructor(
         Orderbook _orderbookContract,
         RenExTokens _renExTokensContract,
-        RenExBalances _renExBalancesContract
+        RenExBalances _renExBalancesContract,
+        uint256 _submissionGasPriceFee
     ) public {
         orderbookContract = _orderbookContract;
         renExTokensContract = _renExTokensContract;
         renExBalancesContract = _renExBalancesContract;
+        submissionGasPriceFee = _submissionGasPriceFee;
+    }
+
+    /********** UPDATER FUNCTIONS *********************************************/
+    
+    function updateDarknodeRegistry(Orderbook _newOrderbookContract) public onlyOwner {
+        orderbookContract = _newOrderbookContract;
+    }
+
+    function updateRenExBalances(RenExBalances _newRenExBalancesContract) public onlyOwner {
+        renExBalancesContract = _newRenExBalancesContract;
+    }
+
+    function updateSubmissionGasPriceFee(uint256 _newSubmissionGasPriceFee) public onlyOwner {
+        submissionGasPriceFee = _newSubmissionGasPriceFee;
+    }
+
+    modifier withGasPriceLimit(uint256 gasPriceLimit) {
+        require(tx.gasprice <= gasPriceLimit);
+        _;
     }
 
     /********** WITHDRAWAL FUNCTIONS ******************************************/
@@ -280,8 +303,7 @@ contract RenExSettlement is Ownable {
         uint16 _volumeC, uint16 _volumeQ,
         uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
         uint256 _nonceHash
-    ) public {
-
+    ) public withGasPriceLimit(submissionGasPriceFee) {
         Order memory order = Order({
             orderType: _orderType,
             parity: _parity,
