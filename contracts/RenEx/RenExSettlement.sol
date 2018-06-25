@@ -59,7 +59,6 @@ contract RenExSettlement is Ownable {
 
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
-    event Debugi256(string message, int256 value);
 
     // Storage
     mapping(bytes32 => Order) public orders;
@@ -97,10 +96,6 @@ contract RenExSettlement is Ownable {
 
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
         // Normalize to same exponent before finding mid-point (mean)
-        // Common exponent is 0 (to ensure division doesn't lose details)
-        // uint256 norm1 = orders[buyID].priceC * 10 ** (orders[buyID].priceQ);
-        // uint256 norm2 = orders[sellID].priceC * 10 ** (orders[sellID].priceQ);
-        // return ((norm1 + norm2) / 2, 0);
         uint256 norm = orders[buyID].priceC * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
         int256 q = int256(orders[sellID].priceQ);
         uint256 sum = (orders[sellID].priceC + norm);
@@ -121,7 +116,6 @@ contract RenExSettlement is Ownable {
             // Instead of dividing the constant by priceC, we delay the division
             // until the recombining c and q, to ensure that minimal precision
             // is lost
-            emit Debugi256("i256", int256(orders[buyID].volumeQ + 26 + 12) - priceQ);
             return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);
         } else {
             return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);
@@ -323,9 +317,9 @@ contract RenExSettlement is Ownable {
         require(renExTokensContract.tokenIsRegistered(buyToken));
         require(renExTokensContract.tokenIsRegistered(sellToken));
 
-        return (buyToken, sellToken);
-
         // TODO: Compare prices and volumes/minimum volumes
+
+        return (buyToken, sellToken);
     }
 
     /**

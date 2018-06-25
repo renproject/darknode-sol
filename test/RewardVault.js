@@ -142,6 +142,14 @@ contract("Reward Vault", function (accounts) {
             .should.be.rejected;
     });
 
+    it("checks the darknode operator is not 0x0", async () => {
+        // darknodeOperator is not a darknode
+        (await dnr.isRegistered(darknodeOperator)).should.be.false;
+        await rewardVault.deposit(darknodeOperator, ETH.address, 1, { value: 1 });
+
+        await rewardVault.withdraw(darknodeOperator, ETH.address)
+            .should.be.rejected;
+    });
 
 });
 
