@@ -94,6 +94,16 @@ contract RenExSettlement is Ownable {
     
     // Price/volume calculation functions
 
+    function tupleGTE(uint64 leftC, uint64 leftQ, uint64 rightC, uint64 rightQ) private pure returns (bool) {
+        if (leftQ < rightQ) {
+            return false;
+        }
+
+        uint256 norm = leftC * 10 ** uint256(leftQ - rightQ);
+
+        return norm >= rightC;
+    }
+
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
         // Normalize to same exponent before finding mid-point (mean)
         uint256 norm = orders[buyID].priceC * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
@@ -318,6 +328,9 @@ contract RenExSettlement is Ownable {
         require(renExTokensContract.tokenIsRegistered(sellToken));
 
         // TODO: Compare prices and volumes/minimum volumes
+        require(tupleGTE(orders[_buyID].priceC, orders[_buyID].priceQ, orders[_sellID].priceC, orders[_sellID].priceQ));
+        require(tupleGTE(orders[_buyID].volumeC, orders[_buyID].volumeQ, orders[_sellID].minimumVolumeC, orders[_sellID].minimumVolumeQ));
+        require(tupleGTE(orders[_sellID].volumeC, orders[_sellID].volumeQ, orders[_buyID].minimumVolumeC, orders[_buyID].minimumVolumeQ));
 
         return (buyToken, sellToken);
     }
