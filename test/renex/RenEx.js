@@ -191,6 +191,12 @@ contract("RenExSettlement", function (accounts) {
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
             .should.be.rejected;
+
+        buy = { tokens, priceC: 200, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
     });
 });
 

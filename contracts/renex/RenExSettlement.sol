@@ -34,7 +34,7 @@ contract RenExSettlement is Ownable {
     RenExTokens public renExTokensContract;
     RenExBalances public renExBalancesContract;
 
-    uint256 public submissionGasPriceFee;
+    uint256 public submissionGasPriceLimit;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -78,17 +78,17 @@ contract RenExSettlement is Ownable {
         Orderbook _orderbookContract,
         RenExTokens _renExTokensContract,
         RenExBalances _renExBalancesContract,
-        uint256 _submissionGasPriceFee
+        uint256 _submissionGasPriceLimit
     ) public {
         orderbookContract = _orderbookContract;
         renExTokensContract = _renExTokensContract;
         renExBalancesContract = _renExBalancesContract;
-        submissionGasPriceFee = _submissionGasPriceFee;
+        submissionGasPriceLimit = _submissionGasPriceLimit;
     }
 
     /********** UPDATER FUNCTIONS *********************************************/
     
-    function updateDarknodeRegistry(Orderbook _newOrderbookContract) public onlyOwner {
+    function updateOrderbook(Orderbook _newOrderbookContract) public onlyOwner {
         orderbookContract = _newOrderbookContract;
     }
 
@@ -96,8 +96,8 @@ contract RenExSettlement is Ownable {
         renExBalancesContract = _newRenExBalancesContract;
     }
 
-    function updateSubmissionGasPriceFee(uint256 _newSubmissionGasPriceFee) public onlyOwner {
-        submissionGasPriceFee = _newSubmissionGasPriceFee;
+    function updateSubmissionGasPriceLimit(uint256 _newSubmissionGasPriceLimit) public onlyOwner {
+        submissionGasPriceLimit = _newSubmissionGasPriceLimit;
     }
 
     modifier withGasPriceLimit(uint256 gasPriceLimit) {
@@ -303,7 +303,7 @@ contract RenExSettlement is Ownable {
         uint16 _volumeC, uint16 _volumeQ,
         uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
         uint256 _nonceHash
-    ) public withGasPriceLimit(submissionGasPriceFee) {
+    ) public withGasPriceLimit(submissionGasPriceLimit) {
         Order memory order = Order({
             orderType: _orderType,
             parity: _parity,
