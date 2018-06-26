@@ -77,7 +77,7 @@ contract("RenExSettlement", function (accounts) {
         (await renExSettlement.submissionGasPriceLimit()).toNumber().should.equal(100 * GWEI);
     })
 
-    it.only("should reject submitOrder with gas price", async () => {
+    it("should reject submitOrder with gas price", async () => {
         await renExSettlement.submitOrder(
             "0x0000000000000000000000000000000000000000000000000000000000000001",
             "0x0000000000000000000000000000000000000000000000000000000000000001",
