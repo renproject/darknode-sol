@@ -23,8 +23,8 @@ contract RenExBalances is Ownable {
     // Events
     event BalanceDecreased(address trader, ERC20 token, uint256 value);
     event BalanceIncreased(address trader, ERC20 token, uint256 value);
-    event RenExSettlementContractChanged(address indexed newRenExSettlementContract);
-    event RewardVaultContractChanged(address indexed newRewardVaultContract);
+    event RenExSettlementContractUpdated(address indexed newRenExSettlementContract);
+    event RewardVaultContractUpdated(address indexed newRewardVaultContract);
 
     // Storage
     mapping(address => address[]) public traderTokens;
@@ -58,7 +58,7 @@ contract RenExBalances is Ownable {
     @param _newSettlementContract the address of the new settlement contract
     */
     function updateRenExSettlementContract(RenExSettlement _newSettlementContract) public onlyOwner {
-        emit RenExSettlementContractChanged(_newSettlementContract);
+        emit RenExSettlementContractUpdated(_newSettlementContract);
         settlementContract = _newSettlementContract;
     }
 
@@ -68,7 +68,7 @@ contract RenExBalances is Ownable {
     @param _newRewardVaultContract the address of the new reward vault contract
     */
     function updateRewardVault(RewardVault _newRewardVaultContract) public onlyOwner {
-        emit RewardVaultContractChanged(_newRewardVaultContract);
+        emit RewardVaultContractUpdated(_newRewardVaultContract);
         rewardVaultContract = _newRewardVaultContract;
     }
 

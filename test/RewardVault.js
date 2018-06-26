@@ -9,7 +9,7 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
 
@@ -24,7 +24,7 @@ contract("Reward Vault", function (accounts) {
         dnr = await DarknodeRegistry.new(
             ren.address,
             MINIMUM_BOND,
-            MINIMUM_DARKPOOL_SIZE,
+            MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL
         );
         rewardVault = await RewardVault.new(dnr.address);

@@ -340,7 +340,8 @@ contract RenExSettlement is Ownable {
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
         
-        // TODO: Loop through and check at all indices
+        // TODO: Loop through and check for all indices when an order is able to
+        // be matched with multiple orders
         require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
 
         uint32 buyToken = uint32(orders[_sellID].tokens);
@@ -349,7 +350,6 @@ contract RenExSettlement is Ownable {
         require(renExTokensContract.tokenIsRegistered(buyToken));
         require(renExTokensContract.tokenIsRegistered(sellToken));
 
-        // TODO: Compare prices and volumes/minimum volumes
         require(tupleGTE(orders[_buyID].priceC, orders[_buyID].priceQ, orders[_sellID].priceC, orders[_sellID].priceQ));
         require(tupleGTE(orders[_buyID].volumeC, orders[_buyID].volumeQ, orders[_sellID].minimumVolumeC, orders[_sellID].minimumVolumeQ));
         require(tupleGTE(orders[_sellID].volumeC, orders[_sellID].volumeQ, orders[_buyID].minimumVolumeC, orders[_buyID].minimumVolumeQ));

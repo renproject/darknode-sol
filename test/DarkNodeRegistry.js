@@ -5,7 +5,7 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("DarknodeRegistry", function (accounts) {
@@ -17,7 +17,7 @@ contract("DarknodeRegistry", function (accounts) {
     dnr = await DarknodeRegistry.new(
       ren.address,
       MINIMUM_BOND,
-      MINIMUM_DARKPOOL_SIZE,
+      MINIMUM_POD_SIZE,
       MINIMUM_EPOCH_INTERVAL
     );
     for (i = 1; i < accounts.length; i++) {
@@ -37,16 +37,16 @@ contract("DarknodeRegistry", function (accounts) {
     (await dnr.minimumBond()).toNumber().should.equal(MINIMUM_BOND);
   });
 
-  it("can update minimum dark pool size", async () => {
-    await dnr.updateMinimumDarkPoolSize(0x1);
+  it("can update minimum pod size", async () => {
+    await dnr.updateMinimumPodSize(0x1);
     await waitForEpoch(dnr);
-    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(0x1);
-    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE, { from: accounts[1] })
+    (await dnr.minimumPodSize()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE, { from: accounts[1] })
       .should.be.rejected;
-    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE);
-    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE);
+    (await dnr.minimumPodSize()).toNumber().should.equal(0x1);
     await waitForEpoch(dnr);
-    (await dnr.minimumDarkPoolSize()).toNumber().should.equal(MINIMUM_DARKPOOL_SIZE);
+    (await dnr.minimumPodSize()).toNumber().should.equal(MINIMUM_POD_SIZE);
   });
 
   it("can update minimum epoch interval", async () => {

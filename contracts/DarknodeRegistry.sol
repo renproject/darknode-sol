@@ -42,11 +42,11 @@ contract DarknodeRegistry is Ownable {
 
     // Constants used to parameterize behavior.
     uint256 public minimumBond;
-    uint256 public minimumDarkPoolSize;
+    uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
 
     uint256 public nextMinimumBond;
-    uint256 public nextMinimumDarkPoolSize;
+    uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
 
     // The current epoch and the minimum time interval until the next epoch.
@@ -81,7 +81,7 @@ contract DarknodeRegistry is Ownable {
     event NewEpoch();
 
     event MinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
-    event MinimumDarkPoolSizeUpdated(uint256 previousMinimumDarkPoolSize, uint256 nextMinimumDarkPoolSize);
+    event MinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event MinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
 
     /**
@@ -123,13 +123,13 @@ contract DarknodeRegistry is Ownable {
     * @param _renAddress The address of the RepublicToken contract.
     * @param _minimumBond The minimum bond amount that can be submitted by a
     *                     darknode.
-    * @param _minimumDarkPoolSize The minimum size of a dark pool.
+    * @param _minimumPodSize The minimum size of a pod.
     * @param _minimumEpochInterval The minimum number of blocks between epochs.
     */
-    constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumDarkPoolSize, uint256 _minimumEpochInterval) public {
+    constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval) public {
         ren = _renAddress;
         minimumBond = _minimumBond;
-        minimumDarkPoolSize = _minimumDarkPoolSize;
+        minimumPodSize = _minimumPodSize;
         minimumEpochInterval = _minimumEpochInterval;
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
@@ -139,16 +139,29 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = 0;
     }
 
+    /**
+    * @notice Allows the contract owner to update the minimum bond.
+    * @param _nextMinimumBond The minimum bond amount that can be submitted by a
+    *                         darknode.
+    */
     function updateMinimumBond(uint256 _nextMinimumBond) public onlyOwner {
         // Will be updated next epoch
         nextMinimumBond = _nextMinimumBond;
     }
 
-    function updateMinimumDarkPoolSize(uint256 _nextMinimumDarkPoolSize) public onlyOwner {
+    /**
+    * @notice Allows the contract owner to update the minimum pod size.
+    * @param _nextMinimumPodSize The minimum size of a pod.
+    */
+    function updateMinimumPodSize(uint256 _nextMinimumPodSize) public onlyOwner {
         // Will be updated next epoch
-        nextMinimumDarkPoolSize = _nextMinimumDarkPoolSize;
+        nextMinimumPodSize = _nextMinimumPodSize;
     }
 
+    /**
+    * @notice Allows the contract owner to update the minimum epoch interval.
+    * @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
+    */
     function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
         // Will be updated next epoch
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
@@ -178,9 +191,9 @@ contract DarknodeRegistry is Ownable {
             minimumBond = nextMinimumBond;
         }
 
-        if (nextMinimumDarkPoolSize != minimumDarkPoolSize) {
-            emit MinimumDarkPoolSizeUpdated(minimumDarkPoolSize, nextMinimumDarkPoolSize);
-            minimumDarkPoolSize = nextMinimumDarkPoolSize;
+        if (nextMinimumPodSize != minimumPodSize) {
+            emit MinimumPodSizeUpdated(minimumPodSize, nextMinimumPodSize);
+            minimumPodSize = nextMinimumPodSize;
         }
 
         if (nextMinimumEpochInterval != minimumEpochInterval) {
