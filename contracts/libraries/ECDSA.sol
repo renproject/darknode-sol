@@ -13,7 +13,7 @@ library ECDSA {
     // function verify(uint8 v, bytes32 r, bytes32 s, bytes32 _hash, address _signer) internal pure returns (bool) {
     //     return (addr(v, r, s, _hash) == _signer);
     // }
-  
+
     function addr(bytes32 _hash, bytes _signature) internal pure returns (address) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, _hash));

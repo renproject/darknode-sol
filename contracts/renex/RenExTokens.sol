@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
 @title The contract responsible for holding trader funds and settling matched
@@ -15,6 +15,9 @@ contract RenExTokens is Ownable {
     mapping(uint32 => ERC20) public tokenAddresses;
     mapping(uint32 => uint8) public tokenDecimals;
     mapping(uint32 => bool) public tokenIsRegistered;
+
+    event TokenRegistered(uint32 tokenCode, ERC20 tokenAddress, uint8 tokenDecimals);
+    event TokenDeregistered(uint32 tokenCode);
 
     /**
     @notice constructor
@@ -33,6 +36,8 @@ contract RenExTokens is Ownable {
         tokenAddresses[_tokenCode] = _tokenAddress;
         tokenDecimals[_tokenCode] = _tokenDecimals;
         tokenIsRegistered[_tokenCode] = true;
+
+        emit TokenRegistered(_tokenCode, _tokenAddress, _tokenDecimals);
     }
 
     /**
@@ -41,5 +46,7 @@ contract RenExTokens is Ownable {
     */
     function deregisterToken(uint32 _tokenCode) public onlyOwner {
         tokenIsRegistered[_tokenCode] = false;
+
+        emit TokenDeregistered(_tokenCode);
     }
 }

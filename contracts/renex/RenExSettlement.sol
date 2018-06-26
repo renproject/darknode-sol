@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../Orderbook.sol";
 import "./RenExBalances.sol";
@@ -16,7 +16,7 @@ order values
 contract RenExSettlement is Ownable {
     using SafeMath for uint256;
 
-    /** 
+    /**
       * @notice Fees are in RenEx are 0.2% and to represent this in integers it
       * is broken into a numerator and denominator.
       */
@@ -34,7 +34,7 @@ contract RenExSettlement is Ownable {
     RenExTokens public renExTokensContract;
     RenExBalances public renExBalancesContract;
 
-    uint256 public submissionGasPriceFee;
+    uint256 public submissionGasPriceLimit;
 
     enum OrderType {Midpoint, Limit}
     enum OrderParity {Buy, Sell}
@@ -44,7 +44,7 @@ contract RenExSettlement is Ownable {
         uint8 parity;
         uint8 orderType;
         uint64 expiry;
-        uint64 tokens;        
+        uint64 tokens;
         uint64 priceC; uint64 priceQ;
         uint64 volumeC; uint64 volumeQ;
         uint64 minimumVolumeC; uint64 minimumVolumeQ;
@@ -61,6 +61,9 @@ contract RenExSettlement is Ownable {
 
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
+    event OrderbookUpdates(Orderbook previousOrderbook, Orderbook nextOrderbook);
+    event RenExBalancesUpdates(RenExBalances previousRenExBalances, RenExBalances nextRenExBalances);
+    event SubmissionGasPriceLimitUpdates(uint256 previousSubmissionGasPriceLimit, uint256 nextSubmissionGasPriceLimit);
 
     // Storage
     mapping(bytes32 => Order) public orders;
@@ -78,27 +81,32 @@ contract RenExSettlement is Ownable {
         Orderbook _orderbookContract,
         RenExTokens _renExTokensContract,
         RenExBalances _renExBalancesContract,
-        uint256 _submissionGasPriceFee
+        uint256 _submissionGasPriceLimit
     ) public {
         orderbookContract = _orderbookContract;
         renExTokensContract = _renExTokensContract;
         renExBalancesContract = _renExBalancesContract;
-        submissionGasPriceFee = _submissionGasPriceFee;
+        submissionGasPriceLimit = _submissionGasPriceLimit;
     }
 
     /********** UPDATER FUNCTIONS *********************************************/
-    
-    function updateDarknodeRegistry(Orderbook _newOrderbookContract) public onlyOwner {
+
+    function updateOrderbook(Orderbook _newOrderbookContract) public onlyOwner {
+        emit OrderbookUpdates(orderbookContract, _newOrderbookContract);
         orderbookContract = _newOrderbookContract;
     }
 
     function updateRenExBalances(RenExBalances _newRenExBalancesContract) public onlyOwner {
+        emit RenExBalancesUpdates(renExBalancesContract, _newRenExBalancesContract);
         renExBalancesContract = _newRenExBalancesContract;
     }
 
-    function updateSubmissionGasPriceFee(uint256 _newSubmissionGasPriceFee) public onlyOwner {
-        submissionGasPriceFee = _newSubmissionGasPriceFee;
+    function updateSubmissionGasPriceLimit(uint256 _newSubmissionGasPriceLimit) public onlyOwner {
+        emit SubmissionGasPriceLimitUpdates(submissionGasPriceLimit, _newSubmissionGasPriceLimit);
+        submissionGasPriceLimit = _newSubmissionGasPriceLimit;
     }
+
+    /********** MODIFIERS *****************************************************/
 
     modifier withGasPriceLimit(uint256 gasPriceLimit) {
         require(tx.gasprice <= gasPriceLimit);
@@ -114,9 +122,13 @@ contract RenExSettlement is Ownable {
     }
 
     /********** SETTLEMENT FUNCTIONS ******************************************/
-    
+
     // Price/volume calculation functions
 
+    /**
+     * @notice Returns true if the left tuple represents a larger number than
+     * the right tuple
+     */
     function tupleGTE(uint64 leftC, uint64 leftQ, uint64 rightC, uint64 rightQ) private pure returns (bool) {
         if (leftQ < rightQ) {
             return false;
@@ -127,9 +139,12 @@ contract RenExSettlement is Ownable {
         return norm >= rightC;
     }
 
+    /**
+     * @notice Returns the midpoint between the buy and sell prices as a tuple
+     */
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
         // Normalize to same exponent before finding mid-point (mean)
-        uint256 norm = orders[buyID].priceC * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
+        uint256 norm = uint256(orders[buyID].priceC) * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
         int256 q = int256(orders[sellID].priceQ);
         uint256 sum = (orders[sellID].priceC + norm);
         if (sum % 2 == 0) {
@@ -140,8 +155,11 @@ contract RenExSettlement is Ownable {
         }
     }
 
+    /**
+     * @notice Returns the smaller volume in the high token
+     */
     function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)
-    private view returns (uint256, int256, uint256) {        
+    private view returns (uint256, int256, uint256) {
         uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);
         uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);
 
@@ -155,6 +173,9 @@ contract RenExSettlement is Ownable {
         }
     }
 
+    /**
+     * @notice Converts a tuple to a volume after multiplying by the price
+     */
     function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 divideC, uint256 decimals)
     private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
@@ -168,7 +189,7 @@ contract RenExSettlement is Ownable {
         if (e >= 0) {
             value = c * 10 ** uint256(e);
         } else {
-            value = c / 10 ** uint256(-e);            
+            value = c / 10 ** uint256(-e);
         }
 
         value = value / divideC;
@@ -176,6 +197,9 @@ contract RenExSettlement is Ownable {
         return value;
     }
 
+    /**
+     * @notice Converts a tuple to a price
+     */
     function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals)
     private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
@@ -189,29 +213,31 @@ contract RenExSettlement is Ownable {
         if (e >= 0) {
             value = c * 10 ** uint256(e);
         } else {
-            value = c / 10 ** uint256(-e);            
+            value = c / 10 ** uint256(-e);
         }
 
         return value;
     }
 
-
+    /**
+     * @notice Converts a tuple to a volume
+     */
     function tupleToVolume(uint256 volC, int256 volQ, uint256 divideC, uint256 decimals) private pure returns (uint256) {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
 
-        // Positive and negative components of exponent                
+        // Positive and negative components of exponent
         uint256 ep = decimals;
         uint256 en = 12 + 1;
-        // Add volQ to positive or negative component based on its sign        
+        // Add volQ to positive or negative component based on its sign
         if (volQ < 0) {
             en += uint256(-volQ);
         } else {
             ep += uint256(volQ);
         }
 
-        // If (ep-en) is negative, divide instead of multiplying  
-        uint256 value;              
+        // If (ep-en) is negative, divide instead of multiplying
+        uint256 value;
         if (ep >= en) {
             value = c * 10 ** (ep - en);
         } else {
@@ -223,15 +249,17 @@ contract RenExSettlement is Ownable {
         return value;
     }
 
-    // Ensure this remains private
+    /**
+     * @notice (private) Calls the RenExBalances contract to update the balances
+     */
     function settleFunds(
         bytes32 _buyID, bytes32 _sellID,
         uint32 buyToken, uint32 sellToken,
         uint256 lowTokenValue, uint256 highTokenValue
     ) private {
-        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        
+        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);
         address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);
-        
+
         address buySubmitter = orders[_buyID].submitter;
         address sellSubmitter = orders[_sellID].submitter;
 
@@ -258,9 +286,9 @@ contract RenExSettlement is Ownable {
 
 
     /**
-    @notice Calculates the ID of the order
-    @param order the order to hash
-    */
+     * @notice Calculates the ID of the order
+     * @param order the order to hash
+     */
     function hashOrder(Order order) private pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
@@ -303,7 +331,7 @@ contract RenExSettlement is Ownable {
         uint16 _volumeC, uint16 _volumeQ,
         uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
         uint256 _nonceHash
-    ) public withGasPriceLimit(submissionGasPriceFee) {
+    ) public withGasPriceLimit(submissionGasPriceLimit) {
         Order memory order = Order({
             orderType: _orderType,
             parity: _parity,
@@ -332,27 +360,57 @@ contract RenExSettlement is Ownable {
         orders[orderID] = order;
     }
 
-    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {
-        require(orderStatuses[_buyID] == OrderStatus.Submitted);
-        require(orderStatuses[_sellID] == OrderStatus.Submitted);
+    /**
+     * @notice Verifies details about an order
 
+     * @param _orderID the ID of the order to verify
+     */
+    function verifyOrder(bytes32 _orderID) public view {
+        require(orderStatuses[_orderID] == OrderStatus.Submitted);
+
+        // Verify price ranges
+        require(orders[_orderID].priceC <= 1999);
+        require(orders[_orderID].priceQ <= 52);
+
+        // Verify volume ranges
+        require(orders[_orderID].volumeC <= 49);
+        require(orders[_orderID].volumeQ <= 52);
+
+        // Verify minimum volume ranges
+        require(orders[_orderID].minimumVolumeC <= 49);
+        require(orders[_orderID].minimumVolumeQ <= 52);
+    }
+
+    /**
+     * @notice Verifies details about an match
+
+     * @param _buyID the ID of the buy order
+     * @param _sellID the ID of the sell order
+     * @return the token IDs of the match
+     */
+    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
-        
-        // TODO: Loop through and check at all indices
+
+        // TODO: Loop through and check for all indices when an order is able to
+        // be matched with multiple orders
         require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
 
+        // Buy price should be greater than sell price
+        require(tupleGTE(orders[_buyID].priceC, orders[_buyID].priceQ, orders[_sellID].priceC, orders[_sellID].priceQ));
+        
+        // Buy volume should be greater than sell minimum volume
+        require(tupleGTE(orders[_buyID].volumeC, orders[_buyID].volumeQ, orders[_sellID].minimumVolumeC, orders[_sellID].minimumVolumeQ));
+        
+        // Sell volume should be greater than buy minimum volume
+        require(tupleGTE(orders[_sellID].volumeC, orders[_sellID].volumeQ, orders[_buyID].minimumVolumeC, orders[_buyID].minimumVolumeQ));
+    
         uint32 buyToken = uint32(orders[_sellID].tokens);
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
 
         require(renExTokensContract.tokenIsRegistered(buyToken));
         require(renExTokensContract.tokenIsRegistered(sellToken));
-
-        // TODO: Compare prices and volumes/minimum volumes
-        require(tupleGTE(orders[_buyID].priceC, orders[_buyID].priceQ, orders[_sellID].priceC, orders[_sellID].priceQ));
-        require(tupleGTE(orders[_buyID].volumeC, orders[_buyID].volumeQ, orders[_sellID].minimumVolumeC, orders[_sellID].minimumVolumeQ));
-        require(tupleGTE(orders[_sellID].volumeC, orders[_sellID].volumeQ, orders[_buyID].minimumVolumeC, orders[_buyID].minimumVolumeQ));
 
         return (buyToken, sellToken);
     }
@@ -365,7 +423,9 @@ contract RenExSettlement is Ownable {
       * @param _sellID the 32 byte ID of the sell order
       */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
-        // Verify match
+        // Verify details
+        verifyOrder(_buyID);
+        verifyOrder(_sellID);
         (uint32 buyToken, uint32 sellToken) = verifyMatch(_buyID, _sellID);
 
         (uint256 lowTokenValue, uint256 highTokenValue) = settlementDetails(
@@ -381,6 +441,10 @@ contract RenExSettlement is Ownable {
         orderStatuses[_sellID] = OrderStatus.Matched;
     }
 
+    /**
+     * @notice Calculates the volumes to be transferred between traders
+     * (not including fees)
+     */
     function settlementDetails(
         bytes32 _buyID,
         bytes32 _sellID,
@@ -402,6 +466,10 @@ contract RenExSettlement is Ownable {
         return (lowTokenValue, highTokenValue);
     }
 
+    /**
+     * @notice (read-only) Returns the volumes transferred between traders and
+     * the respective fees
+     */
     function getSettlementDetails(bytes32 _buyID, bytes32 _sellID)
     external view returns (uint256, uint256, uint256, uint256, uint256) {
         uint32 buyToken = uint32(orders[_sellID].tokens);
@@ -423,6 +491,9 @@ contract RenExSettlement is Ownable {
         return (midPrice, lowTokenValueFinal, highTokenValueFinal, lowTokenValue - lowTokenValueFinal, highTokenValue - highTokenValueFinal);
     }
 
+    /**
+     * @notice Calculates the midprice tuple and converts it to a uint256
+     */
     function getMidPrice(bytes32 _buyID, bytes32 _sellID) public view returns (uint256) {
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
         uint32 sellToken = uint32(orders[_sellID].tokens >> 32);

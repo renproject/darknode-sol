@@ -5,7 +5,7 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
 // Makes an ID for a darknode
@@ -28,7 +28,7 @@ contract("DarknodeRegistry", function (accounts) {
     dnr = await DarknodeRegistry.new(
       ren.address,
       MINIMUM_BOND,
-      MINIMUM_DARKPOOL_SIZE,
+      MINIMUM_POD_SIZE,
       MINIMUM_EPOCH_INTERVAL
     );
     for (i = 1; i < accounts.length; i++) {
@@ -48,16 +48,16 @@ contract("DarknodeRegistry", function (accounts) {
     (await dnr.minimumBond()).should.equal(MINIMUM_BOND.toString());
   });
 
-  it("can update minimum dark pool size", async () => {
-    await dnr.updateMinimumDarkPoolSize(0x0);
+  it("can update minimum pod size", async () => {
+    await dnr.updateMinimumPodSize(0x0);
     await waitForEpoch(dnr);
-    (await dnr.minimumDarkPoolSize()).should.equal("0");
-    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE, { from: accounts[1] })
+    (await dnr.minimumPodSize()).should.equal("0");
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE, { from: accounts[1] })
       .should.be.rejected;
-    await dnr.updateMinimumDarkPoolSize(MINIMUM_DARKPOOL_SIZE);
-    (await dnr.minimumDarkPoolSize()).should.equal("0");
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE);
+    (await dnr.minimumPodSize()).should.equal("0");
     await waitForEpoch(dnr);
-    (await dnr.minimumDarkPoolSize()).should.equal(MINIMUM_DARKPOOL_SIZE.toString());
+    (await dnr.minimumPodSize()).should.equal(MINIMUM_POD_SIZE.toString());
   });
 
   it("can update minimum epoch interval", async () => {
@@ -103,17 +103,14 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can not deregister a node which is not registered", async () => {
-    const uid = ID("-1");
     await dnr.deregister(ID("-1")).should.be.rejected;
   })
 
   it("can get the owner of the Dark Node", async () => {
-    const uid = ID("1");
-    assert.equal((await dnr.getOwner(ID("1"))), accounts[0]);
+    assert.equal((await dnr.getDarknodeOwner(ID("1"))), accounts[0]);
   })
 
   it("can get the bond of the Dark Node", async () => {
-    const uid = ID("1");
     assert.equal((await dnr.getBond(ID("1"))), MINIMUM_BOND);
   })
 

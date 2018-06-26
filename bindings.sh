@@ -2,9 +2,9 @@
 
 
 # Setup
-sed -i "" -e 's/"zeppelin-solidity\/contracts\//".\/zeppelin-solidity\/contracts\//' contracts/*.sol contracts/*/*.sol
-mkdir ./contracts/zeppelin-solidity
-cp -r ./node_modules/zeppelin-solidity/contracts ./contracts/zeppelin-solidity/contracts
+sed -i "" -e 's/"openzeppelin-solidity\/contracts\//".\/openzeppelin-solidity\/contracts\//' contracts/*.sol contracts/*/*.sol
+mkdir ./contracts/openzeppelin-solidity
+cp -r ./node_modules/openzeppelin-solidity/contracts ./contracts/openzeppelin-solidity/contracts
 
 ### GENERATE BINDINGS HERE
 
@@ -16,7 +16,7 @@ abigen --sol ./contracts/Orderbook.sol -pkg bindings --out bindings.go
 
 
 # Revert setup
-sed -i "" -e 's/".\/zeppelin-solidity\/contracts\//"zeppelin-solidity\/contracts\//' contracts/*.sol contracts/*/*.sol
-rm -r ./contracts/zeppelin-solidity
+sed -i "" -e 's/".\/openzeppelin-solidity\/contracts\//"openzeppelin-solidity\/contracts\//' contracts/*.sol contracts/*/*.sol
+rm -r ./contracts/openzeppelin-solidity
 
 

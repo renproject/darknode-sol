@@ -191,6 +191,55 @@ contract("RenEx integration", function (accounts) {
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
             .should.be.rejected;
+
+        buy = { tokens, priceC: 200, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid price (c component)
+        buy = { tokens, priceC: 2000, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid price (q component)
+        buy = { tokens, priceC: 200, priceQ: 53, volume: 1 /* DGX */, minimumVolume: 1 };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (c component)
+        buy = { tokens, price: 1, volumeC: 50, volumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (q component)
+        buy = { tokens, price: 1, volumeC: 5, volumeQ: 53 /* DGX */, minimumVolumeC: 0, minimumVolumeQ: 0 };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (c component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 50, minimumVolumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (q component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 5, minimumVolumeQ: 53 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
     });
 });
 
@@ -483,9 +532,9 @@ function getOrderID(order) {
 
 /**
  * Calculate price tuple from a decimal string
- * 
+ *
  * https://github.com/republicprotocol/republic-go/blob/smpc/docs/orders-and-order-fragments.md
- * 
+ *
  */
 function priceToTuple(priceI) {
     const price = new BigNumber(priceI);
