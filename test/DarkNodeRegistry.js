@@ -98,7 +98,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can get the owner of the Dark Node", async () => {
-    assert.equal((await dnr.getOwner("1")), accounts[0]);
+    assert.equal((await dnr.getDarknodeOwner("1")), accounts[0]);
   })
 
   it("can get the bond of the Dark Node", async () => {

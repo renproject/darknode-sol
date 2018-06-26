@@ -295,7 +295,7 @@ contract DarknodeRegistry is Ownable {
         emit DarknodeOwnerRefunded(msg.sender, amount);
     }
 
-    function getOwner(bytes20 _darknodeID) public view returns (address) {
+    function getDarknodeOwner(bytes20 _darknodeID) public view returns (address) {
         return darknodeRegistry[_darknodeID].owner;
     }
 

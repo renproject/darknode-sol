@@ -53,10 +53,10 @@ contract("Reward Vault", function (accounts) {
         await dnr.epoch();
 
 
-        (await dnr.getOwner(darknode1))
+        (await dnr.getDarknodeOwner(darknode1))
             .should.equal(darknodeOperator);
 
-        (await dnr.getOwner(darknode2))
+        (await dnr.getDarknodeOwner(darknode2))
             .should.equal(darknodeOperator);
     });
 
