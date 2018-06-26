@@ -107,7 +107,6 @@ contract("RenExSettlement", function (accounts) {
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x8d981922c65b85a257f457ba3c29831aa4c3b1bd45dc3b280590fd5c89c69dc2",
-            { gasPrice: 100 * GWEI } // At limit
         );
 
         await renExSettlement.submitOrder(
