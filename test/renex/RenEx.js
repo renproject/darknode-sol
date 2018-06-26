@@ -172,7 +172,7 @@ contract("RenExSettlement", function (accounts) {
             .should.eql([999500000000000, 2 /* ETH */, 2.001e-15 /* REN */]);
     });
 
-    it("invalid orders should revert", async () => {
+    it.only("invalid orders should revert", async () => {
         const tokens = market(DGX, REN);
         let buy = { tokens, price: 1, volume: 2 /* DGX */, minimumVolume: 2 /* REN */ };
         let sell = { tokens, price: 1, volume: 1 /* REN */ };
@@ -197,6 +197,49 @@ contract("RenExSettlement", function (accounts) {
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
             .should.be.rejected;
+
+        // Invalid price (c component)
+        buy = { tokens, priceC: 2000, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid price (q component)
+        buy = { tokens, priceC: 200, priceQ: 53, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (c component)
+        buy = { tokens, price: 1, volumeC: 50, volumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (q component)
+        buy = { tokens, price: 1, volumeC: 5, volumeQ: 53 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (c component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 50, minimumVolumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (q component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 5, minimumVolumeQ: 53 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
     });
 });
 
