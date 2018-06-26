@@ -1,6 +1,6 @@
 {
   "name": "republic-sol",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "zeppelin-solidity": "1.8.0"
   },
