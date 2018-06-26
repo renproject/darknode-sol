@@ -9,7 +9,7 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
 
@@ -24,7 +24,7 @@ contract("Reward Vault", function (accounts) {
         dnr = await DarknodeRegistry.new(
             ren.address,
             MINIMUM_BOND,
-            MINIMUM_DARKPOOL_SIZE,
+            MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL
         );
         rewardVault = await RewardVault.new(dnr.address);
@@ -53,11 +53,20 @@ contract("Reward Vault", function (accounts) {
         await dnr.epoch();
 
 
-        (await dnr.getOwner(darknode1))
+        (await dnr.getDarknodeOwner(darknode1))
             .should.equal(darknodeOperator);
 
-        (await dnr.getOwner(darknode2))
+        (await dnr.getDarknodeOwner(darknode2))
             .should.equal(darknodeOperator);
+    });
+
+    it("can update the darknode registry address", async () => {
+        await rewardVault.updateDarknodeRegistry(0x0);
+        (await rewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        await rewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+            .should.be.rejected;
+        await rewardVault.updateDarknodeRegistry(dnr.address);
+        (await rewardVault.darknodeRegistry()).should.equal(dnr.address);
     });
 
     it("can deposit and withdaw funds", async () => {
@@ -133,6 +142,14 @@ contract("Reward Vault", function (accounts) {
             .should.be.rejected;
     });
 
+    it("checks the darknode operator is not 0x0", async () => {
+        // darknodeOperator is not a darknode
+        (await dnr.isRegistered(darknodeOperator)).should.be.false;
+        await rewardVault.deposit(darknodeOperator, ETH.address, 1, { value: 1 });
+
+        await rewardVault.withdraw(darknodeOperator, ETH.address)
+            .should.be.rejected;
+    });
 
 });
 

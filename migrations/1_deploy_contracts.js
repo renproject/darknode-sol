@@ -70,11 +70,13 @@ let migration = async function (deployer) {
     // RenExBalances.address = "0x...";
 
     // RenExSettlement
+    const GWEI = 1000000000;
     await deployer.deploy(
         RenExSettlement,
         Orderbook.address,
         RenExTokens.address,
         RenExBalances.address,
+        100 * GWEI,
     );
     // RenExSettlement.address = "0x...";
 

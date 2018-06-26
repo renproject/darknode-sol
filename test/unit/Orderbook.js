@@ -7,8 +7,10 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
+
+const FEE = 1;
 
 const randomID = async () => {
     return await web3.sha3(Math.random().toString());
@@ -61,7 +63,7 @@ contract("Orderbook", function (accounts) {
         dnr = await DarknodeRegistry.new(
             ren.address,
             MINIMUM_BOND,
-            MINIMUM_DARKPOOL_SIZE,
+            MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL
         );
 
@@ -70,7 +72,7 @@ contract("Orderbook", function (accounts) {
         for (i = 0; i < accounts.length; i++) {
             await ren.transfer(accounts[i], 10000);
         }
-        orderbook = await Orderbook.new(1, ren.address, dnr.address);
+        orderbook = await Orderbook.new(FEE, ren.address, dnr.address);
 
         // Register all nodes
         darknode = accounts[8];
@@ -79,6 +81,24 @@ contract("Orderbook", function (accounts) {
         await dnr.epoch();
 
         broker = accounts[9];
+    });
+
+    it("can update the fee", async () => {
+        await orderbook.updateFee(0x1);
+        (await orderbook.fee()).toNumber().should.equal(1);
+        await orderbook.updateFee(FEE, { from: accounts[1] })
+            .should.be.rejected;
+        await orderbook.updateFee(FEE);
+        (await orderbook.fee()).toNumber().should.equal(FEE);
+    });
+
+    it("can update the darknode registry address", async () => {
+        await orderbook.updateDarknodeRegistry(0x0);
+        (await orderbook.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+            .should.be.rejected;
+        await orderbook.updateDarknodeRegistry(dnr.address);
+        (await orderbook.darknodeRegistry()).should.equal(dnr.address);
     });
 
     it('should be able to open orders', async function () {

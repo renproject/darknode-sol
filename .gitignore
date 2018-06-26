@@ -31,3 +31,7 @@ build/contracts/*
 !build/contracts/RenExBalances.json
 !build/contracts/TraderRegistry.json
 !build/contracts/Utils.json
+
+!node_modules/openzeppelin-solidity/
+node_modules/openzeppelin-solidity/*
+!node_modules/openzeppelin-solidity/contracts/

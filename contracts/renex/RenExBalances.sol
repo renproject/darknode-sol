@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenExSettlement.sol";
 import "../RewardVault.sol";
@@ -17,14 +17,14 @@ contract RenExBalances is Ownable {
     RenExSettlement public settlementContract;
     RewardVault public rewardVaultContract;
 
-    // TODO: Use same constant instance across all contracts 
+    // TODO: Use same constant instance across all contracts
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
     // Events
     event BalanceDecreased(address trader, ERC20 token, uint256 value);
     event BalanceIncreased(address trader, ERC20 token, uint256 value);
-    event RenExSettlementContractChanged(address indexed newRenExSettlementContract);
-    event RewardVaultContractChanged(address indexed newRewardVaultContract);
+    event RenExSettlementContractUpdated(address indexed newRenExSettlementContract);
+    event RewardVaultContractUpdated(address indexed newRewardVaultContract);
 
     // Storage
     mapping(address => address[]) public traderTokens;
@@ -32,14 +32,14 @@ contract RenExBalances is Ownable {
     mapping(address => mapping(address => bool)) private activeTraderToken;
 
     /**
-    @notice After deployment, setRenExSettlementContract should be called
+    @notice After deployment, updateRenExSettlementContract should be called
     */
     constructor(RewardVault _rewardVaultContract) public {
         rewardVaultContract = _rewardVaultContract;
     }
 
 
-    /********** MODIFIERS *****************************************************/                    
+    /********** MODIFIERS *****************************************************/
 
     /**
     @notice Throws if called by any account other than the RenExSettlement contract
@@ -50,15 +50,15 @@ contract RenExBalances is Ownable {
     }
 
 
-    /********** ONLY OWNER FUNCTIONS ******************************************/                
+    /********** ONLY OWNER FUNCTIONS ******************************************/
 
     /**
     @notice Updates the address of the settlement contract (can only be called
     by the owner of the contract)
     @param _newSettlementContract the address of the new settlement contract
     */
-    function setRenExSettlementContract(RenExSettlement _newSettlementContract) public onlyOwner {
-        emit RenExSettlementContractChanged(_newSettlementContract);
+    function updateRenExSettlementContract(RenExSettlement _newSettlementContract) public onlyOwner {
+        emit RenExSettlementContractUpdated(_newSettlementContract);
         settlementContract = _newSettlementContract;
     }
 
@@ -67,14 +67,14 @@ contract RenExBalances is Ownable {
     by the owner of the contract)
     @param _newRewardVaultContract the address of the new reward vault contract
     */
-    function setRewardVault(RewardVault _newRewardVaultContract) public onlyOwner {
-        emit RewardVaultContractChanged(_newRewardVaultContract);
+    function updateRewardVault(RewardVault _newRewardVaultContract) public onlyOwner {
+        emit RewardVaultContractUpdated(_newRewardVaultContract);
         rewardVaultContract = _newRewardVaultContract;
     }
 
 
-    /********** SETTLEMENT FUNCTIONS ******************************************/            
-    
+    /********** SETTLEMENT FUNCTIONS ******************************************/
+
     /**
     @notice Increments a trader's balance of a token - can only be called by the
     owner, intended to be the RenEx settlement contract
@@ -85,7 +85,7 @@ contract RenExBalances is Ownable {
     function incrementBalance(address _trader, address _token, uint256 _value) public onlyRenExSettlementContract {
         privateIncrementBalance(_trader, ERC20(_token), _value);
     }
-    
+
     function privateIncrementBalance(address _trader, ERC20 _token, uint256 _value) private {
         // Check if it's the first time the trader
         if (!activeTraderToken[_trader][_token]) {
@@ -94,7 +94,7 @@ contract RenExBalances is Ownable {
         }
 
         traderBalances[_trader][_token] = traderBalances[_trader][_token].add(_value);
-        
+
         emit BalanceIncreased(_trader, _token, _value);
     }
 
@@ -123,7 +123,7 @@ contract RenExBalances is Ownable {
     }
 
 
-    /********** TRADER FUNCTIONS **********************************************/    
+    /********** TRADER FUNCTIONS **********************************************/
 
     /**
     @notice Deposits ETH or an ERC20 token into the contract

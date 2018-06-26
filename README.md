@@ -14,10 +14,10 @@ npm install --global truffle ganache-cli
 npm install
 ```
 
-Run the `ganache` script. This script needs to be running in the background.
+Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545.
 
 ```sh
-./ganache
+ganache-cli
 ```
 
 Run the Truffle test suite.

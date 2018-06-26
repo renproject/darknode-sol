@@ -23,15 +23,18 @@ contract("RenExBalances", function (accounts) {
 
         rewardVault = await RewardVault.new(0x0);
         renExBalances = await RenExBalances.new(rewardVault.address);
-        renExSettlement = await RenExSettlement.new(0x0, 0x0, renExBalances.address);
-        await renExBalances.setRenExSettlementContract(renExSettlement.address);
+        const GWEI = 1000000000;
+        renExSettlement = await RenExSettlement.new(0x0, 0x0, renExBalances.address, 100 * GWEI);
+        await renExBalances.updateRenExSettlementContract(renExSettlement.address);
     });
 
     it("can update Reward Vault address", async () => {
-        await renExBalances.setRewardVault(0x0);
-        await renExBalances.setRewardVault(rewardVault.address, { from: accounts[1] })
+        await renExBalances.updateRewardVault(0x0);
+        (await renExBalances.rewardVaultContract()).should.equal("0x0000000000000000000000000000000000000000");
+        await renExBalances.updateRewardVault(rewardVault.address, { from: accounts[1] })
             .should.be.rejected;
-        await renExBalances.setRewardVault(rewardVault.address);
+        await renExBalances.updateRewardVault(rewardVault.address);
+        (await renExBalances.rewardVaultContract()).should.equal(rewardVault.address);
     })
 
     it("can hold tokens for a trader", async () => {
@@ -196,7 +199,7 @@ contract("RenExBalances", function (accounts) {
 
     it("the RenExSettlement contract can approve and reject withdrawals", async () => {
         const renExSettlementAlt = await WithdrawBlock.new();
-        await renExBalances.setRenExSettlementContract(renExSettlementAlt.address);
+        await renExBalances.updateRenExSettlementContract(renExSettlementAlt.address);
 
         const deposit = 10;
         await TOKEN1.approve(renExBalances.address, deposit, { from: accounts[0] });
@@ -207,7 +210,7 @@ contract("RenExBalances", function (accounts) {
             .should.be.rejected;
 
         // Can withdraw after reverting settlement contract update
-        await renExBalances.setRenExSettlementContract(renExSettlement.address);
+        await renExBalances.updateRenExSettlementContract(renExSettlement.address);
         await renExBalances.withdraw(TOKEN1.address, deposit, { from: accounts[0] });
     })
 });

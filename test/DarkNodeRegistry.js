@@ -5,7 +5,7 @@ chai.use(require("chai-as-promised"));
 chai.should();
 
 const MINIMUM_BOND = 100;
-const MINIMUM_DARKPOOL_SIZE = 72;
+const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("DarknodeRegistry", function (accounts) {
@@ -17,12 +17,48 @@ contract("DarknodeRegistry", function (accounts) {
     dnr = await DarknodeRegistry.new(
       ren.address,
       MINIMUM_BOND,
-      MINIMUM_DARKPOOL_SIZE,
+      MINIMUM_POD_SIZE,
       MINIMUM_EPOCH_INTERVAL
     );
     for (i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);
     }
+  });
+
+  it("can update minimum bond", async () => {
+    await dnr.updateMinimumBond(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumBond()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumBond(MINIMUM_BOND, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateMinimumBond(MINIMUM_BOND);
+    (await dnr.minimumBond()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumBond()).toNumber().should.equal(MINIMUM_BOND);
+  });
+
+  it("can update minimum pod size", async () => {
+    await dnr.updateMinimumPodSize(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumPodSize()).toNumber().should.equal(0x1);
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE);
+    (await dnr.minimumPodSize()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumPodSize()).toNumber().should.equal(MINIMUM_POD_SIZE);
+  });
+
+  it("can update minimum epoch interval", async () => {
+    await dnr.updateEpochInterval(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(0x1);
+    await dnr.updateEpochInterval(MINIMUM_EPOCH_INTERVAL, { from: accounts[1] })
+      .should.be.rejected;
+    await dnr.updateEpochInterval(MINIMUM_EPOCH_INTERVAL);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(0x1);
+    await waitForEpoch(dnr);
+    (await dnr.minimumEpochInterval()).toNumber().should.equal(MINIMUM_EPOCH_INTERVAL);
   });
 
   it("can not register a Dark Node with a bond less than the minimum bond", async () => {
@@ -62,7 +98,7 @@ contract("DarknodeRegistry", function (accounts) {
   })
 
   it("can get the owner of the Dark Node", async () => {
-    assert.equal((await dnr.getOwner("1")), accounts[0]);
+    assert.equal((await dnr.getDarknodeOwner("1")), accounts[0]);
   })
 
   it("can get the bond of the Dark Node", async () => {

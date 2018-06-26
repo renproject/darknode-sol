@@ -59,7 +59,7 @@ contract("RenExSettlement", function (accounts) {
 `)
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook);
-    })
+    });
 
 
 
@@ -94,26 +94,26 @@ contract("RenExSettlement", function (accounts) {
 `)
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook);
-    })
+    });
 
 
     it("order 3", async () => {
         const tokens = market(DGX, REN);
-        const buy = { tokens, price: 1, volume: 2 /* DGX */ };
+        const buy = { tokens, price: 1, volume: 2 /* DGX */, minimumVolume: 1 /* REN */ };
         const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */]);
-    })
+    });
 
     it("order 4", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, price: 1, volume: 1 /* DGX */ };
-        const sell = { tokens, price: 0.95, volume: 2 /* REN */ };
+        const sell = { tokens, price: 0.95, volume: 2 /* REN */, minimumVolume: 1 /* DGX */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.975, 1 /* DGX */, 1.0256410256410258 /* REN */]);
-    })
+    });
 
     it("order 5", async () => {
         const tokens = market(DGX, REN);
@@ -122,7 +122,7 @@ contract("RenExSettlement", function (accounts) {
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.5, 1 /* DGX */, 2 /* REN */]);
-    })
+    });
 
     it("order 6", async () => {
         const tokens = market(DGX, REN);
@@ -132,45 +132,115 @@ contract("RenExSettlement", function (accounts) {
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */]);
-    })
+    });
 
     it("order 7", async () => {
         const tokens = market(DGX, REN);
         const buy = { tokens, priceC: 1999, priceQ: 40, volume: 2 /* DGX */ };
-        const sell = { tokens, priceC: 1998, priceQ: 40, volume: 1 /* REN */ };
+        const sell = { tokens, priceC: 1998, priceQ: 40, volume: 1 /* REN */, minimumVolume: 2 /* DGX */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([999.25, 2 /* DGX */, 0.002001501125844383 /* REN */]);
-    })
+    });
 
     it("order 8", async () => {
         const tokens = market(ETH, REN);
-        const buy = { tokens, priceC: 200, priceQ: 40, volumeC: 1, volumeQ: 0 /* ETH */ };
-        const sell = { tokens, priceC: 200, priceQ: 40, volume: 1 /* REN */ };
+        const buy = { tokens, priceC: 200, priceQ: 40, volumeC: 1, volumeQ: 0 /* ETH */, minimumVolumeC: 0, minimumVolumeQ: 0 };
+        const sell = { tokens, priceC: 200, priceQ: 40, volume: 1 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([100, 2e-13 /* ETH */, 2e-15 /* REN */]);
-    })
+    });
 
     it("order 9", async () => {
         const tokens = market(ETH, REN);
         // Highest possible price, lowest possible volume
-        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* ETH */ };
-        const sell = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* REN */ };
+        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* ETH */, minimumVolumeC: 0, minimumVolumeQ: 0 };
+        const sell = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([999500000000000, 2e-13 /* ETH */, 0 /* REN */]);
-    })
+    });
 
-    it("order 9", async () => {
+    it("order 10", async () => {
         const tokens = market(ETH, REN);
         // Highest possible price, lowest possible volume
-        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 13 /* ETH */ };
-        const sell = { tokens, priceC: 1999, priceQ: 52, volume: 1 /* REN */ };
+        const buy = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 13 /* ETH */, minimumVolumeC: 0, minimumVolumeQ: 0 };
+        const sell = { tokens, priceC: 1999, priceQ: 52, volume: 1 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
             .should.eql([999500000000000, 2 /* ETH */, 2.001e-15 /* REN */]);
-    })
+    });
+
+    it("invalid orders should revert", async () => {
+        const tokens = market(DGX, REN);
+        let buy = { tokens, price: 1, volume: 2 /* DGX */, minimumVolume: 2 /* REN */ };
+        let sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        buy = { tokens, price: 1, volume: 1 /* DGX */ };
+        sell = { tokens, price: 1, volume: 2 /* REN */, minimumVolume: 2 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        buy = { tokens, price: 1, volume: 1 /* DGX */ };
+        sell = { tokens, price: 1.05, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        buy = { tokens, priceC: 200, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid price (c component)
+        buy = { tokens, priceC: 2000, priceQ: 38, volume: 1 /* DGX */ };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid price (q component)
+        buy = { tokens, priceC: 200, priceQ: 53, volume: 1 /* DGX */, minimumVolume: 1 };
+        sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (c component)
+        buy = { tokens, price: 1, volumeC: 50, volumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid volume (q component)
+        buy = { tokens, price: 1, volumeC: 5, volumeQ: 53 /* DGX */, minimumVolumeC: 0, minimumVolumeQ: 0 };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (c component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 50, minimumVolumeQ: 12 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+        // Invalid minimum volume (q component)
+        buy = { tokens, price: 1, volume: 1, minimumVolumeC: 5, minimumVolumeQ: 53 /* DGX */ };
+        sell = { tokens, price: 1, volume: 1 /* REN */ };
+
+        await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
+            .should.be.rejected;
+
+    });
 });
 
 
@@ -238,6 +308,8 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     if (buy.parity === 1) {
         sell, buy = buy, sell;
     }
+    buy.parity = OrderParity.BUY;
+    sell.parity = OrderParity.SELL;
 
     for (const order of [buy, sell]) {
         if (order.price !== undefined) {
@@ -258,7 +330,11 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
                 minimumVolume = volumeToTuple(order.minimumVolume);
                 order.minimumVolumeC = minimumVolume.c, order.minimumVolumeQ = minimumVolume.q;
             } else {
-                order.minimumVolumeC = order.volumeC, order.minimumVolumeQ = order.volumeQ;
+                let minV = (order.parity === OrderParity.BUY) ?
+                    volumeToTuple(order.volume / order.price) :
+                    volumeToTuple(order.volume * order.price);
+
+                order.minimumVolumeC = minV.c, order.minimumVolumeQ = minV.q;
             }
         }
 
@@ -281,7 +357,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
 
     buy.expiry = buy.expiry || 1641026487;
     buy.type = 1;
-    buy.parity = OrderParity.BUY;
     buy.tokens = `0x${tokens.toString('hex')}`;
     if (buy.orderID !== undefined) {
         buy.orderID.should.equal(getOrderID(buy));
@@ -293,7 +368,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
 
 
     sell.type = 1; // type
-    sell.parity = OrderParity.SELL; // parity
     sell.expiry = sell.expiry || 1641026487; // FIXME: expiry
     sell.tokens = `0x${tokens.toString('hex')}`; // tokens
     if (sell.orderID !== undefined) {
@@ -405,8 +479,9 @@ async function setup(darknode) {
     const rewardVault = await RewardVault.new(dnr.address);
     const renExBalances = await RenExBalances.new(rewardVault.address);
     const renExTokens = await RenExTokens.new();
-    const renExSettlement = await RenExSettlement.new(orderbook.address, renExTokens.address, renExBalances.address);
-    await renExBalances.setRenExSettlementContract(renExSettlement.address);
+    const GWEI = 1000000000;
+    const renExSettlement = await RenExSettlement.new(orderbook.address, renExTokens.address, renExBalances.address, 100 * GWEI);
+    await renExBalances.updateRenExSettlementContract(renExSettlement.address);
 
     await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
     await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()).toNumber());
@@ -457,9 +532,9 @@ function getOrderID(order) {
 
 /**
  * Calculate price tuple from a decimal string
- * 
+ *
  * https://github.com/republicprotocol/republic-go/blob/smpc/docs/orders-and-order-fragments.md
- * 
+ *
  */
 function priceToTuple(priceI) {
     const price = new BigNumber(priceI);

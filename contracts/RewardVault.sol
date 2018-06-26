@@ -1,11 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-contract RewardVault {
+contract RewardVault is Ownable {
     using SafeMath for uint256;
 
     /**
@@ -13,9 +14,11 @@ contract RewardVault {
       */
     address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
-    DarknodeRegistry darknodeRegistry;
+    DarknodeRegistry public darknodeRegistry;
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
+
+    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
 
     /**
       * @notice The constructor.
@@ -27,7 +30,12 @@ contract RewardVault {
         darknodeRegistry = _darknodeRegistry;
     }
 
-    /** 
+    function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
+        darknodeRegistry = _newDarknodeRegistry;
+    }
+
+    /**
       * @notice Deposit fees into the vault for a Darknode. The Darknode
       * registration is not checked (to reduce gas fees); the caller must be
       * careful not to call this function for a Darknode that is not registered
@@ -50,7 +58,7 @@ contract RewardVault {
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
 
-    /** 
+    /**
       * @notice Withdraw fees earned by a Darknode. The fees will be sent to
       * the owner of the Darknode. If a Darknode is not registered the fees
       * cannot be withdrawn.
@@ -61,7 +69,7 @@ contract RewardVault {
       * @param _token The address of the ERC20 token to withdraw.
       */
     function withdraw(address _darknode, ERC20 _token) public {
-        address darknodeOwner = darknodeRegistry.getOwner(bytes20(_darknode));
+        address darknodeOwner = darknodeRegistry.getDarknodeOwner(bytes20(_darknode));
         require(darknodeOwner != 0x0);
 
         uint256 value = darknodeBalances[_darknode][_token];
@@ -73,5 +81,5 @@ contract RewardVault {
             require(_token.transfer(darknodeOwner, value));
         }
     }
- 
+
 }

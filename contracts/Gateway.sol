@@ -1,28 +1,28 @@
 pragma solidity ^0.4.24;
 
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Gateway is Ownable {
 
     address public republicToken;
     address public darknodeRegistry;
     address public traderRegistry;
-    uint256 public minimumDarkPoolSize;
+    uint256 public minimumPodSize;
 
     event update(bytes4 functionID, uint256 oldValue, uint256 newValue);
 
     constructor(
-        address _republicToken, 
-        address _darknodeRegistry, 
+        address _republicToken,
+        address _darknodeRegistry,
         address _traderRegistry,
-        uint256 _minimumDarkPoolSize
+        uint256 _minimumPodSize
     ) public {
         republicToken = _republicToken;
         darknodeRegistry = _darknodeRegistry;
         traderRegistry = _traderRegistry;
-        minimumDarkPoolSize = _minimumDarkPoolSize;
+        minimumPodSize = _minimumPodSize;
     }
-  
+
     function updateDarknodeRegistry(address _darknodeRegistry) public onlyOwner {
         emit update(bytes4(sha256("updateDarknodeRegistry(address)")), uint256(darknodeRegistry), uint256(_darknodeRegistry));
         darknodeRegistry = _darknodeRegistry;
@@ -33,9 +33,9 @@ contract Gateway is Ownable {
         traderRegistry = _traderRegistry;
     }
 
-    function updateMinimumDarkPoolSize(uint256 _minimumDarkPoolSize) public onlyOwner {
-        emit update(bytes4(sha256("updateMinimumDarkPoolSize(uint256)")), minimumDarkPoolSize, _minimumDarkPoolSize);
-        minimumDarkPoolSize = _minimumDarkPoolSize;
+    function updateMinimumPodSize(uint256 _minimumPodSize) public onlyOwner {
+        emit update(bytes4(sha256("updateMinimumPodSize(uint256)")), minimumPodSize, _minimumPodSize);
+        minimumPodSize = _minimumPodSize;
     }
- 
+
 }
