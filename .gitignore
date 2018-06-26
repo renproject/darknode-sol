@@ -32,6 +32,6 @@ build/contracts/*
 !build/contracts/TraderRegistry.json
 !build/contracts/Utils.json
 
-!node_modules/zeppelin-solidity/
-node_modules/zeppelin-solidity/*
-!node_modules/zeppelin-solidity/contracts/
+!node_modules/openzeppelin-solidity/
+node_modules/openzeppelin-solidity/*
+!node_modules/openzeppelin-solidity/contracts/

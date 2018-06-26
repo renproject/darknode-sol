@@ -172,7 +172,7 @@ contract("RenExSettlement", function (accounts) {
             .should.eql([999500000000000, 2 /* ETH */, 2.001e-15 /* REN */]);
     });
 
-    it.only("invalid orders should revert", async () => {
+    it("invalid orders should revert", async () => {
         const tokens = market(DGX, REN);
         let buy = { tokens, price: 1, volume: 2 /* DGX */, minimumVolume: 2 /* REN */ };
         let sell = { tokens, price: 1, volume: 1 /* REN */ };
