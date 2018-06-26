@@ -32,7 +32,7 @@ contract RewardVault is Ownable {
         darknodeRegistry = _newDarknodeRegistry;
     }
 
-    /** 
+    /**
       * @notice Deposit fees into the vault for a Darknode. The Darknode
       * registration is not checked (to reduce gas fees); the caller must be
       * careful not to call this function for a Darknode that is not registered
@@ -55,7 +55,7 @@ contract RewardVault is Ownable {
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
 
-    /** 
+    /**
       * @notice Withdraw fees earned by a Darknode. The fees will be sent to
       * the owner of the Darknode. If a Darknode is not registered the fees
       * cannot be withdrawn.
@@ -78,5 +78,5 @@ contract RewardVault is Ownable {
             require(_token.transfer(darknodeOwner, value));
         }
     }
- 
+
 }

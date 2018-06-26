@@ -16,7 +16,7 @@ order values
 contract RenExSettlement is Ownable {
     using SafeMath for uint256;
 
-    /** 
+    /**
       * @notice Fees are in RenEx are 0.2% and to represent this in integers it
       * is broken into a numerator and denominator.
       */
@@ -44,7 +44,7 @@ contract RenExSettlement is Ownable {
         uint8 parity;
         uint8 orderType;
         uint64 expiry;
-        uint64 tokens;        
+        uint64 tokens;
         uint64 priceC; uint64 priceQ;
         uint64 volumeC; uint64 volumeQ;
         uint64 minimumVolumeC; uint64 minimumVolumeQ;
@@ -87,7 +87,7 @@ contract RenExSettlement is Ownable {
     }
 
     /********** UPDATER FUNCTIONS *********************************************/
-    
+
     function updateOrderbook(Orderbook _newOrderbookContract) public onlyOwner {
         orderbookContract = _newOrderbookContract;
     }
@@ -114,7 +114,7 @@ contract RenExSettlement is Ownable {
     }
 
     /********** SETTLEMENT FUNCTIONS ******************************************/
-    
+
     // Price/volume calculation functions
 
     function tupleGTE(uint64 leftC, uint64 leftQ, uint64 rightC, uint64 rightQ) private pure returns (bool) {
@@ -141,7 +141,7 @@ contract RenExSettlement is Ownable {
     }
 
     function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)
-    private view returns (uint256, int256, uint256) {        
+    private view returns (uint256, int256, uint256) {
         uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);
         uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);
 
@@ -168,7 +168,7 @@ contract RenExSettlement is Ownable {
         if (e >= 0) {
             value = c * 10 ** uint256(e);
         } else {
-            value = c / 10 ** uint256(-e);            
+            value = c / 10 ** uint256(-e);
         }
 
         value = value / divideC;
@@ -189,7 +189,7 @@ contract RenExSettlement is Ownable {
         if (e >= 0) {
             value = c * 10 ** uint256(e);
         } else {
-            value = c / 10 ** uint256(-e);            
+            value = c / 10 ** uint256(-e);
         }
 
         return value;
@@ -200,18 +200,18 @@ contract RenExSettlement is Ownable {
         // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
         uint256 c = 2 * volC;
 
-        // Positive and negative components of exponent                
+        // Positive and negative components of exponent
         uint256 ep = decimals;
         uint256 en = 12 + 1;
-        // Add volQ to positive or negative component based on its sign        
+        // Add volQ to positive or negative component based on its sign
         if (volQ < 0) {
             en += uint256(-volQ);
         } else {
             ep += uint256(volQ);
         }
 
-        // If (ep-en) is negative, divide instead of multiplying  
-        uint256 value;              
+        // If (ep-en) is negative, divide instead of multiplying
+        uint256 value;
         if (ep >= en) {
             value = c * 10 ** (ep - en);
         } else {
@@ -229,9 +229,9 @@ contract RenExSettlement is Ownable {
         uint32 buyToken, uint32 sellToken,
         uint256 lowTokenValue, uint256 highTokenValue
     ) private {
-        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);        
+        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);
         address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);
-        
+
         address buySubmitter = orders[_buyID].submitter;
         address sellSubmitter = orders[_sellID].submitter;
 
@@ -339,7 +339,7 @@ contract RenExSettlement is Ownable {
         // Require that the orders are confirmed to one another
         require(orders[_buyID].parity == uint8(OrderParity.Buy));
         require(orders[_sellID].parity == uint8(OrderParity.Sell));
-        
+
         // TODO: Loop through and check for all indices when an order is able to
         // be matched with multiple orders
         require(orderbookContract.orderMatch(_buyID)[0] == _sellID);

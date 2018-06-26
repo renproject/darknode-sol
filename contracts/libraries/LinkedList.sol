@@ -21,7 +21,7 @@ library LinkedList {
         bytes20 previous;
         bytes20 next;
     }
-    
+
     /**
     * @notice LinkedList uses a mapping from bytes20s to nodes. Each bytes20
     * uniquely identifies a node, and in this way they are used like pointers.
@@ -111,7 +111,7 @@ library LinkedList {
 
         self.list[newNode].inList = true;
     }
-    
+
     /**
     * @notice Remove a node from the list, and fix the previous and next
     * pointers that are pointing to the removed node. Removing anode that is not

@@ -12,8 +12,8 @@ contract Gateway is Ownable {
     event update(bytes4 functionID, uint256 oldValue, uint256 newValue);
 
     constructor(
-        address _republicToken, 
-        address _darknodeRegistry, 
+        address _republicToken,
+        address _darknodeRegistry,
         address _traderRegistry,
         uint256 _minimumPodSize
     ) public {
@@ -22,7 +22,7 @@ contract Gateway is Ownable {
         traderRegistry = _traderRegistry;
         minimumPodSize = _minimumPodSize;
     }
-  
+
     function updateDarknodeRegistry(address _darknodeRegistry) public onlyOwner {
         emit update(bytes4(sha256("updateDarknodeRegistry(address)")), uint256(darknodeRegistry), uint256(_darknodeRegistry));
         darknodeRegistry = _darknodeRegistry;
@@ -37,5 +37,5 @@ contract Gateway is Ownable {
         emit update(bytes4(sha256("updateMinimumPodSize(uint256)")), minimumPodSize, _minimumPodSize);
         minimumPodSize = _minimumPodSize;
     }
- 
+
 }

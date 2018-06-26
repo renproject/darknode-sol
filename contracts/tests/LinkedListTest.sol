@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../libraries/LinkedList.sol";
 
- 
+
 contract LinkedListTest {
     using LinkedList for LinkedList.List;
 
@@ -35,7 +35,7 @@ contract LinkedListTest {
     function insertAfter(bytes20 target, bytes20 newNode) public {
         ll.insertAfter(target, newNode);
     }
-    
+
     function remove(bytes20 node) public {
         ll.remove(node);
     }

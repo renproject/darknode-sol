@@ -489,9 +489,9 @@ function getOrderID(order) {
 
 /**
  * Calculate price tuple from a decimal string
- * 
+ *
  * https://github.com/republicprotocol/republic-go/blob/smpc/docs/orders-and-order-fragments.md
- * 
+ *
  */
 function priceToTuple(priceI) {
     const price = new BigNumber(priceI);

@@ -7,21 +7,25 @@ import "./RepublicToken.sol";
 
 /**
  * @notice DarknodeRegistry is responsible for the registration and
- * deregistration of dark nodes.
+ * deregistration of dark nodes. Registration requires the deposit of a bond.
  */
 contract DarknodeRegistry is Ownable {
 
+    /**
+    * @notice Darknode pods are shuffled after a fixed number of blocks.
+    * An Epoch stores an epoch hash used as an (insecure) RNG seed, and the
+    * blocknumber which restricts when the next epoch can be called.
+    */
     struct Epoch {
         uint256 epochhash;
         uint256 blocknumber;
     }
 
     /**
-    * @notice Darknodes are stored in the darknodes. The owner is the address that
-    * registered the darknode, the bond is the amount of REN that was transferred
-    * during registration, and the public key is the encryption key that should
-    * be used when sending sensitive information to the darknode. The commitment
-    * and the 
+    * @notice Darknodes are stored in the darknode struct. The owner is the
+    * address that registered the darknode, the bond is the amount of REN that
+    * was transferred during registration, and the public key is the encryption
+    * key that should be used when sending sensitive information to the darknode.
     */
     struct Darknode {
         address owner;
@@ -40,21 +44,23 @@ contract DarknodeRegistry is Ownable {
     uint256 public numDarknodes;
     uint256 public numDarknodesNextEpoch;
 
-    // Constants used to parameterize behavior.
+    // Variables used to parameterize behavior.
     uint256 public minimumBond;
     uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
 
+    // When one of the above variables is modified, it is only updated when the
+    // next epoch is called. These variables store the values for the next epoch.
     uint256 public nextMinimumBond;
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
 
-    // The current epoch and the minimum time interval until the next epoch.
+    // The current epoch
     Epoch public currentEpoch;
 
     /**
     * @notice Emitted when a darknode is registered.
-    * 
+    *
     * @param _darknodeID The darknode ID that was registered.
     * @param _bond The amount of REN that was transferred as bond.
     */
@@ -62,7 +68,7 @@ contract DarknodeRegistry is Ownable {
 
     /**
     * @notice Emitted when a darknode is deregistered.
-    * 
+    *
     * @param _darknodeID The darknode ID that was deregistered.
     */
     event DarknodeDeregistered(bytes20 _darknodeID);
@@ -76,10 +82,13 @@ contract DarknodeRegistry is Ownable {
     event OwnerRefunded(address _owner, uint256 _amount);
 
     /**
-    * @notice Emitted when a new epoch has begun
+    * @notice Emitted when a new epoch has begun.
     */
     event NewEpoch();
 
+    /**
+    @notice Emitted when a constructor paramater has been updated.
+    */
     event MinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
     event MinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event MinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
@@ -87,7 +96,7 @@ contract DarknodeRegistry is Ownable {
     /**
     * @notice Only allow the owner that registered the darknode to pass.
     */
-    modifier onlyOperator(bytes20 _darknodeID) {
+    modifier onlyDarknodeOperator(bytes20 _darknodeID) {
         require(darknodeRegistry[_darknodeID].owner == msg.sender);
         _;
     }
@@ -117,7 +126,7 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
-    /** 
+    /**
     * @notice The DarknodeRegistry constructor.
     *
     * @param _renAddress The address of the RepublicToken contract.
@@ -205,7 +214,7 @@ contract DarknodeRegistry is Ownable {
         emit NewEpoch();
     }
 
-    /** 
+    /**
     * @notice Register a dark node and transfer the bond to this contract. The
     * caller must provide a public encryption key for the dark node as well as a
     * bond in REN. The bond must be provided as an ERC20 allowance. The dark
@@ -241,7 +250,7 @@ contract DarknodeRegistry is Ownable {
         emit DarknodeRegistered(_darknodeID, _bond);
     }
 
-    /** 
+    /**
     * @notice Deregister a dark node. The dark node will not be deregisterd
     * until the end of the epoch. At this time, the bond can be refunded by
     * calling the refund method.
@@ -249,7 +258,7 @@ contract DarknodeRegistry is Ownable {
     * @param _darknodeID The dark node ID that will be deregistered. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyOperator(_darknodeID) {
+    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOperator(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
         numDarknodesNextEpoch--;
@@ -258,14 +267,14 @@ contract DarknodeRegistry is Ownable {
         emit DarknodeDeregistered(_darknodeID);
     }
 
-    /** 
+    /**
     * @notice Refund the bond of a deregistered dark node. This will make the
     * dark node available for registration again.
     *
     * @param _darknodeID The dark node ID that will be refunded. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function refund(bytes20 _darknodeID) public onlyOperator(_darknodeID) onlyDeregistered(_darknodeID) {
+    function refund(bytes20 _darknodeID) public onlyDarknodeOperator(_darknodeID) onlyDeregistered(_darknodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darknodeID].bond;
 
