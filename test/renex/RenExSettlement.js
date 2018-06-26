@@ -77,7 +77,7 @@ contract("RenExSettlement", function (accounts) {
         (await renExSettlement.submissionGasPriceLimit()).toNumber().should.equal(100 * GWEI);
     })
 
-    it("should reject submitOrder with gas price", async () => {
+    it.only("should reject submitOrder with gas price", async () => {
         await renExSettlement.submitOrder(
             "0x0000000000000000000000000000000000000000000000000000000000000001",
             "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -90,7 +90,7 @@ contract("RenExSettlement", function (accounts) {
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x8d981922c65b85a257f457ba3c29831aa4c3b1bd45dc3b280590fd5c89c69dc2",
-            { gasPrice: 100 * GWEI + 1 }
+            { gasPrice: 100 * GWEI + 1 } // Above limit
         ).should.be.rejected;
     });
 
@@ -107,6 +107,7 @@ contract("RenExSettlement", function (accounts) {
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x8d981922c65b85a257f457ba3c29831aa4c3b1bd45dc3b280590fd5c89c69dc2",
+            { gasPrice: 100 * GWEI } // At limit
         );
 
         await renExSettlement.submitOrder(

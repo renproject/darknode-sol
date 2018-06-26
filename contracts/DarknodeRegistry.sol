@@ -140,14 +140,17 @@ contract DarknodeRegistry is Ownable {
     }
 
     function updateMinimumBond(uint256 _nextMinimumBond) public onlyOwner {
+        // Will be updated next epoch
         nextMinimumBond = _nextMinimumBond;
     }
 
     function updateMinimumDarkPoolSize(uint256 _nextMinimumDarkPoolSize) public onlyOwner {
+        // Will be updated next epoch
         nextMinimumDarkPoolSize = _nextMinimumDarkPoolSize;
     }
 
     function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
+        // Will be updated next epoch
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
 
