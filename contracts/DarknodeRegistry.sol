@@ -79,7 +79,7 @@ contract DarknodeRegistry is Ownable {
     * @param _owner The address that was refunded.
     * @param _amount The amount of REN that was refunded.
     */
-    event OwnerRefunded(address _owner, uint256 _amount);
+    event DarknodeOwnerRefunded(address _owner, uint256 _amount);
 
     /**
     * @notice Emitted when a new epoch has begun.
@@ -96,7 +96,7 @@ contract DarknodeRegistry is Ownable {
     /**
     * @notice Only allow the owner that registered the darknode to pass.
     */
-    modifier onlyDarknodeOperator(bytes20 _darknodeID) {
+    modifier onlyDarknodeOwner(bytes20 _darknodeID) {
         require(darknodeRegistry[_darknodeID].owner == msg.sender);
         _;
     }
@@ -258,7 +258,7 @@ contract DarknodeRegistry is Ownable {
     * @param _darknodeID The dark node ID that will be deregistered. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOperator(_darknodeID) {
+    function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
         numDarknodesNextEpoch--;
@@ -274,7 +274,7 @@ contract DarknodeRegistry is Ownable {
     * @param _darknodeID The dark node ID that will be refunded. The caller
     *                    of this method must be the owner of this dark node.
     */
-    function refund(bytes20 _darknodeID) public onlyDarknodeOperator(_darknodeID) onlyDeregistered(_darknodeID) {
+    function refund(bytes20 _darknodeID) public onlyDarknodeOwner(_darknodeID) onlyDeregistered(_darknodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darknodeID].bond;
 
@@ -292,7 +292,7 @@ contract DarknodeRegistry is Ownable {
         require(ren.transfer(msg.sender, amount));
 
         // Emit an event.
-        emit OwnerRefunded(msg.sender, amount);
+        emit DarknodeOwnerRefunded(msg.sender, amount);
     }
 
     function getOwner(bytes20 _darknodeID) public view returns (address) {
