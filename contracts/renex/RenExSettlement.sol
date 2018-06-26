@@ -144,7 +144,7 @@ contract RenExSettlement is Ownable {
      */
     function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
         // Normalize to same exponent before finding mid-point (mean)
-        uint256 norm = orders[buyID].priceC * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
+        uint256 norm = uint256(orders[buyID].priceC) * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
         int256 q = int256(orders[sellID].priceQ);
         uint256 sum = (orders[sellID].priceC + norm);
         if (sum % 2 == 0) {
