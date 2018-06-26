@@ -198,24 +198,24 @@ contract("RenExSettlement", function (accounts) {
         ).should.be.rejected;
     });
 
+    it("verifyOrder", async () => {
+        // Can verify valid match
+        await renExSettlement.verifyOrder(buyID_1);
+        await renExSettlement.verifyOrder(buyID_2);
+        await renExSettlement.verifyOrder(sellID_1);
+        await renExSettlement.verifyOrder(sellID_2);
+        await renExSettlement.verifyOrder(buyID_1.replace("a", "b"))
+            .should.be.rejected;
+        await renExSettlement.verifyOrder(sellID_1.replace("a", "b"))
+            .should.be.rejected;
+    });
+
     it("verifyMatch", async () => {
         // Can verify valid match
         await renExSettlement.verifyMatch(
             buyID_2,
             sellID_2,
         );
-
-        // Invalid buy ID
-        await renExSettlement.verifyMatch(
-            buyID_1.replace("a", "b"),
-            sellID_1,
-        ).should.be.rejected;
-
-        // Invalid sell ID
-        await renExSettlement.verifyMatch(
-            buyID_1,
-            sellID_1.replace("a", "b"),
-        ).should.be.rejected;
 
         // Two buys
         await renExSettlement.verifyMatch(

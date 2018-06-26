@@ -206,7 +206,7 @@ contract("RenExSettlement", function (accounts) {
             .should.be.rejected;
 
         // Invalid price (q component)
-        buy = { tokens, priceC: 200, priceQ: 53, volume: 1 /* DGX */ };
+        buy = { tokens, priceC: 200, priceQ: 53, volume: 1 /* DGX */, minimumVolume: 1 };
         sell = { tokens, priceC: 200, priceQ: 39, volume: 1 /* REN */, minimumVolume: 1 /* DGX */ };
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
@@ -220,7 +220,7 @@ contract("RenExSettlement", function (accounts) {
             .should.be.rejected;
 
         // Invalid volume (q component)
-        buy = { tokens, price: 1, volumeC: 5, volumeQ: 53 /* DGX */ };
+        buy = { tokens, price: 1, volumeC: 5, volumeQ: 53 /* DGX */, minimumVolumeC: 0, minimumVolumeQ: 0 };
         sell = { tokens, price: 1, volume: 1 /* REN */ };
 
         await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook)
