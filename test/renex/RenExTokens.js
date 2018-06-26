@@ -6,7 +6,6 @@ const RenExTokens = artifacts.require("RenExTokens");
 const BigNumber = require("bignumber.js");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
-chai.use(require("chai-bignumber")());
 chai.should();
 
 contract("RenExTokens", function (accounts) {

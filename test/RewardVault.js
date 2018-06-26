@@ -4,6 +4,7 @@ const RepublicToken = artifacts.require("RepublicToken");
 const RewardVault = artifacts.require("RewardVault");
 const Reverter = artifacts.require("Reverter");
 
+const BigNumber = require("bignumber.js");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
@@ -48,7 +49,7 @@ contract("Reward Vault", function (accounts) {
         for (const darknode of [darknode1, darknode2]) {
             await ren.transfer(darknodeOperator, MINIMUM_BOND);
             await ren.approve(dnr.address, MINIMUM_BOND, { from: darknodeOperator });
-            await dnr.register(darknode, "", MINIMUM_BOND, { from: darknodeOperator });
+            await dnr.register(darknode, "0x00", MINIMUM_BOND, { from: darknodeOperator });
         }
         await dnr.epoch();
 
@@ -105,8 +106,8 @@ contract("Reward Vault", function (accounts) {
                 await rewardVault.withdraw(darknode, token.address);
                 const balanceAfter = await token.balanceOf(darknodeOperator);
 
-                balanceAfter.toFixed()
-                    .should.equal(balanceBefore.add(sum[darknode][token.address]).toFixed())
+                balanceAfter
+                    .should.equal(new BigNumber(balanceBefore).plus(sum[darknode][token.address]).toFixed())
             }
         }
     });
@@ -133,7 +134,7 @@ contract("Reward Vault", function (accounts) {
         const reverter = await Reverter.new();
         darknode3 = accounts[5];
         await ren.approve(reverter.address, MINIMUM_BOND);
-        await reverter.register(dnr.address, ren.address, darknode3, "", MINIMUM_BOND);
+        await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND);
         await dnr.epoch();
 
         await rewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });

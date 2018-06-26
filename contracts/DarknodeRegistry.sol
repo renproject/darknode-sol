@@ -147,7 +147,7 @@ contract DarknodeRegistry is Ownable {
         nextMinimumDarkPoolSize = _nextMinimumDarkPoolSize;
     }
 
-    function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
+    function updateMinimumEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
 
@@ -258,7 +258,7 @@ contract DarknodeRegistry is Ownable {
         darknodeRegistry[_darknodeID] = Darknode({
             owner: 0x0,
             bond: 0,
-            publicKey: "",
+            publicKey: "0x0",
             registeredAt: 0,
             deregisteredAt: 0
         });

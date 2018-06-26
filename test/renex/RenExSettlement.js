@@ -17,6 +17,8 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
+const GWEI = 1000000000;
+
 contract("RenExSettlement", function (accounts) {
 
     const buyer = accounts[0];
@@ -45,6 +47,26 @@ contract("RenExSettlement", function (accounts) {
         buyID_3 = "0xfdfe3a9515260199d49d82619f02f144be694e0daf04b1372525f4d623a4f7dd";
         await orderbook.openBuyOrder("0x8c3600cecec60ad3d6fef0eaccdff07afc23ae1403852124a774142bb8d61df80489708bd0988a3c7d0b0ddc4c7b2b0ded7afc0f0baca83bfe41b86531f048f801", buyID_3, { from: broker });
 
+    });
+
+    it("should reject submitOrder with gas price", async () => {
+        await renExSettlement.submitOrder(
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "0x000000000000000000000000000000000000000000000000000000005b2a43a2",
+            "0x0000000000000000000000000000000000000000000000000000000100010001",
+            "0x00000000000000000000000000000000000000000000000000000000000000e6",
+            "0x0000000000000000000000000000000000000000000000000000000000000023",
+            "0x0000000000000000000000000000000000000000000000000000000000000005",
+            "0x000000000000000000000000000000000000000000000000000000000000000f",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "0x8d981922c65b85a257f457ba3c29831aa4c3b1bd45dc3b280590fd5c89c69dc2",
+            { gasPrice: 100 * GWEI + 1 }
+        ).should.be.rejected;
+    });
+
+    it("submitOrder", async () => {
         await renExSettlement.submitOrder(
             "0x0000000000000000000000000000000000000000000000000000000000000001",
             "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -100,10 +122,9 @@ contract("RenExSettlement", function (accounts) {
             "0x0000000000000000000000000000000000000000000000000000000000000000",
             "0x799f3c0f186049d0e59e51bd145d23b30a6a7657ef591ce345ab6f89ef9cbad7",
         )
-
     });
 
-    it("submitOrder", async () => {
+    it("submitOrder (rejections)", async () => {
         // Can't submit order twice:
         await renExSettlement.submitOrder(
             "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -221,7 +242,7 @@ const OrderParity = {
     BUY: 0,
     SELL: 1,
 };
-let prefix = web3.toHex("Republic Protocol: open: ");
+let prefix = web3.utils.toHex("Republic Protocol: open: ");
 const symbols = {
     [BTC]: "BTC",
     [ETH]: "ETH",
@@ -253,17 +274,16 @@ async function setup(darknode, broker) {
     const rewardVault = await RewardVault.new(dnr.address);
     const renExBalances = await RenExBalances.new(rewardVault.address);
     const renExTokens = await RenExTokens.new();
-    const GWEI = 1000000000;
     const renExSettlement = await RenExSettlement.new(orderbook.address, renExTokens.address, renExBalances.address, 100 * GWEI);
     await renExBalances.updateRenExSettlementContract(renExSettlement.address);
 
     await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
-    await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()).toNumber());
-    await renExTokens.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()).toNumber());
-    await renExTokens.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()).toNumber());
+    await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()));
+    await renExTokens.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()));
+    await renExTokens.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()));
 
     // Register darknode
-    await dnr.register(darknode, "", 0, { from: darknode });
+    await dnr.register(darknode, "0x00", 0, { from: darknode });
     await dnr.epoch();
 
     await tokenAddresses[REN].approve(orderbook.address, 100 * 1e18, { from: broker });

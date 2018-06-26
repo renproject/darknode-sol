@@ -13,11 +13,11 @@ const MINIMUM_EPOCH_INTERVAL = 2;
 const FEE = 1;
 
 const randomID = async () => {
-    return await web3.sha3(Math.random().toString());
+    return await web3.utils.sha3(Math.random().toString());
 }
 
-const openPrefix = web3.toHex("Republic Protocol: open: ");
-const closePrefix = web3.toHex("Republic Protocol: cancel: ");
+const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
+const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
 
 const steps = {
@@ -26,8 +26,8 @@ const steps = {
             orderID = await randomID();
         }
 
-        let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
-        let signature = await web3.eth.sign(account, hash);
+        let hash = await web3.utils.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
+        let signature = await web3.eth.sign(hash, account);
         await orderbook.openBuyOrder(signature, orderID, { from: broker });
 
         return orderID;
@@ -38,8 +38,8 @@ const steps = {
             orderID = await randomID();
         }
 
-        let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
-        let signature = await web3.eth.sign(account, hash);
+        let hash = await web3.utils.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
+        let signature = await web3.eth.sign(hash, account);
         await orderbook.openSellOrder(signature, orderID, { from: broker });
 
         return orderID;
@@ -47,8 +47,8 @@ const steps = {
 
     cancelOrder: async (orderbook, broker, account, orderID) => {
         // Cancel canceled order
-        hash = await web3.sha3(closePrefix + orderID.slice(2), { encoding: 'hex' });
-        signature = await web3.eth.sign(account, hash);
+        hash = await web3.utils.sha3(closePrefix + orderID.slice(2), { encoding: 'hex' });
+        signature = await web3.eth.sign(hash, account);
         await orderbook.cancelOrder(signature, orderID, { from: broker });
     }
 }
@@ -77,7 +77,7 @@ contract("Orderbook", function (accounts) {
         // Register all nodes
         darknode = accounts[8];
         await ren.approve(dnr.address, MINIMUM_BOND, { from: darknode });
-        await dnr.register(darknode, "", MINIMUM_BOND, { from: darknode });
+        await dnr.register(darknode, "0x00", MINIMUM_BOND, { from: darknode });
         await dnr.epoch();
 
         broker = accounts[9];
@@ -85,11 +85,11 @@ contract("Orderbook", function (accounts) {
 
     it("can update the fee", async () => {
         await orderbook.updateFee(0x1);
-        (await orderbook.fee()).toNumber().should.equal(1);
+        (await orderbook.fee()).should.equal("1");
         await orderbook.updateFee(FEE, { from: accounts[1] })
             .should.be.rejected;
         await orderbook.updateFee(FEE);
-        (await orderbook.fee()).toNumber().should.equal(FEE);
+        (await orderbook.fee()).should.equal(FEE.toString());
     });
 
     it("can update the darknode registry address", async () => {
@@ -104,8 +104,8 @@ contract("Orderbook", function (accounts) {
     it('should be able to open orders', async function () {
         await ren.approve(orderbook.address, 2 * accounts.length, { from: broker });
         for (i = 0; i < accounts.length; i++) {
-            steps.openBuyOrder(orderbook, broker, accounts[i]);
-            steps.openSellOrder(orderbook, broker, accounts[i]);
+            await steps.openBuyOrder(orderbook, broker, accounts[i]);
+            await steps.openSellOrder(orderbook, broker, accounts[i]);
         }
     });
 
@@ -248,12 +248,12 @@ contract("Orderbook", function (accounts) {
         let orderID = await randomID();
 
         (await orderbook.orderDepth.call(orderID))
-            .toNumber().should.equal(0);
+            .should.equal("0");
 
         await steps.openBuyOrder(orderbook, broker, accounts[0], orderID);
 
         (await orderbook.orderDepth.call(orderID))
-            .toNumber().should.equal(1);
+            .should.equal("1");
     });
 
     it('should be able to retrieve orders', async function () {
@@ -280,11 +280,11 @@ contract("Orderbook", function (accounts) {
             // Traders
             orders[1][i].should.equal(accounts[i + offset]);
             // Status
-            orders[2][i].toNumber().should.equal(1);
+            orders[2][i].should.equal("1");
         }
 
         (await _orderbook.getOrders(10000, 1))
-            .should.deep.equal([[], [], []]);
+            .should.deep.equal({ 0: [], 1: [], 2: [] });
 
         (await _orderbook.getOrders(0, 10000))[0]
             .length.should.equal(accounts.length);
@@ -298,12 +298,12 @@ contract("Orderbook", function (accounts) {
         const data = "0x55dd146decc436d869bf58f1d64f557870f4ec91807af9759fc81c690d454d57";
         const id = "0x54c483844aaa986dfe61c75facc37e0851b823f18ea14bfef94f0f77bb2afa9d";
 
-        let prefix = await web3.toHex("Republic Protocol: open: ");
-        data.should.equal(await web3.sha3(prefix + id.slice(2), { encoding: 'hex' }));
+        let prefix = await web3.utils.toHex("Republic Protocol: open: ");
+        data.should.equal(await web3.utils.sha3(prefix + id.slice(2), { encoding: 'hex' }));
 
         await ren.approve(orderbook.address, 1, { from: accounts[0] });
         await orderbook.openBuyOrder(signature, id, { from: accounts[0] });
-        (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66".toLowerCase());
+        (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66");
     });
 
 
@@ -320,11 +320,11 @@ contract("Orderbook", function (accounts) {
             buyOrderId = await randomID();
             sellOrderId = await randomID();
 
-            let prefix = await web3.toHex("Republic Protocol: open: ");
-            let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
-            let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
-            let buySignature = await web3.eth.sign(accounts[0], buyHash);
-            let sellSignature = await web3.eth.sign(accounts[0], sellHash);
+            let prefix = await web3.utils.toHex("Republic Protocol: open: ");
+            let buyHash = await web3.utils.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
+            let sellHash = await web3.utils.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
+            let buySignature = await web3.eth.sign(buyHash, accounts[0]);
+            let sellSignature = await web3.eth.sign(sellHash, accounts[0]);
 
             await _orderbook.openBuyOrder(buySignature, buyOrderId, { from: broker });
             await _orderbook.openSellOrder(sellSignature, sellOrderId, { from: broker });
@@ -333,30 +333,30 @@ contract("Orderbook", function (accounts) {
 
         { // should be able to retrieve orders by index
             (await _orderbook.buyOrder.call(0))
-                .should.deep.equal([buyOrderId, true]);
+                .should.deep.equal({ 0: buyOrderId, 1: true });
 
             // Get order from the orderbook
             (await _orderbook.sellOrder.call(0))
-                .should.deep.equal([sellOrderId, true]);
+                .should.deep.equal({ 0: sellOrderId, 1: true });
 
             // Negative test for get order
             (await _orderbook.buyOrder.call(1))
-                .should.deep.equal(["0x0000000000000000000000000000000000000000000000000000000000000000", false]);
+                .should.deep.equal({ 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false });
 
             (await _orderbook.sellOrder.call(1))
-                .should.deep.equal(["0x0000000000000000000000000000000000000000000000000000000000000000", false]);
+                .should.deep.equal({ 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false });
 
             // Get order from the orderbook
             (await _orderbook.getOrder.call(0))
-                .should.deep.equal([buyOrderId, true]);
+                .should.deep.equal({ 0: buyOrderId, 1: true });
 
             // Get order from the orderbook
             (await _orderbook.getOrder.call(1))
-                .should.deep.equal([sellOrderId, true]);
+                .should.deep.equal({ 0: sellOrderId, 1: true });
 
             // Get order from the orderbook
             (await _orderbook.getOrder.call(2))
-                .should.deep.equal(["0x0000000000000000000000000000000000000000000000000000000000000000", false]);
+                .should.deep.equal({ 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false });
         }
 
         await _orderbook.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
@@ -365,9 +365,9 @@ contract("Orderbook", function (accounts) {
         { // should be able to retrieve order details
             // Get order status
             (await _orderbook.orderState.call(buyOrderId))
-                .toNumber().should.equal(2);
+                .should.equal("2");
             (await _orderbook.orderState.call(sellOrderId))
-                .toNumber().should.equal(2);
+                .should.equal("2");
 
             // Get order match
             (await _orderbook.orderMatch.call(buyOrderId))
@@ -378,7 +378,7 @@ contract("Orderbook", function (accounts) {
 
             // Get matched order
             (await _orderbook.orderPriority.call(buyOrderId))
-                .toNumber().should.equal(1);
+                .should.equal("1");
 
             // Get trader
             (await _orderbook.orderTrader.call(buyOrderId))
@@ -394,11 +394,11 @@ contract("Orderbook", function (accounts) {
 
             // Get blocknumber
             (await _orderbook.orderBlockNumber.call(buyOrderId))
-                .toNumber().should.equal(confirmationBlockNumber);
+                .should.equal(confirmationBlockNumber.toString());
 
             // Get blocknumber
             (await _orderbook.getOrdersCount.call())
-                .toNumber().should.equal(2);
+                .should.equal("2");
         }
     });
 

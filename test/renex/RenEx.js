@@ -17,7 +17,7 @@ const chai = require("chai");
 chai.use(require("chai-as-promised"));
 chai.should();
 
-contract("RenExSettlement", function (accounts) {
+contract("RenEx integration", function (accounts) {
 
     const buyer = accounts[0];
     const seller = accounts[1];
@@ -214,7 +214,7 @@ const OrderParity = {
     BUY: 0,
     SELL: 1,
 };
-let prefix = web3.toHex("Republic Protocol: open: ");
+let prefix = web3.utils.toHex("Republic Protocol: open: ");
 const symbols = {
     [BTC]: "BTC",
     [ETH]: "ETH",
@@ -293,7 +293,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
             if (order.nonce === undefined) {
                 order.nonce = randomNonce();
             }
-            order.nonceHash = web3.sha3(order.nonce, { encoding: 'hex' });
+            order.nonceHash = web3.utils.sha3(order.nonce, { encoding: 'hex' });
         }
     }
 
@@ -314,8 +314,8 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         buy.orderID = getOrderID(buy);
     }
-    let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
-    buy.signature = await web3.eth.sign(buyer, buyHash);
+    let buyHash = await web3.utils.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
+    buy.signature = await web3.eth.sign(buyHash, buyer);
 
 
     sell.type = 1; // type
@@ -326,11 +326,11 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         sell.orderID = getOrderID(sell);
     }
-    let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
-    const sellSignature = await web3.eth.sign(seller, sellHash);
+    let sellHash = await web3.utils.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
+    const sellSignature = await web3.eth.sign(sellHash, seller);
 
-    const highDecimals = (await highTokenInstance.decimals()).toNumber();
-    const lowDecimals = (await lowTokenInstance.decimals()).toNumber();
+    const highDecimals = new BigNumber(await highTokenInstance.decimals()).toNumber();
+    const lowDecimals = new BigNumber(await lowTokenInstance.decimals()).toNumber();
 
     // Approve and deposit
     const highDeposit = sell.volume * (10 ** highDecimals);
@@ -365,33 +365,33 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     await renExSettlement.submitOrder(buy.type, buy.parity, buy.expiry, buy.tokens, buy.priceC, buy.priceQ, buy.volumeC, buy.volumeQ, buy.minimumVolumeC, buy.minimumVolumeQ, buy.nonceHash);
     await renExSettlement.submitOrder(sell.type, sell.parity, sell.expiry, sell.tokens, sell.priceC, sell.priceQ, sell.volumeC, sell.volumeQ, sell.minimumVolumeC, sell.minimumVolumeQ, sell.nonceHash);
 
-    const buyerLowBefore = await renExBalances.traderBalances(buyer, lowTokenInstance.address);
-    const buyerHighBefore = await renExBalances.traderBalances(buyer, highTokenInstance.address);
-    const sellerLowBefore = await renExBalances.traderBalances(seller, lowTokenInstance.address);
-    const sellerHighBefore = await renExBalances.traderBalances(seller, highTokenInstance.address);
+    const buyerLowBefore = new BigNumber(await renExBalances.traderBalances(buyer, lowTokenInstance.address));
+    const buyerHighBefore = new BigNumber(await renExBalances.traderBalances(buyer, highTokenInstance.address));
+    const sellerLowBefore = new BigNumber(await renExBalances.traderBalances(seller, lowTokenInstance.address));
+    const sellerHighBefore = new BigNumber(await renExBalances.traderBalances(seller, highTokenInstance.address));
 
     await renExSettlement.submitMatch(buy.orderID, sell.orderID);
 
-    // const matchID = web3.sha3(buy.orderID + sell.orderID.slice(2), { encoding: 'hex' });
+    // const matchID = web3.utils.sha3(buy.orderID + sell.orderID.slice(2), { encoding: 'hex' });
     const match = await renExSettlement.getSettlementDetails(buy.orderID, sell.orderID);
-    const priceMatched = match[0];
+    const priceMatched = new BigNumber(match[0]);
     const lowMatched = new BigNumber(match[1]);
     const highMatched = new BigNumber(match[2]);
     const lowFee = new BigNumber(match[3]);
     const highFee = new BigNumber(match[4]);
 
-    const buyerLowAfter = await renExBalances.traderBalances(buyer, lowTokenInstance.address);
-    const buyerHighAfter = await renExBalances.traderBalances(buyer, highTokenInstance.address);
-    const sellerLowAfter = await renExBalances.traderBalances(seller, lowTokenInstance.address);
-    const sellerHighAfter = await renExBalances.traderBalances(seller, highTokenInstance.address);
+    const buyerLowAfter = new BigNumber(await renExBalances.traderBalances(buyer, lowTokenInstance.address));
+    const buyerHighAfter = new BigNumber(await renExBalances.traderBalances(buyer, highTokenInstance.address));
+    const sellerLowAfter = new BigNumber(await renExBalances.traderBalances(seller, lowTokenInstance.address));
+    const sellerHighAfter = new BigNumber(await renExBalances.traderBalances(seller, highTokenInstance.address));
 
     const lowSum = lowMatched.plus(lowFee);
     const highSum = highMatched.plus(highFee);
 
-    buyerLowBefore.sub(lowSum).toFixed().should.equal(buyerLowAfter.toFixed());
-    buyerHighBefore.add(highMatched).toFixed().should.equal(buyerHighAfter.toFixed());
-    sellerLowBefore.add(lowMatched).toFixed().should.equal(sellerLowAfter.toFixed());
-    sellerHighBefore.sub(highSum).toFixed().should.equal(sellerHighAfter.toFixed());
+    buyerLowBefore.minus(lowSum).toFixed().should.equal(buyerLowAfter.toFixed());
+    buyerHighBefore.plus(highMatched).toFixed().should.equal(buyerHighAfter.toFixed());
+    sellerLowBefore.plus(lowMatched).toFixed().should.equal(sellerLowAfter.toFixed());
+    sellerHighBefore.minus(highSum).toFixed().should.equal(sellerHighAfter.toFixed());
 
     const expectedLowFees = lowSum
         .multipliedBy(2)
@@ -435,12 +435,12 @@ async function setup(darknode) {
     await renExBalances.updateRenExSettlementContract(renExSettlement.address);
 
     await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
-    await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()).toNumber());
-    await renExTokens.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()).toNumber());
-    await renExTokens.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()).toNumber());
+    await renExTokens.registerToken(BTC, tokenAddresses[BTC].address, (await tokenAddresses[BTC].decimals()));
+    await renExTokens.registerToken(DGX, tokenAddresses[DGX].address, (await tokenAddresses[DGX].decimals()));
+    await renExTokens.registerToken(REN, tokenAddresses[REN].address, (await tokenAddresses[REN].decimals()));
 
     // Register darknode
-    await dnr.register(darknode, "", 0, { from: darknode });
+    await dnr.register(darknode, "0x00", 0, { from: darknode });
     await dnr.epoch();
 
     return [tokenAddresses, orderbook, renExSettlement, renExBalances];
@@ -473,7 +473,7 @@ function getOrderID(order) {
         new BN(order.minimumVolumeQ).toArrayLike(Buffer, "be", 8),
         new Buffer(order.nonceHash.slice(2), 'hex'),
     ]);
-    return web3.sha3('0x' + bytes.toString('hex'), { encoding: 'hex' });
+    return web3.utils.sha3('0x' + bytes.toString('hex'), { encoding: 'hex' });
 }
 
 
