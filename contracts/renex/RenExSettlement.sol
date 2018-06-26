@@ -61,6 +61,9 @@ contract RenExSettlement is Ownable {
 
     // Events
     event Transfer(address from, address to, uint32 token, uint256 value);
+    event OrderbookUpdates(Orderbook previousOrderbook, Orderbook nextOrderbook);
+    event RenExBalancesUpdates(RenExBalances previousRenExBalances, RenExBalances nextRenExBalances);
+    event SubmissionGasPriceLimitUpdates(uint256 previousSubmissionGasPriceLimit, uint256 nextSubmissionGasPriceLimit);
 
     // Storage
     mapping(bytes32 => Order) public orders;
@@ -89,16 +92,21 @@ contract RenExSettlement is Ownable {
     /********** UPDATER FUNCTIONS *********************************************/
 
     function updateOrderbook(Orderbook _newOrderbookContract) public onlyOwner {
+        emit OrderbookUpdates(orderbookContract, _newOrderbookContract);
         orderbookContract = _newOrderbookContract;
     }
 
     function updateRenExBalances(RenExBalances _newRenExBalancesContract) public onlyOwner {
+        emit RenExBalancesUpdates(renExBalancesContract, _newRenExBalancesContract);
         renExBalancesContract = _newRenExBalancesContract;
     }
 
     function updateSubmissionGasPriceLimit(uint256 _newSubmissionGasPriceLimit) public onlyOwner {
+        emit SubmissionGasPriceLimitUpdates(submissionGasPriceLimit, _newSubmissionGasPriceLimit);
         submissionGasPriceLimit = _newSubmissionGasPriceLimit;
     }
+
+    /********** MODIFIERS *****************************************************/
 
     modifier withGasPriceLimit(uint256 gasPriceLimit) {
         require(tx.gasprice <= gasPriceLimit);

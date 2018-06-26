@@ -16,6 +16,9 @@ contract RenExTokens is Ownable {
     mapping(uint32 => uint8) public tokenDecimals;
     mapping(uint32 => bool) public tokenIsRegistered;
 
+    event TokenRegistered(uint32 tokenCode, ERC20 tokenAddress, uint8 tokenDecimals);
+    event TokenDeregistered(uint32 tokenCode);
+
     /**
     @notice constructor
     */
@@ -33,6 +36,8 @@ contract RenExTokens is Ownable {
         tokenAddresses[_tokenCode] = _tokenAddress;
         tokenDecimals[_tokenCode] = _tokenDecimals;
         tokenIsRegistered[_tokenCode] = true;
+
+        emit TokenRegistered(_tokenCode, _tokenAddress, _tokenDecimals);
     }
 
     /**
@@ -41,5 +46,7 @@ contract RenExTokens is Ownable {
     */
     function deregisterToken(uint32 _tokenCode) public onlyOwner {
         tokenIsRegistered[_tokenCode] = false;
+
+        emit TokenDeregistered(_tokenCode);
     }
 }

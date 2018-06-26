@@ -18,6 +18,8 @@ contract RewardVault is Ownable {
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
+    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
+
     /**
       * @notice The constructor.
       *
@@ -29,6 +31,7 @@ contract RewardVault is Ownable {
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
