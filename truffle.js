@@ -2,6 +2,15 @@ require('dotenv').config()
 
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
+const KOVAN = (MNEMONIC) => ({
+  provider: function () {
+    return new HDWalletProvider(MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
+  },
+  network_id: 42,
+  gas: 5000000,
+  gasPrice: 10000000000,
+});
+
 module.exports = {
   networks: {
     development: {
@@ -9,21 +18,9 @@ module.exports = {
       port: 8545,
       network_id: "*",
     },
-    ropsten: {
-      provider: function () {
-        return new HDWalletProvider(process.env.MNEMONIC, `https://ropsten.infura.io/${process.env.INFURA_TOKEN}`);
-      },
-      network_id: 3,
-      gas: 5000000,
-    },
-    kovan: {
-      provider: function () {
-        return new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/${process.env.INFURA_TOKEN}`);
-      },
-      network_id: 42,
-      gas: 5000000,
-      gasPrice: 10000000000,
-    },
+    f0: KOVAN(process.env.MNEMONIC_F0),
+    falcon: KOVAN(process.env.MNEMONIC_FALCON),
+    nightly: KOVAN(process.env.MNEMONIC_NIGHTLY),
   },
   mocha: {
     // // Use with `truffle develop`, not with `npm run coverage`
@@ -32,6 +29,7 @@ module.exports = {
     //   currency: 'USD',
     //   gasPrice: 21
     // },
+    useColors: true,
     bail: true,
   },
 };

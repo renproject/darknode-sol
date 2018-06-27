@@ -11,81 +11,81 @@ var DGXMock = artifacts.require("DGXMock.sol");
 var ABCToken = artifacts.require("ABCToken.sol");
 var XYZToken = artifacts.require("XYZToken.sol");
 
+let migration = async function (deployer, network) {
+    // Network is "development", "nightly", "falcon" or "f0"
 
-let migration = async function (deployer) {
     // REN
-    await deployer.deploy(RepublicToken);
-    // RepublicToken.address = "0x...";
+    await deployer
+        .deploy(
+            RepublicToken, { overwrite: network !== "f0" }
+        )
+        .then(() => deployer.deploy(
+            DGXMock, { overwrite: network !== "f0" })
+        )
+        .then(() => deployer.deploy(
+            ABCToken, { overwrite: network !== "f0" })
+        )
+        .then(() => deployer.deploy(
+            XYZToken, { overwrite: network !== "f0" })
+        )
 
-    // DGX
-    await deployer.deploy(DGXMock);
-    // DGXMock.address = "0x...";
-
-    // ABC
-    await deployer.deploy(ABCToken);
-    // ABCToken.address = "0x...";
-
-    // XYZ
-    await deployer.deploy(XYZToken);
-    // XYZToken.address = "0x...";
-
-    // DNR
-    await deployer.deploy(
-        DarknodeRegistry,
-        RepublicToken.address,
-        0,
-        3,
-        240,
-    );
-    // DarknodeRegistry.address = "0x...";
+        .then(() => deployer.deploy(
+            DarknodeRegistry,
+            RepublicToken.address,
+            100000 * 1e18, // Bond
+            6, // Pod
+            600, // Epoch
+        ))
 
 
-    // Orderbook
-    await await deployer.deploy(
-        Orderbook,
-        0,
-        RepublicToken.address,
-        DarknodeRegistry.address,
-    );
-    // Orderbook.address = "0x...";
+        .then(() => deployer.deploy(
+            Orderbook,
+            0, // Fee
+            RepublicToken.address,
+            DarknodeRegistry.address,
+        ))
 
-    // RewardVault
-    await deployer.deploy(RewardVault, DarknodeRegistry.address);
-    // RewardVault.address = "0x...";
+        .then(() => deployer.deploy(
+            RewardVault, DarknodeRegistry.address
+        ))
 
-    // RenExTokens
-    await deployer.deploy(
-        RenExTokens,
-    );
-    const renExTokens = RenExTokens.at(RenExTokens.address);
-    await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
-    await renExTokens.registerToken(0x100, DGXMock.address, 9);
-    await renExTokens.registerToken(0x10000, RepublicToken.address, 18);
-    await renExTokens.registerToken(0x10001, ABCToken.address, 12);
-    await renExTokens.registerToken(0x10002, XYZToken.address, 18);
-    // RenExTokens.address = "0x...";
+        .then(() => deployer.deploy(
+            RenExTokens,
+            { overwrite: network !== "f0" },
+        ))
 
-    // RenExBalances (1/2)
-    await deployer.deploy(RenExBalances, RewardVault.address);
-    // RenExBalances.address = "0x...";
+        .then(async () => {
+            const renExTokens = RenExTokens.at(RenExTokens.address);
+            await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
+            await renExTokens.registerToken(0x100, DGXMock.address, 9);
+            await renExTokens.registerToken(0x10000, RepublicToken.address, 18);
+            await renExTokens.registerToken(0x10001, ABCToken.address, 12);
+            await renExTokens.registerToken(0x10002, XYZToken.address, 18);
+        })
 
-    // RenExSettlement
-    const GWEI = 1000000000;
-    await deployer.deploy(
-        RenExSettlement,
-        Orderbook.address,
-        RenExTokens.address,
-        RenExBalances.address,
-        100 * GWEI,
-    );
-    // RenExSettlement.address = "0x...";
+        .then(() => deployer.deploy(
+            RenExBalances, RewardVault.address,
+            { overwrite: network !== "f0" },
+        ))
 
-    // RenExBalances (2/2)
-    const renExBalances = RenExBalances.at(RenExBalances.address);
-    await renExBalances.setRenExSettlementContract(RenExSettlement.address);
+        .then(() => {
+            const GWEI = 1000000000;
+            return deployer.deploy(
+                RenExSettlement,
+                Orderbook.address,
+                RenExTokens.address,
+                RenExBalances.address,
+                100 * GWEI,
+            );
+        })
+
+        .then(async () => {
+            const renExBalances = RenExBalances.at(RenExBalances.address);
+            await renExBalances.updateRewardVault(RewardVault.address);
+            await renExBalances.updateRenExSettlementContract(RenExSettlement.address);
+        });
 };
 
-// Comment to run deployment:
-migration = (deployer) => null;
-
-module.exports = migration;
+module.exports = (deployer, network) => {
+    migration(deployer, network).catch((err) => { console.error(err); throw err; });
+};

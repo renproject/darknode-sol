@@ -11,7 +11,7 @@ cp -r ./node_modules/openzeppelin-solidity/contracts ./contracts/openzeppelin-so
 # Registry
 #abigen --sol ./republic-sol/contracts/DarknodeRegistry.sol -pkg bindings --out dnr.go
 #abigen --sol ./republic-sol/contracts/Arc.sol -pkg bindings --out arc.go
-abigen --sol ./contracts/Orderbook.sol -pkg bindings --out bindings.go
+abigen --sol ./contracts/RenExSettlement.sol -pkg bindings --out bindings.go
 #abigen --sol ./republic-sol/contracts/Arc.sol -pkg bindings --out arc.go
 
 
