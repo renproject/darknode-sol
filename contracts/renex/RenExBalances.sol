@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./RenExSettlement.sol";
-import "./RewardVault.sol";
+import "../RewardVault.sol";
 
 /**
 @title The contract responsible for holding RenEx trader funds

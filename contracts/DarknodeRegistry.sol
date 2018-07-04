@@ -137,9 +137,16 @@ contract DarknodeRegistry is Ownable {
     */
     constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval) public {
         ren = _renAddress;
+
         minimumBond = _minimumBond;
+        nextMinimumBond = minimumBond;
+
         minimumPodSize = _minimumPodSize;
+        nextMinimumPodSize = minimumPodSize;
+
         minimumEpochInterval = _minimumEpochInterval;
+        nextMinimumEpochInterval = minimumEpochInterval;
+
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
             blocknumber: block.number
