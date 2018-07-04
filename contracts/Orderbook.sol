@@ -4,6 +4,8 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
+import "./libraries/Utils.sol";
+
 
 /**
   * @notice The Orderbook contract stores the state and priority of orders and
@@ -12,7 +14,7 @@ import "./libraries/ECDSA.sol";
   * the throughput of orders.
   */
 contract Orderbook is Ownable {
-
+    
     /**
       * @notice OrderState enumerates the possible states of an order. All
       * orders default to the Undefined state.
@@ -146,7 +148,7 @@ contract Orderbook is Ownable {
     function cancelOrder(bytes _signature, bytes32 _orderId) public {
         if (orders[_orderId].state == OrderState.Open) {
             // Recover trader address from the signature
-            bytes32 data = keccak256(abi.encodePacked("Republic Protocol: cancel: ", _orderId));
+            bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
             address trader = ECDSA.addr(data, _signature);
             require(orders[_orderId].trader == trader);
         } else {
@@ -303,7 +305,7 @@ contract Orderbook is Ownable {
         require(orders[_orderId].state == OrderState.Undefined);
 
         // recover trader address from the signature
-        bytes32 data = keccak256(abi.encodePacked("Republic Protocol: open: ", _orderId));
+        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
         address trader = ECDSA.addr(data, _signature);
         orders[_orderId].state = OrderState.Open;
         orders[_orderId].trader = trader;

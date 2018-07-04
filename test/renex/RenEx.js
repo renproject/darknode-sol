@@ -363,7 +363,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         buy.orderID = getOrderID(buy);
     }
-    let buyHash = await web3.sha3(prefix + buy.orderID.slice(2), { encoding: 'hex' });
+    let buyHash = prefix + buy.orderID.slice(2);
     buy.signature = await web3.eth.sign(buyer, buyHash);
 
 
@@ -375,7 +375,7 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     } else {
         sell.orderID = getOrderID(sell);
     }
-    let sellHash = await web3.sha3(prefix + sell.orderID.slice(2), { encoding: 'hex' });
+    let sellHash = prefix + sell.orderID.slice(2);
     const sellSignature = await web3.eth.sign(seller, sellHash);
 
     const highDecimals = (await highTokenInstance.decimals()).toNumber();

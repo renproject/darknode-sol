@@ -10,6 +10,14 @@ library Utils {
         return bytes32(subdata);
     }
 
+    function toBytesI(bytes data, uint length) internal pure returns (bytes) {
+        bytes memory result = new bytes(length);
+        for (uint i = 0; i < length; i++) {
+            result[i] = data[i];
+        }
+        return result;
+    }
+
     // /**
     // * @notice Create a new bytes array containing the last n bytes of the input.
     // *

@@ -12,8 +12,8 @@ const MINIMUM_EPOCH_INTERVAL = 2;
 
 const FEE = 1;
 
-const randomID = async () => {
-    return await web3.sha3(Math.random().toString());
+const randomID = () => {
+    return web3.sha3(Math.random().toString());
 }
 
 const openPrefix = web3.toHex("Republic Protocol: open: ");
@@ -23,10 +23,10 @@ const closePrefix = web3.toHex("Republic Protocol: cancel: ");
 const steps = {
     openBuyOrder: async (orderbook, broker, account, orderID) => {
         if (!orderID) {
-            orderID = await randomID();
+            orderID = randomID();
         }
 
-        let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
+        let hash = openPrefix + orderID.slice(2);
         let signature = await web3.eth.sign(account, hash);
         await orderbook.openBuyOrder(signature, orderID, { from: broker });
 
@@ -35,10 +35,10 @@ const steps = {
 
     openSellOrder: async (orderbook, broker, account, orderID) => {
         if (!orderID) {
-            orderID = await randomID();
+            orderID = randomID();
         }
 
-        let hash = await web3.sha3(openPrefix + orderID.slice(2), { encoding: 'hex' });
+        let hash = openPrefix + orderID.slice(2);
         let signature = await web3.eth.sign(account, hash);
         await orderbook.openSellOrder(signature, orderID, { from: broker });
 
@@ -47,7 +47,7 @@ const steps = {
 
     cancelOrder: async (orderbook, broker, account, orderID) => {
         // Cancel canceled order
-        hash = await web3.sha3(closePrefix + orderID.slice(2), { encoding: 'hex' });
+        hash = closePrefix + orderID.slice(2);
         signature = await web3.eth.sign(account, hash);
         await orderbook.cancelOrder(signature, orderID, { from: broker });
     }
@@ -147,7 +147,7 @@ contract("Orderbook", function (accounts) {
     it('should be able to cancel orders that are not open', async function () {
         await ren.approve(orderbook.address, 1, { from: broker });
 
-        let orderID = await randomID();
+        let orderID = randomID();
         await steps.cancelOrder(orderbook, broker, accounts[0], orderID);
     });
 
@@ -219,7 +219,7 @@ contract("Orderbook", function (accounts) {
         await steps.cancelOrder(orderbook, broker, accounts[1], canceledOrder);
 
         // Unopened Order
-        let unopenedOrder = await randomID();
+        let unopenedOrder = randomID();
 
 
         await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode }).should.be.rejected;
@@ -234,8 +234,8 @@ contract("Orderbook", function (accounts) {
 
     it('should be rejected when an un-registered node trying to confirm orders', async function () {
         await ren.approve(orderbook.address, 2, { from: accounts[i] });
-        let order1 = await randomID();
-        let order2 = await randomID();
+        let order1 = randomID();
+        let order2 = randomID();
 
         await orderbook.confirmOrder(order1, [order2], { from: accounts[1] }).should.be.rejected;
         await orderbook.confirmOrder(order2, [order1], { from: accounts[1] }).should.be.rejected;
@@ -245,7 +245,7 @@ contract("Orderbook", function (accounts) {
 
         await ren.approve(orderbook.address, 1, { from: broker });
 
-        let orderID = await randomID();
+        let orderID = randomID();
 
         (await orderbook.orderDepth.call(orderID))
             .toNumber().should.equal(0);
@@ -290,23 +290,18 @@ contract("Orderbook", function (accounts) {
             .length.should.equal(accounts.length);
     });
 
-
     it('should be able to retrieve trader from signature', async function () {
-        // Last byte can be 0x1b or 0x00
-        const signature = "0xe7c44ade11bc806ed80b645b2fe2d62d64b9a1bb5144a4d536f2038da9ac149c48292103db545dd11414f8bbde677e51e829a0d5f7211323ccdb51e175fe34ab1b";
+        const id = "0x6b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        const data = "0x52657075626c69632050726f746f636f6c3a206f70656e3a206b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        const signature = "0x5f9b4834c252960cec91116f1138262cca723a579dfc1a3405c9900862c63a415885c79d1e8ced229cfc753df6db88309141a7c1a2478d2d77956982288868311b";
 
-        const data = "0x55dd146decc436d869bf58f1d64f557870f4ec91807af9759fc81c690d454d57";
-        const id = "0x54c483844aaa986dfe61c75facc37e0851b823f18ea14bfef94f0f77bb2afa9d";
-
-        let prefix = await web3.toHex("Republic Protocol: open: ");
-        data.should.equal(await web3.sha3(prefix + id.slice(2), { encoding: 'hex' }));
+        let prefix = web3.toHex("Republic Protocol: open: ");
+        data.should.equal((prefix + id.slice(2)));
 
         await ren.approve(orderbook.address, 1, { from: accounts[0] });
         await orderbook.openBuyOrder(signature, id, { from: accounts[0] });
         (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66".toLowerCase());
     });
-
-
 
     it("should be able to read data from the contract", async function () {
         _orderbook = await Orderbook.new(1, ren.address, dnr.address);
@@ -317,12 +312,12 @@ contract("Orderbook", function (accounts) {
         { // Open orders first
             await ren.approve(_orderbook.address, 2, { from: broker });
 
-            buyOrderId = await randomID();
-            sellOrderId = await randomID();
+            buyOrderId = randomID();
+            sellOrderId = randomID();
 
-            let prefix = await web3.toHex("Republic Protocol: open: ");
-            let buyHash = await web3.sha3(prefix + buyOrderId.slice(2), { encoding: 'hex' });
-            let sellHash = await web3.sha3(prefix + sellOrderId.slice(2), { encoding: 'hex' });
+            let prefix = web3.toHex("Republic Protocol: open: ");
+            let buyHash = prefix + buyOrderId.slice(2);
+            let sellHash = prefix + sellOrderId.slice(2);
             let buySignature = await web3.eth.sign(accounts[0], buyHash);
             let sellSignature = await web3.eth.sign(accounts[0], sellHash);
 
