@@ -55,86 +55,87 @@ contract DarknodeRegistry is Ownable {
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
 
-    // The current epoch
+    // The current and previous epoch
     Epoch public currentEpoch;
+    Epoch public previousEpoch;
 
     /**
-    * @notice Emitted when a darknode is registered.
-    *
-    * @param _darknodeID The darknode ID that was registered.
-    * @param _bond The amount of REN that was transferred as bond.
-    */
+      * @notice Emitted when a darknode is registered.
+      *
+      * @param _darknodeID The darknode ID that was registered.
+      * @param _bond The amount of REN that was transferred as bond.
+      */
     event DarknodeRegistered(bytes20 _darknodeID, uint256 _bond);
 
     /**
-    * @notice Emitted when a darknode is deregistered.
-    *
-    * @param _darknodeID The darknode ID that was deregistered.
-    */
+      * @notice Emitted when a darknode is deregistered.
+      *
+      * @param _darknodeID The darknode ID that was deregistered.
+      */
     event DarknodeDeregistered(bytes20 _darknodeID);
 
     /**
-    * @notice Emitted when a refund has been made.
-    *
-    * @param _owner The address that was refunded.
-    * @param _amount The amount of REN that was refunded.
-    */
+      * @notice Emitted when a refund has been made.
+      *
+      * @param _owner The address that was refunded.
+      * @param _amount The amount of REN that was refunded.
+      */
     event DarknodeOwnerRefunded(address _owner, uint256 _amount);
 
     /**
-    * @notice Emitted when a new epoch has begun.
-    */
+      * @notice Emitted when a new epoch has begun.
+      */
     event NewEpoch();
 
     /**
-    @notice Emitted when a constructor paramater has been updated.
-    */
+      * @notice Emitted when a constructor paramater has been updated.
+      */
     event MinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
     event MinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event MinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
 
     /**
-    * @notice Only allow the owner that registered the darknode to pass.
-    */
+      * @notice Only allow the owner that registered the darknode to pass.
+      */
     modifier onlyDarknodeOwner(bytes20 _darknodeID) {
         require(darknodeRegistry[_darknodeID].owner == msg.sender);
         _;
     }
 
     /**
-    * @notice Only allow unregistered dark nodes.
-    */
+      * @notice Only allow unregistered dark nodes.
+      */
     modifier onlyUnregistered(bytes20 _darknodeID) {
         require(isUnregistered(_darknodeID));
         _;
     }
 
     /**
-    * @notice Only allow deregistered dark nodes.
-    */
+      * @notice Only allow deregistered dark nodes.
+      */
     modifier onlyDeregistered(bytes20 _darknodeID) {
         require(isDeregistered(_darknodeID));
         _;
     }
 
     /**
-    * @notice Only allowed registered nodes without a pending deregistration to
-    * deregister
-    */
+      * @notice Only allowed registered nodes without a pending deregistration to
+      * deregister
+      */
     modifier onlyDeregistrable(bytes20 _darknodeID) {
         require(canDeregister(_darknodeID));
         _;
     }
 
     /**
-    * @notice The DarknodeRegistry constructor.
-    *
-    * @param _renAddress The address of the RepublicToken contract.
-    * @param _minimumBond The minimum bond amount that can be submitted by a
-    *                     darknode.
-    * @param _minimumPodSize The minimum size of a pod.
-    * @param _minimumEpochInterval The minimum number of blocks between epochs.
-    */
+      * @notice The DarknodeRegistry constructor.
+      *
+      * @param _renAddress The address of the RepublicToken contract.
+      * @param _minimumBond The minimum bond amount that can be submitted by a
+      *                     darknode.
+      * @param _minimumPodSize The minimum size of a pod.
+      * @param _minimumEpochInterval The minimum number of blocks between epochs.
+      */
     constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval) public {
         ren = _renAddress;
 
@@ -156,44 +157,45 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * @notice Allows the contract owner to update the minimum bond.
-    * @param _nextMinimumBond The minimum bond amount that can be submitted by a
-    *                         darknode.
-    */
+      * @notice Allows the contract owner to update the minimum bond.
+      * @param _nextMinimumBond The minimum bond amount that can be submitted by a
+      *                         darknode.
+      */
     function updateMinimumBond(uint256 _nextMinimumBond) public onlyOwner {
         // Will be updated next epoch
         nextMinimumBond = _nextMinimumBond;
     }
 
     /**
-    * @notice Allows the contract owner to update the minimum pod size.
-    * @param _nextMinimumPodSize The minimum size of a pod.
-    */
+      * @notice Allows the contract owner to update the minimum pod size.
+      * @param _nextMinimumPodSize The minimum size of a pod.
+      */
     function updateMinimumPodSize(uint256 _nextMinimumPodSize) public onlyOwner {
         // Will be updated next epoch
         nextMinimumPodSize = _nextMinimumPodSize;
     }
 
     /**
-    * @notice Allows the contract owner to update the minimum epoch interval.
-    * @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
-    */
+      * @notice Allows the contract owner to update the minimum epoch interval.
+      * @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
+      */
     function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
         // Will be updated next epoch
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
 
     /**
-    * @notice Progress the epoch if it is possible and necessary to do so. This
-    * captures the current timestamp and current blockhash and overrides the
-    * current epoch.
-    */
+      * @notice Progress the epoch if it is possible and necessary to do so. This
+      * captures the current timestamp and current blockhash and overrides the
+      * current epoch.
+      */
     function epoch() public {
         require(block.number >= currentEpoch.blocknumber + minimumEpochInterval);
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
+        previousEpoch = currentEpoch;
         currentEpoch = Epoch({
             epochhash: epochhash,
             blocknumber: block.number
@@ -222,20 +224,20 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * @notice Register a dark node and transfer the bond to this contract. The
-    * caller must provide a public encryption key for the dark node as well as a
-    * bond in REN. The bond must be provided as an ERC20 allowance. The dark
-    * node will remain pending registration until the next epoch. Only after
-    * this period can the dark node be deregistered. The caller of this method
-    * will be stored as the owner of the dark node.
-    *
-    * @param _darknodeID The dark node ID that will be registered.
-    * @param _publicKey The public key of the dark node. It is stored to allow
-    *                   other dark nodes and traders to encrypt messages to the
-    *                   trader.
-    * @param _bond The bond that will be paid. It must be greater than, or equal
-    *              to, the minimum bond.
-    */
+      * @notice Register a dark node and transfer the bond to this contract. The
+      * caller must provide a public encryption key for the dark node as well as a
+      * bond in REN. The bond must be provided as an ERC20 allowance. The dark
+      * node will remain pending registration until the next epoch. Only after
+      * this period can the dark node be deregistered. The caller of this method
+      * will be stored as the owner of the dark node.
+      *
+      * @param _darknodeID The dark node ID that will be registered.
+      * @param _publicKey The public key of the dark node. It is stored to allow
+      *                   other dark nodes and traders to encrypt messages to the
+      *                   trader.
+      * @param _bond The bond that will be paid. It must be greater than, or equal
+      *              to, the minimum bond.
+      */
     function register(bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darknodeID) {
         // REN allowance
         require(_bond >= minimumBond);
@@ -258,13 +260,13 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * @notice Deregister a dark node. The dark node will not be deregisterd
-    * until the end of the epoch. At this time, the bond can be refunded by
-    * calling the refund method.
-    *
-    * @param _darknodeID The dark node ID that will be deregistered. The caller
-    *                    of this method must be the owner of this dark node.
-    */
+      * @notice Deregister a dark node. The dark node will not be deregisterd
+      * until the end of the epoch. At this time, the bond can be refunded by
+      * calling the refund method.
+      *
+      * @param _darknodeID The dark node ID that will be deregistered. The caller
+      *                    of this method must be the owner of this dark node.
+      */
     function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the dark node for deregistration
         darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
@@ -275,12 +277,12 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * @notice Refund the bond of a deregistered dark node. This will make the
-    * dark node available for registration again.
-    *
-    * @param _darknodeID The dark node ID that will be refunded. The caller
-    *                    of this method must be the owner of this dark node.
-    */
+      * @notice Refund the bond of a deregistered dark node. This will make the
+      * dark node available for registration again.
+      *
+      * @param _darknodeID The dark node ID that will be refunded. The caller
+      *                    of this method must be the owner of this dark node.
+      */
     function refund(bytes20 _darknodeID) public onlyDarknodeOwner(_darknodeID) onlyDeregistered(_darknodeID) {
         // Remember the bond amount
         uint256 amount = darknodeRegistry[_darknodeID].bond;
@@ -337,20 +339,20 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * An unregistered dark node is not registered, deregistered, pending
-    * registration, or pending deregistration. The only dark nodes that are
-    * unregistered are ones that have never been registered, or have been
-    * refunded.
-    */
+      * An unregistered dark node is not registered, deregistered, pending
+      * registration, or pending deregistration. The only dark nodes that are
+      * unregistered are ones that have never been registered, or have been
+      * refunded.
+      */
     function isUnregistered(bytes20 _darknodeID) public view returns (bool) {
         return (darknodeRegistry[_darknodeID].registeredAt == 0);
     }
 
     /**
-    * A registered dark node has been registered, and it is no longer pending
-    * registration. It might be pending deregistration, but it has not been
-    * refunded.
-    */
+      * A registered dark node has been registered, and it is no longer pending
+      * registration. It might be pending deregistration, but it has not been
+      * refunded.
+      */
     function isRegistered(bytes20 _darknodeID) public view returns (bool) {
         return darknodeRegistry[_darknodeID].registeredAt != 0
         && darknodeRegistry[_darknodeID].registeredAt <= currentEpoch.blocknumber
@@ -363,9 +365,9 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * A deregistered dark node has been deregistered, and it is no longer
-    * pending deregistration, but has not been refunded.
-    */
+      * A deregistered dark node has been deregistered, and it is no longer
+      * pending deregistration, but has not been refunded.
+      */
     function isDeregistered(bytes20 _darknodeID) public view returns (bool) {
         return darknodeRegistry[_darknodeID].deregisteredAt != 0
         && darknodeRegistry[_darknodeID].deregisteredAt <= currentEpoch.blocknumber;
