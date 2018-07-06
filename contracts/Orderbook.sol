@@ -13,8 +13,7 @@ import "./libraries/Utils.sol";
   * will only store a subset of order states, such as cancelation, to improve
   * the throughput of orders.
   */
-contract Orderbook is Ownable {
-    
+contract Orderbook is Ownable {    
     /**
       * @notice OrderState enumerates the possible states of an order. All
       * orders default to the Undefined state.

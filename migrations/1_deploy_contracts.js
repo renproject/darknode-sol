@@ -14,77 +14,101 @@ var XYZToken = artifacts.require("XYZToken.sol");
 let migration = async function (deployer, network) {
     // Network is "development", "nightly", "falcon" or "f0"
 
+    const BOND = 100000 * 1e18;
+    const INGRESS_FEE = 0;
+
+    let POD_SIZE = 3;
+    let EPOCH_BLOCKS = 1;
+    switch (network) {
+        case "nightly":
+            POD_SIZE = 3;
+            EPOCH_BLOCKS = 10;
+            break;
+        case "falcon":
+            POD_SIZE = 6;
+            EPOCH_BLOCKS = 600;
+            break;
+        case "f0":
+            POD_SIZE = 9;
+            EPOCH_BLOCKS = 14400;
+            break;
+    }
+
+    console.log(`Using ${POD_SIZE} nodes per pod, ${EPOCH_BLOCKS} blocks per epoch, ${BOND / 1e18} REN bond and ${INGRESS_FEE / 1e18} REN ingress fee`)
+
     // REN
-    // await deployer
-    //     .deploy(
-    //         RepublicToken, { overwrite: network !== "f0" }
-    //     )
-    //     .then(() => deployer.deploy(
-    //         DGXMock, { overwrite: network !== "f0" })
-    //     )
-    //     .then(() => deployer.deploy(
-    //         ABCToken, { overwrite: network !== "f0" })
-    //     )
-    //     .then(() => deployer.deploy(
-    //         XYZToken, { overwrite: network !== "f0" })
-    //     )
+    await deployer
+        .deploy(
+            RepublicToken, { overwrite: network !== "f0" }
+        )
+        .then(() => deployer.deploy(
+            DGXMock, { overwrite: network !== "f0" })
+        )
+        .then(() => deployer.deploy(
+            ABCToken, { overwrite: network !== "f0" })
+        )
+        .then(() => deployer.deploy(
+            XYZToken, { overwrite: network !== "f0" })
+        )
 
-    //     .then(() => deployer.deploy(
-    //         DarknodeRegistry,
-    //         RepublicToken.address,
-    //         100000 * 1e18, // Bond
-    //         6, // Pod
-    //         600, // Epoch
-    //     ))
+        .then(() => deployer.deploy(
+            DarknodeRegistry,
+            RepublicToken.address,
+            BOND, // Bond
+            POD_SIZE, // Pod
+            EPOCH_BLOCKS, // Epoch
+        ))
 
 
-    //     .then(() => deployer.deploy(
-    //         Orderbook,
-    //         0, // Fee
-    //         RepublicToken.address,
-    //         DarknodeRegistry.address,
-    //     ))
+        .then(() => deployer.deploy(
+            Orderbook,
+            INGRESS_FEE, // Fee
+            RepublicToken.address,
+            DarknodeRegistry.address,
+        ))
 
-    //     .then(() => deployer.deploy(
-    //         RewardVault, DarknodeRegistry.address
-    //     ))
+        .then(() => deployer.deploy(
+            RewardVault, DarknodeRegistry.address
+        ))
 
-    //     .then(() => deployer.deploy(
-    //         RenExTokens,
-    //         { overwrite: network !== "f0" },
-    //     ))
+        .then(() => deployer.deploy(
+            RenExTokens,
+            { overwrite: network !== "f0" },
+        ))
 
-    //     .then(async () => {
-    //         const renExTokens = RenExTokens.at(RenExTokens.address);
-    //         await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
-    //         await renExTokens.registerToken(0x100, DGXMock.address, 9);
-    //         await renExTokens.registerToken(0x10000, RepublicToken.address, 18);
-    //         await renExTokens.registerToken(0x10001, ABCToken.address, 12);
-    //         await renExTokens.registerToken(0x10002, XYZToken.address, 18);
-    //     })
+        .then(async () => {
+            const renExTokens = RenExTokens.at(RenExTokens.address);
+            await renExTokens.registerToken(1, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", 18);
+            await renExTokens.registerToken(0x100, DGXMock.address, 9);
+            await renExTokens.registerToken(0x10000, RepublicToken.address, 18);
+            await renExTokens.registerToken(0x10001, ABCToken.address, 12);
+            await renExTokens.registerToken(0x10002, XYZToken.address, 18);
+        })
 
-    //     .then(() => deployer.deploy(
-    //         RenExBalances, RewardVault.address,
-    //         { overwrite: network !== "f0" },
-    //     ))
+        .then(() => deployer.deploy(
+            RenExBalances, RewardVault.address,
+            { overwrite: network !== "f0" },
+        ))
 
-    //     .then(() => {
-    //         const GWEI = 1000000000;
-    //         return deployer.deploy(
-    //             RenExSettlement,
-    //             Orderbook.address,
-    //             RenExTokens.address,
-    //             RenExBalances.address,
-    //             100 * GWEI,
-    //         );
-    //     })
+        .then(() => {
+            const GWEI = 1000000000;
+            return deployer.deploy(
+                RenExSettlement,
+                Orderbook.address,
+                RenExTokens.address,
+                RenExBalances.address,
+                100 * GWEI,
+            );
+        })
 
-    //     .then(async () => {
-    // const renExBalances = RenExBalances.at("0xc5b98949AB0dfa0A7d4c07Bb29B002D6d6DA3e25");
-    // // await renExBalances.updateRewardVault("0x5d62ccc1086f38286dc152962a4f3e337eec1ec1");
-    // await renExBalances.updateRenExSettlementContract("0xc53abbc5713e606a86533088707e80fcae33eff8");
-    // // });
+        .then(async () => {
+            const renExBalances = RenExBalances.at(RenExBalances.address);
+            await renExBalances.updateRewardVault(RewardVault.address);
+            await renExBalances.updateRenExSettlementContract(RenExSettlement.address);
+        });
 };
+
+// migration = async () => { }
 
 module.exports = (deployer, network) => {
     migration(deployer, network).catch((err) => { console.error(err); throw err; });
