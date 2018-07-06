@@ -25,8 +25,9 @@
   "scripts": {
     "test": "truffle test",
     "coverage": "solidity-coverage",
-    "ropsten": "npm run merge && truffle migrate --network ropsten --reset",
-    "kovan": "npm run merge && truffle migrate --network kovan --reset",
-    "merge": "sol-merger \"./contracts/**/*.sol\" ./.merged"
+    "nightly": "npm run merge ./.merged/nightly && truffle migrate --network nightly --reset",
+    "falcon": "npm run merge ./.merged/falcon && truffle migrate --network falcon --reset",
+    "f0": "npm run merge ./.merged/f0 && truffle migrate --network f0 --reset",
+    "merge": "sol-merger \"./contracts/**/*.sol\""
   }
 }
