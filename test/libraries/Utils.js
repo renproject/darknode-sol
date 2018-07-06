@@ -14,7 +14,7 @@ contract("Utils", function (accounts) {
   it("can convert number to string", async function () {
     hexToAscii(await utilsTest.uintToBytes(0)).toString().should.equal("0");
     hexToAscii(await utilsTest.uintToBytes(32)).toString().should.equal("32");
-    hexToAscii(await utilsTest.uintToBytes(32)).toString().should.equal("57");
+    hexToAscii(await utilsTest.uintToBytes(57)).toString().should.equal("57");
     hexToAscii(await utilsTest.uintToBytes(10000)).toString().should.equal("10000");
 
     // -1 underflows to 2**256 - 1
