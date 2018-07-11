@@ -7,13 +7,14 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../Orderbook.sol";
 import "./RenExBalances.sol";
 import "./RenExTokens.sol";
+import "../Settlement.sol";
 
 /**
 @title The contract responsible for holding trader funds and settling matched
 order values
 @author Republic Protocol
 */
-contract RenExSettlement is Ownable {
+contract RenExSettlement is Ownable, Settlement {
     using SafeMath for uint256;
 
     /**

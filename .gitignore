@@ -9,28 +9,7 @@ coverage.json
 .coveralls.yml
 .env
 .merged/
-build/*
-!build/contracts
-build/contracts/*
-
-# Include these build files:
-!build/contracts/LibRewardVault.json
-!build/contracts/DarknodeRegistry.json
-!build/contracts/Arc.json
-!build/contracts/DarknodeRegistry.json
-!build/contracts/ECDSA.json
-!build/contracts/Gateway.json
-!build/contracts/LibRewardVault.json
-!build/contracts/LinkedList.json
-!build/contracts/Orderbook.json
-!build/contracts/RepublicToken.json
-!build/contracts/RewardGateway.json
-!build/contracts/RewardVault.json
-!build/contracts/RenExSettlement.json
-!build/contracts/RenExTokens.json
-!build/contracts/RenExBalances.json
-!build/contracts/TraderRegistry.json
-!build/contracts/Utils.json
+build
 
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
