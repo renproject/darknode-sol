@@ -8,10 +8,10 @@ import "../Orderbook.sol";
 import "./RenExBalances.sol";
 import "./RenExTokens.sol";
 import "../Settlement.sol";
+import "../SettlementUtils.sol";
 
 /**
-@title The contract responsible for holding trader funds and settling matched
-order values
+@title The contract responsible for settling matched RenEx orders
 @author Republic Protocol
 */
 contract RenExSettlement is Ownable, Settlement {
@@ -21,8 +21,8 @@ contract RenExSettlement is Ownable, Settlement {
       * @notice Fees are in RenEx are 0.2% and to represent this in integers it
       * is broken into a numerator and denominator.
       */
-    uint256 constant public FEES_NUMERATOR = 2;
-    uint256 constant public FEES_DENOMINATOR = 1000;
+    uint256 constant public DARKNODE_FEE_NUMERATOR = 2;
+    uint256 constant public DARKNODE_FEE_DENOMINATOR = 1000;
 
     /**
       * @notice This is a Republic Protocol settlement identifier for the
@@ -41,23 +41,12 @@ contract RenExSettlement is Ownable, Settlement {
     enum OrderParity {Buy, Sell}
     enum OrderStatus {None, Submitted, Matched}
 
-    struct Order {
-        uint8 parity;
-        uint8 orderType;
-        uint64 expiry;
-        uint64 tokens;
-        uint64 priceC; uint64 priceQ;
-        uint64 volumeC; uint64 volumeQ;
-        uint64 minimumVolumeC; uint64 minimumVolumeQ;
-        uint256 nonceHash;
-        address trader;
-        address submitter;
-    }
 
-    struct Match {
-        uint256 price;
-        uint256 lowVolume;
-        uint256 highVolume;
+    struct ExecutionDetails {
+        uint256 lowTokenVolume;
+        uint256 highTokenVolume;
+        uint256 lowTokenFee;
+        uint256 highTokenFee;
     }
 
     // Events
@@ -66,9 +55,14 @@ contract RenExSettlement is Ownable, Settlement {
     event RenExBalancesUpdates(RenExBalances previousRenExBalances, RenExBalances nextRenExBalances);
     event SubmissionGasPriceLimitUpdates(uint256 previousSubmissionGasPriceLimit, uint256 nextSubmissionGasPriceLimit);
 
-    // Storage
-    mapping(bytes32 => Order) public orders;
-    mapping(bytes32 => OrderStatus) private orderStatuses;
+    // Order storage
+    mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
+    mapping(bytes32 => OrderStatus) public orderStatus;
+    mapping(bytes32 => address) public orderTrader;
+    mapping(bytes32 => address) public orderSubmitter;
+    // Match storage
+    mapping(bytes32 => ExecutionDetails) matchExecutionDetails;
+
 
     /**
       * @notice constructor
@@ -124,190 +118,31 @@ contract RenExSettlement is Ownable, Settlement {
 
     /********** SETTLEMENT FUNCTIONS ******************************************/
 
-    // Price/volume calculation functions
-
-    /**
-     * @notice Returns true if the left tuple represents a larger number than
-     * the right tuple
-     */
-    function tupleGTE(uint64 leftC, uint64 leftQ, uint64 rightC, uint64 rightQ) private pure returns (bool) {
-        if (leftQ < rightQ) {
-            return false;
-        }
-
-        uint256 norm = leftC * 10 ** uint256(leftQ - rightQ);
-
-        return norm >= rightC;
-    }
-
-    /**
-     * @notice Returns the midpoint between the buy and sell prices as a tuple
-     */
-    function priceMidPoint(bytes32 buyID, bytes32 sellID) private view returns (uint256, int256) {
-        // Normalize to same exponent before finding mid-point (mean)
-        uint256 norm = uint256(orders[buyID].priceC) * 10 ** uint256(orders[buyID].priceQ - orders[sellID].priceQ);
-        int256 q = int256(orders[sellID].priceQ);
-        uint256 sum = (orders[sellID].priceC + norm);
-        if (sum % 2 == 0) {
-            return (sum / 2, q);
-        } else {
-            // To not lose the .5 for odd numbers, multiply by 5 and subtract from q
-            return (sum * (10 / 2), q - 1);
-        }
-    }
-
-    /**
-     * @notice Returns the smaller volume in the high token
-     */
-    function minimumVolume(bytes32 buyID, bytes32 sellID, uint256 priceC, int256 priceQ)
-    private view returns (uint256, int256, uint256) {
-        uint256 buyV = tupleToVolume(orders[buyID].volumeC, int256(orders[buyID].volumeQ), 1, 12);
-        uint256 sellV = tupleToScaledVolume(orders[sellID].volumeC, int256(orders[sellID].volumeQ), priceC, priceQ, 1, 12);
-
-        if (buyV < sellV) {
-            // Instead of dividing the constant by priceC, we delay the division
-            // until the recombining c and q, to ensure that minimal precision
-            // is lost
-            return (orders[buyID].volumeC * 200, int256(orders[buyID].volumeQ + 26 + 12) - priceQ, priceC);
-        } else {
-            return (orders[sellID].volumeC, int256(orders[sellID].volumeQ), 1);
-        }
-    }
-
-    /**
-     * @notice Converts a tuple to a volume after multiplying by the price
-     */
-    function tupleToScaledVolume(uint256 volC, int256 volQ, uint256 priceC, int256 priceQ, uint256 divideC, uint256 decimals)
-    private pure returns (uint256) {
-        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
-        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
-        uint256 c = volC * 5 * priceC * 2;
-
-        int256 e = int256(decimals) + volQ + priceQ - (26 + 12 + 3 + 12 + 1);
-
-        // If (ep-en) is negative, divide instead of multiplying
-        uint256 value;
-        if (e >= 0) {
-            value = c * 10 ** uint256(e);
-        } else {
-            value = c / 10 ** uint256(-e);
-        }
-
-        value = value / divideC;
-
-        return value;
-    }
-
-    /**
-     * @notice Converts a tuple to a price
-     */
-    function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals)
-    private pure returns (uint256) {
-        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
-        // 0.005 turns into 5 * 10**-3 (-3 moved to exponent)
-        uint256 c = priceC * 5;
-
-        int256 e = int256(decimals) + priceQ - (26 + 12 + 3);
-
-        // If (ep-en) is negative, divide instead of multiplying
-        uint256 value;
-        if (e >= 0) {
-            value = c * 10 ** uint256(e);
-        } else {
-            value = c / 10 ** uint256(-e);
-        }
-
-        return value;
-    }
-
-    /**
-     * @notice Converts a tuple to a volume
-     */
-    function tupleToVolume(uint256 volC, int256 volQ, uint256 divideC, uint256 decimals) private pure returns (uint256) {
-        // 0.2 turns into 2 * 10**-1 (-1 moved to exponent)
-        uint256 c = 2 * volC;
-
-        // Positive and negative components of exponent
-        uint256 ep = decimals;
-        uint256 en = 12 + 1;
-        // Add volQ to positive or negative component based on its sign
-        if (volQ < 0) {
-            en += uint256(-volQ);
-        } else {
-            ep += uint256(volQ);
-        }
-
-        // If (ep-en) is negative, divide instead of multiplying
-        uint256 value;
-        if (ep >= en) {
-            value = c * 10 ** (ep - en);
-        } else {
-            value = c / 10 ** (en - ep);
-        }
-
-        value = value / divideC;
-
-        return value;
-    }
-
     /**
      * @notice (private) Calls the RenExBalances contract to update the balances
      */
     function settleFunds(
         bytes32 _buyID, bytes32 _sellID,
-        uint32 buyToken, uint32 sellToken,
-        uint256 lowTokenValue, uint256 highTokenValue
+        address highTokenAddress, address lowTokenAddress,
+        ExecutionDetails details
     ) private {
-        address buyTokenAddress = renExTokensContract.tokenAddresses(buyToken);
-        address sellTokenAddress = renExTokensContract.tokenAddresses(sellToken);
-
-        address buySubmitter = orders[_buyID].submitter;
-        address sellSubmitter = orders[_sellID].submitter;
-
-        uint256 lowTokenValueFinal = (lowTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
-
-        uint256 highTokenValueFinal = (highTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
-
         // Subtract values
         renExBalancesContract.decrementBalanceWithFee(
-            orders[_buyID].trader, sellTokenAddress, lowTokenValueFinal, lowTokenValue - lowTokenValueFinal, buySubmitter
+            orderTrader[_buyID], lowTokenAddress, details.lowTokenVolume, details.lowTokenFee, orderSubmitter[_buyID]
         );
         renExBalancesContract.decrementBalanceWithFee(
-            orders[_sellID].trader, buyTokenAddress, highTokenValueFinal, highTokenValue - highTokenValueFinal, sellSubmitter
+            orderTrader[_sellID], highTokenAddress, details.highTokenVolume, details.highTokenFee, orderSubmitter[_sellID]
         );
 
         // Add values
-        renExBalancesContract.incrementBalance(orders[_sellID].trader, sellTokenAddress, lowTokenValueFinal);
-        renExBalancesContract.incrementBalance(orders[_buyID].trader, buyTokenAddress, highTokenValueFinal);
-
-        // emit Transfer(buyer, seller, sellToken, lowTokenValueFinal);
-        // emit Transfer(seller, buyer, buyToken, highTokenValueFinal);
+        renExBalancesContract.incrementBalance(orderTrader[_sellID], lowTokenAddress, details.lowTokenVolume);
+        renExBalancesContract.incrementBalance(orderTrader[_buyID], highTokenAddress, details.highTokenVolume);
     }
 
-
-
-    /**
-     * @notice Calculates the ID of the order
-     * @param order the order to hash
-     */
-    function hashOrder(Order order) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                order.orderType,
-                order.parity,
-                SETTLEMENT_IDENTIFIER,
-                order.expiry,
-                order.tokens,
-                order.priceC, order.priceQ,
-                order.volumeC, order.volumeQ,
-                order.minimumVolumeC, order.minimumVolumeQ,
-                order.nonceHash
-            )
-        );
+    function subtractDarknodeFee(uint256 value) internal pure returns (uint256, uint256) {
+        uint256 newValue = (value * (DARKNODE_FEE_DENOMINATOR - DARKNODE_FEE_NUMERATOR)) / DARKNODE_FEE_DENOMINATOR;
+        return (newValue, value - newValue);
     }
-
-
-
 
     /**
       * @notice Stores the details of an order
@@ -333,7 +168,7 @@ contract RenExSettlement is Ownable, Settlement {
         uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
         uint256 _nonceHash
     ) public withGasPriceLimit(submissionGasPriceLimit) {
-        Order memory order = Order({
+        SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
             orderType: _orderType,
             parity: _parity,
             expiry: _expiry,
@@ -341,80 +176,26 @@ contract RenExSettlement is Ownable, Settlement {
             priceC: _priceC, priceQ: _priceQ,
             volumeC: _volumeC, volumeQ: _volumeQ,
             minimumVolumeC: _minimumVolumeC, minimumVolumeQ: _minimumVolumeQ,
-            nonceHash: _nonceHash,
-            trader: 0x0,
-            submitter: msg.sender
+            nonceHash: _nonceHash
         });
 
-        bytes32 orderID = hashOrder(order);
+        bytes32 orderID = SettlementUtils.hashOrder(order, SETTLEMENT_IDENTIFIER);
 
-        require(orderStatuses[orderID] == OrderStatus.None);
-        orderStatuses[orderID] = OrderStatus.Submitted;
+        orderSubmitter[orderID] = msg.sender;
+
+        require(orderStatus[orderID] == OrderStatus.None);
+        orderStatus[orderID] = OrderStatus.Submitted;
 
         require(orderbookContract.orderState(orderID) == 2);
 
-        order.trader = orderbookContract.orderTrader(orderID);
+        orderTrader[orderID] = orderbookContract.orderTrader(orderID);
 
         // Trader should not be 0x0
         // assert(order.trader != 0x0);
 
-        orders[orderID] = order;
+        orderDetails[orderID] = order;
     }
 
-    /**
-     * @notice Verifies details about an order
-
-     * @param _orderID the ID of the order to verify
-     */
-    function verifyOrder(bytes32 _orderID) public view {
-        require(orderStatuses[_orderID] == OrderStatus.Submitted);
-
-        // Verify price ranges
-        require(orders[_orderID].priceC <= 1999);
-        require(orders[_orderID].priceQ <= 52);
-
-        // Verify volume ranges
-        require(orders[_orderID].volumeC <= 49);
-        require(orders[_orderID].volumeQ <= 52);
-
-        // Verify minimum volume ranges
-        require(orders[_orderID].minimumVolumeC <= 49);
-        require(orders[_orderID].minimumVolumeQ <= 52);
-    }
-
-    /**
-     * @notice Verifies details about an match
-
-     * @param _buyID the ID of the buy order
-     * @param _sellID the ID of the sell order
-     * @return the token IDs of the match
-     */
-    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (uint32, uint32) {
-        // Require that the orders are confirmed to one another
-        require(orders[_buyID].parity == uint8(OrderParity.Buy));
-        require(orders[_sellID].parity == uint8(OrderParity.Sell));
-
-        // TODO: Loop through and check for all indices when an order is able to
-        // be matched with multiple orders
-        require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
-
-        // Buy price should be greater than sell price
-        require(tupleGTE(orders[_buyID].priceC, orders[_buyID].priceQ, orders[_sellID].priceC, orders[_sellID].priceQ));
-        
-        // Buy volume should be greater than sell minimum volume
-        require(tupleGTE(orders[_buyID].volumeC, orders[_buyID].volumeQ, orders[_sellID].minimumVolumeC, orders[_sellID].minimumVolumeQ));
-        
-        // Sell volume should be greater than buy minimum volume
-        require(tupleGTE(orders[_sellID].volumeC, orders[_sellID].volumeQ, orders[_buyID].minimumVolumeC, orders[_buyID].minimumVolumeQ));
-    
-        uint32 buyToken = uint32(orders[_sellID].tokens);
-        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
-
-        require(renExTokensContract.tokenIsRegistered(buyToken));
-        require(renExTokensContract.tokenIsRegistered(sellToken));
-
-        return (buyToken, sellToken);
-    }
 
     /**
       * @notice Settles two orders that are matched. `submitOrder` must have been
@@ -424,47 +205,47 @@ contract RenExSettlement is Ownable, Settlement {
       * @param _sellID the 32 byte ID of the sell order
       */
     function submitMatch(bytes32 _buyID, bytes32 _sellID) public {
-        // Verify details
-        verifyOrder(_buyID);
-        verifyOrder(_sellID);
-        (uint32 buyToken, uint32 sellToken) = verifyMatch(_buyID, _sellID);
+        require(orderStatus[_buyID] == OrderStatus.Submitted);
+        require(orderStatus[_sellID] == OrderStatus.Submitted);
 
-        (uint256 lowTokenValue, uint256 highTokenValue) = settlementDetails(
-            _buyID,
-            _sellID,
-            buyToken,
-            sellToken
+        // Verify details
+        SettlementUtils.verifyOrder(orderDetails[_buyID]);
+        SettlementUtils.verifyOrder(orderDetails[_sellID]);
+        SettlementUtils.verifyMatch(orderDetails[_buyID], orderDetails[_sellID]);
+
+        require(orderbookContract.orderMatch(_buyID)[0] == _sellID);
+
+        uint32 buyToken = uint32(orderDetails[_sellID].tokens);
+        uint32 sellToken = uint32(orderDetails[_sellID].tokens >> 32);
+
+        require(renExTokensContract.tokenIsRegistered(buyToken));
+        require(renExTokensContract.tokenIsRegistered(sellToken));
+
+        (uint256 lowTokenValue, uint256 highTokenValue) = SettlementUtils.settlementDetails(
+            orderDetails[_buyID],
+            orderDetails[_sellID],
+            renExTokensContract.tokenDecimals(buyToken),
+            renExTokensContract.tokenDecimals(sellToken)
         );
 
-        settleFunds(_buyID, _sellID, buyToken, sellToken, lowTokenValue, highTokenValue);
+        (uint256 lowTokenFinal, uint256 lowTokenFee) = subtractDarknodeFee(lowTokenValue);
+        (uint256 highTokenFinal, uint256 highTokenFee) = subtractDarknodeFee(highTokenValue);
 
-        orderStatuses[_buyID] = OrderStatus.Matched;
-        orderStatuses[_sellID] = OrderStatus.Matched;
-    }
+        address highTokenAddress = renExTokensContract.tokenAddresses(buyToken);
+        address lowTokenAddress = renExTokensContract.tokenAddresses(sellToken);
 
-    /**
-     * @notice Calculates the volumes to be transferred between traders
-     * (not including fees)
-     */
-    function settlementDetails(
-        bytes32 _buyID,
-        bytes32 _sellID,
-        uint32 _buyToken,
-        uint32 _sellToken
-    ) private view returns (uint256, uint256) {
-        uint32 buyTokenDecimals = renExTokensContract.tokenDecimals(_buyToken);
-        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(_sellToken);
+        bytes32 matchID = keccak256(abi.encodePacked(_buyID, _sellID));
+        matchExecutionDetails[matchID] = ExecutionDetails({
+            lowTokenVolume: lowTokenFinal,
+            highTokenVolume: highTokenFinal,
+            lowTokenFee: lowTokenFee,
+            highTokenFee: highTokenFee
+        });
 
-        // Price midpoint
-        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
+        settleFunds(_buyID, _sellID, highTokenAddress, lowTokenAddress, matchExecutionDetails[matchID]);
 
-        (uint256 minVolC, int256 minVolQ, uint256 divideC) = minimumVolume(_buyID, _sellID, midPriceC, midPriceQ);
-
-        uint256 lowTokenValue = tupleToScaledVolume(minVolC, minVolQ, midPriceC, midPriceQ, divideC, sellTokenDecimals);
-
-        uint256 highTokenValue = tupleToVolume(minVolC, minVolQ, divideC, buyTokenDecimals);
-
-        return (lowTokenValue, highTokenValue);
+        orderStatus[_buyID] = OrderStatus.Matched;
+        orderStatus[_sellID] = OrderStatus.Matched;
     }
 
     /**
@@ -472,34 +253,13 @@ contract RenExSettlement is Ownable, Settlement {
      * the respective fees
      */
     function getSettlementDetails(bytes32 _buyID, bytes32 _sellID)
-    external view returns (uint256, uint256, uint256, uint256, uint256) {
-        uint32 buyToken = uint32(orders[_sellID].tokens);
-        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
-
-        (uint256 lowTokenValue, uint256 highTokenValue) = settlementDetails(
-            _buyID,
-            _sellID,
-            buyToken,
-            sellToken
+    external view returns (uint256, uint256, uint256, uint256) {
+        bytes32 matchID = keccak256(abi.encodePacked(_buyID, _sellID));
+        return (
+            matchExecutionDetails[matchID].lowTokenVolume,
+            matchExecutionDetails[matchID].highTokenVolume,
+            matchExecutionDetails[matchID].lowTokenFee,
+            matchExecutionDetails[matchID].highTokenFee
         );
-
-        uint256 lowTokenValueFinal = (lowTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
-
-        uint256 highTokenValueFinal = (highTokenValue * (FEES_DENOMINATOR - FEES_NUMERATOR)) / FEES_DENOMINATOR;
-
-        uint256 midPrice = getMidPrice(_buyID, _sellID);
-
-        return (midPrice, lowTokenValueFinal, highTokenValueFinal, lowTokenValue - lowTokenValueFinal, highTokenValue - highTokenValueFinal);
-    }
-
-    /**
-     * @notice Calculates the midprice tuple and converts it to a uint256
-     */
-    function getMidPrice(bytes32 _buyID, bytes32 _sellID) public view returns (uint256) {
-        (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(_buyID, _sellID);
-        uint32 sellToken = uint32(orders[_sellID].tokens >> 32);
-
-        uint32 sellTokenDecimals = renExTokensContract.tokenDecimals(sellToken);
-        return tupleToPrice(midPriceC, midPriceQ, sellTokenDecimals);
     }
 }

@@ -103,7 +103,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.95, volume: 1 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.975, 0.975 /* DGX */, 1 /* REN */]);
+            .should.eql([0.975 /* DGX */, 1 /* REN */]);
     });
 
     it("order 4", async () => {
@@ -112,7 +112,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.95, volume: 2 /* REN */, minimumVolume: 1 /* DGX */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.975, 1 /* DGX */, 1.0256410256410258 /* REN */]);
+            .should.eql([1 /* DGX */, 1.0256410256410258 /* REN */]);
     });
 
     it("order 5", async () => {
@@ -121,7 +121,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.5, volume: 2 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.5, 1 /* DGX */, 2 /* REN */]);
+            .should.eql([1 /* DGX */, 2 /* REN */]);
     });
 
     it("order 6", async () => {
@@ -131,7 +131,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, price: 0.0000000001, volume: 2 /* REN */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([0.5, 1 /* DGX */, 1.9999999998 /* REN */]);
+            .should.eql([1 /* DGX */, 1.9999999998 /* REN */]);
     });
 
     it("order 7", async () => {
@@ -140,7 +140,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, priceC: 1998, priceQ: 40, volume: 1 /* REN */, minimumVolume: 2 /* DGX */ };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([999.25, 2 /* DGX */, 0.002001501125844383 /* REN */]);
+            .should.eql([2 /* DGX */, 0.002001501125844383 /* REN */]);
     });
 
     it("order 8", async () => {
@@ -149,7 +149,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, priceC: 200, priceQ: 40, volume: 1 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([100, 2e-13 /* ETH */, 2e-15 /* REN */]);
+            .should.eql([2e-13 /* ETH */, 2e-15 /* REN */]);
     });
 
     it("order 9", async () => {
@@ -159,7 +159,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, priceC: 1999, priceQ: 52, volumeC: 1, volumeQ: 0 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([999500000000000, 2e-13 /* ETH */, 0 /* REN */]);
+            .should.eql([2e-13 /* ETH */, 0 /* REN */]);
     });
 
     it("order 10", async () => {
@@ -169,7 +169,7 @@ contract("RenExSettlement", function (accounts) {
         const sell = { tokens, priceC: 1999, priceQ: 52, volume: 1 /* REN */, minimumVolumeC: 0, minimumVolumeQ: 0 };
 
         (await submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, renExBalances, tokenAddresses, orderbook))
-            .should.eql([999500000000000, 2 /* ETH */, 2.001e-15 /* REN */]);
+            .should.eql([2 /* ETH */, 2.001e-15 /* REN */]);
     });
 
     it("invalid orders should revert", async () => {
@@ -423,11 +423,10 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
 
     // const matchID = web3.sha3(buy.orderID + sell.orderID.slice(2), { encoding: 'hex' });
     const match = await renExSettlement.getSettlementDetails(buy.orderID, sell.orderID);
-    const priceMatched = match[0];
-    const lowMatched = new BigNumber(match[1]);
-    const highMatched = new BigNumber(match[2]);
-    const lowFee = new BigNumber(match[3]);
-    const highFee = new BigNumber(match[4]);
+    const lowMatched = new BigNumber(match[0]);
+    const highMatched = new BigNumber(match[1]);
+    const lowFee = new BigNumber(match[2]);
+    const highFee = new BigNumber(match[3]);
 
     const buyerLowAfter = await renExBalances.traderBalances(buyer, lowTokenInstance.address);
     const buyerHighAfter = await renExBalances.traderBalances(buyer, highTokenInstance.address);
@@ -455,7 +454,6 @@ async function submitMatch(buy, sell, buyer, seller, darknode, renExSettlement, 
     highFee.toFixed().should.equal(expectedHighFees.toFixed());
 
     return [
-        priceMatched.toNumber() / 10 ** lowDecimals,
         lowSum.toNumber() / 10 ** lowDecimals,
         highSum.toNumber() / 10 ** highDecimals,
     ];

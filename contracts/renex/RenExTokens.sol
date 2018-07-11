@@ -5,8 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
-@title The contract responsible for holding trader funds and settling matched
-order values
+@title A registry of tokens that can be traded on RenEx
 @author Republic Protocol
 */
 contract RenExTokens is Ownable {

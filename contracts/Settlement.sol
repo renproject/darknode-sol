@@ -1,5 +1,10 @@
 pragma solidity ^0.4.24;
 
+
+/**
+ * The Settlement interface defines the functions that a settlement layer must
+ * implement
+ */
 interface Settlement {
     function submitOrder(
         uint8 _orderType,
@@ -16,15 +21,4 @@ interface Settlement {
         bytes32 _buyID,
         bytes32 _sellID
         ) external;
-
-    function getSettlementDetails(
-        bytes32 _buyID,
-        bytes32 _sellID
-        ) external view returns (
-            uint256 midPrice,
-            uint256 lowTokenValue,
-            uint256 highTokenValue,
-            uint256 lowTokenFee,
-            uint256 highTokenFee
-        );
 }
