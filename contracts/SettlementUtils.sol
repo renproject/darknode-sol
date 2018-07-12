@@ -182,16 +182,16 @@ library SettlementUtils {
      */
     function verifyOrder(OrderDetails _order) internal pure {
         // Verify price ranges
-        require(_order.priceC <= 1999);
-        require(_order.priceQ <= 52);
+        require(_order.priceC <= 1999, "invalid order price coefficient");
+        require(_order.priceQ <= 52, "invalid order price exponent");
 
         // Verify volume ranges
-        require(_order.volumeC <= 49);
-        require(_order.volumeQ <= 52);
+        require(_order.volumeC <= 49, "invalid order volume coefficient");
+        require(_order.volumeQ <= 52, "invalid order volume exponent");
 
         // Verify minimum volume ranges
-        require(_order.minimumVolumeC <= 49);
-        require(_order.minimumVolumeQ <= 52);
+        require(_order.minimumVolumeC <= 49, "invalid order minimum volume coefficient");
+        require(_order.minimumVolumeQ <= 52, "invalid order minimum volume exponent");
     }
 
     /**
@@ -202,17 +202,20 @@ library SettlementUtils {
      */
     function verifyMatch(OrderDetails _buy, OrderDetails _sell) internal pure {
         // Require that the orders are confirmed to one another
-        require(_buy.parity == uint8(OrderParity.Buy));
-        require(_sell.parity == uint8(OrderParity.Sell));
+        require(_buy.parity == uint8(OrderParity.Buy), "invalid buy parity");
+        require(_sell.parity == uint8(OrderParity.Sell), "invalid sell parity");
 
         // Buy price should be greater than sell price
-        require(tupleGTE(_buy.priceC, _buy.priceQ, _sell.priceC, _sell.priceQ));
+        require(tupleGTE(_buy.priceC, _buy.priceQ, _sell.priceC, _sell.priceQ), "incompatible pricepoints");
         
         // Buy volume should be greater than sell minimum volume
-        require(tupleGTE(_buy.volumeC, _buy.volumeQ, _sell.minimumVolumeC, _sell.minimumVolumeQ));
+        require(tupleGTE(_buy.volumeC, _buy.volumeQ, _sell.minimumVolumeC, _sell.minimumVolumeQ), "incompatible buy volume");
         
         // Sell volume should be greater than buy minimum volume
-        require(tupleGTE(_sell.volumeC, _sell.volumeQ, _buy.minimumVolumeC, _buy.minimumVolumeQ));
+        require(tupleGTE(_sell.volumeC, _sell.volumeQ, _buy.minimumVolumeC, _buy.minimumVolumeQ), "incompatible sell volume");
+
+        // Require that the orders were submitted to the same settlement layer
+        require(_buy.settlementID == _sell.settlementID, "incompatible settlements");
     }
 
     /**
