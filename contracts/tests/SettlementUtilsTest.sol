@@ -34,11 +34,15 @@ contract SettlementUtilsTest {
         orderDetails[orderID] = order;
     }
 
-    function verifyOrder(bytes32 _orderID) public {
+    function verifyOrder(bytes32 _orderID) public view {
         SettlementUtils.verifyOrder(orderDetails[_orderID]);
     }
 
-    function verifyMatch(bytes32 _buyID, bytes32 _sellID)public {
+    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view {
         SettlementUtils.verifyMatch(orderDetails[_buyID], orderDetails[_sellID]);
+    }
+
+    function tupleToPrice(uint256 priceC, int256 priceQ, uint256 decimals) public pure returns (uint256) {
+        return SettlementUtils.tupleToPrice(priceC, priceQ, decimals);
     }
 }

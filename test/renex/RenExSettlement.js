@@ -28,8 +28,6 @@ const submitOrderTo = async (contracts, params) => {
 
 contract("RenExSettlement", function (accounts) {
 
-    const buyer = accounts[0];
-    const seller = accounts[1];
     const darknode = accounts[2];
     const broker = accounts[3];
     let tokenAddresses, orderbook, renExSettlement, renExBalances, renExTokens;
@@ -213,35 +211,35 @@ contract("RenExSettlement", function (accounts) {
         );
 
         // Two buys
-        await settlementTest.verifyMatch(
+        await renExSettlement.submitMatch(
             buyID_1,
             buyID_1,
         ).should.be.rejected;
 
         // Two sells
-        await settlementTest.verifyMatch(
+        await renExSettlement.submitMatch(
             sellID_1,
             sellID_1,
         ).should.be.rejected;
 
-        // // Orders that aren't matched to one another
-        // await settlementTest.verifyMatch(
-        //     buyID_2,
-        //     sellID_1,
-        // ).should.be.rejected;
+        // Orders that aren't matched to one another
+        await renExSettlement.submitMatch(
+            buyID_2,
+            sellID_1,
+        ).should.be.rejected;
 
-        // // Buy token that is not registered
-        // await settlementTest.verifyMatch(
-        //     buyID_1,
-        //     sellID_1,
-        // ).should.be.rejected;
+        // Buy token that is not registered
+        await renExSettlement.submitMatch(
+            buyID_1,
+            sellID_1,
+        ).should.be.rejected;
 
-        // await renExTokens.deregisterToken(ETH);
-        // await settlementTest.verifyMatch(
-        //     buyID_2,
-        //     sellID_2,
-        // ).should.be.rejected;
-        // await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
+        await renExTokens.deregisterToken(ETH);
+        await renExSettlement.submitMatch(
+            buyID_2,
+            sellID_2,
+        ).should.be.rejected;
+        await renExTokens.registerToken(ETH, tokenAddresses[ETH].address, 18);
     });
 
     it("should fail for excessive gas price", async () => {
@@ -260,6 +258,20 @@ contract("RenExSettlement", function (accounts) {
             "0x8d981922c65b85a257f457ba3c29831aa4c3b1bd45dc3b280590fd5c89c69dc2",
         ).should.be.rejected;
     });
+
+    it("tupleToPrice", async () => {
+        // Negative scaling
+        (await settlementTest.tupleToPrice(1000000000, 20, 18)).toNumber()
+            .should.be.equal(5000000);
+
+        // 0 scaling
+        (await settlementTest.tupleToPrice(1000000000, 23, 18)).toNumber()
+            .should.be.equal(5000000000);
+
+        // Positive scaling
+        (await settlementTest.tupleToPrice(1000000000, 24, 18)).toNumber()
+            .should.be.equal(50000000000);
+    })
 });
 
 
