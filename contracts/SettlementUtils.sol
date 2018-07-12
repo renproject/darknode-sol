@@ -13,6 +13,7 @@ library SettlementUtils {
     enum OrderParity {Buy, Sell}
 
     struct OrderDetails {
+        uint32 settlementID;
         uint8 parity;
         uint8 orderType;
         uint64 expiry;
@@ -157,12 +158,12 @@ library SettlementUtils {
      * @notice Calculates the ID of the order
      * @param order the order to hash
      */
-    function hashOrder(OrderDetails order, uint32 settlement) internal pure returns (bytes32) {
+    function hashOrder(OrderDetails order) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 order.orderType,
                 order.parity,
-                settlement,
+                order.settlementID,
                 order.expiry,
                 order.tokens,
                 order.priceC, order.priceQ,
@@ -223,7 +224,7 @@ library SettlementUtils {
         OrderDetails sell,
         uint32 _buyTokenDecimals,
         uint32 _sellTokenDecimals
-    ) internal returns (uint256, uint256) {
+    ) internal pure returns (uint256, uint256) {
         // Price midpoint
         (uint256 midPriceC, int256 midPriceQ) = priceMidPoint(buy, sell);
 

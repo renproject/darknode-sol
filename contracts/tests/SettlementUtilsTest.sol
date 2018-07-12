@@ -4,11 +4,10 @@ import "../SettlementUtils.sol";
 
 contract SettlementUtilsTest {
 
-    uint32 constant public SETTLEMENT_IDENTIFIER = 1;
-
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
 
     function submitOrder(
+        uint32 _settlementID,
         uint8 _orderType,
         uint8 _parity,
         uint64 _expiry,
@@ -19,6 +18,7 @@ contract SettlementUtilsTest {
         uint256 _nonceHash
     ) public {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
+            settlementID: _settlementID,
             orderType: _orderType,
             parity: _parity,
             expiry: _expiry,
@@ -29,7 +29,7 @@ contract SettlementUtilsTest {
             nonceHash: _nonceHash
         });
 
-        bytes32 orderID = SettlementUtils.hashOrder(order, SETTLEMENT_IDENTIFIER);
+        bytes32 orderID = SettlementUtils.hashOrder(order);
 
         orderDetails[orderID] = order;
     }

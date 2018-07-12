@@ -7,6 +7,7 @@ pragma solidity ^0.4.24;
  */
 interface Settlement {
     function submitOrder(
+        uint32 _settlementID,
         uint8 _orderType,
         uint8 _parity,
         uint64 _expiry,
