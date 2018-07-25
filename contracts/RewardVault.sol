@@ -51,7 +51,7 @@ contract RewardVault is Ownable {
       */
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         if (address(_token) == ETHEREUM) {
-            require(msg.value == _value);
+            require(msg.value == _value, "mismatched value parameter and tx value");
         } else {
             require(_token.transferFrom(msg.sender, address(this), _value));
         }
@@ -78,7 +78,7 @@ contract RewardVault is Ownable {
         if (address(_token) == ETHEREUM) {
             darknodeOwner.transfer(value);
         } else {
-            require(_token.transfer(darknodeOwner, value));
+            require(_token.transfer(darknodeOwner, value), "token transfer failed");
         }
     }
 

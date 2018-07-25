@@ -98,7 +98,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Only allow the owner that registered the darknode to pass.
       */
     modifier onlyDarknodeOwner(bytes20 _darknodeID) {
-        require(darknodeRegistry[_darknodeID].owner == msg.sender);
+        require(darknodeRegistry[_darknodeID].owner == msg.sender, "must be darknode owner");
         _;
     }
 
@@ -106,7 +106,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Only allow unregistered dark nodes.
       */
     modifier onlyUnregistered(bytes20 _darknodeID) {
-        require(isUnregistered(_darknodeID));
+        require(isUnregistered(_darknodeID), "must be unregistered");
         _;
     }
 
@@ -114,7 +114,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Only allow deregistered dark nodes.
       */
     modifier onlyDeregistered(bytes20 _darknodeID) {
-        require(isDeregistered(_darknodeID));
+        require(isDeregistered(_darknodeID), "must be deregistered");
         _;
     }
 
@@ -123,7 +123,7 @@ contract DarknodeRegistry is Ownable {
       * deregister
       */
     modifier onlyDeregistrable(bytes20 _darknodeID) {
-        require(canDeregister(_darknodeID));
+        require(canDeregister(_darknodeID), "must be deregisterable");
         _;
     }
 
@@ -190,7 +190,7 @@ contract DarknodeRegistry is Ownable {
       * current epoch.
       */
     function epoch() public {
-        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval);
+        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
@@ -240,9 +240,9 @@ contract DarknodeRegistry is Ownable {
       */
     function register(bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public onlyUnregistered(_darknodeID) {
         // REN allowance
-        require(_bond >= minimumBond);
+        require(_bond >= minimumBond, "insufficient bond");
         // require(ren.allowance(msg.sender, address(this)) >= _bond);
-        require(ren.transferFrom(msg.sender, address(this), _bond));
+        require(ren.transferFrom(msg.sender, address(this), _bond), "bond trasfer failed");
 
         // Flag this dark node for registration
         darknodeRegistry[_darknodeID] = Darknode({

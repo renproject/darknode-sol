@@ -51,7 +51,7 @@ contract Orderbook is Ownable {
       * @notice Only allow registered dark nodes.
       */
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(bytes20(_sender)));
+        require(darknodeRegistry.isRegistered(bytes20(_sender)), "must be registered darknode");
         _;
     }
 
@@ -119,9 +119,9 @@ contract Orderbook is Ownable {
       * @param _orderMatches The hashes of the matching order.
       */
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
-        require(orders[_orderId].state == OrderState.Open);
+        require(orders[_orderId].state == OrderState.Open, "order must be open");
         for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orders[_orderMatches[i]].state == OrderState.Open);
+            require(orders[_orderMatches[i]].state == OrderState.Open, "matched orders must be open");
         }
 
         for (i = 0; i < _orderMatches.length; i++) {
@@ -149,7 +149,7 @@ contract Orderbook is Ownable {
             // Recover trader address from the signature
             bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
             address trader = ECDSA.addr(data, _signature);
-            require(orders[_orderId].trader == trader);
+            require(orders[_orderId].trader == trader, "invalid signature");
         } else {
             // An unopened order can be canceled to ensure that it cannot be
             // opened in the future.
@@ -157,7 +157,7 @@ contract Orderbook is Ownable {
             // or miner submits a cancelOrder with a higher fee everytime they
             // see an openOrder from a particular trader. To solve this, order
             // cancelations should be stored against a specific trader.
-            require(orders[_orderId].state == OrderState.Undefined);
+            require(orders[_orderId].state == OrderState.Undefined, "invalid order state");
         }
 
         orders[_orderId].state = OrderState.Canceled;
@@ -301,7 +301,7 @@ contract Orderbook is Ownable {
     function openOrder(bytes _signature, bytes32 _orderId) private {
         // require(ren.allowance(msg.sender, this) >= fee);
         require(ren.transferFrom(msg.sender, this, fee));
-        require(orders[_orderId].state == OrderState.Undefined);
+        require(orders[_orderId].state == OrderState.Undefined, "order already opened or canceled");
 
         // recover trader address from the signature
         bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
