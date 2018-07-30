@@ -216,14 +216,25 @@ contract DarknodeRegistry is Ownable {
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
 
+    function updateSlasher(address _slasher) public onlyOwner {
+        // Will be updated next epoch
+        nextSlasher = _slasher;
+    }
+
+
     /**
       * @notice Progress the epoch if it is possible and necessary to do so. This
       * captures the current timestamp and current blockhash and overrides the
       * current epoch.
       */
     function epoch() public {
-        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
+        if (previousEpoch.blocknumber == 0) {
+            // The first time epoch is called, it must be called by the owner
+            // of the contract
+            require(msg.sender == owner);
+        }
 
+        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
