@@ -22,16 +22,34 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-    * @notice Darknodes are stored in the darknode struct. The owner is the
-    * address that registered the darknode, the bond is the amount of REN that
-    * was transferred during registration, and the public key is the encryption
-    * key that should be used when sending sensitive information to the darknode.
-    */
+     * @notice Darknodes are stored in the darknode struct. The owner is the
+     * address that registered the darknode, the bond is the amount of REN that
+     * was transferred during registration, and the public key is the encryption
+     * key that should be used when sending sensitive information to the darknode.
+     */
     struct Darknode {
+
+        // The owner of a Darknode is the address that called the register
+        // function. The owner is the only address that is allowed to
+        // deregister the Darknode, unless the Darknode is slashed for
+        // malicious behaviour.
         address owner;
+
+        // The bond is the amount of REN submitted as a bond by the Darknode.
+        // This amount is reduced when the Darknode is slashed for malicious
+        // behaviour.
         uint256 bond;
+
+        // The block numer at which the Darknode is considered registered.
         uint256 registeredAt;
+
+        // The block numer at which the Darknode is considered deregistered.
         uint256 deregisteredAt;
+
+        // The public key used by this Darknode for encrypting sensitive data
+        // off chain. It is assumed that the Darknode has access to the
+        // respective private key, and that there is an agreement on the format
+        // of the public key.
         bytes publicKey;
     }
 
@@ -43,17 +61,20 @@ contract DarknodeRegistry is Ownable {
     LinkedList.List private darknodes;
     uint256 public numDarknodes;
     uint256 public numDarknodesNextEpoch;
+    uint256 public numDarknodesPreviousEpoch;
 
     // Variables used to parameterize behavior.
     uint256 public minimumBond;
     uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
+    address public slasher;
 
     // When one of the above variables is modified, it is only updated when the
     // next epoch is called. These variables store the values for the next epoch.
     uint256 public nextMinimumBond;
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
+    address public nextSlasher;
 
     // The current and previous epoch
     Epoch public currentEpoch;
@@ -93,6 +114,7 @@ contract DarknodeRegistry is Ownable {
     event MinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
     event MinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event MinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
+    event SlasherUpdated(address previousSlasher, address nextSlasher);
 
     /**
       * @notice Only allow the owner that registered the darknode to pass.
@@ -127,6 +149,11 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
+    modifier onlySlasher() {
+        require(slasher == msg.sender);
+        _;
+    }
+
     /**
       * @notice The DarknodeRegistry constructor.
       *
@@ -135,8 +162,9 @@ contract DarknodeRegistry is Ownable {
       *                     darknode.
       * @param _minimumPodSize The minimum size of a pod.
       * @param _minimumEpochInterval The minimum number of blocks between epochs.
+      * @param _slasher The address of the DarknodeSlasher contract.
       */
-    constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval) public {
+    constructor(RepublicToken _renAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval, address _slasher) public {
         ren = _renAddress;
 
         minimumBond = _minimumBond;
@@ -148,12 +176,16 @@ contract DarknodeRegistry is Ownable {
         minimumEpochInterval = _minimumEpochInterval;
         nextMinimumEpochInterval = minimumEpochInterval;
 
+        slasher = _slasher;
+        nextSlasher = slasher;
+
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
             blocknumber: block.number
         });
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
+        numDarknodesPreviousEpoch = 0;
     }
 
     /**
@@ -202,6 +234,7 @@ contract DarknodeRegistry is Ownable {
         });
 
         // Update the registry information
+        numDarknodesPreviousEpoch = numDarknodes;
         numDarknodes = numDarknodesNextEpoch;
 
         if (nextMinimumBond != minimumBond) {
@@ -217,6 +250,11 @@ contract DarknodeRegistry is Ownable {
         if (nextMinimumEpochInterval != minimumEpochInterval) {
             emit MinimumEpochIntervalUpdated(minimumEpochInterval, nextMinimumEpochInterval);
             minimumEpochInterval = nextMinimumEpochInterval;
+        }
+
+        if (nextSlasher != slasher) {
+            emit SlasherUpdated(slasher, nextSlasher);
+            slasher = nextSlasher;
         }
 
         // Emit an event
@@ -269,11 +307,24 @@ contract DarknodeRegistry is Ownable {
       */
     function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the dark node for deregistration
-        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + minimumEpochInterval;
+        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + 3 * minimumEpochInterval;
         numDarknodesNextEpoch--;
 
         // Emit an event
         emit DarknodeDeregistered(_darknodeID);
+    }
+
+    function slash(bytes20 _darknodeID) public onlySlasher {
+        // Slash the bond in half
+        darknodeRegistry[_darknodeID].bond = darknodeRegistry[_darknodeID].bond / 2;
+        if (canDeregister(_darknodeID)) {
+            // If the darknode has not been deregistered then deregister it
+            darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + 3 * minimumEpochInterval;
+            numDarknodesNextEpoch--;
+
+            // Emit an event
+            emit DarknodeDeregistered(_darknodeID);
+        }
     }
 
     /**
@@ -317,25 +368,11 @@ contract DarknodeRegistry is Ownable {
     }
 
     function getDarknodes() public view returns (bytes20[]) {
-        bytes20[] memory nodes = new bytes20[](numDarknodes);
+        return getFirstDarknodes(numDarknodes);
+    }
 
-        // Begin with the first node in the list
-        uint256 n = 0;
-        bytes20 next = LinkedList.begin(darknodes);
-
-        // Iterate until all registered dark nodes have been collected
-        while (n < numDarknodes) {
-        // Only include registered dark nodes
-            if (!isRegistered(next)) {
-                next = LinkedList.next(darknodes, next);
-                continue;
-            }
-            nodes[n] = next;
-            next = LinkedList.next(darknodes, next);
-            n++;
-        }
-
-        return nodes;
+    function getDarknodesFromPreviousEpoch() public view returns (bytes20[]) {
+        return getFirstDarknodes(numDarknodesPreviousEpoch);
     }
 
     /**
@@ -371,6 +408,28 @@ contract DarknodeRegistry is Ownable {
     function isDeregistered(bytes20 _darknodeID) public view returns (bool) {
         return darknodeRegistry[_darknodeID].deregisteredAt != 0
         && darknodeRegistry[_darknodeID].deregisteredAt <= currentEpoch.blocknumber;
+    }
+
+    function getFirstDarknodes(uint256 limit) internal view returns (bytes20[]) {
+        bytes20[] memory nodes = new bytes20[](limit);
+
+        // Begin with the first node in the list
+        uint256 n = 0;
+        bytes20 next = LinkedList.begin(darknodes);
+
+        // Iterate until all registered dark nodes have been collected
+        while (n < limit) {
+        // Only include registered dark nodes
+            if (!isRegistered(next)) {
+                next = LinkedList.next(darknodes, next);
+                continue;
+            }
+            nodes[n] = next;
+            next = LinkedList.next(darknodes, next);
+            n++;
+        }
+
+        return nodes;
     }
 
 }
