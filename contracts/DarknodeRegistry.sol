@@ -318,24 +318,31 @@ contract DarknodeRegistry is Ownable {
       */
     function deregister(bytes20 _darknodeID) public onlyDeregistrable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the dark node for deregistration
-        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + 3 * minimumEpochInterval;
+        darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + (3 * minimumEpochInterval);
         numDarknodesNextEpoch--;
 
         // Emit an event
         emit DarknodeDeregistered(_darknodeID);
     }
 
-    function slash(bytes20 _darknodeID) public onlySlasher {
-        // Slash the bond in half
-        darknodeRegistry[_darknodeID].bond = darknodeRegistry[_darknodeID].bond / 2;
-        if (canDeregister(_darknodeID)) {
-            // If the darknode has not been deregistered then deregister it
-            darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber + 3 * minimumEpochInterval;
-            numDarknodesNextEpoch--;
+    function slash(bytes20 _prover, bytes20 _challenger1, bytes20 _challenger2) public onlyDeregistrable(_challenger1) onlyDeregistrable(_challenger2) onlySlasher {
+        uint256 penalty = darknodeRegistry[_prover].bond / 2;
+        uint256 reward = penalty / 4;
 
-            // Emit an event
-            emit DarknodeDeregistered(_darknodeID);
+        // Slash the bond of the failed provder in half
+        darknodeRegistry[_prover].bond = darknodeRegistry[_prover].bond - penalty;
+        
+        // If the darknode has not been deregistered then deregister it
+        if (canDeregister(_prover)) {
+            darknodeRegistry[_prover].deregisteredAt = currentEpoch.blocknumber + (3 * minimumEpochInterval);
+            numDarknodesNextEpoch--;
+            emit DarknodeDeregistered(_prover);
         }
+
+        // Reward the challengers with less than the penalty so that it is not
+        // worth challenging yourself
+        require(ren.transfer(darknodeRegistry[_challenger1].owner, reward));
+        require(ren.transfer(darknodeRegistry[_challenger2].owner, reward));
     }
 
     /**
