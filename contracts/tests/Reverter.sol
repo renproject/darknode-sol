@@ -13,6 +13,6 @@ contract Reverter {
     }
 
     function () public payable {
-        revert();
+        revert("malicious revert");
     }
 }

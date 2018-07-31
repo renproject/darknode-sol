@@ -229,9 +229,9 @@ contract DarknodeRegistry is Ownable {
       */
     function epoch() public {
         if (previousEpoch.blocknumber == 0) {
-            // The first time epoch is called, it must be called by the owner
-            // of the contract
-            require(msg.sender == owner, "not authorised (first epoch)");
+            // The first two times epoch is called, it must be called by the
+            // owner of the contract
+            require(msg.sender == owner, "not authorised (first epochs)");
         }
 
         require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
@@ -367,7 +367,7 @@ contract DarknodeRegistry is Ownable {
         });
 
         // Refund the owner by transferring REN
-        require(ren.transfer(msg.sender, amount));
+        require(ren.transfer(msg.sender, amount), "bond transfer failed");
 
         // Emit an event.
         emit DarknodeOwnerRefunded(msg.sender, amount);

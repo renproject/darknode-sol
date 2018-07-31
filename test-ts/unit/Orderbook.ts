@@ -88,7 +88,7 @@ contract("Orderbook", function (accounts: string[]) {
         await orderbook.updateFee(0x1);
         (await orderbook.fee()).toNumber().should.equal(1);
         await orderbook.updateFee(FEE, { from: accounts[1] })
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateFee(FEE);
         (await orderbook.fee()).toNumber().should.equal(FEE);
     });
@@ -97,7 +97,7 @@ contract("Orderbook", function (accounts: string[]) {
         await orderbook.updateDarknodeRegistry(0x0);
         (await orderbook.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
         await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateDarknodeRegistry(dnr.address);
         (await orderbook.darknodeRegistry()).should.equal(dnr.address);
     });
@@ -112,8 +112,10 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("should be rejected when trying to open an order without no REN allowance", async function () {
         await ren.approve(orderbook.address, 0, { from: broker });
-        await steps.openBuyOrder(orderbook, broker, accounts[0]).should.be.rejected;
-        await steps.openSellOrder(orderbook, broker, accounts[0]).should.be.rejected;
+        await steps.openBuyOrder(orderbook, broker, accounts[0])
+            .should.be.rejectedWith(null, /revert/); // erc20 transfer error
+        await steps.openSellOrder(orderbook, broker, accounts[0])
+            .should.be.rejectedWith(null, /revert/); // erc20 transfer error
     });
 
     it("should be rejected when trying to open an opened order", async function () {
@@ -122,10 +124,10 @@ contract("Orderbook", function (accounts: string[]) {
 
             const orderID = await steps.openBuyOrder(orderbook, broker, accounts[0]);
             await steps.openBuyOrder(orderbook, broker, accounts[0], orderID)
-                .should.be.rejected;
+                .should.be.rejectedWith(null, /invalid order status/);
 
             await steps.openSellOrder(orderbook, broker, accounts[0], orderID)
-                .should.be.rejected;
+                .should.be.rejectedWith(null, /invalid order status/);
         }
     });
 
@@ -161,10 +163,10 @@ contract("Orderbook", function (accounts: string[]) {
         await orderbook.confirmOrder(confirmedOrder, [match], { from: darknode });
 
         await steps.cancelOrder(orderbook, broker, accounts[1], confirmedOrder)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /invalid order state/);
 
         await steps.cancelOrder(orderbook, broker, accounts[3], match)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /invalid order state/);
     });
 
     it("should be rejected when trying to cancel orders signed by someone else", async function () {
@@ -180,7 +182,8 @@ contract("Orderbook", function (accounts: string[]) {
 
         for (let i = 0; i < accounts.length; i++) {
             await ren.approve(orderbook.address, 1, { from: accounts[i] });
-            await steps.cancelOrder(orderbook, broker, accounts[(i + 1) % accounts.length], ids[i]).should.be.rejected;
+            await steps.cancelOrder(orderbook, broker, accounts[(i + 1) % accounts.length], ids[i])
+                .should.be.rejectedWith(null, /invalid signature/);
         }
     });
 
@@ -222,14 +225,20 @@ contract("Orderbook", function (accounts: string[]) {
         // Unopened Order
         let unopenedOrder = randomID();
 
-        await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode }).should.be.rejected;
-        await orderbook.confirmOrder(openedOrder, [confirmedOrder], { from: darknode }).should.be.rejected;
+        await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+        await orderbook.confirmOrder(openedOrder, [confirmedOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
 
-        await orderbook.confirmOrder(unopenedOrder, [openedOrder], { from: darknode }).should.be.rejected;
-        await orderbook.confirmOrder(openedOrder, [unopenedOrder], { from: darknode }).should.be.rejected;
+        await orderbook.confirmOrder(unopenedOrder, [openedOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+        await orderbook.confirmOrder(openedOrder, [unopenedOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
 
-        await orderbook.confirmOrder(canceledOrder, [openedOrder], { from: darknode }).should.be.rejected;
-        await orderbook.confirmOrder(openedOrder, [canceledOrder], { from: darknode }).should.be.rejected;
+        await orderbook.confirmOrder(canceledOrder, [openedOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+        await orderbook.confirmOrder(openedOrder, [canceledOrder], { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
     });
 
     it("should be rejected when an un-registered node trying to confirm orders", async function () {
@@ -237,8 +246,10 @@ contract("Orderbook", function (accounts: string[]) {
         let order1 = randomID();
         let order2 = randomID();
 
-        await orderbook.confirmOrder(order1, [order2], { from: accounts[1] }).should.be.rejected;
-        await orderbook.confirmOrder(order2, [order1], { from: accounts[1] }).should.be.rejected;
+        await orderbook.confirmOrder(order1, [order2], { from: accounts[1] })
+            .should.be.rejectedWith(null, /must be registered darknode/);
+        await orderbook.confirmOrder(order2, [order1], { from: accounts[1] })
+            .should.be.rejectedWith(null, /must be registered darknode/);
     });
 
     it("should be able to get the depth of orderID", async function () {

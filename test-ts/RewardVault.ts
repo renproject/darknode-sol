@@ -65,7 +65,7 @@ contract("Reward Vault", function (accounts: string[]) {
         await rewardVault.updateDarknodeRegistry(0x0);
         (await rewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
         await rewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /revert/); // not owner
         await rewardVault.updateDarknodeRegistry(dnr.address);
         (await rewardVault.darknodeRegistry()).should.equal(dnr.address);
     });
@@ -114,10 +114,10 @@ contract("Reward Vault", function (accounts: string[]) {
 
     it("checks that deposit amounts are valid", async () => {
         await rewardVault.deposit(darknode1, TOKEN1.address, 1)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /revert/); // erc20 transfer error
 
         await rewardVault.deposit(darknode1, ETH.address, 1)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /mismatched tx value/);
     });
 
     it("checks success of ERC20 withdrawal before updating balances", async () => {
@@ -126,7 +126,8 @@ contract("Reward Vault", function (accounts: string[]) {
         await TOKEN1.pause();
 
         await rewardVault.withdraw(darknode1, TOKEN1.address)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /revert/); // erc20 transfer error, paused
+        await TOKEN1.unpause();
     });
 
     it("checks success of ETH withdrawal before updating balances", async () => {
@@ -139,7 +140,7 @@ contract("Reward Vault", function (accounts: string[]) {
         await rewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });
 
         await rewardVault.withdraw(darknode3, ETH.address)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /malicious revert/);
     });
 
     it("checks the darknode operator is not 0x0", async () => {
@@ -148,7 +149,7 @@ contract("Reward Vault", function (accounts: string[]) {
         await rewardVault.deposit(darknodeOperator, ETH.address, 1, { value: 1 });
 
         await rewardVault.withdraw(darknodeOperator, ETH.address)
-            .should.be.rejected;
+            .should.be.rejectedWith(null, /invalid darknode owner/);
     });
 
 });
