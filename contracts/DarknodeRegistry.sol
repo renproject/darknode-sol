@@ -150,7 +150,7 @@ contract DarknodeRegistry is Ownable {
     }
 
     modifier onlySlasher() {
-        require(slasher == msg.sender);
+        require(slasher == msg.sender, "must be slasher");
         _;
     }
 
@@ -211,7 +211,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Allows the contract owner to update the minimum epoch interval.
       * @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
       */
-    function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
+    function updateMinimumEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
         // Will be updated next epoch
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
@@ -231,7 +231,7 @@ contract DarknodeRegistry is Ownable {
         if (previousEpoch.blocknumber == 0) {
             // The first time epoch is called, it must be called by the owner
             // of the contract
-            require(msg.sender == owner);
+            require(msg.sender == owner, "not authorised (first epoch)");
         }
 
         require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");

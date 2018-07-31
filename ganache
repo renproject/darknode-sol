@@ -1,6 +1,0 @@
-#!/bin/sh
-
-accountNumber=${1:-10}
-echo "Starting with $accountNumber accounts..."
-
-ganache-cli --port 8545 --accounts $accountNumber -d

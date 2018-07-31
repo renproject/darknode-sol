@@ -5,7 +5,7 @@ import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 chai.should();
 
-contract("SettlementUtils", function (accounts) {
+contract("SettlementUtils", function () {
 
     let settlementTest;
     let buyID_1, sellID_1;
