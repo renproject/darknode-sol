@@ -4,16 +4,16 @@ const RepublicToken = artifacts.require("RepublicToken");
 const RewardVault = artifacts.require("RewardVault");
 const Reverter = artifacts.require("Reverter");
 
-const chai = require("chai");
-chai.use(require("chai-as-promised"));
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 chai.should();
 
 const MINIMUM_BOND = 100;
 const MINIMUM_POD_SIZE = 72;
 const MINIMUM_EPOCH_INTERVAL = 2;
 
-
-contract("Reward Vault", function (accounts) {
+contract("Reward Vault", function (accounts: string[]) {
 
     let ren, dnr, rewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
@@ -51,7 +51,6 @@ contract("Reward Vault", function (accounts) {
             await dnr.register(darknode, "", MINIMUM_BOND, { from: darknodeOperator });
         }
         await dnr.epoch();
-
 
         (await dnr.getDarknodeOwner(darknode1))
             .should.equal(darknodeOperator);
@@ -106,11 +105,10 @@ contract("Reward Vault", function (accounts) {
                 const balanceAfter = await token.balanceOf(darknodeOperator);
 
                 balanceAfter.toFixed()
-                    .should.equal(balanceBefore.add(sum[darknode][token.address]).toFixed())
+                    .should.equal(balanceBefore.add(sum[darknode][token.address]).toFixed());
             }
         }
     });
-
 
     it("checks that deposit amounts are valid", async () => {
         await rewardVault.deposit(darknode1, TOKEN1.address, 1)
@@ -131,7 +129,7 @@ contract("Reward Vault", function (accounts) {
 
     it("checks success of ETH withdrawal before updating balances", async () => {
         const reverter = await Reverter.new();
-        darknode3 = accounts[5];
+        const darknode3 = accounts[5];
         await ren.approve(reverter.address, MINIMUM_BOND);
         await reverter.register(dnr.address, ren.address, darknode3, "", MINIMUM_BOND);
         await dnr.epoch();
@@ -152,4 +150,3 @@ contract("Reward Vault", function (accounts) {
     });
 
 });
-

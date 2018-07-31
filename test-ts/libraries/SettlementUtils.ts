@@ -1,10 +1,11 @@
 const SettlementUtilsTest = artifacts.require("SettlementUtilsTest");
 
-const chai = require("chai");
-chai.use(require("chai-as-promised"));
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 chai.should();
 
-contract("RenExSettlement", function (accounts) {
+contract("SettlementUtils", function (accounts) {
 
     let settlementTest;
     let buyID_1, sellID_1;

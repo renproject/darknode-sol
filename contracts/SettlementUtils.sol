@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 /**
-@title A library for calculating and verify order match details
+@title A library for calculating and verifying order match details
 @author Republic Protocol
 */
 library SettlementUtils {

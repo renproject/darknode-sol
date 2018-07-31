@@ -1,9 +1,10 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const RepublicToken = artifacts.require("RepublicToken");
 const Orderbook = artifacts.require("Orderbook");
-const chai = require("chai");
 
-chai.use(require("chai-as-promised"));
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 chai.should();
 
 const MINIMUM_BOND = 100;
@@ -14,14 +15,13 @@ const FEE = 1;
 
 const randomID = () => {
     return web3.sha3(Math.random().toString());
-}
+};
 
 const openPrefix = web3.toHex("Republic Protocol: open: ");
 const closePrefix = web3.toHex("Republic Protocol: cancel: ");
 
-
 const steps = {
-    openBuyOrder: async (orderbook, broker, account, orderID) => {
+    openBuyOrder: async (orderbook, broker, account, orderID?) => {
         if (!orderID) {
             orderID = randomID();
         }
@@ -33,7 +33,7 @@ const steps = {
         return orderID;
     },
 
-    openSellOrder: async (orderbook, broker, account, orderID) => {
+    openSellOrder: async (orderbook, broker, account, orderID?) => {
         if (!orderID) {
             orderID = randomID();
         }
@@ -47,13 +47,13 @@ const steps = {
 
     cancelOrder: async (orderbook, broker, account, orderID) => {
         // Cancel canceled order
-        hash = closePrefix + orderID.slice(2);
-        signature = await web3.eth.sign(account, hash);
+        const hash = closePrefix + orderID.slice(2);
+        const signature = await web3.eth.sign(account, hash);
         await orderbook.cancelOrder(signature, orderID, { from: broker });
     }
-}
+};
 
-contract("Orderbook", function (accounts) {
+contract("Orderbook", function (accounts: string[]) {
 
     let ren, dnr, orderbook, darknode, broker;
 
@@ -69,7 +69,7 @@ contract("Orderbook", function (accounts) {
 
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             await ren.transfer(accounts[i], 10000);
         }
         orderbook = await Orderbook.new(FEE, ren.address, dnr.address);
@@ -101,25 +101,25 @@ contract("Orderbook", function (accounts) {
         (await orderbook.darknodeRegistry()).should.equal(dnr.address);
     });
 
-    it('should be able to open orders', async function () {
+    it("should be able to open orders", async function () {
         await ren.approve(orderbook.address, 2 * accounts.length, { from: broker });
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             steps.openBuyOrder(orderbook, broker, accounts[i]);
             steps.openSellOrder(orderbook, broker, accounts[i]);
         }
     });
 
-    it('should be rejected when trying to open an order without no REN allowance', async function () {
+    it("should be rejected when trying to open an order without no REN allowance", async function () {
         await ren.approve(orderbook.address, 0, { from: broker });
         await steps.openBuyOrder(orderbook, broker, accounts[0]).should.be.rejected;
         await steps.openSellOrder(orderbook, broker, accounts[0]).should.be.rejected;
     });
 
-    it('should be rejected when trying to open an opened order', async function () {
-        for (i = 0; i < accounts.length; i++) {
+    it("should be rejected when trying to open an opened order", async function () {
+        for (let i = 0; i < accounts.length; i++) {
             await ren.approve(orderbook.address, 2, { from: broker });
 
-            const orderID = await steps.openBuyOrder(orderbook, broker, accounts[0])
+            const orderID = await steps.openBuyOrder(orderbook, broker, accounts[0]);
             await steps.openBuyOrder(orderbook, broker, accounts[0], orderID)
                 .should.be.rejected;
 
@@ -128,30 +128,30 @@ contract("Orderbook", function (accounts) {
         }
     });
 
-    it('should be able to cancel orders', async function () {
+    it("should be able to cancel orders", async function () {
         const ids = {};
 
         await ren.approve(orderbook.address, accounts.length * 2, { from: broker });
 
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
                 await steps.openBuyOrder(orderbook, broker, accounts[i]) :
                 await steps.openSellOrder(orderbook, broker, accounts[i]);
         }
 
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             await steps.cancelOrder(orderbook, broker, accounts[i], ids[i]);
         }
     });
 
-    it('should be able to cancel orders that are not open', async function () {
+    it("should be able to cancel orders that are not open", async function () {
         await ren.approve(orderbook.address, 1, { from: broker });
 
         let orderID = randomID();
         await steps.cancelOrder(orderbook, broker, accounts[0], orderID);
     });
 
-    it('should not be able to cancel confirmed orders', async function () {
+    it("should not be able to cancel confirmed orders", async function () {
         await ren.approve(orderbook.address, 5, { from: broker });
 
         // Confirmed Order
@@ -166,43 +166,43 @@ contract("Orderbook", function (accounts) {
             .should.be.rejected;
     });
 
-    it('should be rejected when trying to cancel orders signed by someone else', async function () {
+    it("should be rejected when trying to cancel orders signed by someone else", async function () {
         const ids = {};
 
         await ren.approve(orderbook.address, accounts.length, { from: broker });
 
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
                 await steps.openBuyOrder(orderbook, broker, accounts[i]) :
                 await steps.openSellOrder(orderbook, broker, accounts[i]);
         }
 
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             await ren.approve(orderbook.address, 1, { from: accounts[i] });
             await steps.cancelOrder(orderbook, broker, accounts[(i + 1) % accounts.length], ids[i]).should.be.rejected;
         }
     });
 
-    it('should be able to confirm orders', async function () {
+    it("should be able to confirm orders", async function () {
         const buyIDs = {};
         const sellIDs = {};
 
         await ren.approve(orderbook.address, 2 * (accounts.length / 2), { from: broker });
 
         // Open orders
-        for (i = 0; i < accounts.length / 2; i++) {
+        for (let i = 0; i < accounts.length / 2; i++) {
 
             buyIDs[i] = await steps.openBuyOrder(orderbook, broker, accounts[i]);
             sellIDs[i] = await steps.openSellOrder(orderbook, broker, accounts[accounts.length - 1 - i]);
         }
 
         // Confirm orders
-        for (i = 0; i < accounts.length / 2; i++) {
+        for (let i = 0; i < accounts.length / 2; i++) {
             await orderbook.confirmOrder(buyIDs[i], [sellIDs[i]], { from: darknode });
         }
     });
 
-    it('should be rejected when trying to confirm an non-open order', async function () {
+    it("should be rejected when trying to confirm an non-open order", async function () {
         // Setup
         await ren.approve(orderbook.address, 5, { from: broker });
 
@@ -221,7 +221,6 @@ contract("Orderbook", function (accounts) {
         // Unopened Order
         let unopenedOrder = randomID();
 
-
         await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode }).should.be.rejected;
         await orderbook.confirmOrder(openedOrder, [confirmedOrder], { from: darknode }).should.be.rejected;
 
@@ -232,8 +231,8 @@ contract("Orderbook", function (accounts) {
         await orderbook.confirmOrder(openedOrder, [canceledOrder], { from: darknode }).should.be.rejected;
     });
 
-    it('should be rejected when an un-registered node trying to confirm orders', async function () {
-        await ren.approve(orderbook.address, 2, { from: accounts[i] });
+    it("should be rejected when an un-registered node trying to confirm orders", async function () {
+        await ren.approve(orderbook.address, 2, { from: accounts[0] });
         let order1 = randomID();
         let order2 = randomID();
 
@@ -256,14 +255,13 @@ contract("Orderbook", function (accounts) {
             .toNumber().should.equal(1);
     });
 
-    it('should be able to retrieve orders', async function () {
-        _orderbook = await Orderbook.new(1, ren.address, dnr.address);
+    it("should be able to retrieve orders", async function () {
+        const _orderbook = await Orderbook.new(1, ren.address, dnr.address);
 
         const ids = {};
 
-
         await ren.approve(_orderbook.address, 2 * accounts.length, { from: broker });
-        for (i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
                 await steps.openBuyOrder(_orderbook, broker, accounts[i]) :
                 await steps.openSellOrder(_orderbook, broker, accounts[i]);
@@ -290,9 +288,11 @@ contract("Orderbook", function (accounts) {
             .length.should.equal(accounts.length);
     });
 
-    it('should be able to retrieve trader from signature', async function () {
+    it("should be able to retrieve trader from signature", async function () {
         const id = "0x6b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        // tslint:disable-next-line:max-line-length
         const data = "0x52657075626c69632050726f746f636f6c3a206f70656e3a206b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        // tslint:disable-next-line:max-line-length
         const signature = "0x5f9b4834c252960cec91116f1138262cca723a579dfc1a3405c9900862c63a415885c79d1e8ced229cfc753df6db88309141a7c1a2478d2d77956982288868311b";
 
         let prefix = web3.toHex("Republic Protocol: open: ");
@@ -304,7 +304,7 @@ contract("Orderbook", function (accounts) {
     });
 
     it("should be able to read data from the contract", async function () {
-        _orderbook = await Orderbook.new(1, ren.address, dnr.address);
+        const _orderbook = await Orderbook.new(1, ren.address, dnr.address);
 
         let buyOrderId;
         let sellOrderId;
@@ -324,7 +324,6 @@ contract("Orderbook", function (accounts) {
             await _orderbook.openBuyOrder(buySignature, buyOrderId, { from: broker });
             await _orderbook.openSellOrder(sellSignature, sellOrderId, { from: broker });
         }
-
 
         { // should be able to retrieve orders by index
             (await _orderbook.buyOrder.call(0))
@@ -355,7 +354,7 @@ contract("Orderbook", function (accounts) {
         }
 
         await _orderbook.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
-        const confirmationBlockNumber = (await web3.eth.getBlock('latest')).number;
+        const confirmationBlockNumber = (await web3.eth.getBlock("latest")).number;
 
         { // should be able to retrieve order details
             // Get order status
@@ -398,4 +397,3 @@ contract("Orderbook", function (accounts) {
     });
 
 });
-
