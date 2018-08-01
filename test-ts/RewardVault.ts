@@ -32,7 +32,7 @@ contract("Reward Vault", function (accounts: string[]) {
             MINIMUM_EPOCH_INTERVAL,
             0x0,
         );
-        dnrs.updateOwner(dnr.address);
+        dnrs.transferOwnership(dnr.address);
         rewardVault = await RewardVault.new(dnr.address);
 
         TOKEN1 = await RepublicToken.new();

@@ -36,7 +36,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
       MINIMUM_EPOCH_INTERVAL,
       accounts[3]
     );
-    dnrs.updateOwner(dnr.address);
+    dnrs.transferOwnership(dnr.address);
     for (let i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);
     }
@@ -105,7 +105,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
   it("can not register a node twice", async () => {
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
-    await dnr.register(ID("1"), PUBK("1"), MINIMUM_BOND).should.be.rejectedWith(null, /must be unregistered/);
+    await dnr.register(ID("1"), PUBK("1"), MINIMUM_BOND).should.be.rejectedWith(null, /must be refunded or never registered/);
   });
 
   it("can not deregister a node which is not registered", async () => {
@@ -117,11 +117,11 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("can get the bond of the Dark Node", async () => {
-    (await dnr.getBond(ID("1"))).toNumber().should.equal(MINIMUM_BOND);
+    (await dnr.getDarknodeBond(ID("1"))).toNumber().should.equal(MINIMUM_BOND);
   });
 
   it("can get the Public Key of the Dark Node", async () => {
-    (await dnr.getPublicKey(ID("1"))).should.equal(PUBK("1"));
+    (await dnr.getDarknodePublicKey(ID("1"))).should.equal(PUBK("1"));
   });
 
   it("can deregister a Dark Node, call an epoch and check deregistration", async () => {
@@ -147,10 +147,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   it("can only get the Dark Nodes that are fully registered", async () => {
     const nodes = await dnr.getDarknodes.call({ gasLimit: 5000000 });
     (nodes.length).should.equal(accounts.length - 6);
-    nodes[0].should.equal(ID("3"));
-    nodes[1].should.equal(ID("4"));
-    nodes[2].should.equal(ID("7"));
-    nodes[3].should.equal(ID("8"));
+    nodes[0].toLowerCase().should.equal(ID("3"));
+    nodes[1].toLowerCase().should.equal(ID("4"));
+    nodes[2].toLowerCase().should.equal(ID("7"));
+    nodes[3].toLowerCase().should.equal(ID("8"));
   });
 
   it("should fail to refund before deregistering", async () => {
@@ -163,6 +163,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.deregister(ID("7"), { from: accounts[6] });
     await dnr.deregister(ID("8"), { from: accounts[7] });
     await waitForEpoch(dnr);
+    await waitForEpoch(dnr);
     (await dnr.isDeregistered(ID("3"))).should.be.true;
     (await dnr.isDeregistered(ID("4"))).should.be.true;
     (await dnr.isDeregistered(ID("7"))).should.be.true;
@@ -171,10 +172,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.refund(ID("4"), { from: accounts[3] });
     await dnr.refund(ID("7"), { from: accounts[6] });
     await dnr.refund(ID("8"), { from: accounts[7] });
-    (await dnr.isUnregistered(ID("3"))).should.be.true;
-    (await dnr.isUnregistered(ID("4"))).should.be.true;
-    (await dnr.isUnregistered(ID("7"))).should.be.true;
-    (await dnr.isUnregistered(ID("8"))).should.be.true;
+    (await dnr.isRefunded(ID("3"))).should.be.true;
+    (await dnr.isRefunded(ID("4"))).should.be.true;
+    (await dnr.isRefunded(ID("7"))).should.be.true;
+    (await dnr.isRefunded(ID("8"))).should.be.true;
     (await ren.balanceOf(accounts[2])).toNumber().should.equal(MINIMUM_BOND);
     (await ren.balanceOf(accounts[3])).toNumber().should.equal(MINIMUM_BOND);
     (await ren.balanceOf(accounts[6])).toNumber().should.equal(MINIMUM_BOND);

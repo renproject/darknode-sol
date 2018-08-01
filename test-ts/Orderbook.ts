@@ -70,7 +70,7 @@ contract("Orderbook", function (accounts: string[]) {
           MINIMUM_EPOCH_INTERVAL,
           0x0
         );
-        dnrs.updateOwner(dnr.address);
+        dnrs.transferOwnership(dnr.address);
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
         for (let i = 0; i < accounts.length; i++) {
