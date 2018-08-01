@@ -44,14 +44,14 @@ contract Orderbook is Ownable {
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
 
-    event FeeUpdated(uint256 previousFee, uint256 nextFee);
-    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
+    event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
     /**
       * @notice Only allow registered dark nodes.
       */
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(bytes20(_sender)));
+        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
         _;
     }
 
@@ -70,12 +70,12 @@ contract Orderbook is Ownable {
     }
 
     function updateFee(uint256 _newFee) public onlyOwner {
-        emit FeeUpdated(fee, _newFee);
+        emit LogFeeUpdated(fee, _newFee);
         fee = _newFee;
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
-        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
+        emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
@@ -119,9 +119,9 @@ contract Orderbook is Ownable {
       * @param _orderMatches The hashes of the matching order.
       */
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
-        require(orders[_orderId].state == OrderState.Open);
+        require(orders[_orderId].state == OrderState.Open, "invalid order status");
         for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orders[_orderMatches[i]].state == OrderState.Open);
+            require(orders[_orderMatches[i]].state == OrderState.Open, "invalid order status");
         }
 
         for (i = 0; i < _orderMatches.length; i++) {
@@ -149,7 +149,7 @@ contract Orderbook is Ownable {
             // Recover trader address from the signature
             bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
             address trader = ECDSA.addr(data, _signature);
-            require(orders[_orderId].trader == trader);
+            require(orders[_orderId].trader == trader, "invalid signature");
         } else {
             // An unopened order can be canceled to ensure that it cannot be
             // opened in the future.
@@ -157,7 +157,7 @@ contract Orderbook is Ownable {
             // or miner submits a cancelOrder with a higher fee everytime they
             // see an openOrder from a particular trader. To solve this, order
             // cancelations should be stored against a specific trader.
-            require(orders[_orderId].state == OrderState.Undefined);
+            require(orders[_orderId].state == OrderState.Undefined, "invalid order state");
         }
 
         orders[_orderId].state = OrderState.Canceled;
@@ -168,7 +168,7 @@ contract Orderbook is Ownable {
      * @return The order hash at the given index in buy order list and a bool
      * flag defining whether or not an order actually exists at that index.
      */
-    function buyOrder(uint256 _index) public view returns (bytes32, bool){
+    function buyOrder(uint256 _index) public view returns (bytes32, bool) {
         if (_index >= buyOrders.length) {
             return ("", false);
         }
@@ -180,7 +180,7 @@ contract Orderbook is Ownable {
     * sellOrder will return orderId of the given index in sell order list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function sellOrder(uint256 _index) public view returns (bytes32, bool){
+    function sellOrder(uint256 _index) public view returns (bytes32, bool) {
         if (_index >= sellOrders.length) {
             return ("", false);
         }
@@ -191,14 +191,14 @@ contract Orderbook is Ownable {
     /**
     * orderState will return status of the given orderID.
     */
-    function orderState(bytes32 _orderId) public view returns (uint8){
-        return uint8(orders[_orderId].state);
+    function orderState(bytes32 _orderId) public view returns (OrderState) {
+        return orders[_orderId].state;
     }
 
     /**
     * orderMatch will return a list of matched orders to the given orderID.
     */
-    function orderMatch(bytes32 _orderId) public view returns (bytes32[]){
+    function orderMatch(bytes32 _orderId) public view returns (bytes32[]) {
         return orders[_orderId].matches;
     }
 
@@ -206,7 +206,7 @@ contract Orderbook is Ownable {
     * orderPriority will return the priority of the given orderID.
     * The priority is the index of the order in the orderbook.
     */
-    function orderPriority(bytes32 _orderId) public view returns (uint256){
+    function orderPriority(bytes32 _orderId) public view returns (uint256) {
         return orders[_orderId].priority;
     }
 
@@ -214,7 +214,7 @@ contract Orderbook is Ownable {
     * orderTrader will return the trader of the given orderID.
     * Trader is the one who signs the message and does the actual trading.
     */
-    function orderTrader(bytes32 _orderId) public view returns (address){
+    function orderTrader(bytes32 _orderId) public view returns (address) {
         return orders[_orderId].trader;
     }
 
@@ -222,14 +222,14 @@ contract Orderbook is Ownable {
     * orderBroker will return the broker of the given orderID.
     * Broker is the one who represent the trader to send the tx.
     */
-    function orderBroker(bytes32 _orderId) public view returns (address){
+    function orderBroker(bytes32 _orderId) public view returns (address) {
         return orders[_orderId].broker;
     }
 
     /**
     * orderConfirmer will return the darknode address which confirms the given orderID.
     */
-    function orderConfirmer(bytes32 _orderId) public view returns (address){
+    function orderConfirmer(bytes32 _orderId) public view returns (address) {
         return orders[_orderId].confirmer;
     }
 
@@ -253,7 +253,7 @@ contract Orderbook is Ownable {
     /**
     * getOrdersCount will return the number of orders in the orderbook
     */
-    function getOrdersCount() public view returns (uint256){
+    function getOrdersCount() public view returns (uint256) {
         return buyOrders.length + sellOrders.length;
     }
 
@@ -261,7 +261,7 @@ contract Orderbook is Ownable {
     * getOrder will return orderId of the given index in the orderbook list and true if exists.
     * Otherwise it will return empty bytes and false.
     */
-    function getOrder(uint256 _index) public view returns (bytes32, bool){
+    function getOrder(uint256 _index) public view returns (bytes32, bool) {
         if (_index >= orderbook.length) {
             return ("", false);
         }
@@ -272,7 +272,7 @@ contract Orderbook is Ownable {
     /**
     * getOrder will return order details of the orders starting from the offset.
     */
-    function getOrders(uint256 _offset, uint256 _limit) public view returns (bytes32[], address[], uint8[]){
+    function getOrders(uint256 _offset, uint256 _limit) public view returns (bytes32[], address[], uint8[]) {
         if (_offset >= orderbook.length) {
             return;
         }
@@ -300,8 +300,8 @@ contract Orderbook is Ownable {
 
     function openOrder(bytes _signature, bytes32 _orderId) private {
         // require(ren.allowance(msg.sender, this) >= fee);
-        require(ren.transferFrom(msg.sender, this, fee));
-        require(orders[_orderId].state == OrderState.Undefined);
+        require(ren.transferFrom(msg.sender, this, fee), "fee transfer failed");
+        require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
 
         // recover trader address from the signature
         bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);

@@ -9,7 +9,7 @@ library LinkedList {
     * @notice A permanent NULL node (0x0) in the circular double linked list.
     * NULL.next is the head, and NULL.previous is the tail.
     */
-    bytes20 public constant NULL = 0x0;
+    address public constant NULL = 0x0;
 
     /**
     * @notice A node points to the node before it, and the node after it. If
@@ -18,19 +18,19 @@ library LinkedList {
     */
     struct Node {
         bool inList;
-        bytes20 previous;
-        bytes20 next;
+        address previous;
+        address next;
     }
 
     /**
-    * @notice LinkedList uses a mapping from bytes20s to nodes. Each bytes20
+    * @notice LinkedList uses a mapping from addresss to nodes. Each address
     * uniquely identifies a node, and in this way they are used like pointers.
     */
     struct List {
-        mapping (bytes20 => Node) list;
+        mapping (address => Node) list;
     }
 
-    function isInList(List storage self, bytes20 node) internal view returns (bool) {
+    function isInList(List storage self, address node) internal view returns (bool) {
         return self.list[node].inList;
     }
 
@@ -39,10 +39,10 @@ library LinkedList {
     *
     * @param self The list being used.
     *
-    * @return A bytes20 identifying the node at the beginning of the double
+    * @return A address identifying the node at the beginning of the double
     * linked list.
     */
-    function begin(List storage self) internal view returns (bytes20) {
+    function begin(List storage self) internal view returns (address) {
         return self.list[NULL].next;
     }
 
@@ -51,20 +51,20 @@ library LinkedList {
     *
     * @param self The list being used.
     *
-    * @return A bytes20 identifying the node at the end of the double linked
+    * @return A address identifying the node at the end of the double linked
     * list.
     */
-    function end(List storage self) internal view returns (bytes20) {
+    function end(List storage self) internal view returns (address) {
         return self.list[NULL].previous;
     }
 
-    function next(List storage self, bytes20 node) internal view returns (bytes20) {
-        require(isInList(self, node));
+    function next(List storage self, address node) internal view returns (address) {
+        require(isInList(self, node), "not in list");
         return self.list[node].next;
     }
 
-    function previous(List storage self, bytes20 node) internal view returns (bytes20) {
-        require(isInList(self, node));
+    function previous(List storage self, address node) internal view returns (address) {
+        require(isInList(self, node), "not in list");
         return self.list[node].previous;
     }
 
@@ -75,12 +75,12 @@ library LinkedList {
     * @param target The existing node in the list.
     * @param newNode The next node to insert before the target.
     */
-    function insertBefore(List storage self, bytes20 target, bytes20 newNode) internal {
-        require(!isInList(self, newNode));
-        require(isInList(self, target) || target == NULL);
+    function insertBefore(List storage self, address target, address newNode) internal {
+        require(!isInList(self, newNode), "already in list");
+        require(isInList(self, target) || target == NULL, "not in list");
 
         // It is expected that this value is sometimes NULL.
-        bytes20 prev = self.list[target].previous;
+        address prev = self.list[target].previous;
 
         self.list[newNode].next = target;
         self.list[newNode].previous = prev;
@@ -97,12 +97,12 @@ library LinkedList {
     * @param target The existing node in the list.
     * @param newNode The next node to insert after the target.
     */
-    function insertAfter(List storage self, bytes20 target, bytes20 newNode) internal {
-        require(!isInList(self, newNode));
-        require(isInList(self, target) || target == NULL);
+    function insertAfter(List storage self, address target, address newNode) internal {
+        require(!isInList(self, newNode), "already in list");
+        require(isInList(self, target) || target == NULL, "not in list");
 
         // It is expected that this value is sometimes NULL.
-        bytes20 n = self.list[target].next;
+        address n = self.list[target].next;
 
         self.list[newNode].previous = target;
         self.list[newNode].next = n;
@@ -120,13 +120,13 @@ library LinkedList {
     * @param self The list being using.
     * @param node The node in the list to be removed.
     */
-    function remove(List storage self, bytes20 node) internal {
-        require(isInList(self, node));
+    function remove(List storage self, address node) internal {
+        require(isInList(self, node), "not in list");
         if (node == NULL) {
             return;
         }
-        bytes20 p = self.list[node].previous;
-        bytes20 n = self.list[node].next;
+        address p = self.list[node].previous;
+        address n = self.list[node].next;
 
         self.list[p].next = n;
         self.list[n].previous = p;
@@ -143,8 +143,9 @@ library LinkedList {
     * @param self The list being used.
     * @param node The node to insert at the beginning of the list.
     */
-    function prepend(List storage self, bytes20 node) internal {
-        require(!isInList(self, node));
+    function prepend(List storage self, address node) internal {
+        // isInList(node) is checked in insertBefore
+
         insertBefore(self, begin(self), node);
     }
 
@@ -154,15 +155,16 @@ library LinkedList {
     * @param self The list being used.
     * @param node The node to insert at the end of the list.
     */
-    function append(List storage self, bytes20 node) internal {
-        require(!isInList(self, node));
+    function append(List storage self, address node) internal {
+        // isInList(node) is checked in insertBefore  
+
         insertAfter(self, end(self), node);
     }
 
-    function swap(List storage self, bytes20 left, bytes20 right) internal {
-        require(isInList(self, left));
-        require(isInList(self, right));
-        bytes20 previousRight = self.list[right].previous;
+    function swap(List storage self, address left, address right) internal {
+        // isInList(left) and isInList(right) are checked in remove
+    
+        address previousRight = self.list[right].previous;
         remove(self, right);
         insertAfter(self, left, right);
         remove(self, left);
