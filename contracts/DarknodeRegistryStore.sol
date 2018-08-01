@@ -83,19 +83,15 @@ contract DarknodeRegistryStore {
 
     function deleteDarknode(bytes20 darknodeID) external onlyOwner {
         uint256 bond = darknodeRegistry[darknodeID].bond;
-        darknodeRegistry[darknodeID] = Darknode({
-            owner: 0x0,
-            bond: 0,
-            registeredAt: 0,
-            deregisteredAt: 0,
-            publicKey: ""
-        });
+        delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
         require(ren.transfer(owner, bond), "transfer from vault failed");
     }
 
     function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external {
+        uint256 previousBond = darknodeRegistry[darknodeID].bond;
         darknodeRegistry[darknodeID].bond = bond;
+        require(ren.transfer(owner, previousBond - bond));
     }
 
     function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external {
