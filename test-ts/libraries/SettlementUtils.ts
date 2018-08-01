@@ -53,18 +53,8 @@ contract("SettlementUtils", function () {
     });
 
     it("Verify Match", async () => {
-        console.log(buyID_1);
-        console.log(buyID_2);
-        console.log(buyID_3);
-        console.log(sellID_1);
-        console.log(sellID_2);
-        console.log(sellID_3);
-
-        const a = await settlementTest.orderDetails(buyID_1);
-        console.log(a);
-
-        await settlementTest.verifyMatch(buyID_1, sellID_1).should.be.rejected;        
-        await settlementTest.verifyMatch(buyID_2, sellID_2).should.be.rejected;
-        await settlementTest.verifyMatch(buyID_3, sellID_3).should.be.rejected;
+        await settlementTest.verifyMatch(buyID_1, sellID_1).should.be.true;       
+        await settlementTest.verifyMatch(buyID_2, sellID_2).should.be.true; 
+        await settlementTest.verifyMatch(buyID_3, sellID_3).should.be.false; 
     });
 });
