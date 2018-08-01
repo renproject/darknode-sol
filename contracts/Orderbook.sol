@@ -191,8 +191,8 @@ contract Orderbook is Ownable {
     /**
     * orderState will return status of the given orderID.
     */
-    function orderState(bytes32 _orderId) public view returns (uint8) {
-        return uint8(orders[_orderId].state);
+    function orderState(bytes32 _orderId) public view returns (OrderState) {
+        return orders[_orderId].state;
     }
 
     /**
