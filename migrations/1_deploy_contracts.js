@@ -1,5 +1,6 @@
 
 var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
+var DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore.sol");
 var Orderbook = artifacts.require("Orderbook.sol");
 // var RenExBalances = artifacts.require("RenExBalances.sol");
 var RewardVault = artifacts.require("RewardVault.sol");
@@ -56,13 +57,18 @@ let migration = async function (deployer, network) {
         //     XYZToken, { overwrite: network !== "f0" })
         // )
         .then(() => deployer.deploy(
+            DarknodeRegistryStore,
+            RepublicToken.address
+        ))
+        .then(() => deployer.deploy(
             DarknodeRegistry,
             RepublicToken.address,
+            DarknodeRegistryStore.address,
             BOND, // Bond
             POD_SIZE, // Pod
             EPOCH_BLOCKS, // Epoch
+            0x0
         ))
-
 
         .then(() => deployer.deploy(
             Orderbook,

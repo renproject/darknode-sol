@@ -1,4 +1,5 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const chai = require("chai");
 chai.use(require("chai-as-promised"));
@@ -14,12 +15,18 @@ contract("DarknodeRegistry", function (accounts) {
 
   before(async function () {
     ren = await RepublicToken.new();
+    dnrs = await DarknodeRegistryStore.new(ren.address);
     dnr = await DarknodeRegistry.new(
       ren.address,
+      dnrs.address,
       MINIMUM_BOND,
       MINIMUM_POD_SIZE,
-      MINIMUM_EPOCH_INTERVAL
+      MINIMUM_EPOCH_INTERVAL,
+      0x0
     );
+
+    await dnrs.updateOwner(dnr.address);
+
     for (i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);
     }
@@ -174,9 +181,9 @@ contract("DarknodeRegistry", function (accounts) {
     await waitForEpoch(dnr);
 
     await ren.pause();
-    await dnr.refund("3").should.be.rejected;
-    await ren.unpause();
     await dnr.refund("3");
+    await ren.unpause();
+    // await dnr.refund("3");
   })
 
   it("should not refund for an address which is never registered", async () => {
