@@ -41,16 +41,8 @@ contract DarknodeRegistryStore {
     // Registry data.
     LinkedList.List private darknodes;
 
-    address public owner;
-    RepublicToken ren;
+    RepublicToken private ren;
 
-    /**
-    * @notice Only allow the owner of this contract to pass.
-    */
-    modifier onlyOwner() {
-        require(owner == msg.sender, "must be the owner");
-        _;
-    }
 
     constructor(RepublicToken _ren) public {
         ren = _ren;
@@ -61,7 +53,7 @@ contract DarknodeRegistryStore {
         owner = newOwner;
     }
 
-    function addDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
+    function appendDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
         Darknode memory darknode = Darknode({
             owner: darknodeOwner,
             bond: bond,
@@ -81,7 +73,7 @@ contract DarknodeRegistryStore {
         return LinkedList.next(darknodes, darknodeID);
     } 
 
-    function deleteDarknode(bytes20 darknodeID) external onlyOwner {
+    function removeDarknode(bytes20 darknodeID) external onlyOwner {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         darknodeRegistry[darknodeID] = Darknode({
             owner: 0x0,
@@ -94,11 +86,11 @@ contract DarknodeRegistryStore {
         require(ren.transfer(owner, bond), "transfer from vault failed");
     }
 
-    function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external {
+    function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external onlyOwner {
         darknodeRegistry[darknodeID].bond = bond;
     }
 
-    function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external {
+    function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external onlyOwner {
         darknodeRegistry[darknodeID].deregisteredAt = deregisteredAt;
     }
 
