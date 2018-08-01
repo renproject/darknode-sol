@@ -1,4 +1,5 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const BitcoinMock = artifacts.require("BitcoinMock");
 const RepublicToken = artifacts.require("RepublicToken");
 const RewardVault = artifacts.require("RewardVault");
@@ -16,19 +17,22 @@ const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("Reward Vault", function (accounts: string[]) {
 
-    let ren, dnr, rewardVault, darknode1, darknode2, darknodeOperator;
+    let ren, dnr, dnrs, rewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
 
     before(async function () {
 
         ren = await RepublicToken.new();
+        dnrs = await DarknodeRegistryStore.new(ren.address);
         dnr = await DarknodeRegistry.new(
             ren.address,
+            dnrs.address,
             MINIMUM_BOND,
             MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL,
             0x0,
         );
+        dnrs.updateOwner(dnr.address);
         rewardVault = await RewardVault.new(dnr.address);
 
         TOKEN1 = await RepublicToken.new();

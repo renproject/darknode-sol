@@ -1,4 +1,5 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const Orderbook = artifacts.require("Orderbook");
 
@@ -55,19 +56,21 @@ const steps = {
 
 contract("Orderbook", function (accounts: string[]) {
 
-    let ren, dnr, orderbook, darknode, broker;
+    let ren, dnr, dnrs, orderbook, darknode, broker;
 
     before(async function () {
 
         ren = await RepublicToken.new();
+        dnrs = await DarknodeRegistryStore.new(ren.address);
         dnr = await DarknodeRegistry.new(
-            ren.address,
-            MINIMUM_BOND,
-            MINIMUM_POD_SIZE,
-            MINIMUM_EPOCH_INTERVAL,
-            0x0,
+          ren.address,
+          dnrs.address,
+          MINIMUM_BOND,
+          MINIMUM_POD_SIZE,
+          MINIMUM_EPOCH_INTERVAL,
+          0x0
         );
-
+        dnrs.updateOwner(dnr.address);
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
         for (let i = 0; i < accounts.length; i++) {
