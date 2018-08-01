@@ -44,8 +44,8 @@ contract Orderbook is Ownable {
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
 
-    event FeeUpdated(uint256 previousFee, uint256 nextFee);
-    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
+    event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
     /**
       * @notice Only allow registered dark nodes.
@@ -70,12 +70,12 @@ contract Orderbook is Ownable {
     }
 
     function updateFee(uint256 _newFee) public onlyOwner {
-        emit FeeUpdated(fee, _newFee);
+        emit LogFeeUpdated(fee, _newFee);
         fee = _newFee;
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
-        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
+        emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
