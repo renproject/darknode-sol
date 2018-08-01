@@ -1,4 +1,5 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 
 import * as chai from "chai";
@@ -22,17 +23,20 @@ function PUBK(i: string) {
 
 contract("DarknodeRegistry", function (accounts: string[]) {
 
-  let dnr, ren;
+  let dnrs, dnr, ren;
 
   before(async function () {
     ren = await RepublicToken.new();
+    dnrs = await DarknodeRegistryStore.new(ren.address);
     dnr = await DarknodeRegistry.new(
       ren.address,
+      dnrs.address,
       MINIMUM_BOND,
       MINIMUM_POD_SIZE,
       MINIMUM_EPOCH_INTERVAL,
-      0x0,
+      accounts[3]
     );
+    dnrs.updateOwner(dnr.address);
     for (let i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);
     }
@@ -171,6 +175,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     (await dnr.isUnregistered(ID("4"))).should.be.true;
     (await dnr.isUnregistered(ID("7"))).should.be.true;
     (await dnr.isUnregistered(ID("8"))).should.be.true;
+    (await ren.balanceOf(accounts[2])).toNumber().should.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[3])).toNumber().should.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[6])).toNumber().should.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[7])).toNumber().should.equal(MINIMUM_BOND);
   });
 
   it("should fail to refund twice", async () => {
@@ -195,6 +203,18 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   it("should not refund for an address which is never registered", async () => {
     await dnr.refund(ID("-1")).should.be.rejectedWith(null, /must be darknode owner/);
   });
+
+  it("can slash a darknode", async () => {
+    await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
+    await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[6] });
+    await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[7] });
+    await dnr.register(ID("3"), PUBK("3"), MINIMUM_BOND, { from: accounts[2] });
+    await dnr.register(ID("7"), PUBK("7"), MINIMUM_BOND, { from: accounts[6] });
+    await dnr.register(ID("8"), PUBK("8"), MINIMUM_BOND, { from: accounts[7] });
+    await waitForEpoch(dnr);
+    await dnr.slash(ID("3"), ID("7"), ID("8"), {from: accounts[3]});
+  });
+
 });
 
 async function waitForEpoch(dnr: any) {

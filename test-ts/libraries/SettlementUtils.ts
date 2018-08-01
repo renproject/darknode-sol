@@ -20,6 +20,9 @@ contract("SettlementUtils", function () {
     });
 
     it("submitOrder", async () => {
+
+
+
         // sellID_1?
         await settlementTest.submitOrder(
             "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -85,31 +88,10 @@ contract("SettlementUtils", function () {
         );
     });
 
-    it("verifyOrder", async () => {
-        await settlementTest.verifyOrder(buyID_1);
-        await settlementTest.verifyOrder(buyID_2);
-        await settlementTest.verifyOrder(sellID_1);
-        await settlementTest.verifyOrder(sellID_2);
-    });
-
-    it("submitMatch", async () => {
+    it("Verify Match", async () => {
         await settlementTest.verifyMatch(
             buyID_2,
             sellID_2,
         );
-    });
-
-    it("tupleToPrice", async () => {
-        // Negative scaling
-        (await settlementTest.tupleToPrice(1000000000, 20, 18)).toNumber()
-            .should.be.equal(5000000);
-
-        // 0 scaling
-        (await settlementTest.tupleToPrice(1000000000, 23, 18)).toNumber()
-            .should.be.equal(5000000000);
-
-        // Positive scaling
-        (await settlementTest.tupleToPrice(1000000000, 24, 18)).toNumber()
-            .should.be.equal(50000000000);
     });
 });
