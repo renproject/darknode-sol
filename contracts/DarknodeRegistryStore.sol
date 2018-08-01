@@ -43,14 +43,13 @@ contract DarknodeRegistryStore is Ownable {
     // Registry data.
     LinkedList.List private darknodes;
 
-    address public owner;
-    RepublicToken ren;
+    RepublicToken private ren;
 
     constructor(RepublicToken _ren) public {
         ren = _ren;
     }
 
-    function addDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
+    function appendDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
         Darknode memory darknode = Darknode({
             owner: darknodeOwner,
             bond: bond,
@@ -70,7 +69,7 @@ contract DarknodeRegistryStore is Ownable {
         return LinkedList.next(darknodes, darknodeID);
     } 
 
-    function deleteDarknode(bytes20 darknodeID) external onlyOwner {
+    function removeDarknode(bytes20 darknodeID) external onlyOwner {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
