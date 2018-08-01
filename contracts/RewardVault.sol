@@ -69,7 +69,7 @@ contract RewardVault is Ownable {
       * @param _token The address of the ERC20 token to withdraw.
       */
     function withdraw(address _darknode, ERC20 _token) public {
-        address darknodeOwner = darknodeRegistry.getDarknodeOwner(bytes20(_darknode));
+        address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
 
         require(darknodeOwner != 0x0, "invalid darknode owner");
         

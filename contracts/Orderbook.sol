@@ -51,7 +51,7 @@ contract Orderbook is Ownable {
       * @notice Only allow registered dark nodes.
       */
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(bytes20(_sender)), "must be registered darknode");
+        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
         _;
     }
 

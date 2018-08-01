@@ -22,4 +22,9 @@ interface Settlement {
         bytes32 _buyID,
         bytes32 _sellID
         ) external;
+    
+    function confirmer(
+        bytes32 _buyID,
+        bytes32 _sellID
+        ) external;
 }

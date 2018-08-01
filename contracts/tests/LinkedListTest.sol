@@ -8,47 +8,47 @@ contract LinkedListTest {
 
     LinkedList.List private ll;
 
-    function isInList(bytes20 node) public view returns (bool) {
+    function isInList(address node) public view returns (bool) {
         return ll.isInList(node);
     }
 
-    function next(bytes20 node) public view returns (bytes20) {
+    function next(address node) public view returns (address) {
         return ll.next(node);
     }
 
-    function previous(bytes20 node) public view returns (bytes20) {
+    function previous(address node) public view returns (address) {
         return ll.previous(node);
     }
 
-    function begin() public view returns (bytes20) {
+    function begin() public view returns (address) {
         return ll.begin();
     }
 
-    function end() public view returns (bytes20) {
+    function end() public view returns (address) {
         return ll.end();
     }
 
-    function insertBefore(bytes20 target, bytes20 newNode) public {
+    function insertBefore(address target, address newNode) public {
         ll.insertBefore(target, newNode);
     }
 
-    function insertAfter(bytes20 target, bytes20 newNode) public {
+    function insertAfter(address target, address newNode) public {
         ll.insertAfter(target, newNode);
     }
 
-    function remove(bytes20 node) public {
+    function remove(address node) public {
         ll.remove(node);
     }
 
-    function prepend(bytes20 newNode) public {
+    function prepend(address newNode) public {
         ll.prepend(newNode);
     }
 
-    function append(bytes20 newNode) public {
+    function append(address newNode) public {
         ll.append(newNode);
     }
 
-    function swap(bytes20 node1, bytes20 node2) public {
+    function swap(address node1, address node2) public {
         ll.swap(node1, node2);
     }
 

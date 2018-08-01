@@ -49,21 +49,13 @@ library SettlementUtils {
      * @param _buy the buy order details
      * @param _sell the sell order details
      */
-    function verifyMatch(OrderDetails _buy, OrderDetails _sell) internal pure {
-        // Require that the orders are confirmed to one another
-        require(_buy.parity == uint8(OrderParity.Buy), "invalid buy parity");
-        require(_sell.parity == uint8(OrderParity.Sell), "invalid sell parity");
-
-        // Buy price should be greater than sell price
-        require(_buy.price >= _sell.price, "incompatible pricepoints");
-        
-        // Buy volume should be greater than sell minimum volume
-        require(_buy.volume >= _sell.minimumVolume, "incompatible buy volume");
-        
-        // Sell volume should be greater than buy minimum volume
-        require(_sell.volume >= _buy.minimumVolume, "incompatible sell volume");
-
-        // Require that the orders were submitted to the same settlement layer
-        require(_buy.settlementID == _sell.settlementID, "incompatible settlements");
+    function verifyMatch(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
+        return (_buy.parity == uint8(OrderParity.Buy) &&  // Require that the orders are confirmed to one another
+                _sell.parity == uint8(OrderParity.Sell) &&
+                _buy.price >= _sell.price && // Buy price should be greater than sell price
+                _buy.volume >= _sell.minimumVolume &&  // Buy volume should be greater than sell minimum volume
+                _sell.volume >= _buy.minimumVolume &&  // Sell volume should be greater than buy minimum volume
+                _buy.settlementID == _sell.settlementID  // Require that the orders were submitted to the same settlement layer
+            );
     }
 }

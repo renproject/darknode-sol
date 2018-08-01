@@ -5,7 +5,7 @@ import "../RepublicToken.sol";
 
 contract Reverter {
 
-    function register(DarknodeRegistry dnr, RepublicToken ren, bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public {
+    function register(DarknodeRegistry dnr, RepublicToken ren, address _darknodeID, bytes _publicKey, uint256 _bond) public {
         // REN allowance
         ren.transferFrom(msg.sender, address(this), _bond);
         ren.approve(dnr, _bond);

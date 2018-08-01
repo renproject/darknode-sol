@@ -4,7 +4,6 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
-
 contract DarknodeRegistryStore is Ownable {
 
     /**
@@ -38,71 +37,88 @@ contract DarknodeRegistryStore is Ownable {
         bytes publicKey;
     }
 
-    mapping(bytes20 => Darknode) private darknodeRegistry;
-
     // Registry data.
+    mapping(address => Darknode) private darknodeRegistry;
     LinkedList.List private darknodes;
 
+    // RepublicToken.
     RepublicToken private ren;
 
+    /**
+    * @notice The DarknodeRegistryStore constructor.
+    *
+    * @param _ren The address of the RepublicToken contract.
+    */
     constructor(RepublicToken _ren) public {
         ren = _ren;
     }
 
-    function appendDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
+    /**
+    * @notice Instantiates a darknode and appends it to the darknodes linkedlist.
+    * 
+    * @param _darknodeID The darknode's ID.
+    * @param _darknodeOwner The darknode's owner's address
+    * @param _bond The darknode's bond value
+    * @param _publicKey The darknode's public key
+    * @param _registeredAt The time stamp when the darknode is registered.
+    * @param _deregisteredAt The time stamp when the darknode is deregistered.
+    */
+    function appendDarknode(address _darknodeID, address _darknodeOwner, uint256 _bond, bytes _publicKey, uint256 _registeredAt, uint256 _deregisteredAt) external onlyOwner {
         Darknode memory darknode = Darknode({
-            owner: darknodeOwner,
-            bond: bond,
-            registeredAt: registeredAt,
-            deregisteredAt: deregisteredAt,
-            publicKey: pubKey
+            owner: _darknodeOwner,
+            bond: _bond,
+            publicKey: _publicKey,
+            registeredAt: _registeredAt,
+            deregisteredAt: _deregisteredAt
         });
-        darknodeRegistry[darknodeID] = darknode;
-        LinkedList.append(darknodes, darknodeID);
+        darknodeRegistry[_darknodeID] = darknode;
+        LinkedList.append(darknodes, _darknodeID);
     }
 
-    function begin() external view returns(bytes20) {
+    function begin() external view onlyOwner returns(address) {
         return LinkedList.begin(darknodes);
     }
 
-    function next(bytes20 darknodeID) external view returns(bytes20) {
+    function next(address darknodeID) external view onlyOwner returns(address) {
         return LinkedList.next(darknodes, darknodeID);
     } 
 
-    function removeDarknode(bytes20 darknodeID) external onlyOwner {
+    function removeDarknode(address darknodeID) external onlyOwner {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
         require(ren.transfer(owner, bond), "transfer from vault failed");
     }
 
-    function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external onlyOwner {
+    function updateDarknodeBond(address darknodeID, uint256 bond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
         darknodeRegistry[darknodeID].bond = previousBond;
-        require(ren.transfer(owner, previousBond - bond));
+        if (previousBond > bond) {
+            require(ren.transfer(owner, previousBond - bond));
+        }
     }
 
-    function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external onlyOwner {
+    function updateDarknodeDeregisteredAt(address darknodeID, uint256 deregisteredAt) external onlyOwner {
         darknodeRegistry[darknodeID].deregisteredAt = deregisteredAt;
     }
 
-    function darknodeOwner(bytes20 darknodeID) external view returns (address) {
+    function darknodeOwner(address darknodeID) external view onlyOwner returns (address) {
         return darknodeRegistry[darknodeID].owner;
     }
 
-    function darknodeBond(bytes20 darknodeID) external view returns (uint256) {
+    function darknodeBond(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].bond;
     }
 
-    function darknodeRegisteredAt(bytes20 darknodeID) external view returns (uint256) {
+    function darknodeRegisteredAt(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].registeredAt;
     }
 
-    function darknodeDeregisteredAt(bytes20 darknodeID) external view returns (uint256) {
+    function darknodeDeregisteredAt(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].deregisteredAt;
     }
 
-    function darknodePublicKey(bytes20 darknodeID) external view returns (bytes) {
+    function darknodePublicKey(address darknodeID) external view onlyOwner returns (bytes) {
         return darknodeRegistry[darknodeID].publicKey;
     }
 }

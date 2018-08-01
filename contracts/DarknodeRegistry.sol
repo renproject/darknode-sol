@@ -53,14 +53,14 @@ contract DarknodeRegistry is Ownable {
       * @param _darknodeID The darknode ID that was registered.
       * @param _bond The amount of REN that was transferred as bond.
       */
-    event DarknodeRegistered(bytes20 _darknodeID, uint256 _bond);
+    event DarknodeRegistered(address _darknodeID, uint256 _bond);
 
     /**
       * @notice Emitted when a darknode is deregistered.
       *
       * @param _darknodeID The darknode ID that was deregistered.
       */
-    event DarknodeDeregistered(bytes20 _darknodeID);
+    event DarknodeDeregistered(address _darknodeID);
 
     /**
       * @notice Emitted when a refund has been made.
@@ -86,7 +86,7 @@ contract DarknodeRegistry is Ownable {
     /**
       * @notice Only allow the owner that registered the darknode to pass.
       */
-    modifier onlyDarknodeOwner(bytes20 _darknodeID) {
+    modifier onlyDarknodeOwner(address _darknodeID) {
         require(store.darknodeOwner(_darknodeID) == msg.sender, "must be darknode owner");
         _;
     }
@@ -94,12 +94,12 @@ contract DarknodeRegistry is Ownable {
     /**
       * @notice Only allow unregistered dark nodes.
       */
-    modifier onlyRefunded(bytes20 _darknodeID) {
+    modifier onlyRefunded(address _darknodeID) {
         require(isRefunded(_darknodeID), "must be refunded or never registered");
         _;
     }
 
-    modifier onlyRefundable(bytes20 _darknodeID) {
+    modifier onlyRefundable(address _darknodeID) {
         require(isRefundable(_darknodeID), "must be deregistered for at least one epoch");
         _;
     }
@@ -107,7 +107,7 @@ contract DarknodeRegistry is Ownable {
     /**
       * @notice Only allow deregistered dark nodes.
       */
-    modifier onlyDeregistered(bytes20 _darknodeID) {
+    modifier onlyDeregistered(address _darknodeID) {
         require(isDeregistered(_darknodeID), "must be deregistered");
         _;
     }
@@ -116,7 +116,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Only allowed registered nodes without a pending deregistration to
       * deregister
       */
-    modifier onlyDeregisterable(bytes20 _darknodeID) {
+    modifier onlyDeregisterable(address _darknodeID) {
         require(isDeregisterable(_darknodeID), "must be deregisterable");
         _;
     }
@@ -259,7 +259,7 @@ contract DarknodeRegistry is Ownable {
       * @param _bond The bond that will be paid. It must be greater than, or equal
       *              to, the minimum bond.
       */
-    function register(bytes20 _darknodeID, bytes _publicKey, uint256 _bond) public onlyRefunded(_darknodeID) {
+    function register(address _darknodeID, bytes _publicKey, uint256 _bond) public onlyRefunded(_darknodeID) {
         // REN allowance
         require(_bond >= minimumBond, "insufficient bond");
         // require(ren.allowance(msg.sender, address(this)) >= _bond);
@@ -267,7 +267,7 @@ contract DarknodeRegistry is Ownable {
         require(ren.transfer(address(store), _bond), "bond trasfer to valult failed");
 
         // Flag this dark node for registration
-        store.addDarknode(
+        store.appendDarknode(
             _darknodeID,
             msg.sender,
             _bond,
@@ -290,7 +290,7 @@ contract DarknodeRegistry is Ownable {
       * @param _darknodeID The dark node ID that will be deregistered. The caller
       *                    of this method store.darknodeRegisteredAt(_darknodeID)must be the owner of this dark node.
       */
-    function deregister(bytes20 _darknodeID) public onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
+    function deregister(address _darknodeID) public onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the dark node for deregistration
         store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + minimumEpochInterval);
         numDarknodesNextEpoch--;
@@ -299,7 +299,7 @@ contract DarknodeRegistry is Ownable {
         emit DarknodeDeregistered(_darknodeID);
     }
     
-    function slash(bytes20 _prover, bytes20 _challenger1, bytes20 _challenger2) public onlyDeregisterable(_challenger1) onlyDeregisterable(_challenger2) onlySlasher {
+    function slash(address _prover, address _challenger1, address _challenger2) public onlyDeregisterable(_challenger1) onlyDeregisterable(_challenger2) onlySlasher {
         uint256 penalty = store.darknodeBond(_prover) / 2;
         uint256 reward = penalty / 4;
 
@@ -326,12 +326,12 @@ contract DarknodeRegistry is Ownable {
       * @param _darknodeID The dark node ID that will be refunded. The caller
       *                    of this method must be the owner of this dark node.
       */
-    function refund(bytes20 _darknodeID) public onlyDarknodeOwner(_darknodeID) onlyRefundable(_darknodeID) {
+    function refund(address _darknodeID) public onlyDarknodeOwner(_darknodeID) onlyRefundable(_darknodeID) {
         // Remember the bond amount
         uint256 amount = store.darknodeBond(_darknodeID);
 
         // Erase the dark node from the registry
-        store.deleteDarknode(_darknodeID);
+        store.removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
         require(ren.transfer(msg.sender, amount), "bond transfer failed");
@@ -340,24 +340,24 @@ contract DarknodeRegistry is Ownable {
         emit DarknodeOwnerRefunded(msg.sender, amount);
     }
 
-    function getDarknodeOwner(bytes20 _darknodeID) public view returns (address) {
+    function getDarknodeOwner(address _darknodeID) public view returns (address) {
         return store.darknodeOwner(_darknodeID);
     }
 
-    function getDarknodeBond(bytes20 _darknodeID) public view returns (uint256) {
+    function getDarknodeBond(address _darknodeID) public view returns (uint256) {
         return store.darknodeBond(_darknodeID);
     }
 
-    function getDarknodePublicKey(bytes20 _darknodeID) public view returns (bytes) {
+    function getDarknodePublicKey(address _darknodeID) public view returns (bytes) {
         return store.darknodePublicKey(_darknodeID);
     }
 
-    function getDarknodes() public view returns (bytes20[]) {
-        bytes20[] memory nodes = new bytes20[](numDarknodes);
+    function getDarknodes() public view returns (address[]) {
+        address[] memory nodes = new address[](numDarknodes);
 
         // Begin with the first node in the list
         uint256 n = 0;
-        bytes20 next = store.begin();
+        address next = store.begin();
 
         // Iterate until all registered Darknodes have been collected
         while (n < numDarknodes) {
@@ -374,12 +374,12 @@ contract DarknodeRegistry is Ownable {
         return nodes;
     }
 
-    function getPreviousDarknodes() public view returns (bytes20[]) {
-        bytes20[] memory nodes = new bytes20[](numDarknodesPreviousEpoch);
+    function getPreviousDarknodes() public view returns (address[]) {
+        address[] memory nodes = new address[](numDarknodesPreviousEpoch);
 
         // Begin with the first node in the list
         uint256 n = 0;
-        bytes20 next = store.begin();
+        address next = store.begin();
 
         // Iterate until all previously registered Darknodes have been
         // collected
@@ -398,24 +398,24 @@ contract DarknodeRegistry is Ownable {
         return nodes;
     }
 
-    function updateStoreOwner(address newOwner) external onlyOwner {
-        store.updateOwner(newOwner);
+    function transferStoreOwnership(address newOwner) external onlyOwner {
+        store.transferOwnership(newOwner);
     }
 
-    function isPendingRegistration(bytes20 _darknodeID) public view returns (bool) {
+    function isPendingRegistration(address _darknodeID) public view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         return registeredAt != 0 && registeredAt > currentEpoch.blocknumber;
     }
 
-    function isRegistered(bytes20 _darknodeID) public view returns (bool) {
+    function isRegistered(address _darknodeID) public view returns (bool) {
         return isRegisteredInEpoch(_darknodeID, currentEpoch);
     }
 
-    function isRegisteredInPreviousEpoch(bytes20 _darknodeID) public view returns (bool) {
+    function isRegisteredInPreviousEpoch(address _darknodeID) public view returns (bool) {
         return isRegisteredInEpoch(_darknodeID, previousEpoch);
     }
 
-    function isRegisteredInEpoch(bytes20 _darknodeID, Epoch _epoch) private view returns (bool) {
+    function isRegisteredInEpoch(address _darknodeID, Epoch _epoch) private view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
 
@@ -427,18 +427,17 @@ contract DarknodeRegistry is Ownable {
         return registered && notDeregistered;
     }
 
-    function isPendingDeregistration(bytes20 _darknodeID) public view returns (bool) {
+    function isPendingDeregistration(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         return deregisteredAt != 0 && deregisteredAt > currentEpoch.blocknumber;
     }
 
-    function isDeregistered(bytes20 _darknodeID) public view returns (bool) {
+    function isDeregistered(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocknumber;
     }
 
-    function isDeregisterable(bytes20 _darknodeID) public view returns (bool) {
-        uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
+    function isDeregisterable(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
 
         // The Darknode is currently in the registered state and has not been
@@ -446,14 +445,14 @@ contract DarknodeRegistry is Ownable {
         return isRegistered(_darknodeID) && deregisteredAt == 0;
     }
 
-    function isRefunded(bytes20 _darknodeID) public view returns (bool) {
+    function isRefunded(address _darknodeID) public view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
 
         return registeredAt == 0 && deregisteredAt == 0;
     }
 
-    function isRefundable(bytes20 _darknodeID) public view returns (bool) {
+    function isRefundable(address _darknodeID) public view returns (bool) {
 
         // The Darknode is currently in the deregistered state and has been in
         // this state for at least one full epoch
