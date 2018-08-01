@@ -117,7 +117,7 @@ contract DarknodeRegistry is Ownable {
     }
 
     modifier onlySlasher() {
-        require(slasher == msg.sender);
+        require(slasher == msg.sender, "must be slasher");
         _;
     }
 
@@ -179,7 +179,7 @@ contract DarknodeRegistry is Ownable {
       * @notice Allows the contract owner to update the minimum epoch interval.
       * @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
       */
-    function updateEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
+    function updateMinimumEpochInterval(uint256 _nextMinimumEpochInterval) public onlyOwner {
         // Will be updated next epoch
         nextMinimumEpochInterval = _nextMinimumEpochInterval;
     }
@@ -196,9 +196,9 @@ contract DarknodeRegistry is Ownable {
       */
     function epoch() public {
         if (previousEpoch.blocknumber == 0) {
-            // The first time epoch is called, it must be called by the owner
-            // of the contract
-            require(msg.sender == owner);
+            // The first two times epoch is called, it must be called by the
+            // owner of the contract
+            require(msg.sender == owner, "not authorised (first epochs)");
         }
 
         require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
@@ -293,18 +293,25 @@ contract DarknodeRegistry is Ownable {
         // Emit an event
         emit DarknodeDeregistered(_darknodeID);
     }
+    
+    function slash(bytes20 _prover, bytes20 _challenger1, bytes20 _challenger2) public onlyDeregistrable(_challenger1) onlyDeregistrable(_challenger2) onlySlasher {
+        uint256 penalty = dnrs.darknodeBond(_prover) / 2;
+        uint256 reward = penalty / 4;
 
-    function slash(bytes20 _darknodeID) public onlySlasher {
-        // Slash the bond in half
-        dnrs.updateDarknodeBond(_darknodeID, dnrs.darknodeBond(_darknodeID) / 2);
-        if (canDeregister(_darknodeID)) {
-            // If the darknode has not been deregistered then deregister it
-            dnrs.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + 3 * minimumEpochInterval);
+        // Slash the bond of the failed provder in half
+        dnrs.updateDarknodeBond(_prover, penalty);
+        
+        // If the darknode has not been deregistered then deregister it
+        if (canDeregister(_prover)) {
+            dnrs.updateDarknodeDeregisteredAt(_prover, currentEpoch.blocknumber + 3 * minimumEpochInterval);
             numDarknodesNextEpoch--;
-
-            // Emit an event
-            emit DarknodeDeregistered(_darknodeID);
+            emit DarknodeDeregistered(_prover);
         }
+
+        // Reward the challengers with less than the penalty so that it is not
+        // worth challenging yourself
+        require(ren.transfer(dnrs.darknodeOwner(_challenger1), reward));
+        require(ren.transfer(dnrs.darknodeOwner(_challenger2), reward));
     }
 
     /**
@@ -322,7 +329,7 @@ contract DarknodeRegistry is Ownable {
         dnrs.deleteDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        require(ren.transfer(msg.sender, amount), "failed to refund");
+        require(ren.transfer(msg.sender, amount), "bond transfer failed");
 
         // Emit an event.
         emit DarknodeOwnerRefunded(msg.sender, amount);

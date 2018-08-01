@@ -119,9 +119,9 @@ contract Orderbook is Ownable {
       * @param _orderMatches The hashes of the matching order.
       */
     function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
-        require(orders[_orderId].state == OrderState.Open, "order must be open");
+        require(orders[_orderId].state == OrderState.Open, "invalid order status");
         for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orders[_orderMatches[i]].state == OrderState.Open, "matched orders must be open");
+            require(orders[_orderMatches[i]].state == OrderState.Open, "invalid order status");
         }
 
         for (i = 0; i < _orderMatches.length; i++) {
@@ -300,8 +300,8 @@ contract Orderbook is Ownable {
 
     function openOrder(bytes _signature, bytes32 _orderId) private {
         // require(ren.allowance(msg.sender, this) >= fee);
-        require(ren.transferFrom(msg.sender, this, fee));
-        require(orders[_orderId].state == OrderState.Undefined, "order already opened or canceled");
+        require(ren.transferFrom(msg.sender, this, fee), "fee transfer failed");
+        require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
 
         // recover trader address from the signature
         bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
