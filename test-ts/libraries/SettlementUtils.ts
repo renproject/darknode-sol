@@ -28,7 +28,7 @@ contract("SettlementUtils", function () {
 
         // buyID_2?
         buyID_2 = await settlementTest.hashOrder(1, 0, 0, expiry, 1, 11, 10000, 0, "0x1492792a3a04899d66dc242efbba437ce0c8b22392130c3f688ca0e0ffa31b72");
-         
+
         // sellID_3?
         sellID_3 = await settlementTest.hashOrder(2, 1, 0, expiry, 2, 10, 1000, 0, "0xccd3dd4361d50a9df13af30388e2574b5e9e875c638bdfd15efb47395686ac3d");
 
@@ -37,7 +37,7 @@ contract("SettlementUtils", function () {
     });
 
     it("submitOrder", async () => {
-        
+
         // submitOrder(settlementID, parity, orderType, expiry, tokens, price, volume, minimumVolume, nonceHash)
         await settlementTest.submitOrder(1, 1, 0, expiry, 1, 10, 1000, 0, "0x8b22392130c3f688ca01492792a3a0cbecfa202729c249eba6cf0dce0ffa31b0");
 
@@ -53,8 +53,8 @@ contract("SettlementUtils", function () {
     });
 
     it("Verify Match", async () => {
-        await settlementTest.verifyMatch(buyID_1, sellID_1).should.be.true;       
-        await settlementTest.verifyMatch(buyID_2, sellID_2).should.be.true; 
-        await settlementTest.verifyMatch(buyID_3, sellID_3).should.be.false; 
+        (await settlementTest.verifyMatch(buyID_1, sellID_1)).should.be.true;
+        (await settlementTest.verifyMatch(buyID_2, sellID_2)).should.be.true;
+        (await settlementTest.verifyMatch(buyID_3, sellID_3)).should.be.false;
     });
 });
