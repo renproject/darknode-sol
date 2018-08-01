@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
-import "./OrderBook.sol";
+import "./Orderbook.sol";
 import "./SettlementUtils.sol";
 
 contract DarknodeSlasher is Ownable {
