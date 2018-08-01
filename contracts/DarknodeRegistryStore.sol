@@ -1,9 +1,11 @@
 pragma solidity 0.4.24;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
-contract DarknodeRegistryStore {
+
+contract DarknodeRegistryStore is Ownable {
 
     /**
     * @notice Darknodes are stored in the darknode struct. The owner is the
@@ -44,21 +46,8 @@ contract DarknodeRegistryStore {
     address public owner;
     RepublicToken ren;
 
-    /**
-    * @notice Only allow the owner of this contract to pass.
-    */
-    modifier onlyOwner() {
-        require(owner == msg.sender, "must be the owner");
-        _;
-    }
-
     constructor(RepublicToken _ren) public {
         ren = _ren;
-        owner = msg.sender;
-    }
-
-    function updateOwner(address newOwner) external onlyOwner {
-        owner = newOwner;
     }
 
     function addDarknode(bytes20 darknodeID, address darknodeOwner, uint256 bond, bytes pubKey, uint256 registeredAt, uint256 deregisteredAt) external onlyOwner {
@@ -88,13 +77,13 @@ contract DarknodeRegistryStore {
         require(ren.transfer(owner, bond), "transfer from vault failed");
     }
 
-    function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external {
+    function updateDarknodeBond(bytes20 darknodeID, uint256 bond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        darknodeRegistry[darknodeID].bond = bond;
+        darknodeRegistry[darknodeID].bond = previousBond;
         require(ren.transfer(owner, previousBond - bond));
     }
 
-    function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external {
+    function updateDarknodeDeregisteredAt(bytes20 darknodeID, uint256 deregisteredAt) external onlyOwner {
         darknodeRegistry[darknodeID].deregisteredAt = deregisteredAt;
     }
 
