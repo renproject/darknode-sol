@@ -1,12 +1,14 @@
-var RepublicToken = artifacts.require("RepublicToken.sol");
-var DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
-var Orderbook = artifacts.require("Orderbook.sol");
-var RewardVault = artifacts.require("RewardVault.sol");
+const BigNumber = require("bignumber.js");
+
+const RepublicToken = artifacts.require("RepublicToken.sol");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
+const Orderbook = artifacts.require("Orderbook.sol");
+const RewardVault = artifacts.require("RewardVault.sol");
 
 const BOND = 100000 * 1e18;
 const INGRESS_FEE = 0;
-let POD_SIZE = 3; // 24 in production
-let EPOCH_BLOCKS = 1; // 14400 in production
+const POD_SIZE = 3; // 24 in production
+const EPOCH_BLOCKS = 1; // 14400 in production
 
 module.exports = async function (deployer, network) {
     await deployer
@@ -16,7 +18,7 @@ module.exports = async function (deployer, network) {
         .then(() => deployer.deploy(
             DarknodeRegistry,
             RepublicToken.address,
-            BOND,
+            new BigNumber(BOND),
             POD_SIZE,
             EPOCH_BLOCKS,
         ))
