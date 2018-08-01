@@ -52,7 +52,7 @@ contract DarknodeSlasher is Ownable {
         challengers[orderID] = msg.sender;
     }
 
-    function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external onlyDarknode {
+    function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
         address buyConfirmer = trustedOrderbook.orderConfirmer(_buyOrder);
         address sellConfirmer = trustedOrderbook.orderConfirmer(_sellOrder);
         assert(buyConfirmer == sellConfirmer);

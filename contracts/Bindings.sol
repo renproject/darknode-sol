@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "./RepublicToken.sol";
 import "./DarknodeRegistry.sol";
 import "./Orderbook.sol";
-import "./RewardVault.sol";
+import "./DarknodeRewardVault.sol";
 import "./Settlement.sol";
 
 /**

@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-contract RewardVault is Ownable {
+contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
     /**
