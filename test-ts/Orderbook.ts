@@ -67,8 +67,7 @@ contract("Orderbook", function (accounts: string[]) {
           dnrs.address,
           MINIMUM_BOND,
           MINIMUM_POD_SIZE,
-          MINIMUM_EPOCH_INTERVAL,
-          0x0
+          MINIMUM_EPOCH_INTERVAL
         );
         dnrs.transferOwnership(dnr.address);
         // The following tests rely on accounts not being empty

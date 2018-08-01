@@ -33,9 +33,9 @@ contract("DarknodeRegistry", function (accounts: string[]) {
       dnrs.address,
       MINIMUM_BOND,
       MINIMUM_POD_SIZE,
-      MINIMUM_EPOCH_INTERVAL,
-      accounts[3]
+      MINIMUM_EPOCH_INTERVAL
     );
+    dnr.updateSlasher(accounts[3]);
     dnrs.transferOwnership(dnr.address);
     for (let i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);

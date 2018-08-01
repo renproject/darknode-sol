@@ -134,9 +134,8 @@ contract DarknodeRegistry is Ownable {
       *                     darknode.
       * @param _minimumPodSize The minimum size of a pod.
       * @param _minimumEpochInterval The minimum number of blocks between epochs.
-      * @param _slasher The address of the DarknodeSlasher contract.
       */
-    constructor(RepublicToken _renAddress, DarknodeRegistryStore _storeAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval, address _slasher) public {
+    constructor(RepublicToken _renAddress, DarknodeRegistryStore _storeAddress, uint256 _minimumBond, uint256 _minimumPodSize, uint256 _minimumEpochInterval) public {
         store = _storeAddress;
         ren = _renAddress;
 
@@ -149,7 +148,6 @@ contract DarknodeRegistry is Ownable {
         minimumEpochInterval = _minimumEpochInterval;
         nextMinimumEpochInterval = minimumEpochInterval;
 
-        slasher = _slasher;
         nextSlasher = slasher;
 
         currentEpoch = Epoch({
@@ -190,7 +188,6 @@ contract DarknodeRegistry is Ownable {
     }
 
     function updateSlasher(address _slasher) public onlyOwner {
-        // Will be updated next epoch
         nextSlasher = _slasher;
     }
 

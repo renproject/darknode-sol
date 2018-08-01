@@ -30,7 +30,6 @@ contract("Reward Vault", function (accounts: string[]) {
             MINIMUM_BOND,
             MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL,
-            0x0,
         );
         dnrs.transferOwnership(dnr.address);
         darknodeRewardVault = await DarknodeRewardVault.new(dnr.address);

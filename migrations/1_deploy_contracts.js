@@ -27,7 +27,6 @@ await deployer
         DarknodeRegistryStore.address,
         new BigNumber(BOND),
         POD_SIZE,
-        EPOCH_BLOCKS,
-        SLASHER,
+        EPOCH_BLOCKS
     ))
 }
