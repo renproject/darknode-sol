@@ -6,7 +6,7 @@ After finding matching orders, confirming the match with the [Orderbook](./04-or
 
 ## Tokens
 
-The tokens used to pay the fee is defined by the Settlement Layer. Third-party dark pools that propose Settlement Layers with inappropriate tokens will not be accepted into the set of approved third-party dark pools. This provides third-party dark pools with the flexibility to pay fees in tokens that are not necessarily related to the cryptographic assets being traded due to regulation, or the fact that not all cryptographic assets can be sensibly used for paying fees (e.g. tokenised shares in a company).
+The tokens used to pay the fee is defined by the Settlement Layer. This provides third-party dark pools with the flexibility to pay fees in tokens that are not necessarily related to the cryptographic assets being traded due to regulation, or the fact that not all cryptographic assets can be sensibly used for paying fees (e.g. ERC721 tokens). Third-party dark pools that propose Settlement Layers with inappropriate tokens will not be accepted into the set of approved third-party dark pools.
 
 ## Amount
 

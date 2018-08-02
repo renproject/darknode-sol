@@ -17,7 +17,7 @@ Epochs are defined by their block number, and their block hash. Any account can 
 
 ## Darknode Address
 
-Darknodes are identified by their *Darknode Address*, an Ethereum address that is generated from an ECDSA private key held by the Darknode.
+Darknodes are identified by their *Darknode Address*, an array of 20 bytes generated from an ECDSA private key held by the Darknode that is compatible with Ethereum addresses.
 
 ## Darknode Pods
 
@@ -58,19 +58,21 @@ Using the list of registered Darknodes for _ξ_, and the block hash for _ξ_, ob
 
 Before a Darknode is included in a Darknode Pod (e.g. traders and other Darknodes acknowledge it as part of the network of Darknodes that runs the Secure Order Matcher), it must have its Darknode Address registered by a *Darknode operator*. The Darknode operator is the Ethereum account that will receive the fees earned by the Darknode during its operations. The Darknode operator is the only account that can deregister a Darknode, other than the [Darknode Slasher](./03-darknode-slasher.md).
 
+In the diagram below represents a timeline for the registration, deregistration, and refunding, of a Darknode. The grey boxes represent the discrete time intervals, epochs, and the coloured numbers are used to describe the sequence of events.
+
 ![Timeline](./images/01-darknode-registry-timeline.jpg "Timeline")
 
 **(1) Pending Registration**
   The bond is sent to the Darknode Registry and the Darknode is in the *Pending Registration* state until the beginning of the next epoch. The account sending this transaction is considered to be the Darknode operator.
 
 **(2) Registered**
-  The registration is approved and the Darknode is in the *Registered* state. The Darknode is considered registered until it reaches the deregistered state at (4).
+  The registration is automatically finalised and the Darknode is in the *Registered* state. The Darknode is considered registered until it reaches the deregistered state at (4).
 
 **(3) Pending Deregistration**
   The intent to deregister is sent to the Darknode Registry and the Darknode is in the *Pending Deregistration* state until the beginning of the next epoch. The Darknode is still considered registered until it reaches the deregistered state at (4).
 
 **(4) Deregistered**
-  The deregistration is approved and the Darknode is in the *Deregistered* state.
+  The deregistration is automatically finalised and the Darknode is in the *Deregistered* state.
 
 **(5) Cooling**
   The Darknode is no longer considered active. The bond cannot be refunded until the beginning of the next epoch.
