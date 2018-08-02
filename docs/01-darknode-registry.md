@@ -4,11 +4,48 @@ The Darknode Registry is an Ethereum smart contract used to register, and deregi
 
 ## Epochs
 
-The Darknode Registry partitions time into discrete intervals, called *epochs*, and changes to the registration state of a Darknode are restricted to these discrete intervals.
+The Darknode Registry partitions time into discrete intervals, called *epochs*. State changes that affect the configuration of the Darknode network are restricted to these discrete intervals, ensuring the stability of the network configuration during the epoch. This cover the (de)registration of Darknodes, as well as the public constants defined by the Darknode Registry (e.g. the *minimumPodSize*).
 
-The registration of a Darknode is considered pending until the beginning of the next epoch. Likewise, the deregistration of an epoch is pending until the beginning of the next epoch. Once deregistration is approved, another full epoch must pass before the bond can be refunded.
+Epochs are defined by their block number, and their block hash. Any account can trigger the next epoch, but the Darknode Registry prevents epochs from being triggered faster than the *minimumEpochInterval* — measured in block numbers.
+
+## Darknode Address
+
+Darknodes are identified by their *Darknode Address*, an Ethereum address that is generated from an ECDSA private key held by the Darknode.
+
+## Darknode Pods
+
+Darknodes are organised into *Darknode Pods* according to a deterministic algorithm based on (a) the list of registered Darknodes, and (b) the block hash of the epoch. This algorithm is executed off-chain by observing (a) and (b) in the Darknode Registry for the epoch of interest. The Darknode Registry stores (a) and (b) for the current, and previous, epoch.
+
+Let _ξ_ be the epoch.
+Let _h_ be the block hash for _ξ_.
+Let _m_ be the minimum number of Darknodes in a Darknode Pod for _ξ_.
+Let _n_ be the number of registered Darknodes in the Darknode Registry for _ξ_.
+Let _x_ be the Darknode at the _x_-th position in the list of registered Darknodes stored in the Darknode Registry for _ξ_.
+
+We will compute _p(x)_; the priority of Darknode _x_ during _ξ_. If _p(x) < p(y)_ then _x_ is said to have a higher priority than _y_.
+We will compute _q(x)_; the Darknode Pod of the Darknode _x_ during _ξ_.
+
+```
+p ← 1
+x ← h mod n
+
+for i in 1 .. n do
+    p(x) ← 0
+
+for i in 1 .. n do
+    while p(x) > 0 do
+        x ← x + 1
+    p(x) ← p
+    q(x) ← p mod (⎣n / m⎦)
+    x ← (x + h) mod n
+    p ← p + 1
+```
+
+Using the list of registered Darknodes for _ξ_, and the block hash for _ξ_, observers will compute the same configuration of Darknode Pods without needing to interact. Darknode Pods define which Darknodes need to collaborate to run the Secure Order Matcher during _ξ_.
 
 ## Registration
+
+Before a Darknode is included in a Darknode Pod (e.g. traders and other Darknodes acknowledge it as part of the network of Darknodes that runs the Secure Order Matcher), it must have its Darknode Address registered by a *Darknode operator*. The Darknode operator is the Ethereum account that will receive the fees earned by the Darknode during its operations. The Darknode operator is the only account that can deregister a Darknode, other than the [Darknode Slasher](./03-darknode-slasher.md).
 
 ![Timeline](./images/01-darknode-registry-timeline.jpg "Timeline")
 
@@ -16,13 +53,13 @@ The registration of a Darknode is considered pending until the beginning of the 
   The bond is sent to the Darknode Registry and the Darknode is in the *Pending Registration* state until the beginning of the next epoch. The account sending this transaction is consdered to be the Darknode operator.
 
 **(2) Registered**
-  The registration is approved and the Darknode is in the *Registered* state. The Darknode is now considerd active.
+  The registration is approved and the Darknode is in the *Registered* state. The Darknode is considered registered until it reaches the deregistered state at (4).
 
 **(3) Pending Deregistration**
-  The intent to deregister is sent to the Darknode Registry and the Darknode is in the *Pending Deregistration* state until the beginning of the next epoch. During this time, the Darknode is still considered to be active.
+  The intent to deregister is sent to the Darknode Registry and the Darknode is in the *Pending Deregistration* state until the beginning of the next epoch. The Darknode is still considered registered until it reaches the deregistered state at (4).
 
 **(4) Deregistered**
-  The deregistration is approved and the Darknode is in the *Deregistered* state. It is no longer considered active.
+  The deregistration is approved and the Darknode is in the *Deregistered* state.
 
 **(5) Cooling**
   The Darknode is no longer considered active. The bond cannot be refunded until the beginning of the next epoch.
