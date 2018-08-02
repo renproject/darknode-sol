@@ -32,11 +32,11 @@ The Darknode Slasher ABI is almost identical to the [Settlement ABI](./05-settle
 ### Submitting orders for a challenge
 
 ```sol
-function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) returns (bool) { /* ... */ }
+function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) { /* ... */ }
 ```
 
 ### Executing a challenge
 
 ```sol
-function challenge(bytes32 _buy, bytes32 _sell) returns (bool) { /* ... */ }
+function challenge(bytes32 _buy, bytes32 _sell) { /* ... */ }
 ```

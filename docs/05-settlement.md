@@ -23,13 +23,13 @@ The current version of the *Settlement ABI* only supports settlements that invol
 ### Submitting orders for settlement
 
 ```sol
-function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) returns (bool) { /* ... */ }
+function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) { /* ... */ }
 ```
 
 ### Executing a settlement
 
 ```sol
-function settle(bytes32 _buy, bytes32 _sell) returns (bool) { /* ... */ }
+function settle(bytes32 _buy, bytes32 _sell) { /* ... */ }
 ```
 
 ### Requirements
