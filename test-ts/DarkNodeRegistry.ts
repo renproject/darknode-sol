@@ -4,12 +4,15 @@ const RepublicToken = artifacts.require("RepublicToken");
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as chaiBigNumber from "chai-bignumber";
+import BigNumber from "bignumber.js";
 chai.use(chaiAsPromised);
+chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
-const MINIMUM_BOND = 100;
-const MINIMUM_POD_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 2;
+const config = require("../migrations/config.js");
+const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
 // Makes an ID for a darknode
 function ID(i: string) {
@@ -23,67 +26,60 @@ function PUBK(i: string) {
 
 contract("DarknodeRegistry", function (accounts: string[]) {
 
-  let dnrs, dnr, ren;
+  let ren, dnrs, dnr;
 
   before(async function () {
-    ren = await RepublicToken.new();
-    dnrs = await DarknodeRegistryStore.new(ren.address);
-    dnr = await DarknodeRegistry.new(
-      ren.address,
-      dnrs.address,
-      MINIMUM_BOND,
-      MINIMUM_POD_SIZE,
-      MINIMUM_EPOCH_INTERVAL
-    );
-    dnr.updateSlasher(accounts[3]);
-    dnrs.transferOwnership(dnr.address);
+    ren = await RepublicToken.deployed();
+    dnrs = await DarknodeRegistryStore.deployed();
+    dnr = await DarknodeRegistry.deployed();
+
     for (let i = 1; i < accounts.length; i++) {
       await ren.transfer(accounts[i], MINIMUM_BOND);
     }
   });
 
   it("first epoch can only be called by the owner", async () => {
-    await dnr.epoch({from: accounts[1]}).should.be.rejectedWith(null, /not authorised/);
+    await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorised/);
   });
 
   it("can update minimum bond", async () => {
     await dnr.updateMinimumBond(0x1);
     await waitForEpoch(dnr);
-    (await dnr.minimumBond()).toNumber().should.equal(1);
+    (await dnr.minimumBond()).should.bignumber.equal(1);
     await dnr.updateMinimumBond(MINIMUM_BOND, { from: accounts[1] })
       .should.be.rejectedWith(null, /revert/); // not owner
     await dnr.updateMinimumBond(MINIMUM_BOND);
-    (await dnr.minimumBond()).toNumber().should.equal(1);
+    (await dnr.minimumBond()).should.bignumber.equal(1);
     await waitForEpoch(dnr);
-    (await dnr.minimumBond()).toNumber().should.equal(MINIMUM_BOND);
+    (await dnr.minimumBond()).should.bignumber.equal(MINIMUM_BOND);
   });
 
   it("can update minimum pod size", async () => {
     await dnr.updateMinimumPodSize(0x0);
     await waitForEpoch(dnr);
-    (await dnr.minimumPodSize()).toNumber().should.equal(0);
+    (await dnr.minimumPodSize()).should.bignumber.equal(0);
     await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE, { from: accounts[1] })
       .should.be.rejectedWith(null, /revert/); // not owner
     await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE);
-    (await dnr.minimumPodSize()).toNumber().should.equal(0);
+    (await dnr.minimumPodSize()).should.bignumber.equal(0);
     await waitForEpoch(dnr);
-    (await dnr.minimumPodSize()).toNumber().should.equal(MINIMUM_POD_SIZE);
+    (await dnr.minimumPodSize()).should.bignumber.equal(MINIMUM_POD_SIZE);
   });
 
   it("can update minimum epoch interval", async () => {
     await dnr.updateMinimumEpochInterval(0x0);
     await waitForEpoch(dnr);
-    (await dnr.minimumEpochInterval()).toNumber().should.equal(0);
+    (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
     await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL, { from: accounts[1] })
       .should.be.rejectedWith(null, /revert/); // not owner
     await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL);
-    (await dnr.minimumEpochInterval()).toNumber().should.equal(0);
+    (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
     await waitForEpoch(dnr);
-    (await dnr.minimumEpochInterval()).toNumber().should.equal(MINIMUM_EPOCH_INTERVAL);
+    (await dnr.minimumEpochInterval()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL);
   });
 
   it("can not register a Dark Node with a bond less than the minimum bond", async () => {
-    const lowBond = MINIMUM_BOND - 1;
+    const lowBond = MINIMUM_BOND.minus(1);
     await ren.approve(dnr.address, lowBond, { from: accounts[0] });
     await dnr.register(ID("A"), PUBK("A"), lowBond).should.be.rejectedWith(null, /insufficient bond/);
     await dnr.register(ID("A"), PUBK("A"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/); // failed transfer
@@ -111,7 +107,8 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
   it("can not register a node twice", async () => {
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
-    await dnr.register(ID("1"), PUBK("1"), MINIMUM_BOND).should.be.rejectedWith(null, /must be refunded or never registered/);
+    await dnr.register(ID("1"), PUBK("1"), MINIMUM_BOND)
+      .should.be.rejectedWith(null, /must be refunded or never registered/);
   });
 
   it("can not deregister a node which is not registered", async () => {
@@ -123,7 +120,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("can get the bond of the Dark Node", async () => {
-    (await dnr.getDarknodeBond(ID("1"))).toNumber().should.equal(MINIMUM_BOND);
+    (await dnr.getDarknodeBond(ID("1"))).should.bignumber.equal(MINIMUM_BOND);
   });
 
   it("can get the Public Key of the Dark Node", async () => {
@@ -197,10 +194,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     (await dnr.isRefunded(ID("4"))).should.be.true;
     (await dnr.isRefunded(ID("7"))).should.be.true;
     (await dnr.isRefunded(ID("8"))).should.be.true;
-    (await ren.balanceOf(accounts[2])).toNumber().should.equal(MINIMUM_BOND);
-    (await ren.balanceOf(accounts[3])).toNumber().should.equal(MINIMUM_BOND);
-    (await ren.balanceOf(accounts[6])).toNumber().should.equal(MINIMUM_BOND);
-    (await ren.balanceOf(accounts[7])).toNumber().should.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[2])).should.bignumber.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[3])).should.bignumber.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[6])).should.bignumber.equal(MINIMUM_BOND);
+    (await ren.balanceOf(accounts[7])).should.bignumber.equal(MINIMUM_BOND);
   });
 
   it("should fail to refund twice", async () => {
@@ -227,6 +224,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("anyone except the slasher can not call slash", async () => {
+    const previousSlasher = await dnr.slasher();
+    const slasher = accounts[3];
+    await dnr.updateSlasher(slasher);
+
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[6] });
@@ -239,20 +240,24 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.deregister(ID("4"), { from: accounts[3] });
     await waitForEpoch(dnr);
     await waitForEpoch(dnr);
-    await dnr.slash(ID("3"), ID("7"), ID("8"), {from: accounts[4]}).should.be.rejectedWith(null, /must be slasher/);
-    await dnr.slash(ID("3"), ID("7"), ID("8"), {from: accounts[3]});
-    await dnr.slash(ID("4"), ID("7"), ID("8"), {from: accounts[3]});
+    await dnr.slash(ID("3"), ID("7"), ID("8"), { from: accounts[4] }).should.be.rejectedWith(null, /must be slasher/);
+    await dnr.slash(ID("3"), ID("7"), ID("8"), { from: slasher });
+    await dnr.slash(ID("4"), ID("7"), ID("8"), { from: slasher });
+
+    await dnr.updateSlasher(previousSlasher);
   });
 
   it("transfer ownership of the dark node store", async () => {
     await dnr.transferStoreOwnership(accounts[0]);
-    await dnrs.updateDarknodeBond(ID("7"), 1000 * MINIMUM_BOND);
+    await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.multipliedBy(1000));
     await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/);
+    await dnrs.transferOwnership(dnr.address);
   });
 
 });
 
 async function waitForEpoch(dnr: any) {
+  // TODO: Replace with evm_increaseTime
   const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
   while (true) {
     // Must be an on-chain call, or the time won't be updated

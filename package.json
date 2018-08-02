@@ -14,6 +14,7 @@
     "bn.js": "^4.11.8",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "git://github.com/negaex/chai-bignumber.git#master",
     "coveralls": "^3.0.1",
     "crypto-js": "^3.1.9-1",
     "eth-gas-reporter": "^0.1.10",
@@ -29,6 +30,7 @@
     "web3": "^1.0.0-beta.35"
   },
   "scripts": {
+    "clean": "rm -rf test",
     "test": "if [ -d \"test\" ]; then echo \"Refusing to overwrite 'test' directory\"; else npm run test-ts; fi;",
     "test-ts": "(tsc && truffle test); rm -rf test",
     "coverage": "if [ -d \"test\" ]; then echo \"Refusing to overwrite 'test' directory\"; else npm run coverage-ts; fi;",
