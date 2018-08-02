@@ -341,15 +341,26 @@ contract DarknodeRegistry is Ownable {
         return store.darknodePublicKey(_darknodeID);
     }
 
-    function getDarknodes() public view returns (address[]) {
-        address[] memory nodes = new address[](numDarknodes);
+    function getDarknodes(address _start, uint256 _count) public view returns (address[]) {
+        uint count = _count;
+        if (count == 0) {
+            count = numDarknodes;
+        } 
+
+        address[] memory nodes = new address[](count);
 
         // Begin with the first node in the list
         uint256 n = 0;
-        address next = store.begin();
+        address next = _start;
+        if (next == 0x0) {
+            next = store.begin();
+        }
 
         // Iterate until all registered Darknodes have been collected
-        while (n < numDarknodes) {
+        while (n < count) {
+            if (next == 0x0) {
+                break;
+            }
             // Only include Darknodes that are currently registered
             if (!isRegistered(next)) {
                 next = store.next(next);
@@ -363,16 +374,26 @@ contract DarknodeRegistry is Ownable {
         return nodes;
     }
 
-    function getPreviousDarknodes() public view returns (address[]) {
-        address[] memory nodes = new address[](numDarknodesPreviousEpoch);
+    function getPreviousDarknodes(address _start, uint256 _count) public view returns (address[]) {
+        uint count = _count;
+        if (count == 0) {
+            count = numDarknodesPreviousEpoch;
+        } 
+        
+        address[] memory nodes = new address[](count);
 
         // Begin with the first node in the list
         uint256 n = 0;
-        address next = store.begin();
+        address next = _start;
+        if (next == 0x0) {
+            next = store.begin();
+        }
 
-        // Iterate until all previously registered Darknodes have been
-        // collected
-        while (n < numDarknodesPreviousEpoch) {
+        // Iterate until all previously registered Darknodes have been collected
+        while (n < count) {
+            if (next == 0x0) {
+                break;
+            }
             // Only include Darknodes that were in the registered state during
             // the previous epoch
             if (!isRegisteredInPreviousEpoch(next)) {
