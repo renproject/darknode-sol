@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/republicprotocol/republic-sol.svg?branch=master)](https://travis-ci.org/republicprotocol/republic-sol)
 [![Coverage Status](https://coveralls.io/repos/github/republicprotocol/republic-sol/badge.svg?branch=master)](https://coveralls.io/github/republicprotocol/republic-sol?branch=master)
+
 [Documentation](./docs/index.md)
 
 **Republic Protocol — Solidity** is the official reference implementation of Republic Protocol on Ethereum, written in Solidity. Republic Protocol uses Ethereum as a trusted third-party computer to perform computations that must not be corrupted, and reach consensus on the state of orders.
