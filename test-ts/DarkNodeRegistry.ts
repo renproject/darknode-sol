@@ -91,10 +91,12 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("can register multiple Dark Nodes, call an epoch and check registration", async () => {
-
     for (let i = 0; i < accounts.length; i++) {
       await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
       await dnr.register(ID(`${i + 1}`), PUBK(`${i + 1}`), MINIMUM_BOND, { from: accounts[i] });
+    }
+    for (let i = 0; i < accounts.length; i++) {
+      (await dnr.isPendingRegistration(ID(`${i + 1}`))).should.be.true;
     }
 
     await waitForEpoch(dnr);
@@ -162,8 +164,23 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.deregister(ID("4"), { from: accounts[3] });
     await dnr.deregister(ID("7"), { from: accounts[6] });
     await dnr.deregister(ID("8"), { from: accounts[7] });
+    (await dnr.isPendingDeregistration(ID("3"))).should.be.true;
+    (await dnr.isPendingDeregistration(ID("4"))).should.be.true;
+    (await dnr.isPendingDeregistration(ID("7"))).should.be.true;
+    (await dnr.isPendingDeregistration(ID("8"))).should.be.true;
     await waitForEpoch(dnr);
+    (await dnr.isRegisteredInPreviousEpoch(ID("3"))).should.be.true;
+    (await dnr.isRegisteredInPreviousEpoch(ID("4"))).should.be.true;
+    (await dnr.isRegisteredInPreviousEpoch(ID("7"))).should.be.true;
+    (await dnr.isRegisteredInPreviousEpoch(ID("8"))).should.be.true;
+    (await dnr.isDeregistered(ID("3"))).should.be.true;
+    (await dnr.isDeregistered(ID("4"))).should.be.true;
+    (await dnr.isDeregistered(ID("7"))).should.be.true;
+    (await dnr.isDeregistered(ID("8"))).should.be.true;
+    let previousDarknodesEpoch1 = await dnr.getPreviousDarknodes();
     await waitForEpoch(dnr);
+    let previousDarknodesEpoch2 = await dnr.getPreviousDarknodes();
+    (previousDarknodesEpoch1.length - previousDarknodesEpoch2.length).should.be.equal(4);
     (await dnr.isDeregistered(ID("3"))).should.be.true;
     (await dnr.isDeregistered(ID("4"))).should.be.true;
     (await dnr.isDeregistered(ID("7"))).should.be.true;
@@ -214,6 +231,10 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.register(ID("8"), PUBK("8"), MINIMUM_BOND, { from: accounts[7] });
     await waitForEpoch(dnr);
     await dnr.slash(ID("3"), ID("7"), ID("8"), {from: accounts[3]});
+  });
+
+  it("transfer ownership of the dark node store", async () => {
+    await dnr.transferStoreOwnership(accounts[0]);
   });
 
 });

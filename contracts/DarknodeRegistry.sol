@@ -105,14 +105,6 @@ contract DarknodeRegistry is Ownable {
     }
 
     /**
-      * @notice Only allow deregistered dark nodes.
-      */
-    modifier onlyDeregistered(address _darknodeID) {
-        require(isDeregistered(_darknodeID), "must be deregistered");
-        _;
-    }
-
-    /**
       * @notice Only allowed registered nodes without a pending deregistration to
       * deregister
       */
