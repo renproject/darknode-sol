@@ -11,9 +11,8 @@ chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
 const config = require("../migrations/config.js");
+const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
-const MINIMUM_POD_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 2;
 
 // Makes an ID for a darknode
 function ID(i: string) {
@@ -225,7 +224,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("anyone except the slasher can not call slash", async () => {
-    const previousSlasher = dnr.slasher();
+    const previousSlasher = await dnr.slasher();
     const slasher = accounts[3];
     await dnr.updateSlasher(slasher);
 

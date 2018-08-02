@@ -22,8 +22,8 @@ module.exports = async function (deployer, network) {
             RepublicToken.address,
             DarknodeRegistryStore.address,
             new BigNumber(config.MINIMUM_BOND),
-            config.POD_SIZE,
-            config.EPOCH_BLOCKS
+            config.MINIMUM_POD_SIZE,
+            config.MINIMUM_EPOCH_INTERVAL
         ))
         .then(() => deployer.deploy(
             Orderbook,

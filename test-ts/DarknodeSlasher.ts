@@ -4,7 +4,6 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 
-
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
@@ -18,12 +17,12 @@ const FEE = 1;
 
 // Makes an ID for a darknode
 function ID(i: string) {
-    return web3.utils.sha3(i).slice(0, 42);
-  }
-  
+  return web3.utils.sha3(i).slice(0, 42);
+}
+
 // Makes a public key for a darknode
 function PUBK(i: string) {
-return web3.utils.sha3(i);
+  return web3.utils.sha3(i);
 }
 
 // contract("DarknodeSlasher", function (accounts: string[]) {
@@ -63,18 +62,15 @@ return web3.utils.sha3(i);
 // //   })
 
 //   it("darknode can submit challenge order", async() => {
-      
+
 //   })
 
 //   it("anyone other than registered darknodes cannot submit challenge order", async() => {
-      
+
 //   })
 
 //   it("anyone can call submit challenge", async() => {
 
 //   })
 
-
 // });
-
-
