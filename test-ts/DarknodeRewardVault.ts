@@ -11,9 +11,8 @@ import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 chai.should();
 
-const MINIMUM_BOND = 100;
-const MINIMUM_POD_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 2;
+const config = require("../migrations/config.js");
+const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
 contract("Reward Vault", function (accounts: string[]) {
 
@@ -22,17 +21,10 @@ contract("Reward Vault", function (accounts: string[]) {
 
     before(async function () {
 
-        ren = await RepublicToken.new();
-        dnrs = await DarknodeRegistryStore.new(ren.address);
-        dnr = await DarknodeRegistry.new(
-            ren.address,
-            dnrs.address,
-            MINIMUM_BOND,
-            MINIMUM_POD_SIZE,
-            MINIMUM_EPOCH_INTERVAL,
-        );
-        dnrs.transferOwnership(dnr.address);
-        darknodeRewardVault = await DarknodeRewardVault.new(dnr.address);
+        ren = await RepublicToken.deployed();
+        dnrs = await DarknodeRegistryStore.deployed();
+        dnr = await DarknodeRegistry.deployed();
+        darknodeRewardVault = await DarknodeRewardVault.deployed();
 
         TOKEN1 = await RepublicToken.new();
         TOKEN2 = await BitcoinMock.new();

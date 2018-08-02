@@ -3,16 +3,15 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const Orderbook = artifacts.require("Orderbook");
 
+import BigNumber from "bignumber.js";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 chai.should();
 
-const MINIMUM_BOND = 100;
-const MINIMUM_POD_SIZE = 72;
-const MINIMUM_EPOCH_INTERVAL = 2;
-
-const FEE = 1;
+const config = require("../migrations/config.js");
+const { INGRESS_FEE } = config;
+const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
 const randomID = () => {
     return web3.utils.sha3(Math.random().toString());
@@ -56,31 +55,25 @@ const steps = {
 
 contract("Orderbook", function (accounts: string[]) {
 
-    let ren, dnr, dnrs, orderbook, darknode, broker;
+    let ren, dnr, orderbook, darknode, broker;
 
     before(async function () {
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
+        orderbook = await Orderbook.deployed();
 
-        ren = await RepublicToken.new();
-        dnrs = await DarknodeRegistryStore.new(ren.address);
-        dnr = await DarknodeRegistry.new(
-          ren.address,
-          dnrs.address,
-          MINIMUM_BOND,
-          MINIMUM_POD_SIZE,
-          MINIMUM_EPOCH_INTERVAL
-        );
-        dnrs.transferOwnership(dnr.address);
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
         for (let i = 0; i < accounts.length; i++) {
-            await ren.transfer(accounts[i], 10000);
+            await ren.transfer(accounts[i], MINIMUM_BOND);
         }
-        orderbook = await Orderbook.new(FEE, ren.address, dnr.address);
 
         // Register all nodes
         darknode = accounts[8];
         await ren.approve(dnr.address, MINIMUM_BOND, { from: darknode });
+
         await dnr.register(darknode, "0x00", MINIMUM_BOND, { from: darknode });
+
         await dnr.epoch();
 
         broker = accounts[9];
@@ -89,10 +82,10 @@ contract("Orderbook", function (accounts: string[]) {
     it("can update the fee", async () => {
         await orderbook.updateFee(0x1);
         (await orderbook.fee()).toNumber().should.equal(1);
-        await orderbook.updateFee(FEE, { from: accounts[1] })
+        await orderbook.updateFee(INGRESS_FEE, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await orderbook.updateFee(FEE);
-        (await orderbook.fee()).toNumber().should.equal(FEE);
+        await orderbook.updateFee(INGRESS_FEE);
+        (await orderbook.fee()).toNumber().should.equal(INGRESS_FEE);
     });
 
     it("can update the darknode registry address", async () => {
@@ -105,7 +98,7 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to open orders", async function () {
-        await ren.approve(orderbook.address, 2 * accounts.length, { from: broker });
+        await ren.approve(orderbook.address, 2 * accounts.length * INGRESS_FEE, { from: broker });
         for (let i = 0; i < accounts.length; i++) {
             await steps.openBuyOrder(orderbook, broker, accounts[i]);
             await steps.openSellOrder(orderbook, broker, accounts[i]);
@@ -113,6 +106,7 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be rejected when trying to open an order without no REN allowance", async function () {
+        (INGRESS_FEE).should.be.greaterThan(0, "Can't run test if Ingress fee is 0");
         await ren.approve(orderbook.address, 0, { from: broker });
         await steps.openBuyOrder(orderbook, broker, accounts[0])
             .should.be.rejectedWith(null, /revert/); // erc20 transfer error
@@ -122,7 +116,7 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("should be rejected when trying to open an opened order", async function () {
         for (let i = 0; i < accounts.length; i++) {
-            await ren.approve(orderbook.address, 2, { from: broker });
+            await ren.approve(orderbook.address, 2 * INGRESS_FEE, { from: broker });
 
             const orderID = await steps.openBuyOrder(orderbook, broker, accounts[0]);
             await steps.openBuyOrder(orderbook, broker, accounts[0], orderID)
@@ -136,7 +130,7 @@ contract("Orderbook", function (accounts: string[]) {
     it("should be able to cancel orders", async function () {
         const ids = {};
 
-        await ren.approve(orderbook.address, accounts.length * 2, { from: broker });
+        await ren.approve(orderbook.address, accounts.length * 2 * INGRESS_FEE, { from: broker });
 
         for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
@@ -150,14 +144,14 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to cancel orders that are not open", async function () {
-        await ren.approve(orderbook.address, 1, { from: broker });
+        await ren.approve(orderbook.address, INGRESS_FEE, { from: broker });
 
         let orderID = randomID();
         await steps.cancelOrder(orderbook, broker, accounts[0], orderID);
     });
 
     it("should not be able to cancel confirmed orders", async function () {
-        await ren.approve(orderbook.address, 5, { from: broker });
+        await ren.approve(orderbook.address, 5 * INGRESS_FEE, { from: broker });
 
         // Confirmed Order
         let confirmedOrder = await steps.openBuyOrder(orderbook, broker, accounts[1]);
@@ -174,7 +168,7 @@ contract("Orderbook", function (accounts: string[]) {
     it("should be rejected when trying to cancel orders signed by someone else", async function () {
         const ids = {};
 
-        await ren.approve(orderbook.address, accounts.length, { from: broker });
+        await ren.approve(orderbook.address, accounts.length * INGRESS_FEE, { from: broker });
 
         for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
@@ -183,7 +177,7 @@ contract("Orderbook", function (accounts: string[]) {
         }
 
         for (let i = 0; i < accounts.length; i++) {
-            await ren.approve(orderbook.address, 1, { from: accounts[i] });
+            await ren.approve(orderbook.address, INGRESS_FEE, { from: accounts[i] });
             await steps.cancelOrder(orderbook, broker, accounts[(i + 1) % accounts.length], ids[i])
                 .should.be.rejectedWith(null, /invalid signature/);
         }
@@ -193,7 +187,7 @@ contract("Orderbook", function (accounts: string[]) {
         const buyIDs = {};
         const sellIDs = {};
 
-        await ren.approve(orderbook.address, 2 * (accounts.length / 2), { from: broker });
+        await ren.approve(orderbook.address, 2 * (accounts.length / 2) * INGRESS_FEE, { from: broker });
 
         // Open orders
         for (let i = 0; i < accounts.length / 2; i++) {
@@ -210,7 +204,7 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("should be rejected when trying to confirm an non-open order", async function () {
         // Setup
-        await ren.approve(orderbook.address, 5, { from: broker });
+        await ren.approve(orderbook.address, 5 * INGRESS_FEE, { from: broker });
 
         // Opened Order
         let openedOrder = await steps.openBuyOrder(orderbook, broker, accounts[0]);
@@ -244,7 +238,7 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be rejected when an un-registered node trying to confirm orders", async function () {
-        await ren.approve(orderbook.address, 2, { from: accounts[0] });
+        await ren.approve(orderbook.address, 2 * INGRESS_FEE, { from: accounts[0] });
         let order1 = randomID();
         let order2 = randomID();
 
@@ -256,7 +250,7 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("should be able to get the depth of orderID", async function () {
 
-        await ren.approve(orderbook.address, 1, { from: broker });
+        await ren.approve(orderbook.address, INGRESS_FEE, { from: broker });
 
         let orderID = randomID();
 
@@ -274,7 +268,7 @@ contract("Orderbook", function (accounts: string[]) {
 
         const ids = {};
 
-        await ren.approve(_orderbook.address, 2 * accounts.length, { from: broker });
+        await ren.approve(_orderbook.address, 2 * accounts.length * INGRESS_FEE, { from: broker });
         for (let i = 0; i < accounts.length; i++) {
             ids[i] = (i % 2 === 0) ?
                 await steps.openBuyOrder(_orderbook, broker, accounts[i]) :
@@ -312,7 +306,7 @@ contract("Orderbook", function (accounts: string[]) {
         let prefix = web3.utils.toHex("Republic Protocol: open: ");
         data.should.equal((prefix + id.slice(2)));
 
-        await ren.approve(orderbook.address, 1, { from: accounts[0] });
+        await ren.approve(orderbook.address, INGRESS_FEE, { from: accounts[0] });
         await orderbook.openBuyOrder(signature, id, { from: accounts[0] });
         (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66");
     });
@@ -324,7 +318,7 @@ contract("Orderbook", function (accounts: string[]) {
         let sellOrderId;
 
         { // Open orders first
-            await ren.approve(_orderbook.address, 2, { from: broker });
+            await ren.approve(_orderbook.address, 2 * INGRESS_FEE, { from: broker });
 
             buyOrderId = randomID();
             sellOrderId = randomID();

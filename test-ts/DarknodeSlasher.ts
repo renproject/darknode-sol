@@ -5,7 +5,6 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const SettlementUtilsTest = artifacts.require("SettlementUtilsTest");
 
-
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
@@ -19,7 +18,7 @@ const FEE = 0;
 
 // Makes a public key for a darknode
 function PUBK(i: string) {
-return web3.utils.sha3(i);
+  return web3.utils.sha3(i);
 }
 
 contract("Darknode Slasher", function (accounts: string[]) {

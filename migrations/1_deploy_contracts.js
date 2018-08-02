@@ -6,27 +6,41 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
 const Orderbook = artifacts.require("Orderbook.sol");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault.sol");
 
-const BOND = 100000 * 1e18;
-const INGRESS_FEE = 0;
-const POD_SIZE = 3; // 24 in production
-const EPOCH_BLOCKS = 1; // 14400 in production
-const SLASHER = 0x0;
+const config = require("./config.js");
 
 module.exports = async function (deployer, network) {
-await deployer
-    .deploy(
-        RepublicToken, { overwrite: network !== "f0" }
-    )
-    .then(() => deployer.deploy(
-        DarknodeRegistryStore,
-        RepublicToken.Address,
-    ))
-    .then(() => deployer.deploy(
-        DarknodeRegistry,
-        RepublicToken.address,
-        DarknodeRegistryStore.address,
-        new BigNumber(BOND),
-        POD_SIZE,
-        EPOCH_BLOCKS
-    ))
+    await deployer
+        .deploy(
+            RepublicToken, { overwrite: network !== "f0" }
+        )
+        .then(() => deployer.deploy(
+            DarknodeRegistryStore,
+            RepublicToken.address,
+        ))
+        .then(() => deployer.deploy(
+            DarknodeRegistry,
+            RepublicToken.address,
+            DarknodeRegistryStore.address,
+            new BigNumber(config.MINIMUM_BOND),
+            config.MINIMUM_POD_SIZE,
+            config.MINIMUM_EPOCH_INTERVAL
+        ))
+        .then(() => deployer.deploy(
+            Orderbook,
+            config.INGRESS_FEE,
+            RepublicToken.address,
+            DarknodeRegistry.address,
+        ))
+        .then(() => deployer.deploy(
+            DarknodeRewardVault, DarknodeRegistry.address
+        ))
+        .then(async () => {
+            const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
+            await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
+        })
+        .then(async () => {
+            const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
+            darknodeRegistry.updateSlasher(config.SLASHER);
+        })
+        ;
 }
