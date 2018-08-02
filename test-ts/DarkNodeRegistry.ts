@@ -149,9 +149,41 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.deregister(ID("1"), { from: accounts[0] }).should.be.rejectedWith(null, /must be deregisterable/);
   });
 
-  it("can only get the Dark Nodes that are fully registered", async () => {
-    const nodes = (await dnr.getDarknodes.call(NULL, 100)).filter((x) => x !== NULL);
-    (nodes.length).should.equal(accounts.length - 6);
+  it("can get the current epoch's registered dark nodes", async () => {
+    const nodes = (await dnr.getDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+    (nodes.length).should.equal(4);
+    nodes[0].toLowerCase().should.equal(ID("3"));
+    nodes[1].toLowerCase().should.equal(ID("4"));
+    nodes[2].toLowerCase().should.equal(ID("7"));
+    nodes[3].toLowerCase().should.equal(ID("8"));
+  });
+
+  it("can get the previous epoch's registered dark nodes", async () => {
+    let nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+    (nodes.length).should.equal(10);
+
+    await waitForEpoch(dnr);
+
+    nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+    (nodes.length).should.equal(4);
+  });
+
+  it("can get the dark nodes in multiple calls", async () => {
+
+    const nodes = [];
+
+    let start = NULL;
+    do {
+      let newNodes = await dnr.getDarknodes.call(start, 2);
+      start = newNodes[newNodes.length - 1];
+      for (const node of newNodes) {
+        if (node !== NULL && nodes.indexOf(node) === -1) {
+          nodes.push(node);
+        }
+      }
+    } while (start !== NULL);
+
+    (nodes.length).should.equal(4);
     nodes[0].toLowerCase().should.equal(ID("3"));
     nodes[1].toLowerCase().should.equal(ID("4"));
     nodes[2].toLowerCase().should.equal(ID("7"));
@@ -180,9 +212,9 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     (await dnr.isDeregistered(ID("4"))).should.be.true;
     (await dnr.isDeregistered(ID("7"))).should.be.true;
     (await dnr.isDeregistered(ID("8"))).should.be.true;
-    let previousDarknodesEpoch1 = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
+    let previousDarknodesEpoch1 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
     await waitForEpoch(dnr);
-    let previousDarknodesEpoch2 = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
+    let previousDarknodesEpoch2 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
     (previousDarknodesEpoch1.length - previousDarknodesEpoch2.length).should.be.equal(4);
     (await dnr.isDeregistered(ID("3"))).should.be.true;
     (await dnr.isDeregistered(ID("4"))).should.be.true;
