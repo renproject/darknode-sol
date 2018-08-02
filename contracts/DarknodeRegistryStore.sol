@@ -87,12 +87,12 @@ contract DarknodeRegistryStore is Ownable {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
-        require(ren.transfer(owner, bond), "transfer from vault failed");
+        require(ren.transfer(owner, bond), "bond transfer failed");
     }
 
     function updateDarknodeBond(address darknodeID, uint256 bond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        darknodeRegistry[darknodeID].bond = previousBond;
+        darknodeRegistry[darknodeID].bond = bond;
         if (previousBond > bond) {
             require(ren.transfer(owner, previousBond - bond));
         }
