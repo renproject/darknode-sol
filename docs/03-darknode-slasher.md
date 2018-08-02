@@ -4,7 +4,7 @@ The Darknode Slasher is an Ethereum smart contract that discourages Darknodes fr
 
 ## Bonding
 
-A *bond* of 100,000REN is required when registering a Darknode to the [Darknode Registry](./01-darknode-registry.md).
+A bond of 100,000REN is required when registering a Darknode to the [Darknode Registry](./01-darknode-registry.md).
 
 The Orderbook prevents an account from changing the state of an order to `Confirmed` unless the account is a registered Darknode Address. The Orderbook will also record the Darkode Address that was used to change the state of an order to `Confirmed`. By doing so, the Orderbook ensures that any account changing the state of an order to `Confirmed` has a bond at stake and can be punished if the confirmation is malicious.
 
