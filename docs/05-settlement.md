@@ -20,13 +20,13 @@ The Settlement ABI is composed of two stages:
 
 The current version of the *Settlement ABI* only supports settlements that involve exactly two orders. It will be extended in the future to support settlement that involves more than two orders, and this extension will be defined in a way that is backwards compatible.
 
-### Submitting orders
+### Submitting orders for settlement
 
 ```sol
 function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) returns (bool) { /* ... */ }
 ```
 
-### Settling orders
+### Executing a settlement
 
 ```sol
 function settle(bytes32 _buy, bytes32 _sell) returns (bool) { /* ... */ }
