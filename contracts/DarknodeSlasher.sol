@@ -53,11 +53,9 @@ contract DarknodeSlasher is Ownable {
     }
 
     function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
-        address buyConfirmer = trustedOrderbook.orderConfirmer(_buyOrder);
-        address sellConfirmer = trustedOrderbook.orderConfirmer(_sellOrder);
-        assert(buyConfirmer == sellConfirmer);
+        address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
         require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]));
-        slash(buyConfirmer, buyConfirmer, sellConfirmer);
+        slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
     
     function slash(address _prover, address _challenger1, address _challenger2) internal {
