@@ -1,6 +1,13 @@
 # Darknode Registry
 
-The Darknode Registry is an Ethereum smart contract used to register, and deregister, Darknodes. Before a Darknode is accepted into the network by others, it must submit a bond of 100,000REN to the Darknode Registry. After deregistration, the Darknode can refund this bond.
+The Darknode Registry is an Ethereum smart contract used to register Darknodes and define the network configuration for the Secure Order Matcher.
+
+## Bond
+
+A *bond* of 100,000REN is required when registering a Darknode. This bond is slashed in half by the [Darknode Slasher](./03-darknode-slasher.md) when a proof of malicious behaviour is produced. The bond prevents malicious adversaries from:
+
+1. registering a large number of Darknodes to gain control over the network, and
+2. presenting a false positive in the Secure Order Matcher.
 
 ## Epochs
 
@@ -16,14 +23,18 @@ Darknodes are identified by their *Darknode Address*, an Ethereum address that i
 
 Darknodes are organised into *Darknode Pods* according to a deterministic algorithm based on (a) the list of registered Darknodes, and (b) the block hash of the epoch. This algorithm is executed off-chain by observing (a) and (b) in the Darknode Registry for the epoch of interest. The Darknode Registry stores (a) and (b) for the current, and previous, epoch.
 
-Let _ξ_ be the epoch.
-Let _h_ be the block hash for _ξ_.
-Let _m_ be the minimum number of Darknodes in a Darknode Pod for _ξ_.
-Let _n_ be the number of registered Darknodes in the Darknode Registry for _ξ_.
-Let _x_ be the Darknode at the _x_-th position in the list of registered Darknodes stored in the Darknode Registry for _ξ_.
+We define:
 
-We will compute _p(x)_; the priority of Darknode _x_ during _ξ_. If _p(x) < p(y)_ then _x_ is said to have a higher priority than _y_.
-We will compute _q(x)_; the Darknode Pod of the Darknode _x_ during _ξ_.
+- _ξ_ to be the epoch.
+- _h_ to be the block hash for _ξ_.
+- _m_ to be the minimum number of Darknodes in a Darknode Pod for _ξ_.
+- _n_ to be the number of registered Darknodes in the Darknode Registry for _ξ_.
+- _x_ to be the Darknode at the _x_-th position in the list of registered Darknodes stored in the Darknode Registry for _ξ_.
+
+We compute:
+
+- _p(x)_; the priority of Darknode _x_ during _ξ_. If _p(x) < p(y)_ then _x_ is said to have a higher priority than _y_.
+- _q(x)_; the Darknode Pod of the Darknode _x_ during _ξ_.
 
 ```
 p ← 1
