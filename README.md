@@ -7,7 +7,9 @@
 
 **Republic Protocol — Solidity** is the official reference implementation of Republic Protocol on Ethereum, written in Solidity. Republic Protocol uses Ethereum as a trusted third-party computer to perform computations that must not be corrupted, and reach consensus on the state of orders.
 
-Republic Protocol runs the Secure Order Matcher — the core component of the protocol — in a decentralised network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum. See [Republic Protocol - Go](https://github.com/republicprotocol/republic-go) for the official reference implementation of Republic Protocol, written in Go.
+Republic Protocol runs the Secure Order Matcher — the core component of the protocol — in a decentralised network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
+
+See [Republic Protocol - Go](https://github.com/republicprotocol/republic-go) for the official reference implementation of Republic Protocol, written in Go.
 
 ## Tests
 
