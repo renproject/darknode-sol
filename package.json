@@ -30,11 +30,13 @@
     "web3": "^1.0.0-beta.35"
   },
   "scripts": {
-    "clean": "rm -rf test",
-    "test": "if [ -d \"test\" ]; then echo \"Refusing to overwrite 'test' directory\"; else npm run test-ts; fi;",
-    "test-ts": "(tsc && truffle test); rm -rf test",
-    "coverage": "if [ -d \"test\" ]; then echo \"Refusing to overwrite 'test' directory\"; else npm run coverage-ts; fi;",
-    "coverage-ts": "(tsc && solidity-coverage); rm -rf test",
-    "merge": "sol-merger \"./contracts/**/*.sol\""
+    "clean": "rm -r test",
+    "test": "if [ -d \"test\" ]; then npm run warn; else npm run test-ts; fi;",
+    "coverage": "if [ -d \"test\" ]; then npm run warn; else npm run coverage-ts; fi;",
+    "merge": "sol-merger \"./contracts/**/*.sol\"",
+    "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33mnpm run clean\\033[0m'.\n\"",
+    "test-ts": "(tsc && truffle test); rm -r test",
+    "coverage-setup": "rm -r node_modules/ethereumjs-testrpc-sc 2> /dev/null; cp -r .travis/ethereumjs-testrpc-sc node_modules/ethereumjs-testrpc-sc",
+    "coverage-ts": "(npm run coverage-setup && tsc && solidity-coverage); rm -r test"
   }
 }
