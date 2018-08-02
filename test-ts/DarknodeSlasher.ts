@@ -80,6 +80,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
     await slasher.submitChallengeOrder(2, 0, 0, expiry, 2, 9, 10000, 0, "0xdf13af30388e2574b5e9e87ccd3dd4361d50a95c638bdfd15efb47395686ac3d", {from: accounts[2]}).should.be.rejectedWith(null, /revert/);
   });
 
+  it("should fail to submit challenge order twice", async() => {
+    await slasher.submitChallengeOrder(1, 1, 0, expiry, 1, 10, 1000, 0, "0x8b22392130c3f688ca01492792a3a0cbecfa202729c249eba6cf0dce0ffa31b0", {from: accounts[5]}).should.be.rejectedWith(null, /revert/);
+    await slasher.submitChallengeOrder(1, 0, 0, expiry, 1, 10, 10000, 0, "0x242efbba437ce0c8b22392130c3f688ca01492792a3a04899d66dce0ffa31b72", {from: accounts[6]}).should.be.rejectedWith(null, /revert/);
+  });
+
   it("mismatched orders get punished", async() => {
     let sellID = await settlementTest.hashOrder(2, 1, 0, expiry, 2, 10, 1000, 0, "0xccd3dd4361d50a9df13af30388e2574b5e9e875c638bdfd15efb47395686ac3d");
     let buyID = await settlementTest.hashOrder(2, 0, 0, expiry, 2, 9, 10000, 0, "0xdf13af30388e2574b5e9e87ccd3dd4361d50a95c638bdfd15efb47395686ac3d");
@@ -90,12 +95,12 @@ contract("Darknode Slasher", function (accounts: string[]) {
   })
 
   it("matched orders do not get punished", async() => {
-    let sellID = await slasher.hashOrder(1, 1, 0, expiry, 1, 10, 1000, 0, "0x8b22392130c3f688ca01492792a3a0cbecfa202729c249eba6cf0dce0ffa31b0");
-    let buyID = await slasher.hashOrder(1, 0, 0, expiry, 1, 10, 10000, 0, "0x242efbba437ce0c8b22392130c3f688ca01492792a3a04899d66dce0ffa31b72");
+    let sellID = await settlementTest.hashOrder(1, 1, 0, expiry, 1, 10, 1000, 0, "0x8b22392130c3f688ca01492792a3a0cbecfa202729c249eba6cf0dce0ffa31b0");
+    let buyID = await settlementTest.hashOrder(1, 0, 0, expiry, 1, 10, 10000, 0, "0x242efbba437ce0c8b22392130c3f688ca01492792a3a04899d66dce0ffa31b72");
     await steps.openBuyOrder(orderbook, accounts[0], accounts[7], buyID);
     await steps.openSellOrder(orderbook, accounts[0], accounts[8], sellID);
     await orderbook.confirmOrder(buyID, [sellID], {from: accounts[7]});
-    await slasher.submitChallenge(buyID, sellID);
+    await slasher.submitChallenge(buyID, sellID).should.be.rejectedWith(/revert/);
   })
 });
 
