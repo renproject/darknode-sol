@@ -44,14 +44,14 @@ contract Orderbook is Ownable {
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
 
-    event FeeUpdated(uint256 previousFee, uint256 nextFee);
-    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
+    event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
     /**
       * @notice Only allow registered dark nodes.
       */
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(bytes20(_sender)), "must be registered darknode");
+        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
         _;
     }
 
@@ -70,12 +70,12 @@ contract Orderbook is Ownable {
     }
 
     function updateFee(uint256 _newFee) public onlyOwner {
-        emit FeeUpdated(fee, _newFee);
+        emit LogFeeUpdated(fee, _newFee);
         fee = _newFee;
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
-        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
+        emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
@@ -191,8 +191,8 @@ contract Orderbook is Ownable {
     /**
     * orderState will return status of the given orderID.
     */
-    function orderState(bytes32 _orderId) public view returns (uint8) {
-        return uint8(orders[_orderId].state);
+    function orderState(bytes32 _orderId) public view returns (OrderState) {
+        return orders[_orderId].state;
     }
 
     /**

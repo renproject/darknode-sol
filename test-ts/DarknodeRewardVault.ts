@@ -2,7 +2,7 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const BitcoinMock = artifacts.require("BitcoinMock");
 const RepublicToken = artifacts.require("RepublicToken");
-const RewardVault = artifacts.require("RewardVault");
+const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const Reverter = artifacts.require("Reverter");
 
 import BigNumber from "bignumber.js";
@@ -17,7 +17,7 @@ const MINIMUM_EPOCH_INTERVAL = 2;
 
 contract("Reward Vault", function (accounts: string[]) {
 
-    let ren, dnr, dnrs, rewardVault, darknode1, darknode2, darknodeOperator;
+    let ren, dnr, dnrs, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
 
     before(async function () {
@@ -30,10 +30,9 @@ contract("Reward Vault", function (accounts: string[]) {
             MINIMUM_BOND,
             MINIMUM_POD_SIZE,
             MINIMUM_EPOCH_INTERVAL,
-            0x0,
         );
-        dnrs.updateOwner(dnr.address);
-        rewardVault = await RewardVault.new(dnr.address);
+        dnrs.transferOwnership(dnr.address);
+        darknodeRewardVault = await DarknodeRewardVault.new(dnr.address);
 
         TOKEN1 = await RepublicToken.new();
         TOKEN2 = await BitcoinMock.new();
@@ -66,12 +65,12 @@ contract("Reward Vault", function (accounts: string[]) {
     });
 
     it("can update the darknode registry address", async () => {
-        await rewardVault.updateDarknodeRegistry(0x0);
-        (await rewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
-        await rewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+        await darknodeRewardVault.updateDarknodeRegistry(0x0);
+        (await darknodeRewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        await darknodeRewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await rewardVault.updateDarknodeRegistry(dnr.address);
-        (await rewardVault.darknodeRegistry()).should.equal(dnr.address);
+        await darknodeRewardVault.updateDarknodeRegistry(dnr.address);
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(dnr.address);
     });
 
     it("can deposit and withdaw funds", async () => {
@@ -97,8 +96,8 @@ contract("Reward Vault", function (accounts: string[]) {
                     await token.transfer(accounts[i], fee);
 
                     const value = token === ETH ? fee : 0;
-                    await token.approve(rewardVault.address, fee, { from: accounts[i] });
-                    await rewardVault.deposit(darknode, token.address, fee, { value, from: accounts[i] });
+                    await token.approve(darknodeRewardVault.address, fee, { from: accounts[i] });
+                    await darknodeRewardVault.deposit(darknode, token.address, fee, { value, from: accounts[i] });
                     sum[darknode][token.address] += fee;
                 }
             }
@@ -107,7 +106,7 @@ contract("Reward Vault", function (accounts: string[]) {
         for (const token of [TOKEN1, TOKEN2, ETH]) {
             for (const darknode of [darknode1, darknode2]) {
                 const balanceBefore = await token.balanceOf(darknodeOperator);
-                await rewardVault.withdraw(darknode, token.address);
+                await darknodeRewardVault.withdraw(darknode, token.address);
                 const balanceAfter = new BigNumber(await token.balanceOf(darknodeOperator));
 
                 balanceAfter.toFixed()
@@ -117,19 +116,19 @@ contract("Reward Vault", function (accounts: string[]) {
     });
 
     it("checks that deposit amounts are valid", async () => {
-        await rewardVault.deposit(darknode1, TOKEN1.address, 1)
+        await darknodeRewardVault.deposit(darknode1, TOKEN1.address, 1)
             .should.be.rejectedWith(null, /revert/); // erc20 transfer error
 
-        await rewardVault.deposit(darknode1, ETH.address, 1)
+        await darknodeRewardVault.deposit(darknode1, ETH.address, 1)
             .should.be.rejectedWith(null, /mismatched tx value/);
     });
 
     it("checks success of ERC20 withdrawal before updating balances", async () => {
-        await TOKEN1.approve(rewardVault.address, 10);
-        await rewardVault.deposit(darknode1, TOKEN1.address, 10);
+        await TOKEN1.approve(darknodeRewardVault.address, 10);
+        await darknodeRewardVault.deposit(darknode1, TOKEN1.address, 10);
         await TOKEN1.pause();
 
-        await rewardVault.withdraw(darknode1, TOKEN1.address)
+        await darknodeRewardVault.withdraw(darknode1, TOKEN1.address)
             .should.be.rejectedWith(null, /revert/); // erc20 transfer error, paused
         await TOKEN1.unpause();
     });
@@ -141,18 +140,18 @@ contract("Reward Vault", function (accounts: string[]) {
         await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND);
         await dnr.epoch();
 
-        await rewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });
+        await darknodeRewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });
 
-        await rewardVault.withdraw(darknode3, ETH.address)
+        await darknodeRewardVault.withdraw(darknode3, ETH.address)
             .should.be.rejectedWith(null, /malicious revert/);
     });
 
     it("checks the darknode operator is not 0x0", async () => {
         // darknodeOperator is not a darknode
         (await dnr.isRegistered(darknodeOperator)).should.be.false;
-        await rewardVault.deposit(darknodeOperator, ETH.address, 1, { value: 1 });
+        await darknodeRewardVault.deposit(darknodeOperator, ETH.address, 1, { value: 1 });
 
-        await rewardVault.withdraw(darknodeOperator, ETH.address)
+        await darknodeRewardVault.withdraw(darknodeOperator, ETH.address)
             .should.be.rejectedWith(null, /invalid darknode owner/);
     });
 

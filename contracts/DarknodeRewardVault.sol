@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-contract RewardVault is Ownable {
+contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
     /**
@@ -18,7 +18,7 @@ contract RewardVault is Ownable {
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
-    event DarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
 
     /**
       * @notice The constructor.
@@ -31,7 +31,7 @@ contract RewardVault is Ownable {
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
-        emit DarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
+        emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
@@ -69,7 +69,7 @@ contract RewardVault is Ownable {
       * @param _token The address of the ERC20 token to withdraw.
       */
     function withdraw(address _darknode, ERC20 _token) public {
-        address darknodeOwner = darknodeRegistry.getDarknodeOwner(bytes20(_darknode));
+        address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
 
         require(darknodeOwner != 0x0, "invalid darknode owner");
         
