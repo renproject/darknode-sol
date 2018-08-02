@@ -49,7 +49,7 @@ contract("SettlementUtils", function () {
 
         await settlementTest.submitOrder(2, 1, 0, expiry, 2, 10, 1000, 0, "0xccd3dd4361d50a9df13af30388e2574b5e9e875c638bdfd15efb47395686ac3d");
 
-        await settlementTest.submitOrder(2, 0, 0, expiry, 2, 9, 10000, 0, "0xccd3dd4361d50a9df13af30388e2574b5e9e875c638bdfd15efb47395686ac3d");
+        await settlementTest.submitOrder(2, 0, 0, expiry, 2, 9, 10000, 0, "0xdf13af30388e2574b5e9e87ccd3dd4361d50a95c638bdfd15efb47395686ac3d");
     });
 
     it("Verify Match", async () => {
@@ -58,3 +58,4 @@ contract("SettlementUtils", function () {
         (await settlementTest.verifyMatch(buyID_3, sellID_3)).should.be.false;
     });
 });
+  
