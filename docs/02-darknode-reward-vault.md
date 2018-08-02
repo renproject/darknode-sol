@@ -1,6 +1,6 @@
 # Darknode Reward Vault
 
-After finding matching orders, confirmed the match with the [Orderbook](./04-orderbook.md), and settling the match with the [Settlement Layer](./05-settlement.md), Darknodes are rewarded with a fee. This fee provides an economic incentive for the Darknodes to run the Secure Order Matcher on behalf of third-party dark pools.
+After finding matching orders, confirming the match with the [Orderbook](./04-orderbook.md), and settling the match with the [Settlement Layer](./05-settlement.md), Darknodes are rewarded with a fee. This fee provides an economic incentive for the Darknodes to run the Secure Order Matcher on behalf of third-party dark pools. The Darknode Reward Vault is an Ethereum smart contract that collects these rewards and allows the Darknode operators to withdraw them. 
 
 ![Overview](./images/02-darknode-reward-vault-overview.jpg "Overview")
 
