@@ -7,21 +7,34 @@ The Republic Sol library is the official reference implementation of Republic Pr
 
 ## Tests
 
-Install Truffle and Ganache commands, and the required node modules.
+Install the dependencies.
 
 ```
-npm install --global truffle ganache-cli
 npm install
 ```
 
 Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545.
 
 ```sh
-ganache-cli
+npx ganache-cli
 ```
 
 Run the Truffle test suite.
 
 ```sh
-truffle test
+npm run test
+```
+
+## Coverage
+
+Install the dependencies.
+
+```
+npm install
+```
+
+Run the Truffle test suite with coverage.
+
+```sh
+npm run coverage
 ```
