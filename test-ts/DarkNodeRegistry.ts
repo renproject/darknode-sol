@@ -24,6 +24,8 @@ function PUBK(i: string) {
   return web3.utils.sha3(i);
 }
 
+const NULL = "0x0000000000000000000000000000000000000000";
+
 contract("DarknodeRegistry", function (accounts: string[]) {
 
   let ren, dnrs, dnr;
@@ -148,7 +150,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("can only get the Dark Nodes that are fully registered", async () => {
-    const nodes = await dnr.getDarknodes.call({ gasLimit: 5000000 });
+    const nodes = (await dnr.getDarknodes.call(NULL, 100)).filter((x) => x !== NULL);
     (nodes.length).should.equal(accounts.length - 6);
     nodes[0].toLowerCase().should.equal(ID("3"));
     nodes[1].toLowerCase().should.equal(ID("4"));
@@ -178,9 +180,9 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     (await dnr.isDeregistered(ID("4"))).should.be.true;
     (await dnr.isDeregistered(ID("7"))).should.be.true;
     (await dnr.isDeregistered(ID("8"))).should.be.true;
-    let previousDarknodesEpoch1 = await dnr.getPreviousDarknodes();
+    let previousDarknodesEpoch1 = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
     await waitForEpoch(dnr);
-    let previousDarknodesEpoch2 = await dnr.getPreviousDarknodes();
+    let previousDarknodesEpoch2 = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
     (previousDarknodesEpoch1.length - previousDarknodesEpoch2.length).should.be.equal(4);
     (await dnr.isDeregistered(ID("3"))).should.be.true;
     (await dnr.isDeregistered(ID("4"))).should.be.true;
@@ -252,6 +254,58 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.multipliedBy(1000));
     await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/);
     await dnrs.transferOwnership(dnr.address);
+  });
+
+  // Takes 30 minutes - keep as it.skip when not running
+  it.skip("can register 6000 dark nodes", async () => {
+    const MAX_DARKNODES = 6000;
+
+    // Fund the darknode operator (6000 dark nodes cost a lot to operate!)
+    for (let i = 1; i < accounts.length; i++) {
+      const balance = await web3.eth.getBalance(accounts[i]);
+      web3.eth.sendTransaction(
+        { to: accounts[0], from: accounts[i], value: balance, gasPrice: 0 }
+      );
+    }
+
+    await ren.approve(dnr.address, MINIMUM_BOND.multipliedBy(MAX_DARKNODES));
+
+    for (let i = 0; i < MAX_DARKNODES; i++) {
+      process.stdout.write(`\rRegistering Darknode #${i + 1}`);
+
+      await dnr.register(ID(`${i + 1}`), PUBK(`${i + 1}`), MINIMUM_BOND);
+    }
+
+    console.log("");
+
+    await waitForEpoch(dnr);
+
+    let start = NULL;
+    do {
+      let nodes = await dnr.getDarknodes.call(start, 50);
+      console.log(nodes);
+      start = nodes[nodes.length - 1];
+    } while (start !== NULL);
+
+    const numDarknodes = await dnr.numDarknodes.call();
+    numDarknodes.should.bignumber.equal(MAX_DARKNODES);
+
+    for (let i = 0; i < MAX_DARKNODES; i++) {
+      process.stdout.write(`\rDeregistering Darknode #${i + 1}`);
+      await dnr.deregister(ID(`${i + 1}`));
+    }
+
+    console.log("");
+
+    await waitForEpoch(dnr);
+    await waitForEpoch(dnr);
+
+    for (let i = 0; i < MAX_DARKNODES; i++) {
+      process.stdout.write(`\rRefunding Darknode #${i + 1}`);
+      await dnr.refund(ID(`${i + 1}`));
+    }
+
+    console.log("");
   });
 
 });

@@ -1,12 +1,13 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const Orderbook = artifacts.require("Orderbook");
 
 import BigNumber from "bignumber.js";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as chaiBigNumber from "chai-bignumber";
 chai.use(chaiAsPromised);
+chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
 const config = require("../migrations/config.js");
@@ -81,11 +82,11 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("can update the fee", async () => {
         await orderbook.updateFee(0x1);
-        (await orderbook.fee()).toNumber().should.equal(1);
+        (await orderbook.fee()).should.bignumber.equal(1);
         await orderbook.updateFee(INGRESS_FEE, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateFee(INGRESS_FEE);
-        (await orderbook.fee()).toNumber().should.equal(INGRESS_FEE);
+        (await orderbook.fee()).should.bignumber.equal(INGRESS_FEE);
     });
 
     it("can update the darknode registry address", async () => {
@@ -286,7 +287,7 @@ contract("Orderbook", function (accounts: string[]) {
             // Traders
             orders[1][i].should.equal(accounts[i + offset]);
             // Status
-            orders[2][i].toNumber().should.equal(1);
+            orders[2][i].should.bignumber.equal(1);
         }
 
         (await _orderbook.getOrders(10000, 1))

@@ -13,6 +13,7 @@ module.exports = {
     //   currency: 'USD',
     //   gasPrice: 21
     // },
+    enableTimeouts: false,
     useColors: true,
     bail: true,
   },

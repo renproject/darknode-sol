@@ -14,7 +14,7 @@ chai.should();
 const config = require("../migrations/config.js");
 const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
-contract("Reward Vault", function (accounts: string[]) {
+contract("DarknodeRewardVault", function (accounts: string[]) {
 
     let ren, dnr, dnrs, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
