@@ -4,14 +4,13 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
+/// @author Republic Protocol
 contract DarknodeRegistryStore is Ownable {
 
-    /**
-    * @notice Darknodes are stored in the darknode struct. The owner is the
-    * address that registered the darknode, the bond is the amount of REN that
-    * was transferred during registration, and the public key is the encryption
-    * key that should be used when sending sensitive information to the darknode.
-    */
+    /// @notice Darknodes are stored in the darknode struct. The owner is the
+    /// address that registered the darknode, the bond is the amount of REN that
+    /// was transferred during registration, and the public key is the encryption
+    /// key that should be used when sending sensitive information to the darknode.
     struct Darknode {
         // The owner of a Darknode is the address that called the register
         // function. The owner is the only address that is allowed to
@@ -37,33 +36,36 @@ contract DarknodeRegistryStore is Ownable {
         bytes publicKey;
     }
 
-    // Registry data.
+    /// Registry data.
     mapping(address => Darknode) private darknodeRegistry;
     LinkedList.List private darknodes;
 
     // RepublicToken.
     RepublicToken private ren;
 
-    /**
-    * @notice The DarknodeRegistryStore constructor.
-    *
-    * @param _ren The address of the RepublicToken contract.
-    */
+    /// @notice The DarknodeRegistryStore constructor.
+    ///
+    /// @param _ren The address of the RepublicToken contract.
     constructor(RepublicToken _ren) public {
         ren = _ren;
     }
 
-    /**
-    * @notice Instantiates a darknode and appends it to the darknodes linkedlist.
-    * 
-    * @param _darknodeID The darknode's ID.
-    * @param _darknodeOwner The darknode's owner's address
-    * @param _bond The darknode's bond value
-    * @param _publicKey The darknode's public key
-    * @param _registeredAt The time stamp when the darknode is registered.
-    * @param _deregisteredAt The time stamp when the darknode is deregistered.
-    */
-    function appendDarknode(address _darknodeID, address _darknodeOwner, uint256 _bond, bytes _publicKey, uint256 _registeredAt, uint256 _deregisteredAt) external onlyOwner {
+    /// @notice Instantiates a darknode and appends it to the darknodes linkedlist.
+    ///
+    /// @param _darknodeID The darknode's ID.
+    /// @param _darknodeOwner The darknode's owner's address
+    /// @param _bond The darknode's bond value
+    /// @param _publicKey The darknode's public key
+    /// @param _registeredAt The time stamp when the darknode is registered.
+    /// @param _deregisteredAt The time stamp when the darknode is deregistered.
+    function appendDarknode(
+        address _darknodeID,
+        address _darknodeOwner,
+        uint256 _bond,
+        bytes _publicKey,
+        uint256 _registeredAt,
+        uint256 _deregisteredAt
+    ) external onlyOwner {
         Darknode memory darknode = Darknode({
             owner: _darknodeOwner,
             bond: _bond,

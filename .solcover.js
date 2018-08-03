@@ -5,10 +5,7 @@ module.exports = {
     'RepublicToken.sol',
     'tests/ABCToken.sol',
     'tests/XYZToken.sol',
-    'tests/DGXMock.sol',
-    'tests/WithdrawalBlock.sol',
     'tests/Reverter.sol',
-    'tests/BitcoinMock.sol',
     'migrations/Migrations.sol'
   ],
 };
