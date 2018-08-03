@@ -169,12 +169,32 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
   it("can get the dark nodes in multiple calls", async () => {
-
     const nodes = [];
 
     let start = NULL;
     do {
       let newNodes = await dnr.getDarknodes.call(start, 2);
+      start = newNodes[newNodes.length - 1];
+      for (const node of newNodes) {
+        if (node !== NULL && nodes.indexOf(node) === -1) {
+          nodes.push(node);
+        }
+      }
+    } while (start !== NULL);
+
+    (nodes.length).should.equal(4);
+    nodes[0].toLowerCase().should.equal(ID("3"));
+    nodes[1].toLowerCase().should.equal(ID("4"));
+    nodes[2].toLowerCase().should.equal(ID("7"));
+    nodes[3].toLowerCase().should.equal(ID("8"));
+  });
+
+  it("can get the previous epoch's dark nodes in multiple calls", async () => {
+    const nodes = [];
+
+    let start = NULL;
+    do {
+      let newNodes = await dnr.getPreviousDarknodes.call(start, 2);
       start = newNodes[newNodes.length - 1];
       for (const node of newNodes) {
         if (node !== NULL && nodes.indexOf(node) === -1) {
