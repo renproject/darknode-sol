@@ -6,6 +6,8 @@ import "./DarknodeRegistry.sol";
 import "./Orderbook.sol";
 import "./SettlementUtils.sol";
 
+/// @notice Allows order confirmations to be challenged, penalizing darknodes
+/// who have confirmed two mismatched orders.
 /// @author Republic Protocol
 contract DarknodeSlasher is Ownable {
 

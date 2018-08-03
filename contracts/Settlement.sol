@@ -15,7 +15,7 @@ interface Settlement {
         uint256 _nonceHash
         ) external;
 
-    function submitMatch(
+    function settle(
         bytes32 _buyID,
         bytes32 _sellID
         ) external;
