@@ -30,44 +30,6 @@ library LinkedList {
         mapping (address => Node) list;
     }
 
-    function isInList(List storage self, address node) internal view returns (bool) {
-        return self.list[node].inList;
-    }
-
-    /**
-    * @notice Get the node at the beginning of a double linked list.
-    *
-    * @param self The list being used.
-    *
-    * @return A address identifying the node at the beginning of the double
-    * linked list.
-    */
-    function begin(List storage self) internal view returns (address) {
-        return self.list[NULL].next;
-    }
-
-    /**
-    * @notice Get the node at the end of a double linked list.
-    *
-    * @param self The list being used.
-    *
-    * @return A address identifying the node at the end of the double linked
-    * list.
-    */
-    function end(List storage self) internal view returns (address) {
-        return self.list[NULL].previous;
-    }
-
-    function next(List storage self, address node) internal view returns (address) {
-        require(isInList(self, node), "not in list");
-        return self.list[node].next;
-    }
-
-    function previous(List storage self, address node) internal view returns (address) {
-        require(isInList(self, node), "not in list");
-        return self.list[node].previous;
-    }
-
     /**
     * @notice Insert a new node before an existing node.
     *
@@ -170,4 +132,43 @@ library LinkedList {
         remove(self, left);
         insertAfter(self, previousRight, left);
     }
+
+    function isInList(List storage self, address node) internal view returns (bool) {
+        return self.list[node].inList;
+    }
+
+    /**
+    * @notice Get the node at the beginning of a double linked list.
+    *
+    * @param self The list being used.
+    *
+    * @return A address identifying the node at the beginning of the double
+    * linked list.
+    */
+    function begin(List storage self) internal view returns (address) {
+        return self.list[NULL].next;
+    }
+
+    /**
+    * @notice Get the node at the end of a double linked list.
+    *
+    * @param self The list being used.
+    *
+    * @return A address identifying the node at the end of the double linked
+    * list.
+    */
+    function end(List storage self) internal view returns (address) {
+        return self.list[NULL].previous;
+    }
+
+    function next(List storage self, address node) internal view returns (address) {
+        require(isInList(self, node), "not in list");
+        return self.list[node].next;
+    }
+
+    function previous(List storage self, address node) internal view returns (address) {
+        require(isInList(self, node), "not in list");
+        return self.list[node].previous;
+    }
+
 }

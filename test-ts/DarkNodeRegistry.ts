@@ -44,6 +44,11 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorised/);
   });
 
+  it("should return empty list when no darknodes are registered", async () => {
+    let nodes = (await dnr.getPreviousDarknodes.call(NULL, 10)).filter((x) => x !== NULL);
+    (nodes.length).should.equal(0);
+  });
+
   it("can update minimum bond", async () => {
     await dnr.updateMinimumBond(0x1);
     await waitForEpoch(dnr);
@@ -161,11 +166,14 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   it("can get the previous epoch's registered dark nodes", async () => {
     let nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
     (nodes.length).should.equal(10);
-
     await waitForEpoch(dnr);
-
     nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
     (nodes.length).should.equal(4);
+  });
+
+  it("should return the list of darknodes registered in the previous epoch starting from the given darknode", async () => {
+    let nodes = (await dnr.getPreviousDarknodes.call(ID("5"), 0)).filter((x) => x !== NULL);
+    (nodes.length).should.equal(2);
   });
 
   it("can get the dark nodes in multiple calls", async () => {
