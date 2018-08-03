@@ -78,7 +78,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         await dnr.epoch().should.be.rejectedWith(null, /revert/); // TODO: Why isn't reason returned?
     });
 
-    it("can register multiple Dark Nodes, call an epoch and check registration", async () => {
+    it("can register multiple Dark Nodes and check registration", async () => {
         for (let i = 0; i < accounts.length; i++) {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
             await dnr.register(ID(`${i + 1}`), PUBK(`${i + 1}`), MINIMUM_BOND, { from: accounts[i] });
@@ -115,7 +115,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         (await dnr.getDarknodePublicKey(ID("1"))).should.equal(PUBK("1"));
     });
 
-    it("can deregister a Dark Node, call an epoch and check deregistration", async () => {
+    it("can deregister dark nodes", async () => {
         await dnr.deregister(ID("1"), { from: accounts[0] });
         await dnr.deregister(ID("2"), { from: accounts[1] });
         await dnr.deregister(ID("5"), { from: accounts[4] });
@@ -200,16 +200,21 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         await dnr.refund(ID("4"), { from: accounts[3] }).should.be.rejectedWith(null, /must be deregistered/);
     });
 
-    it("can deregister a Dark Node, call an epoch, call refund and check deregistration", async () => {
+    it("can deregister and refund dark nodes", async () => {
+        // Deregister
         await dnr.deregister(ID("3"), { from: accounts[2] });
         await dnr.deregister(ID("4"), { from: accounts[3] });
         await dnr.deregister(ID("7"), { from: accounts[6] });
         await dnr.deregister(ID("8"), { from: accounts[7] });
+
         (await dnr.isPendingDeregistration(ID("3"))).should.be.true;
         (await dnr.isPendingDeregistration(ID("4"))).should.be.true;
         (await dnr.isPendingDeregistration(ID("7"))).should.be.true;
         (await dnr.isPendingDeregistration(ID("8"))).should.be.true;
+
+        // Call epoch
         await waitForEpoch(dnr);
+
         (await dnr.isRegisteredInPreviousEpoch(ID("3"))).should.be.true;
         (await dnr.isRegisteredInPreviousEpoch(ID("4"))).should.be.true;
         (await dnr.isRegisteredInPreviousEpoch(ID("7"))).should.be.true;
@@ -226,10 +231,13 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         (await dnr.isDeregistered(ID("4"))).should.be.true;
         (await dnr.isDeregistered(ID("7"))).should.be.true;
         (await dnr.isDeregistered(ID("8"))).should.be.true;
+
+        // Refund
         await dnr.refund(ID("3"), { from: accounts[2] });
         await dnr.refund(ID("4"), { from: accounts[3] });
         await dnr.refund(ID("7"), { from: accounts[6] });
         await dnr.refund(ID("8"), { from: accounts[7] });
+
         (await dnr.isRefunded(ID("3"))).should.be.true;
         (await dnr.isRefunded(ID("4"))).should.be.true;
         (await dnr.isRefunded(ID("7"))).should.be.true;
