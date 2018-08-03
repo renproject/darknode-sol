@@ -139,17 +139,17 @@ contract("Orderbook", function (accounts: string[]) {
         const buyIDs = {};
         const sellIDs = {};
 
-        await ren.approve(orderbook.address, 2 * (accounts.length / 2) * INGRESS_FEE, { from: broker });
+        await ren.approve(orderbook.address, 2 * Math.ceil(accounts.length / 2) * INGRESS_FEE, { from: broker });
 
         // Open orders
-        for (let i = 0; i < accounts.length / 2; i++) {
+        for (let i = 0; i < Math.ceil(accounts.length / 2); i++) {
 
             buyIDs[i] = await testUtils.openBuyOrder(orderbook, broker, accounts[i]);
             sellIDs[i] = await testUtils.openSellOrder(orderbook, broker, accounts[accounts.length - 1 - i]);
         }
 
         // Confirm orders
-        for (let i = 0; i < accounts.length / 2; i++) {
+        for (let i = 0; i < Math.ceil(accounts.length / 2); i++) {
             await orderbook.confirmOrder(buyIDs[i], [sellIDs[i]], { from: darknode });
         }
     });

@@ -1,7 +1,7 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const BitcoinMock = artifacts.require("BitcoinMock");
 const RepublicToken = artifacts.require("RepublicToken");
+const ABCToken = artifacts.require("ABCToken");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const Reverter = artifacts.require("Reverter");
 
@@ -11,18 +11,17 @@ import { MINIMUM_BOND } from "./helper/testUtils";
 
 contract("DarknodeRewardVault", function (accounts: string[]) {
 
-    let ren, dnr, dnrs, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
+    let ren, dnr, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
 
     before(async function () {
 
         ren = await RepublicToken.deployed();
-        dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
         darknodeRewardVault = await DarknodeRewardVault.deployed();
 
         TOKEN1 = await RepublicToken.new();
-        TOKEN2 = await BitcoinMock.new();
+        TOKEN2 = await ABCToken.new();
         ETH = {
             address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
             decimals: () => 18,

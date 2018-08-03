@@ -26,7 +26,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("should return empty list when no darknodes are registered", async () => {
-        let nodes = (await dnr.getPreviousDarknodes.call(NULL, 10)).filter((x) => x !== NULL);
+        let nodes = (await dnr.getPreviousDarknodes.call(NULL, 100)).filter((x) => x !== NULL);
         (nodes.length).should.equal(0);
     });
 
@@ -137,7 +137,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
     it("can get the current epoch's registered dark nodes", async () => {
         const nodes = (await dnr.getDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(4);
+        (nodes.length).should.equal(accounts.length - 6);
         nodes[0].should.equal(ID("3"));
         nodes[1].should.equal(ID("4"));
         nodes[2].should.equal(ID("7"));
@@ -146,12 +146,12 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
     it("can get the previous epoch's registered dark nodes", async () => {
         let nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(10);
+        (nodes.length).should.equal(accounts.length);
 
         await waitForEpoch(dnr);
 
         nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(4);
+        (nodes.length).should.equal(accounts.length - 6);
     });
 
     it("can get the dark nodes in multiple calls", async () => {
@@ -168,7 +168,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
             }
         } while (start !== NULL);
 
-        (nodes.length).should.equal(4);
+        (nodes.length).should.equal(accounts.length - 6);
         nodes[0].should.equal(ID("3"));
         nodes[1].should.equal(ID("4"));
         nodes[2].should.equal(ID("7"));
@@ -189,7 +189,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
             }
         } while (start !== NULL);
 
-        (nodes.length).should.equal(4);
+        (nodes.length).should.equal(accounts.length - 6);
         nodes[0].should.equal(ID("3"));
         nodes[1].should.equal(ID("4"));
         nodes[2].should.equal(ID("7"));
