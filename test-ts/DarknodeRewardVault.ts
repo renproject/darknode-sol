@@ -6,13 +6,8 @@ const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const Reverter = artifacts.require("Reverter");
 
 import BigNumber from "bignumber.js";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-chai.should();
-
-const config = require("../migrations/config.js");
-const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
+import * as testUtils from "./helper/testUtils";
+import { MINIMUM_BOND } from "./helper/testUtils";
 
 contract("DarknodeRewardVault", function (accounts: string[]) {
 
@@ -58,7 +53,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
 
     it("can update the darknode registry address", async () => {
         await darknodeRewardVault.updateDarknodeRegistry(0x0);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(testUtils.NULL);
         await darknodeRewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await darknodeRewardVault.updateDarknodeRegistry(dnr.address);

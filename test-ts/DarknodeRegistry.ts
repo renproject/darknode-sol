@@ -2,29 +2,10 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as chaiBigNumber from "chai-bignumber";
-import BigNumber from "bignumber.js";
-chai.use(chaiAsPromised);
-chai.use(chaiBigNumber(BigNumber));
-chai.should();
-
-const config = require("../migrations/config.js");
-const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
-const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
-
-// Makes an ID for a darknode
-function ID(i: string) {
-  return web3.utils.sha3(i).slice(0, 42);
-}
-
-// Makes a public key for a darknode
-function PUBK(i: string) {
-  return web3.utils.sha3(i);
-}
-
-const NULL = "0x0000000000000000000000000000000000000000";
+import {
+  ID, PUBK, NULL, waitForEpoch,
+  MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL,
+} from "./helper/testUtils";
 
 contract("DarknodeRegistry", function (accounts: string[]) {
 
@@ -361,19 +342,3 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   });
 
 });
-
-async function waitForEpoch(dnr: any) {
-  // TODO: Replace with evm_increaseTime
-  const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
-  while (true) {
-    // Must be an on-chain call, or the time won't be updated
-    try {
-      const tx = await dnr.epoch();
-      return;
-    } catch (err) {
-      // epoch reverted, epoch interval hasn't passed
-    }
-    // Sleep for `timeout` seconds
-    await new Promise(resolve => setTimeout(resolve, timeout * 1000));
-  }
-}
