@@ -25,26 +25,20 @@ contract DarknodeSlasher is Ownable {
     }
 
     function submitChallengeOrder(
-        uint32 settlementID,
-        uint8 parity,
-        uint8 orderType,
-        uint64 expiry,
+        bytes details,
+        uint64 settlementID,
         uint64 tokens,
         uint256 price,
         uint256 volume,
-        uint256 minimumVolume,
-        uint256 nonceHash
+        uint256 minimumVolume
     ) external onlyDarknode {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            orderType: orderType,
-            parity: parity,
+            details: details,
             settlementID: settlementID,
-            expiry: expiry,
             tokens: tokens,
             price: price,
             volume: volume,
-            minimumVolume: minimumVolume,
-            nonceHash: nonceHash
+            minimumVolume: minimumVolume
         });
         bytes32 orderID = SettlementUtils.hashOrder(order);
         require(challengers[orderID] == address(0x0));
@@ -53,13 +47,12 @@ contract DarknodeSlasher is Ownable {
     }
 
     function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
-        address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
         require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]));
+        address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
         slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
     
     function slash(address _prover, address _challenger1, address _challenger2) internal {
         trustedDarknodeRegistry.slash(_prover, _challenger1, _challenger2);
     }
-
 }
