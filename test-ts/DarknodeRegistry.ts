@@ -249,7 +249,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     await waitForEpoch(dnr);
 
     await ren.pause();
-    await dnr.refund(ID("3")).should.be.rejectedWith(null, /revert/);
+    await dnr.refund(ID("3")).should.be.rejectedWith(null, /revert/); // paused contract
     await ren.unpause();
     await dnr.refund(ID("3"));
   });
@@ -285,7 +285,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
   it("transfer ownership of the dark node store", async () => {
     await dnr.transferStoreOwnership(accounts[0]);
     await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.multipliedBy(1000));
-    await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/);
+    await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/); // ren transfer error
     await dnrs.transferOwnership(dnr.address);
   });
 
