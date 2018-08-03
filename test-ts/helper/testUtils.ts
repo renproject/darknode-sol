@@ -15,7 +15,7 @@ export const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
 // Makes an ID for a darknode
 export function ID(i: string) {
-    return web3.utils.sha3(i).slice(0, 42);
+    return web3.utils.toChecksumAddress(web3.utils.sha3(i).slice(0, 42));
 }
 
 // Makes a public key for a darknode
