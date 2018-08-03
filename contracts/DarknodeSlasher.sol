@@ -15,7 +15,7 @@ contract DarknodeSlasher is Ownable {
     mapping(bytes32 => address) public challengers;
 
     modifier onlyDarknode() {
-        require(trustedDarknodeRegistry.isRegistered(msg.sender) || trustedDarknodeRegistry.isDeregistered(msg.sender));
+        require(trustedDarknodeRegistry.isRegistered(msg.sender) || trustedDarknodeRegistry.isDeregistered(msg.sender), "must be darknode");
         _;
     }
 
@@ -47,14 +47,14 @@ contract DarknodeSlasher is Ownable {
             nonceHash: nonceHash
         });
         bytes32 orderID = SettlementUtils.hashOrder(order);
-        require(challengers[orderID] == address(0x0));
+        require(challengers[orderID] == address(0x0), "already challenged");
         orderDetails[orderID] = order;
         challengers[orderID] = msg.sender;
     }
 
     function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
         address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
-        require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]));
+        require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]), "invalid challenge");
         slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
     
