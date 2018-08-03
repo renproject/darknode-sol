@@ -1,10 +1,7 @@
 pragma solidity ^0.4.24;
 
-
-/**
- * The Settlement interface defines the functions that a settlement layer must
- * implement
- */
+/// @notice The Settlement interface defines the functions that a settlement
+/// layer must implement
 interface Settlement {
     function submitOrder(
         uint32 _settlementID,

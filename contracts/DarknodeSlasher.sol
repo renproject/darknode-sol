@@ -6,6 +6,7 @@ import "./DarknodeRegistry.sol";
 import "./Orderbook.sol";
 import "./SettlementUtils.sol";
 
+/// @author Republic Protocol
 contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public trustedDarknodeRegistry;

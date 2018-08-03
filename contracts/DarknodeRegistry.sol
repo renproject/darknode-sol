@@ -7,6 +7,7 @@ import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of darknodes. Registration requires the deposit of a bond.
+/// @author Republic Protocol
 contract DarknodeRegistry is Ownable {
 
     /// @notice Darknode pods are shuffled after a fixed number of blocks.
@@ -431,7 +432,7 @@ contract DarknodeRegistry is Ownable {
     /// the previous epoch. See `getDarknodes` for documentation on the
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
-    ///                         the current epoch.
+    ///                          the current epoch.
     function getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[]) {
         uint count = _count;
         if (count == 0) {
