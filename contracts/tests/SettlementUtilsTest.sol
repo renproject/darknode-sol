@@ -7,53 +7,40 @@ contract SettlementUtilsTest {
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
 
     function submitOrder(
-        uint32 settlementID,
-        uint8 parity,
-        uint8 orderType,
-        uint64 expiry,
+        bytes details,
+        uint64 settlementID,
         uint64 tokens,
         uint256 price,
         uint256 volume,
-        uint256 minimumVolume,
-        uint256 nonceHash
+        uint256 minimumVolume
     ) public {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            orderType: orderType,
-            parity: parity,
+            details: details,
             settlementID: settlementID,
-            expiry: expiry,
             tokens: tokens,
             price: price,
             volume: volume,
-            minimumVolume: minimumVolume,
-            nonceHash: nonceHash
+            minimumVolume: minimumVolume
         });
-
         bytes32 orderID = SettlementUtils.hashOrder(order);
         orderDetails[orderID] = order;
     }
 
     function hashOrder(
-        uint32 settlementID,
-        uint8 parity,
-        uint8 orderType,
-        uint64 expiry,
+        bytes details,
+        uint64 settlementID,
         uint64 tokens,
         uint256 price,
         uint256 volume,
-        uint256 minimumVolume,
-        uint256 nonceHash
+        uint256 minimumVolume
     ) public pure returns (bytes32) {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            orderType: orderType,
-            parity: parity,
+            details: details,
             settlementID: settlementID,
-            expiry: expiry,
             tokens: tokens,
             price: price,
             volume: volume,
-            minimumVolume: minimumVolume,
-            nonceHash: nonceHash
+            minimumVolume: minimumVolume
         });
         return SettlementUtils.hashOrder(order);
     }

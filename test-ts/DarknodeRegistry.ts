@@ -25,6 +25,11 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorised/);
     });
 
+    it("should return empty list when no darknodes are registered", async () => {
+        let nodes = (await dnr.getPreviousDarknodes.call(NULL, 10)).filter((x) => x !== NULL);
+        (nodes.length).should.equal(0);
+    });
+
     it("can update minimum bond", async () => {
         await dnr.updateMinimumBond(0x1);
         await waitForEpoch(dnr);
