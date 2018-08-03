@@ -4,15 +4,12 @@ pragma solidity ^0.4.24;
 /// layer must implement
 interface Settlement {
     function submitOrder(
-        uint32 _settlementID,
-        uint8 _orderType,
-        uint8 _parity,
-        uint64 _expiry,
+        bytes _details,
+        uint64 _settlementID,
         uint64 _tokens,
-        uint16 _priceC, uint16 _priceQ,
-        uint16 _volumeC, uint16 _volumeQ,
-        uint16 _minimumVolumeC, uint16 _minimumVolumeQ,
-        uint256 _nonceHash
+        uint256 _price,
+        uint256 _volume, 
+        uint256 _minimumVolume
         ) external;
 
     function settle(
