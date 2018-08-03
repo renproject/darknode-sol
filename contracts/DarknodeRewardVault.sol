@@ -12,7 +12,7 @@ contract DarknodeRewardVault is Ownable {
     /**
       * @notice The special address for Ether.
       */
-    address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+    address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     DarknodeRegistry public darknodeRegistry;
 

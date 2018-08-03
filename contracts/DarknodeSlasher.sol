@@ -52,7 +52,7 @@ contract DarknodeSlasher is Ownable {
         slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
     
-    function slash(address _prover, address _challenger1, address _challenger2) internal {
+    function slash(address _prover, address _challenger1, address _challenger2) private {
         trustedDarknodeRegistry.slash(_prover, _challenger1, _challenger2);
     }
 }
