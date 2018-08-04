@@ -75,7 +75,8 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
     it("can not call epoch before the minimum time interval", async () => {
         await dnr.epoch();
-        await dnr.epoch().should.be.rejectedWith(null, /revert/); // TODO: Why isn't reason returned?
+        // TODO: Why isn't reason returned?
+        await dnr.epoch().should.be.rejectedWith(null, /revert/);
     });
 
     it("can register multiple Dark Nodes and check registration", async () => {

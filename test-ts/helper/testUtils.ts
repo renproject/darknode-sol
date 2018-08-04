@@ -26,7 +26,6 @@ export function PUBK(i: string) {
 export const NULL = "0x0000000000000000000000000000000000000000";
 
 export async function waitForEpoch(dnr: any) {
-    // TODO: Replace with evm_increaseTime
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
     while (true) {
         // Must be an on-chain call, or the time won't be updated
