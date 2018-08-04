@@ -46,6 +46,6 @@ contract SettlementUtilsTest {
     }
 
     function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (bool) {
-        return SettlementUtils.verifyMatch(orderDetails[_buyID], orderDetails[_sellID]);
+        return SettlementUtils.verifyMatchDetails(orderDetails[_buyID], orderDetails[_sellID]);
     }
 }

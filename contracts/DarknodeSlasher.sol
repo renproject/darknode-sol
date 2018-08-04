@@ -14,11 +14,8 @@ contract DarknodeSlasher is Ownable {
     DarknodeRegistry public trustedDarknodeRegistry;
     Orderbook public trustedOrderbook;
 
-    enum OrderStatus {None, Submitted}
-    enum ChallengeStatus {None, Slashed}
-
-    mapping(bytes32 => OrderStatus) public orderStatus;
-    mapping(bytes32 => ChallengeStatus) public challengeStatus;
+    mapping(bytes32 => bool) public orderDetailsSubmitted;
+    mapping(bytes32 => mapping(bytes32 => bool)) public challengeSubmitted;
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
     mapping(bytes32 => address) public challengers;
 
@@ -62,31 +59,37 @@ contract DarknodeSlasher is Ownable {
         bytes32 orderID = SettlementUtils.hashOrder(order);
 
         // Check the order details haven't already been submitted
-        require(orderStatus[orderID] == OrderStatus.None, "already submitted");
+        require(!orderDetailsSubmitted[orderID], "already submitted");
 
         // Store the order details and the challenger
         orderDetails[orderID] = order;
         challengers[orderID] = msg.sender;
-        orderStatus[orderID] = OrderStatus.Submitted;
+        orderDetailsSubmitted[orderID] = true;
     }
 
     /// @notice Submits 
-    function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
+    function submitChallenge(bytes32 _buyID, bytes32 _sellID) external {
         // Check that the match hasn't been submitted previously
-        bytes32 matchID = keccak256(abi.encodePacked(_buyOrder, _sellOrder));
-        require(challengeStatus[matchID] == ChallengeStatus.None, "already submitted");
+        require(!challengeSubmitted[_buyID][_sellID], "already challenged");
 
-        // Check that verifyMatch returns FALSE
-        require(!SettlementUtils.verifyMatch(trustedOrderbook, orderDetails[_buyOrder], orderDetails[_sellOrder]), "invalid challenge");
+        // Check that the orders were submitted to one another
+        require(SettlementUtils.verifyOrderPair(trustedOrderbook, _buyID, _sellID), "invalid challenge");
+
+        // The challenge is valid if 1) the order details (prices, volumes,
+        // settlement IDs or tokens) are not compatible, or if 2) the orders
+        // where submitted by the same trader.
+        bool mismatchedDetails = !SettlementUtils.verifyMatchDetails(orderDetails[_buyID], orderDetails[_sellID]);
+        bool nondistinctTrader = trustedOrderbook.orderTrader(_buyID) == trustedOrderbook.orderTrader(_sellID);
+        require(mismatchedDetails || nondistinctTrader, "invalid challenge");
 
         // Retrieve the guilty confirmer
-        address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
-        require(confirmer != 0x0, "unconfirmed order");
+        address confirmer = trustedOrderbook.orderConfirmer(_buyID);
 
         // Store that challenge has been submitted
-        challengeStatus[matchID] == ChallengeStatus.Slashed;
+        challengeSubmitted[_buyID][_sellID] = true;
+        challengeSubmitted[_sellID][_buyID] = true;
 
         // Slash the bond of the confirmer
-        trustedDarknodeRegistry.slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
+        trustedDarknodeRegistry.slash(confirmer, challengers[_buyID], challengers[_sellID]);
     }
 }

@@ -34,13 +34,32 @@ library SettlementUtils {
         );
     }
 
+    /// @notice Verifies that two orders have been confirmed to one another
+    /// in the provided orderbook.
+    /// @param _orderbookContract The address of the Orderbook contract.
+    /// @param _buyID The ID of the buy order.
+    /// @param _sellID The ID of the sell order.
+    function verifyOrderPair(Orderbook _orderbookContract, bytes32 _buyID, bytes32 _sellID)
+    internal view returns (bool) {
+        bytes32[] memory buyMatches = _orderbookContract.orderMatches(_buyID);
+        for (uint256 i = 0; i < buyMatches.length; i++) {
+            if (buyMatches[i] == _sellID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /// @notice Verifies that two orders match when considering the tokens,
-    /// price, volumes / minimum volumes and settlement IDs. verifyMatch is used
+    /// price, volumes / minimum volumes and settlement IDs. verifyMatchDetails is used
     /// my the DarknodeSlasher to verify challenges. Settlement layers may also
     /// use this function.
+    /// @dev When verifying two orders for settlement, you should also:
+    ///   1) verify the orders have been confirmed together (see `verifyOrderPair`)
+    ///   2) verify the orders' traders are distinc
     /// @param _buy The buy order details.
     /// @param _sell The sell order details.
-    function verifyMatch(Orderbook _orderbookContract, OrderDetails _buy, OrderDetails _sell) internal view returns (bool) {
+    function verifyMatchDetails(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
 
         // Buy and sell tokens should match
         if (!verifyTokens(_buy.tokens, _sell.tokens)) {
@@ -64,26 +83,6 @@ library SettlementUtils {
         
         // Require that the orders were submitted to the same settlement layer
         if (_buy.settlementID != _sell.settlementID) {
-            return false;
-        }
-
-        // Check that the two trades where matched to one another
-        bytes32 buyID = hashOrder(_buy);
-        bytes32 sellID = hashOrder(_sell);
-        bytes32[] memory buyMatches = _orderbookContract.orderMatches(buyID);
-        bool inMatchList = false;
-        for (uint256 i = 0; i < buyMatches.length; i++) {
-            if (buyMatches[i] == sellID) {
-                inMatchList = true;
-                break;
-            }
-        }
-        if (!inMatchList) {
-            return false;
-        }
-
-        // Check that the orders are from distinct traders
-        if (_orderbookContract.orderTrader(buyID) == _orderbookContract.orderTrader(sellID)) {
             return false;
         }
         
