@@ -183,17 +183,17 @@ contract DarknodeRegistry is Ownable {
         // Emit an event
         emit LogDarknodeDeregistered(_darknodeID);
     }
-    
+
     ///  @notice Progress the epoch if it is possible and necessary to do so.
     ///  This captures the current timestamp and current blockhash and overrides
     ///  yhe current epoch.
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
-            // The first two times epoch is called, it must be called by the
-            // owner of the contract
+            // The first epoch must be called by the owner of the contract
             require(msg.sender == owner, "not authorised (first epochs)");
         }
 
+        // Require that the epoch interval has passed
         require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
@@ -207,6 +207,8 @@ contract DarknodeRegistry is Ownable {
         // Update the registry information
         numDarknodesPreviousEpoch = numDarknodes;
         numDarknodes = numDarknodesNextEpoch;
+
+        // If any update functions have been called, update the values now
 
         if (nextMinimumBond != minimumBond) {
             minimumBond = nextMinimumBond;

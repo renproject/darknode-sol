@@ -110,7 +110,6 @@ contract Orderbook is Ownable {
         }
 
         for (i = 0; i < _orderMatches.length; i++) {
-            // TODO: Require that the order type is the opposite to _orderId's
             orders[_orderMatches[i]].state = OrderState.Confirmed;
             orders[_orderMatches[i]].matches = [_orderId];
             orders[_orderMatches[i]].blockNumber = block.number;
