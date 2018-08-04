@@ -79,16 +79,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, [sellID], { from: darknode7 });
 
+        // The confirmer's bond will be halved
         const bondBefore = await dnr.getDarknodeBond(darknode7);
         await slasher.submitChallenge(buyID, sellID);
         let bondAfter = await dnr.getDarknodeBond(darknode7);
-
         bondAfter.mul(new BN(2)).should.bignumber.equal(bondBefore);
-
-        await slasher.submitChallenge(buyID, sellID)
-            .should.be.rejectedWith(/already challenged/);
-        await slasher.submitChallenge(sellID, buyID)
-            .should.be.rejectedWith(/already challenged/);
     });
 
     it("challenges can't be submitted multiple times", async () => {
@@ -107,6 +102,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         await slasher.submitChallenge(buyID, sellID);
 
+        // Slashing (and with orders swapped) should be rejected
         await slasher.submitChallenge(buyID, sellID)
             .should.be.rejectedWith(/already challenged/);
         await slasher.submitChallenge(sellID, buyID)
@@ -125,6 +121,9 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, [sellID], { from: darknode7 });
-        await slasher.submitChallenge(buyID, sellID).should.be.rejectedWith(/invalid challenge/);
+
+        // Slash should be rejected
+        await slasher.submitChallenge(buyID, sellID)
+            .should.be.rejectedWith(/invalid challenge/);
     });
 });

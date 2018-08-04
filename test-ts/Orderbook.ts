@@ -33,11 +33,11 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("can update the fee", async () => {
         await orderbook.updateFee(0x1);
-        (await orderbook.fee()).should.bignumber.equal(1);
+        (await orderbook.orderOpeningFee()).should.bignumber.equal(1);
         await orderbook.updateFee(INGRESS_FEE, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateFee(INGRESS_FEE);
-        (await orderbook.fee()).should.bignumber.equal(INGRESS_FEE);
+        (await orderbook.orderOpeningFee()).should.bignumber.equal(INGRESS_FEE);
     });
 
     it("can update the darknode registry address", async () => {
@@ -331,10 +331,10 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal(2);
 
             // Get order match
-            (await _orderbook.orderMatch.call(buyOrderId))
+            (await _orderbook.orderMatches.call(buyOrderId))
                 .should.deep.equal([sellOrderId]);
 
-            (await _orderbook.orderMatch.call(sellOrderId))
+            (await _orderbook.orderMatches.call(sellOrderId))
                 .should.deep.equal([buyOrderId]);
 
             // Get matched order
