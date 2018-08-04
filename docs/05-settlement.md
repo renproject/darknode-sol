@@ -37,7 +37,8 @@ function settle(bytes32 _buy, bytes32 _sell) { /* ... */ }
 Third-party dark pools have the flexibility to define the exact rules for Settlement Layers, including the fee structure, however, Darknodes will not accept a third-party dark pool unless its Settlement Layers respect some basic requirements. Settlement Layers must:
 
 1. verify the submitted orders are submitted by a registered Darknode,
-1. verify the submitted orders are a confirmed match in the [Orderbook](./04-orderbook.md), and
-3. pay a fee to the Darknodes using the [Darknode Reward Vault](./02-darknode-reward-vault.md).
+2. verify the submitted orders are a confirmed match in the [Orderbook](./04-orderbook.md),
+3. pay a fee to the Darknodes using the [Darknode Reward Vault](./02-darknode-reward-vault.md), and
+4. pay the fee to the Darknodes that called `submitOrder`.
 
 Meeting these requirement is considerde necessary, but not sufficient, for being accepted by the Darknodes. For example, a Settlement Layer might define a fee payment to the Darknodes in accordance with (2), but it might use a token that is not recognised by the Darknodes as valuable.
