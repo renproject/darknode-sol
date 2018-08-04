@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "../SettlementUtils.sol";
 
+/// @notice A contract that exposes the SettlementUtils functions for testing.
 contract SettlementUtilsTest {
 
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
@@ -45,7 +46,7 @@ contract SettlementUtilsTest {
         return SettlementUtils.hashOrder(order);
     }
 
-    function verifyMatch(bytes32 _buyID, bytes32 _sellID) public view returns (bool) {
+    function verifyMatchDetails(bytes32 _buyID, bytes32 _sellID) public view returns (bool) {
         return SettlementUtils.verifyMatchDetails(orderDetails[_buyID], orderDetails[_sellID]);
     }
 }

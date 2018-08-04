@@ -148,10 +148,8 @@ contract Orderbook is Ownable {
         orders[_orderId].blockNumber = block.number;
     }
 
-    /// @notice returns orderId at the given index in the buy order list and true
-    /// if exists, otherwise it will return empty bytes and false.
-    /// @notice Retrieves the order ID at an index
-    /// @param _index The index to retrieve the order ID at
+    /// @notice Retrieves the order ID of the buy order at the provided index.
+    /// @param _index The index to retrieve the order ID at.
     /// @return (the order ID, true) or (empty bytes, false) for an invalid index
     function buyOrder(uint256 _index) external view returns (bytes32, bool) {
         if (_index >= buyOrders.length) {
@@ -161,10 +159,8 @@ contract Orderbook is Ownable {
         return (buyOrders[_index], true);
     }
 
-    /// @notice returns orderId at the given index in the sell order list and true
-    /// if exists, otherwise it will return empty bytes and false.
-    /// @notice Retrieves the order ID at an index
-    /// @param _index The index to retrieve the order ID at
+    /// @notice Retrieves the order ID of the sell order at the provided index.
+    /// @param _index The index to retrieve the order ID at.
     /// @return (the order ID, true) or (empty bytes, false) for an invalid index
     function sellOrder(uint256 _index) external view returns (bytes32, bool) {
         if (_index >= sellOrders.length) {
@@ -262,6 +258,7 @@ contract Orderbook is Ownable {
         return (orderIDs, traderAddresses, states);
     }
 
+    /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
     function openOrder(bytes _signature, bytes32 _orderId) private {
         require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
         require(orders[_orderId].state == OrderState.Undefined, "invalid order status");

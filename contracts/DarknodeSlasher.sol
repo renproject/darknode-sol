@@ -37,7 +37,8 @@ contract DarknodeSlasher is Ownable {
 
     /// @notice Submits the details for one of the two orders of a challenge.
     /// The details are required to verify that the orders shout not have been
-    /// matched together.
+    /// matched together. The parameters are the same as `submitOrder` in the
+    /// Settlement interface.
     function submitChallengeOrder(
         bytes details,
         uint64 settlementID,
