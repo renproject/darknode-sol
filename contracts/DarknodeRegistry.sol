@@ -348,7 +348,7 @@ contract DarknodeRegistry is Ownable {
     ///        registered darknodes, the rest of the list will contain
     ///        0x0s.
     function getDarknodes(address _start, uint256 _count) external view returns (address[]) {
-        uint count = _count;
+        uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
         }
@@ -358,7 +358,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice Retrieves a list of darknodes which were registered for the 
     /// previous epoch. See `getDarknodes` for the paramater documentation.
     function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[]) {
-        uint count = _count;
+        uint256 count = _count;
         if (count == 0) {
             count = numDarknodesPreviousEpoch;
         } 
@@ -435,7 +435,7 @@ contract DarknodeRegistry is Ownable {
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
     ///        the current epoch.
     function getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[]) {
-        uint count = _count;
+        uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
         } 

@@ -3,7 +3,6 @@ pragma solidity 0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
-import "./libraries/ECDSA.sol";
 import "./libraries/Utils.sol";
 
 /// @notice The Orderbook contract stores the state and priority of orders and
@@ -132,7 +131,7 @@ contract Orderbook is Ownable {
         if (orders[_orderId].state == OrderState.Open) {
             // Recover trader address from the signature
             bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
-            address trader = ECDSA.addr(data, _signature);
+            address trader = Utils.addr(data, _signature);
             require(orders[_orderId].trader == trader, "invalid signature");
         } else {
             // An unopened order can be canceled to ensure that it cannot be
@@ -265,7 +264,7 @@ contract Orderbook is Ownable {
 
         // recover trader address from the signature
         bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
-        address trader = ECDSA.addr(data, _signature);
+        address trader = Utils.addr(data, _signature);
         orders[_orderId].state = OrderState.Open;
         orders[_orderId].trader = trader;
         orders[_orderId].broker = msg.sender;
