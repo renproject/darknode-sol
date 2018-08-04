@@ -6,24 +6,17 @@ import "./DarknodeRegistry.sol";
 import "./libraries/ECDSA.sol";
 import "./libraries/Utils.sol";
 
-
-/**
-  * @notice The Orderbook contract stores the state and priority of orders and
-  * allows the Darknodes to easily reach consensus. Eventually, this contract
-  * will only store a subset of order states, such as cancelation, to improve
-  * the throughput of orders.
-  */
+/// @notice The Orderbook contract stores the state and priority of orders and
+/// allows the Darknodes to easily reach consensus. Eventually, this contract
+/// will only store a subset of order states, such as cancelation, to improve
+/// the throughput of orders.
 contract Orderbook is Ownable {    
-    /**
-      * @notice OrderState enumerates the possible states of an order. All
-      * orders default to the Undefined state.
-      */
+
+    /// @notice OrderState enumerates the possible states of an order. All
+    /// orders default to the Undefined state.
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
-    /**
-      * @notice Order stores a subset of the public data associated with an
-      * order.
-      */
+    /// @notice Order stores a subset of the public data associated with an order.
     struct Order {
         OrderState state;    // State of the order
         address trader;      // Trader that owns the order
@@ -47,22 +40,18 @@ contract Orderbook is Ownable {
     event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
-    /**
-      * @notice Only allow registered dark nodes.
-      */
+    /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
         require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
         _;
     }
 
-    /**
-      * @notice The Orderbook constructor.
-      *
-      * @param _fee The fee in REN for opening an order. This is given in AI,
-      *             the smallest denomination of REN.
-      * @param _renAddress The address of the RepublicToken contract.
-      * @param _darknodeRegistry The address of the DarknodeRegistry contract.
-     */
+    /// @notice The Orderbook constructor.
+    /// 
+    /// @param _fee The fee in REN for opening an order. This is given in AI,
+    ///             the smallest denomination of REN.
+    /// @param _renAddress The address of the RepublicToken contract.
+    /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
     constructor(uint256 _fee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {
         fee = _fee;
         ren = _renAddress;
@@ -74,51 +63,45 @@ contract Orderbook is Ownable {
         fee = _newFee;
     }
 
-    function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+    function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
-    /**
-      * @notice Open a buy order in the orderbook. The order must be in the
-      * Undefined state and an allowance of REN is required to pay the opening
-      * fee.
-      *
-      * @param _signature Signature of the message that defines the trader. The
-      *                   message is "Republic Protocol: open: {orderId}".
-      * @param _orderId The hash of the order.
-      */
-    function openBuyOrder(bytes _signature, bytes32 _orderId) public {
+    /// @notice Open a buy order in the orderbook. The order must be in the
+    /// Undefined state and an allowance of REN is required to pay the opening
+    /// fee.
+    ///
+    /// @param _signature Signature of the message that defines the trader. The
+    ///                   message is "Republic Protocol: open: {orderId}".
+    /// @param _orderId The hash of the order.
+    function openBuyOrder(bytes _signature, bytes32 _orderId) external {
         openOrder(_signature, _orderId);
         buyOrders.push(_orderId);
         orders[_orderId].priority = buyOrders.length;
     }
 
-    /**
-      * @notice Open a sell order in the orderbook. The order must be in the
-      * Undefined state and an allowance of REN is required to pay the opening
-      * fee.
-      *
-      * @param _signature Signature of a message that defines the trader. The
-      *                   message is "Republic Protocol: open: {orderId}".
-      * @param _orderId The hash of the order.
-      */
-    function openSellOrder(bytes _signature, bytes32 _orderId) public {
+    /// @notice Open a sell order in the orderbook. The order must be in the
+    /// Undefined state and an allowance of REN is required to pay the opening
+    /// fee.
+    ///
+    /// @param _signature Signature of a message that defines the trader. The
+    ///                   message is "Republic Protocol: open: {orderId}".
+    /// @param _orderId The hash of the order.
+    function openSellOrder(bytes _signature, bytes32 _orderId) external {
         openOrder(_signature, _orderId);
         sellOrders.push(_orderId);
         orders[_orderId].priority = sellOrders.length;
     }
 
-    /**
-      * @notice Confirm an order match between orders. The confirmer must be a
-      * registered Darknode and the orders must be in the Open state. A
-      * malicious confirmation by a Darknode will result in a bond slash of the
-      * Darknode.
-      *
-      * @param _orderId The hash of the order.
-      * @param _orderMatches The hashes of the matching order.
-      */
-    function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) public onlyDarknode(msg.sender) {
+    /// @notice Confirm an order match between orders. The confirmer must be a
+    /// registered Darknode and the orders must be in the Open state. A
+    /// malicious confirmation by a Darknode will result in a bond slash of the
+    /// Darknode.
+    ///
+    /// @param _orderId The hash of the order.
+    /// @param _orderMatches The hashes of the matching order.
+    function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) external onlyDarknode(msg.sender) {
         require(orders[_orderId].state == OrderState.Open, "invalid order status");
         for (uint256 i = 0; i < _orderMatches.length; i++) {
             require(orders[_orderMatches[i]].state == OrderState.Open, "invalid order status");
@@ -136,15 +119,13 @@ contract Orderbook is Ownable {
         orders[_orderId].blockNumber = block.number;
     }
 
-    /**
-      * @notice Cancel an order in the orderbook. The order must be in the
-      * Undefined or Open state.
-      *
-      * @param _signature Signature of a message from the trader. The message
-      *                   is "Republic Protocol: cancel: {orderId}".
-      * @param _orderId The hash of the order.
-      */
-    function cancelOrder(bytes _signature, bytes32 _orderId) public {
+    /// @notice Cancel an order in the orderbook. The order must be in the
+    /// Undefined or Open state.
+    ///
+    /// @param _signature Signature of a message from the trader. The message
+    ///                   is "Republic Protocol: cancel: {orderId}".
+    /// @param _orderId The hash of the order.
+    function cancelOrder(bytes _signature, bytes32 _orderId) external {
         if (orders[_orderId].state == OrderState.Open) {
             // Recover trader address from the signature
             bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
@@ -164,11 +145,12 @@ contract Orderbook is Ownable {
         orders[_orderId].blockNumber = block.number;
     }
 
-    /**
-     * @return The order hash at the given index in buy order list and a bool
-     * flag defining whether or not an order actually exists at that index.
-     */
-    function buyOrder(uint256 _index) public view returns (bytes32, bool) {
+    /// @notice returns orderId at the given index in the buy order list and true
+    /// if exists, otherwise it will return empty bytes and false.
+    /// @notice Retrieves the order ID at an index
+    /// @param _index The index to retrieve the order ID at
+    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
+    function buyOrder(uint256 _index) external view returns (bytes32, bool) {
         if (_index >= buyOrders.length) {
             return ("", false);
         }
@@ -176,11 +158,12 @@ contract Orderbook is Ownable {
         return (buyOrders[_index], true);
     }
 
-    /**
-    * sellOrder will return orderId of the given index in sell order list and true if exists.
-    * Otherwise it will return empty bytes and false.
-    */
-    function sellOrder(uint256 _index) public view returns (bytes32, bool) {
+    /// @notice returns orderId at the given index in the sell order list and true
+    /// if exists, otherwise it will return empty bytes and false.
+    /// @notice Retrieves the order ID at an index
+    /// @param _index The index to retrieve the order ID at
+    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
+    function sellOrder(uint256 _index) external view returns (bytes32, bool) {
         if (_index >= sellOrders.length) {
             return ("", false);
         }
@@ -188,80 +171,60 @@ contract Orderbook is Ownable {
         return (sellOrders[_index], true);
     }
 
-    /**
-    * orderState will return status of the given orderID.
-    */
-    function orderState(bytes32 _orderId) public view returns (OrderState) {
+    /// @notice returns status of the given orderID.
+    function orderState(bytes32 _orderId) external view returns (OrderState) {
         return orders[_orderId].state;
     }
 
-    /**
-    * orderMatch will return a list of matched orders to the given orderID.
-    */
-    function orderMatch(bytes32 _orderId) public view returns (bytes32[]) {
+    /// @notice returns a list of matched orders to the given orderID.
+    function orderMatch(bytes32 _orderId) external view returns (bytes32[]) {
         return orders[_orderId].matches;
     }
 
-    /**
-    * orderPriority will return the priority of the given orderID.
-    * The priority is the index of the order in the orderbook.
-    */
-    function orderPriority(bytes32 _orderId) public view returns (uint256) {
+    /// @notice returns the priority of the given orderID.
+    /// The priority is the index of the order in the orderbook.
+    function orderPriority(bytes32 _orderId) external view returns (uint256) {
         return orders[_orderId].priority;
     }
 
-    /**
-    * orderTrader will return the trader of the given orderID.
-    * Trader is the one who signs the message and does the actual trading.
-    */
-    function orderTrader(bytes32 _orderId) public view returns (address) {
+    /// @notice returns the trader of the given orderID.
+    /// Trader is the one who signs the message and does the actual trading.
+    function orderTrader(bytes32 _orderId) external view returns (address) {
         return orders[_orderId].trader;
     }
 
-    /**
-    * orderBroker will return the broker of the given orderID.
-    * Broker is the one who represent the trader to send the tx.
-    */
-    function orderBroker(bytes32 _orderId) public view returns (address) {
+    /// @notice returns the broker of the given orderID.
+    /// Broker is the one who represent the trader to send the tx.
+    function orderBroker(bytes32 _orderId) external view returns (address) {
         return orders[_orderId].broker;
     }
 
-    /**
-    * orderConfirmer will return the darknode address which confirms the given orderID.
-    */
-    function orderConfirmer(bytes32 _orderId) public view returns (address) {
+    /// @notice returns the darknode address which confirms the given orderID.
+    function orderConfirmer(bytes32 _orderId) external view returns (address) {
         return orders[_orderId].confirmer;
     }
 
-    /**
-    * orderDepth will return the block depth of the orderId
-    */
-    function orderDepth(bytes32 _orderId) public view returns (uint256) {
+    /// @notice returns the block depth of the orderId
+    function orderDepth(bytes32 _orderId) external view returns (uint256) {
         if (orders[_orderId].blockNumber == 0) {
             return 0;
         }
         return (block.number - orders[_orderId].blockNumber);
     }
 
-    /**
-    * orderBlockNumber will return the block number when the order being last modified.
-    */
-    function orderBlockNumber(bytes32 _orderId) public view returns (uint256) {
+    /// @notice returns the block number when the order being last modified.
+    function orderBlockNumber(bytes32 _orderId) external view returns (uint256) {
         return orders[_orderId].blockNumber;
     }
 
-    /**
-    * getOrdersCount will return the number of orders in the orderbook
-    */
-    function getOrdersCount() public view returns (uint256) {
+    /// @notice returns the number of orders in the orderbook
+    function getOrdersCount() external view returns (uint256) {
         return buyOrders.length + sellOrders.length;
     }
 
-    /**
-    * getOrder will return orderId of the given index in the orderbook list and true if exists.
-    * Otherwise it will return empty bytes and false.
-    */
-    function getOrder(uint256 _index) public view returns (bytes32, bool) {
+    /// @notice returns orderId of the given index in the orderbook list and
+    /// true if exists, otherwise it will return empty bytes and false.
+    function getOrder(uint256 _index) external view returns (bytes32, bool) {
         if (_index >= orderbook.length) {
             return ("", false);
         }
@@ -269,10 +232,8 @@ contract Orderbook is Ownable {
         return (orderbook[_index], true);
     }
 
-    /**
-    * getOrder will return order details of the orders starting from the offset.
-    */
-    function getOrders(uint256 _offset, uint256 _limit) public view returns (bytes32[], address[], uint8[]) {
+    /// @notice returns order details of the orders starting from the offset.
+    function getOrders(uint256 _offset, uint256 _limit) external view returns (bytes32[], address[], uint8[]) {
         if (_offset >= orderbook.length) {
             return;
         }

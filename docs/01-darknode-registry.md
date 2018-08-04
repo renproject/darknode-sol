@@ -11,7 +11,7 @@ A *bond* of 100,000REN is required when registering a Darknode. This bond is sla
 
 ## Epochs
 
-The Darknode Registry partitions time into discrete intervals, called *epochs*. State changes that affect the configuration of the Darknode network are restricted to these discrete intervals, ensuring the stability of the network configuration during the epoch. This cover the (de)registration of Darknodes, as well as the public constants defined by the Darknode Registry (e.g. the *minimumPodSize*).
+The Darknode Registry partitions time into discrete intervals, called *epochs*. State changes that affect the configuration of the Darknode network are restricted to these discrete intervals, ensuring the stability of the network configuration during the epoch. This covers the (de)registration of Darknodes, as well as the public constants defined by the Darknode Registry (e.g. the *minimumPodSize*).
 
 Epochs are defined by their block number, and their block hash. Any account can trigger the next epoch, but the Darknode Registry prevents epochs from being triggered faster than the *minimumEpochInterval* — measured in block numbers.
 
@@ -63,7 +63,7 @@ In the diagram below represents a timeline for the registration, deregistration,
 ![Timeline](./images/01-darknode-registry-timeline.jpg "Timeline")
 
 **(1) Pending Registration**
-  The bond is sent to the Darknode Registry and the Darknode is in the *Pending Registration* state until the beginning of the next epoch. The account sending this transaction is consdered to be the Darknode operator.
+  The bond is sent to the Darknode Registry and the Darknode is in the *Pending Registration* state until the beginning of the next epoch. The account sending this transaction is considered to be the Darknode operator.
 
 **(2) Registered**
   The registration is automatically finalised and the Darknode is in the *Registered* state. The Darknode is considered registered until it reaches the deregistered state at (4).

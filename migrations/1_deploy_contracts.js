@@ -3,6 +3,7 @@ const BigNumber = require("bignumber.js");
 const RepublicToken = artifacts.require("RepublicToken.sol");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore.sol");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
+const DarknodeSlasher = artifacts.require("DarknodeSlasher.sol");
 const Orderbook = artifacts.require("Orderbook.sol");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault.sol");
 
@@ -38,9 +39,14 @@ module.exports = async function (deployer, network) {
             const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
             await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
         })
+        .then(() => deployer.deploy(
+            DarknodeSlasher,
+            DarknodeRegistry.address,
+            Orderbook.address,
+        ))
         .then(async () => {
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-            darknodeRegistry.updateSlasher(config.SLASHER);
+            darknodeRegistry.updateSlasher(DarknodeSlasher.address);
         })
         ;
 }

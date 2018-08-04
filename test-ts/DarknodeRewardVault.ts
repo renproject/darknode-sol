@@ -1,33 +1,27 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const BitcoinMock = artifacts.require("BitcoinMock");
 const RepublicToken = artifacts.require("RepublicToken");
+const ABCToken = artifacts.require("ABCToken");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const Reverter = artifacts.require("Reverter");
 
 import BigNumber from "bignumber.js";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-chai.should();
+import * as testUtils from "./helper/testUtils";
+import { MINIMUM_BOND } from "./helper/testUtils";
 
-const config = require("../migrations/config.js");
-const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
+contract("DarknodeRewardVault", function (accounts: string[]) {
 
-contract("Reward Vault", function (accounts: string[]) {
-
-    let ren, dnr, dnrs, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
+    let ren, dnr, darknodeRewardVault, darknode1, darknode2, darknodeOperator;
     let TOKEN1, TOKEN2, ETH;
 
     before(async function () {
 
         ren = await RepublicToken.deployed();
-        dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
         darknodeRewardVault = await DarknodeRewardVault.deployed();
 
         TOKEN1 = await RepublicToken.new();
-        TOKEN2 = await BitcoinMock.new();
+        TOKEN2 = await ABCToken.new();
         ETH = {
             address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
             decimals: () => 18,
@@ -58,7 +52,7 @@ contract("Reward Vault", function (accounts: string[]) {
 
     it("can update the darknode registry address", async () => {
         await darknodeRewardVault.updateDarknodeRegistry(0x0);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(testUtils.NULL);
         await darknodeRewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await darknodeRewardVault.updateDarknodeRegistry(dnr.address);

@@ -6,13 +6,12 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
+/// @author Republic Protocol
 contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
-    /**
-      * @notice The special address for Ether.
-      */
-    address constant public ETHEREUM = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+    /// @notice The special address for Ether.
+    address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     DarknodeRegistry public darknodeRegistry;
 
@@ -20,12 +19,10 @@ contract DarknodeRewardVault is Ownable {
 
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
 
-    /**
-      * @notice The constructor.
-      *
-      * @param _darknodeRegistry The DarknodeRegistry contract that is used by
-      *                          the vault to lookup Darknode owners.
-      */
+    /// @notice The constructor.
+    ///
+    /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
+    ///                          the vault to lookup Darknode owners.
     constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
     }
@@ -35,20 +32,18 @@ contract DarknodeRewardVault is Ownable {
         darknodeRegistry = _newDarknodeRegistry;
     }
 
-    /**
-      * @notice Deposit fees into the vault for a Darknode. The Darknode
-      * registration is not checked (to reduce gas fees); the caller must be
-      * careful not to call this function for a Darknode that is not registered
-      * otherwise any fees deposited to that Darknode can be withdrawn by a
-      * malicious adversary (by registering the Darknode before the honest
-      * party and claiming ownership).
-      *
-      * @param _darknode The address of the Darknode that will receive the
-      *                  fees.
-      * @param _token The address of the ERC20 token being used to pay the fee.
-      *               A special address is used for Ether.
-      * @param _value The amount of fees in the smallest unit of the token.
-      */
+    /// @notice Deposit fees into the vault for a Darknode. The Darknode
+    /// registration is not checked (to reduce gas fees); the caller must be
+    /// careful not to call this function for a Darknode that is not registered
+    /// otherwise any fees deposited to that Darknode can be withdrawn by a
+    /// malicious adversary (by registering the Darknode before the honest
+    /// party and claiming ownership).
+    ///
+    /// @param _darknode The address of the Darknode that will receive the
+    ///                  fees.
+    /// @param _token The address of the ERC20 token being used to pay the fee.
+    ///               A special address is used for Ether.
+    /// @param _value The amount of fees in the smallest unit of the token.
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value, "mismatched tx value");
@@ -58,16 +53,14 @@ contract DarknodeRewardVault is Ownable {
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
 
-    /**
-      * @notice Withdraw fees earned by a Darknode. The fees will be sent to
-      * the owner of the Darknode. If a Darknode is not registered the fees
-      * cannot be withdrawn.
-      *
-      * @param _darknode The address of the Darknode whose fees are being
-      *                  withdrawn. The owner of this Darknode will receive the
-      *                  fees.
-      * @param _token The address of the ERC20 token to withdraw.
-      */
+    /// @notice Withdraw fees earned by a Darknode. The fees will be sent to
+    /// the owner of the Darknode. If a Darknode is not registered the fees
+    /// cannot be withdrawn.
+    ///
+    /// @param _darknode The address of the Darknode whose fees are being
+    ///                  withdrawn. The owner of this Darknode will receive the
+    ///                  fees.
+    /// @param _token The address of the ERC20 token to withdraw.
     function withdraw(address _darknode, ERC20 _token) public {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
 

@@ -4,7 +4,7 @@
 
 ![Overview](./images/05-settlement-overview.jpg "Overview")
 
-During settlement, the Settlement Layer is expected to pay a fee to the [Darknode Reward Vault](./02-darknode-reward-vault.md) so that the Darknodes involve in matching the orders can be rewarded. This is enforced using a reputation system; failing to pay the fee will result in Darknodes ignoring orders designated to the malicious dark pool. Being ignored by Darknodes will result in reduced performance / reliability of order matching for the third-party dark pool, and being ignored by too many Darknodes will result in the complete stopping of order matching.
+During settlement, the Settlement Layer is expected to pay a fee to the [Darknode Reward Vault](./02-darknode-reward-vault.md) so that the Darknodes involved in matching the orders can be rewarded. This is enforced using a reputation system; failing to pay the fee will result in Darknodes ignoring orders designated to the malicious dark pool. Being ignored by Darknodes will result in reduced performance / reliability of order matching for the third-party dark pool, and being ignored by too many Darknodes will result in the complete stopping of order matching.
 
 ## Settlement Identifier
 
@@ -41,4 +41,4 @@ Third-party dark pools have the flexibility to define the exact rules for Settle
 3. pay a fee to the Darknodes using the [Darknode Reward Vault](./02-darknode-reward-vault.md), and
 4. pay the fee to the Darknodes that called `submitOrder`.
 
-Meeting these requirement is considerde necessary, but not sufficient, for being accepted by the Darknodes. For example, a Settlement Layer might define a fee payment to the Darknodes in accordance with (2), but it might use a token that is not recognised by the Darknodes as valuable.
+Meeting these requirement is considered necessary, but not sufficient, for being accepted by the Darknodes. For example, a Settlement Layer might define a fee payment to the Darknodes in accordance with (2), but it might use a token that is not recognised by the Darknodes as valuable.

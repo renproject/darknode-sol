@@ -3,9 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
-/*
-@notice This is NOT the vesion deployed for the REN token
-*/
+/// @notice This is NOT the vesion deployed for the REN token
 contract RepublicToken is PausableToken, BurnableToken {
 
     string public constant name = "Republic Token";
@@ -13,9 +11,7 @@ contract RepublicToken is PausableToken, BurnableToken {
     uint8 public constant decimals = 18;
     uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
 
-    /**
-      * @notice The RepublicToken Constructor.
-      */
+    /// @notice The RepublicToken Constructor.
     constructor() public {
         totalSupply_ = INITIAL_SUPPLY;
         balances[msg.sender] = INITIAL_SUPPLY;

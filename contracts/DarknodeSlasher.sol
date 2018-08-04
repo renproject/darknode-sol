@@ -6,6 +6,9 @@ import "./DarknodeRegistry.sol";
 import "./Orderbook.sol";
 import "./SettlementUtils.sol";
 
+/// @notice Allows order confirmations to be challenged, penalizing darknodes
+/// who have confirmed two mismatched orders.
+/// @author Republic Protocol
 contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public trustedDarknodeRegistry;
@@ -15,7 +18,7 @@ contract DarknodeSlasher is Ownable {
     mapping(bytes32 => address) public challengers;
 
     modifier onlyDarknode() {
-        require(trustedDarknodeRegistry.isRegistered(msg.sender) || trustedDarknodeRegistry.isDeregistered(msg.sender));
+        require(trustedDarknodeRegistry.isRegistered(msg.sender) || trustedDarknodeRegistry.isDeregistered(msg.sender), "must be darknode");
         _;
     }
 
@@ -25,43 +28,34 @@ contract DarknodeSlasher is Ownable {
     }
 
     function submitChallengeOrder(
-        uint32 settlementID,
-        uint8 parity,
-        uint8 orderType,
-        uint64 expiry,
+        bytes details,
+        uint64 settlementID,
         uint64 tokens,
         uint256 price,
         uint256 volume,
-        uint256 minimumVolume,
-        uint256 nonceHash
+        uint256 minimumVolume
     ) external onlyDarknode {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            orderType: orderType,
-            parity: parity,
+            details: details,
             settlementID: settlementID,
-            expiry: expiry,
             tokens: tokens,
             price: price,
             volume: volume,
-            minimumVolume: minimumVolume,
-            nonceHash: nonceHash
+            minimumVolume: minimumVolume
         });
         bytes32 orderID = SettlementUtils.hashOrder(order);
-        require(challengers[orderID] == address(0x0));
+        require(challengers[orderID] == address(0x0), "already challenged");
         orderDetails[orderID] = order;
         challengers[orderID] = msg.sender;
     }
 
     function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
-        address buyConfirmer = trustedOrderbook.orderConfirmer(_buyOrder);
-        address sellConfirmer = trustedOrderbook.orderConfirmer(_sellOrder);
-        assert(buyConfirmer == sellConfirmer);
-        require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]));
-        slash(buyConfirmer, buyConfirmer, sellConfirmer);
+        require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]), "invalid challenge");
+        address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
+        slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
     
-    function slash(address _prover, address _challenger1, address _challenger2) internal {
+    function slash(address _prover, address _challenger1, address _challenger2) private {
         trustedDarknodeRegistry.slash(_prover, _challenger1, _challenger2);
     }
-
 }
