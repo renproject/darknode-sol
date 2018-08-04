@@ -33,7 +33,7 @@ contract Orderbook is Ownable {
 
     mapping(bytes32 => Order) private orders;
 
-    uint256 public fee;
+    uint256 public orderOpeningFee;
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
 
@@ -48,21 +48,24 @@ contract Orderbook is Ownable {
 
     /// @notice The Orderbook constructor.
     /// 
-    /// @param _fee The fee in REN for opening an order. This is given in AI,
-    ///             the smallest denomination of REN.
+    /// @param _orderOpeningFee The fee in REN for opening an order. This is
+    ///        given in AI, the smallest denomination of REN.
     /// @param _renAddress The address of the RepublicToken contract.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
-    constructor(uint256 _fee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {
-        fee = _fee;
+    constructor(uint256 _orderOpeningFee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {
+        orderOpeningFee = _orderOpeningFee;
         ren = _renAddress;
         darknodeRegistry = _darknodeRegistry;
     }
 
-    function updateFee(uint256 _newFee) public onlyOwner {
-        emit LogFeeUpdated(fee, _newFee);
-        fee = _newFee;
+    /// @notice Allows the owner to update the fee for opening orders.
+    function updateFee(uint256 _newOrderOpeningFee) external onlyOwner {
+        emit LogFeeUpdated(orderOpeningFee, _newOrderOpeningFee);
+        orderOpeningFee = _newOrderOpeningFee;
     }
 
+    /// @notice Allows the owner to update the address of the DarknodeRegistry
+    /// contract.
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
@@ -73,7 +76,7 @@ contract Orderbook is Ownable {
     /// fee.
     ///
     /// @param _signature Signature of the message that defines the trader. The
-    ///                   message is "Republic Protocol: open: {orderId}".
+    ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderId The hash of the order.
     function openBuyOrder(bytes _signature, bytes32 _orderId) external {
         openOrder(_signature, _orderId);
@@ -86,7 +89,7 @@ contract Orderbook is Ownable {
     /// fee.
     ///
     /// @param _signature Signature of a message that defines the trader. The
-    ///                   message is "Republic Protocol: open: {orderId}".
+    ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderId The hash of the order.
     function openSellOrder(bytes _signature, bytes32 _orderId) external {
         openOrder(_signature, _orderId);
@@ -123,7 +126,7 @@ contract Orderbook is Ownable {
     /// Undefined or Open state.
     ///
     /// @param _signature Signature of a message from the trader. The message
-    ///                   is "Republic Protocol: cancel: {orderId}".
+    ///        is "Republic Protocol: cancel: {orderId}".
     /// @param _orderId The hash of the order.
     function cancelOrder(bytes _signature, bytes32 _orderId) external {
         if (orders[_orderId].state == OrderState.Open) {
@@ -177,7 +180,7 @@ contract Orderbook is Ownable {
     }
 
     /// @notice returns a list of matched orders to the given orderID.
-    function orderMatch(bytes32 _orderId) external view returns (bytes32[]) {
+    function orderMatches(bytes32 _orderId) external view returns (bytes32[]) {
         return orders[_orderId].matches;
     }
 
@@ -260,8 +263,7 @@ contract Orderbook is Ownable {
     }
 
     function openOrder(bytes _signature, bytes32 _orderId) private {
-        // require(ren.allowance(msg.sender, this) >= fee);
-        require(ren.transferFrom(msg.sender, this, fee), "fee transfer failed");
+        require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
         require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
 
         // recover trader address from the signature

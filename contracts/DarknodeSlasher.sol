@@ -14,19 +14,33 @@ contract DarknodeSlasher is Ownable {
     DarknodeRegistry public trustedDarknodeRegistry;
     Orderbook public trustedOrderbook;
 
+    enum OrderStatus {None, Submitted}
+    enum ChallengeStatus {None, Slashed}
+
+    mapping(bytes32 => OrderStatus) public orderStatus;
+    mapping(bytes32 => ChallengeStatus) public challengeStatus;
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
     mapping(bytes32 => address) public challengers;
 
+    /// @notice Restricts calling a function to registered or deregistered darknodes
     modifier onlyDarknode() {
-        require(trustedDarknodeRegistry.isRegistered(msg.sender) || trustedDarknodeRegistry.isDeregistered(msg.sender), "must be darknode");
+        require(
+            trustedDarknodeRegistry.isRegistered(msg.sender) || 
+            trustedDarknodeRegistry.isDeregistered(msg.sender),
+            "must be darknode");
         _;
     }
 
-    constructor(DarknodeRegistry darknodeRegistry, Orderbook orderbook) public {
-        trustedDarknodeRegistry = darknodeRegistry;
-        trustedOrderbook = orderbook;
+    /// @param _darknodeRegistry The address of the DarknodeRegistry contract
+    /// @param _orderbook The address of the Orderbook contract
+    constructor(DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public {
+        trustedDarknodeRegistry = _darknodeRegistry;
+        trustedOrderbook = _orderbook;
     }
 
+    /// @notice Submits the details for one of the two orders of a challenge.
+    /// The details are required to verify that the orders shout not have been
+    /// matched together.
     function submitChallengeOrder(
         bytes details,
         uint64 settlementID,
@@ -43,19 +57,36 @@ contract DarknodeSlasher is Ownable {
             volume: volume,
             minimumVolume: minimumVolume
         });
+
+        // Hash the order
         bytes32 orderID = SettlementUtils.hashOrder(order);
-        require(challengers[orderID] == address(0x0), "already challenged");
+
+        // Check the order details haven't already been submitted
+        require(orderStatus[orderID] == OrderStatus.None, "already submitted");
+
+        // Store the order details and the challenger
         orderDetails[orderID] = order;
         challengers[orderID] = msg.sender;
+        orderStatus[orderID] = OrderStatus.Submitted;
     }
 
+    /// @notice Submits 
     function submitChallenge(bytes32 _buyOrder, bytes32 _sellOrder) external {
-        require(!SettlementUtils.verifyMatch(orderDetails[_buyOrder], orderDetails[_sellOrder]), "invalid challenge");
+        // Check that the match hasn't been submitted previously
+        bytes32 matchID = keccak256(abi.encodePacked(_buyOrder, _sellOrder));
+        require(challengeStatus[matchID] == ChallengeStatus.None, "already submitted");
+
+        // Check that verifyMatch returns FALSE
+        require(!SettlementUtils.verifyMatch(trustedOrderbook, orderDetails[_buyOrder], orderDetails[_sellOrder]), "invalid challenge");
+
+        // Retrieve the guilty confirmer
         address confirmer = trustedOrderbook.orderConfirmer(_buyOrder);
-        slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
-    }
-    
-    function slash(address _prover, address _challenger1, address _challenger2) private {
-        trustedDarknodeRegistry.slash(_prover, _challenger1, _challenger2);
+        require(confirmer != 0x0, "unconfirmed order");
+
+        // Store that challenge has been submitted
+        challengeStatus[matchID] == ChallengeStatus.Slashed;
+
+        // Slash the bond of the confirmer
+        trustedDarknodeRegistry.slash(confirmer, challengers[_buyOrder], challengers[_sellOrder]);
     }
 }

@@ -81,6 +81,7 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
+    /// @notice Only allow refundable darknodes.
     modifier onlyRefundable(address _darknodeID) {
         require(isRefundable(_darknodeID), "must be deregistered for at least one epoch");
         _;
@@ -93,6 +94,7 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
+    /// @notice Only allow the Slasher contract.
     modifier onlySlasher() {
         require(slasher == msg.sender, "must be slasher");
         _;

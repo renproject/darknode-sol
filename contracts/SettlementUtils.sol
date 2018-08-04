@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+import "./Orderbook.sol";
+
 /// @title A library for calculating and verifying order match details
 /// @author Republic Protocol
 library SettlementUtils {
@@ -36,16 +38,56 @@ library SettlementUtils {
     /// price, volumes / minimum volumes and settlement IDs. verifyMatch is used
     /// my the DarknodeSlasher to verify challenges. Settlement layers may also
     /// use this function.
-    /// Note that it doesn't check that the orders belong to distinct traders.
     /// @param _buy The buy order details.
     /// @param _sell The sell order details.
-    function verifyMatch(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
-        return (verifyTokens(_buy.tokens, _sell.tokens) && // Buy and sell tokens should match
-                _buy.price >= _sell.price && // Buy price should be greater than sell price
-                _buy.volume >= _sell.minimumVolume &&  // Buy volume should be greater than sell minimum volume
-                _sell.volume >= _buy.minimumVolume &&  // Sell volume should be greater than buy minimum volume
-                _buy.settlementID == _sell.settlementID  // Require that the orders were submitted to the same settlement layer
-            );
+    function verifyMatch(Orderbook _orderbookContract, OrderDetails _buy, OrderDetails _sell) internal view returns (bool) {
+
+        // Buy and sell tokens should match
+        if (!verifyTokens(_buy.tokens, _sell.tokens)) {
+            return false;
+        }
+
+        // Buy price should be greater than sell price
+        if (_buy.price < _sell.price) {
+            return false;
+        }
+
+        // // Buy volume should be greater than sell minimum volume
+        if (_buy.volume < _sell.minimumVolume) {
+            return false;
+        }
+
+        // Sell volume should be greater than buy minimum volume
+        if (_sell.volume < _buy.minimumVolume) {
+            return false;
+        }
+        
+        // Require that the orders were submitted to the same settlement layer
+        if (_buy.settlementID != _sell.settlementID) {
+            return false;
+        }
+
+        // Check that the two trades where matched to one another
+        bytes32 buyID = hashOrder(_buy);
+        bytes32 sellID = hashOrder(_sell);
+        bytes32[] memory buyMatches = _orderbookContract.orderMatches(buyID);
+        bool inMatchList = false;
+        for (uint256 i = 0; i < buyMatches.length; i++) {
+            if (buyMatches[i] == sellID) {
+                inMatchList = true;
+                break;
+            }
+        }
+        if (!inMatchList) {
+            return false;
+        }
+
+        // Check that the orders are from distinct traders
+        if (_orderbookContract.orderTrader(buyID) == _orderbookContract.orderTrader(sellID)) {
+            return false;
+        }
+        
+        return true;
     }
 
     /// @notice Verifies that two token requirements can be matched.
