@@ -17,13 +17,13 @@ contract Orderbook is Ownable {
 
     /// @notice Order stores a subset of the public data associated with an order.
     struct Order {
-        OrderState state;    // State of the order
-        address trader;      // Trader that owns the order
-        address broker;      // Broker that approved this order
-        address confirmer;   // Darknode that confirmed the order in a match
-        uint256 priority;    // Logical time priority of this order
-        uint256 blockNumber; // Block number of the most recent state change
-        bytes32[] matches;   // Orders confirmed in a match with this order
+        OrderState state;     // State of the order
+        address trader;       // Trader that owns the order
+        address broker;       // Broker that approved this order
+        address confirmer;    // Darknode that confirmed the order in a match
+        uint256 priority;     // Logical time priority of this order
+        uint256 blockNumber;  // Block number of the most recent state change
+        bytes32 matchedOrder; // Order confirmed in a match with this order
     }
 
     uint256 public orderOpeningFee;
@@ -76,11 +76,11 @@ contract Orderbook is Ownable {
     ///
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
-    /// @param _orderId The hash of the order.
-    function openBuyOrder(bytes _signature, bytes32 _orderId) external {
-        openOrder(_signature, _orderId);
-        buyOrders.push(_orderId);
-        orders[_orderId].priority = buyOrders.length;
+    /// @param _orderID The hash of the order.
+    function openBuyOrder(bytes _signature, bytes32 _orderID) external {
+        openOrder(_signature, _orderID);
+        buyOrders.push(_orderID);
+        orders[_orderID].priority = buyOrders.length;
     }
 
     /// @notice Open a sell order in the orderbook. The order must be in the
@@ -89,26 +89,26 @@ contract Orderbook is Ownable {
     ///
     /// @param _signature Signature of a message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
-    /// @param _orderId The hash of the order.
-    function openSellOrder(bytes _signature, bytes32 _orderId) external {
-        openOrder(_signature, _orderId);
-        sellOrders.push(_orderId);
-        orders[_orderId].priority = sellOrders.length;
+    /// @param _orderID The hash of the order.
+    function openSellOrder(bytes _signature, bytes32 _orderID) external {
+        openOrder(_signature, _orderID);
+        sellOrders.push(_orderID);
+        orders[_orderID].priority = sellOrders.length;
     }
 
     /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
-    function openOrder(bytes _signature, bytes32 _orderId) private {
+    function openOrder(bytes _signature, bytes32 _orderID) private {
         require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
-        require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
+        require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
         // recover trader address from the signature
-        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
+        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderID);
         address trader = Utils.addr(data, _signature);
-        orders[_orderId].state = OrderState.Open;
-        orders[_orderId].trader = trader;
-        orders[_orderId].broker = msg.sender;
-        orders[_orderId].blockNumber = block.number;
-        orderbook.push(_orderId);
+        orders[_orderID].state = OrderState.Open;
+        orders[_orderID].trader = trader;
+        orders[_orderID].broker = msg.sender;
+        orders[_orderID].blockNumber = block.number;
+        orderbook.push(_orderID);
     }
 
     /// @notice Confirm an order match between orders. The confirmer must be a
@@ -116,23 +116,21 @@ contract Orderbook is Ownable {
     /// malicious confirmation by a Darknode will result in a bond slash of the
     /// Darknode.
     ///
-    /// @param _orderId The hash of the order.
-    /// @param _orderMatches The hashes of the matching order.
-    function confirmOrder(bytes32 _orderId, bytes32[] _orderMatches) external onlyDarknode(msg.sender) {
-        require(orders[_orderId].state == OrderState.Open, "invalid order status");
-        for (uint256 i = 0; i < _orderMatches.length; i++) {
-            require(orders[_orderMatches[i]].state == OrderState.Open, "invalid order status");
-        }
+    /// @param _orderID The hash of the order.
+    /// @param _matchedOrderID The hashes of the matching order.
+    function confirmOrder(bytes32 _orderID, bytes32 _matchedOrderID) external onlyDarknode(msg.sender) {
+        require(orders[_orderID].state == OrderState.Open, "invalid order status");
+        require(orders[_matchedOrderID].state == OrderState.Open, "invalid order status");
 
-        for (i = 0; i < _orderMatches.length; i++) {
-            orders[_orderMatches[i]].state = OrderState.Confirmed;
-            orders[_orderMatches[i]].matches = [_orderId];
-            orders[_orderMatches[i]].blockNumber = block.number;
-        }
-        orders[_orderId].state = OrderState.Confirmed;
-        orders[_orderId].confirmer = msg.sender;
-        orders[_orderId].matches = _orderMatches;
-        orders[_orderId].blockNumber = block.number;
+        orders[_orderID].state = OrderState.Confirmed;
+        orders[_orderID].confirmer = msg.sender;
+        orders[_orderID].matchedOrder = _matchedOrderID;
+        orders[_orderID].blockNumber = block.number;
+
+        orders[_matchedOrderID].state = OrderState.Confirmed;
+        orders[_matchedOrderID].confirmer = msg.sender;
+        orders[_matchedOrderID].matchedOrder = _orderID;
+        orders[_matchedOrderID].blockNumber = block.number;
     }
 
     /// @notice Cancel an order in the orderbook. The order must be in the
@@ -140,13 +138,13 @@ contract Orderbook is Ownable {
     ///
     /// @param _signature Signature of a message from the trader. The message
     ///        is "Republic Protocol: cancel: {orderId}".
-    /// @param _orderId The hash of the order.
-    function cancelOrder(bytes _signature, bytes32 _orderId) external {
-        if (orders[_orderId].state == OrderState.Open) {
+    /// @param _orderID The hash of the order.
+    function cancelOrder(bytes _signature, bytes32 _orderID) external {
+        if (orders[_orderID].state == OrderState.Open) {
             // Recover trader address from the signature
-            bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderId);
+            bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderID);
             address trader = Utils.addr(data, _signature);
-            require(orders[_orderId].trader == trader, "invalid signature");
+            require(orders[_orderID].trader == trader, "invalid signature");
         } else {
             // An unopened order can be canceled to ensure that it cannot be
             // opened in the future.
@@ -156,11 +154,11 @@ contract Orderbook is Ownable {
             // cancelations should be stored against a specific trader.
             // This will be resolved by requiring broker signatures for order
             // opening/cancellation.
-            require(orders[_orderId].state == OrderState.Undefined, "invalid order state");
+            require(orders[_orderID].state == OrderState.Undefined, "invalid order state");
         }
 
-        orders[_orderId].state = OrderState.Canceled;
-        orders[_orderId].blockNumber = block.number;
+        orders[_orderID].state = OrderState.Canceled;
+        orders[_orderID].blockNumber = block.number;
     }
 
     /// @notice Retrieves the order ID of the buy order at the provided index.
@@ -186,49 +184,49 @@ contract Orderbook is Ownable {
     }
 
     /// @notice returns status of the given orderID.
-    function orderState(bytes32 _orderId) external view returns (OrderState) {
-        return orders[_orderId].state;
+    function orderState(bytes32 _orderID) external view returns (OrderState) {
+        return orders[_orderID].state;
     }
 
     /// @notice returns a list of matched orders to the given orderID.
-    function orderMatches(bytes32 _orderId) external view returns (bytes32[]) {
-        return orders[_orderId].matches;
+    function orderMatch(bytes32 _orderID) external view returns (bytes32) {
+        return orders[_orderID].matchedOrder;
     }
 
     /// @notice returns the priority of the given orderID.
     /// The priority is the index of the order in the orderbook.
-    function orderPriority(bytes32 _orderId) external view returns (uint256) {
-        return orders[_orderId].priority;
+    function orderPriority(bytes32 _orderID) external view returns (uint256) {
+        return orders[_orderID].priority;
     }
 
     /// @notice returns the trader of the given orderID.
     /// Trader is the one who signs the message and does the actual trading.
-    function orderTrader(bytes32 _orderId) external view returns (address) {
-        return orders[_orderId].trader;
+    function orderTrader(bytes32 _orderID) external view returns (address) {
+        return orders[_orderID].trader;
     }
 
     /// @notice returns the broker of the given orderID.
     /// Broker is the one who represent the trader to send the tx.
-    function orderBroker(bytes32 _orderId) external view returns (address) {
-        return orders[_orderId].broker;
+    function orderBroker(bytes32 _orderID) external view returns (address) {
+        return orders[_orderID].broker;
     }
 
     /// @notice returns the darknode address which confirms the given orderID.
-    function orderConfirmer(bytes32 _orderId) external view returns (address) {
-        return orders[_orderId].confirmer;
+    function orderConfirmer(bytes32 _orderID) external view returns (address) {
+        return orders[_orderID].confirmer;
     }
 
     /// @notice returns the block number when the order being last modified.
-    function orderBlockNumber(bytes32 _orderId) external view returns (uint256) {
-        return orders[_orderId].blockNumber;
+    function orderBlockNumber(bytes32 _orderID) external view returns (uint256) {
+        return orders[_orderID].blockNumber;
     }
 
     /// @notice returns the block depth of the orderId
-    function orderDepth(bytes32 _orderId) external view returns (uint256) {
-        if (orders[_orderId].blockNumber == 0) {
+    function orderDepth(bytes32 _orderID) external view returns (uint256) {
+        if (orders[_orderID].blockNumber == 0) {
             return 0;
         }
-        return (block.number - orders[_orderId].blockNumber);
+        return (block.number - orders[_orderID].blockNumber);
     }
 
     /// @notice returns the number of orders in the orderbook
