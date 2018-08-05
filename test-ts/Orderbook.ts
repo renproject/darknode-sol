@@ -287,37 +287,31 @@ contract("Orderbook", function (accounts: string[]) {
         }
 
         { // should be able to retrieve orders by index
-            (await _orderbook.buyOrder.call(0))
-                .should.deep.equal({ 0: buyOrderId, 1: true });
+            (await _orderbook.buyOrderAtIndex.call(0))
+                .should.equal(buyOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.sellOrder.call(0))
-                .should.deep.equal({ 0: sellOrderId, 1: true });
+            (await _orderbook.sellOrderAtIndex.call(0))
+                .should.equal(sellOrderId);
 
             // Negative test for get order
-            (await _orderbook.buyOrder.call(1))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.buyOrderAtIndex.call(1))
+                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
 
-            (await _orderbook.sellOrder.call(1))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.sellOrderAtIndex.call(1))
+                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(0))
-                .should.deep.equal({ 0: buyOrderId, 1: true });
+            (await _orderbook.orderAtIndex.call(0))
+                .should.equal(buyOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(1))
-                .should.deep.equal({ 0: sellOrderId, 1: true });
+            (await _orderbook.orderAtIndex.call(1))
+                .should.equal(sellOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(2))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.orderAtIndex.call(2))
+                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
         }
 
         await _orderbook.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
@@ -358,7 +352,7 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal(confirmationBlockNumber);
 
             // Get blocknumber
-            (await _orderbook.getOrdersCount.call()).toNumber()
+            (await _orderbook.ordersCount.call()).toNumber()
                 .should.equal(2);
         }
     });
