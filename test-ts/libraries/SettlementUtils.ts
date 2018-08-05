@@ -28,29 +28,6 @@ contract("SettlementUtils", function (accounts: string[]) {
         await waitForEpoch(dnr);
     });
 
-    it("can verify orders have been confirmed to one another", async () => {
-        const buyID_1 = await openBuyOrder(orderbook, broker, accounts[0]);
-        const buyID_2 = await openBuyOrder(orderbook, broker, accounts[0]);
-        const sellID_1 = await openSellOrder(orderbook, broker, accounts[0]);
-        const sellID_2 = await openSellOrder(orderbook, broker, accounts[0]);
-        const sellID_3 = await openSellOrder(orderbook, broker, accounts[0]);
-        const sellID_4 = await openSellOrder(orderbook, broker, accounts[0]);
-
-        await orderbook.confirmOrder(buyID_1, [sellID_1, sellID_2], { from: darknode });
-        await orderbook.confirmOrder(buyID_2, [sellID_3], { from: darknode });
-
-        (await settlementTest.verifyOrderPair(orderbook.address, buyID_1, sellID_1))
-            .should.be.true;
-        (await settlementTest.verifyOrderPair(orderbook.address, buyID_1, sellID_2))
-            .should.be.true;
-        // Sell confirmed with another buy
-        (await settlementTest.verifyOrderPair(orderbook.address, buyID_1, sellID_3))
-            .should.be.false;
-        // Sell that isn't confirmed
-        (await settlementTest.verifyOrderPair(orderbook.address, buyID_1, sellID_4))
-            .should.be.false;
-    });
-
     it("can verify match details", async () => {
         const BUY1 = [web3.utils.sha3("0"), 1, "0x1", 10, 10000, 0];
         const BUY2 = [web3.utils.sha3("0"), 1, "0x1", 11, 10000, 0];

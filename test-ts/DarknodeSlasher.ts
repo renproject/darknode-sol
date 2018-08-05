@@ -77,7 +77,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
-        await orderbook.confirmOrder(buyID, [sellID], { from: darknode7 });
+        await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         // The confirmer's bond will be halved
         const bondBefore = await dnr.getDarknodeBond(darknode7);
@@ -98,7 +98,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
-        await orderbook.confirmOrder(buyID, [sellID], { from: darknode7 });
+        await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         await slasher.submitChallenge(buyID, sellID);
 
@@ -120,7 +120,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
         let buyID = await settlementTest.hashOrder(...SELL);
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
-        await orderbook.confirmOrder(buyID, [sellID], { from: darknode7 });
+        await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         // Slash should be rejected
         await slasher.submitChallenge(buyID, sellID)
@@ -141,7 +141,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         // Slash should be rejected
         await slasher.submitChallenge(buyID, sellID)
-            .should.be.rejectedWith(/invalid challenge/);
+            .should.be.rejectedWith(/unconfirmed orders/);
     });
 
     it("can't slash if order details haven't been submitted", async () => {

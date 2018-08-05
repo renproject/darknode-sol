@@ -108,7 +108,7 @@ contract("Orderbook", function (accounts: string[]) {
         // Confirmed Order
         let confirmedOrder = await testUtils.openBuyOrder(orderbook, broker, accounts[1]);
         let match = await testUtils.openSellOrder(orderbook, broker, accounts[3]);
-        await orderbook.confirmOrder(confirmedOrder, [match], { from: darknode });
+        await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         await testUtils.cancelOrder(orderbook, broker, accounts[1], confirmedOrder)
             .should.be.rejectedWith(null, /invalid order state/);
@@ -150,7 +150,7 @@ contract("Orderbook", function (accounts: string[]) {
 
         // Confirm orders
         for (let i = 0; i < Math.ceil(accounts.length / 2); i++) {
-            await orderbook.confirmOrder(buyIDs[i], [sellIDs[i]], { from: darknode });
+            await orderbook.confirmOrder(buyIDs[i], sellIDs[i], { from: darknode });
         }
     });
 
@@ -164,7 +164,7 @@ contract("Orderbook", function (accounts: string[]) {
         // Confirmed Order
         let confirmedOrder = await testUtils.openSellOrder(orderbook, broker, accounts[1]);
         let match = await testUtils.openBuyOrder(orderbook, broker, accounts[3]);
-        await orderbook.confirmOrder(confirmedOrder, [match], { from: darknode });
+        await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         // Canceled order
         let canceledOrder = await testUtils.openSellOrder(orderbook, broker, accounts[1]);
@@ -173,19 +173,19 @@ contract("Orderbook", function (accounts: string[]) {
         // Unopened Order
         let unopenedOrder = testUtils.randomID();
 
-        await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode })
+        await orderbook.confirmOrder(confirmedOrder, openedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [confirmedOrder], { from: darknode })
-            .should.be.rejectedWith(null, /invalid order status/);
-
-        await orderbook.confirmOrder(unopenedOrder, [openedOrder], { from: darknode })
-            .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [unopenedOrder], { from: darknode })
+        await orderbook.confirmOrder(openedOrder, confirmedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
 
-        await orderbook.confirmOrder(canceledOrder, [openedOrder], { from: darknode })
+        await orderbook.confirmOrder(unopenedOrder, openedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [canceledOrder], { from: darknode })
+        await orderbook.confirmOrder(openedOrder, unopenedOrder, { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+
+        await orderbook.confirmOrder(canceledOrder, openedOrder, { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+        await orderbook.confirmOrder(openedOrder, canceledOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
     });
 
@@ -194,9 +194,9 @@ contract("Orderbook", function (accounts: string[]) {
         let order1 = testUtils.randomID();
         let order2 = testUtils.randomID();
 
-        await orderbook.confirmOrder(order1, [order2], { from: accounts[1] })
+        await orderbook.confirmOrder(order1, order2, { from: accounts[1] })
             .should.be.rejectedWith(null, /must be registered darknode/);
-        await orderbook.confirmOrder(order2, [order1], { from: accounts[1] })
+        await orderbook.confirmOrder(order2, order1, { from: accounts[1] })
             .should.be.rejectedWith(null, /must be registered darknode/);
     });
 
@@ -314,7 +314,7 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
         }
 
-        await _orderbook.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
+        await _orderbook.confirmOrder(buyOrderId, sellOrderId, { from: darknode });
         const confirmationBlockNumber = (await web3.eth.getBlock("latest")).number;
 
         { // should be able to retrieve order details
@@ -325,11 +325,11 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal(2);
 
             // Get order match
-            (await _orderbook.orderMatches.call(buyOrderId))
-                .should.deep.equal([sellOrderId]);
+            (await _orderbook.orderMatch.call(buyOrderId))
+                .should.deep.equal(sellOrderId);
 
-            (await _orderbook.orderMatches.call(sellOrderId))
-                .should.deep.equal([buyOrderId]);
+            (await _orderbook.orderMatch.call(sellOrderId))
+                .should.deep.equal(buyOrderId);
 
             // Get matched order
             (await _orderbook.orderPriority.call(buyOrderId)).toNumber()
