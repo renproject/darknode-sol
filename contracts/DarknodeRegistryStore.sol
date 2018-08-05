@@ -6,7 +6,7 @@ import "./RepublicToken.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been seperated to improve
-/// upgradability (Hub and Spoke pattern)
+/// upgradability.
 contract DarknodeRegistryStore is Ownable {
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
