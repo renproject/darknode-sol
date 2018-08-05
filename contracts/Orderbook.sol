@@ -26,15 +26,15 @@ contract Orderbook is Ownable {
         bytes32[] matches;   // Orders confirmed in a match with this order
     }
 
-    bytes32[] public buyOrders;
-    bytes32[] public sellOrders;
-    bytes32[] orderbook;
-
-    mapping(bytes32 => Order) private orders;
-
     uint256 public orderOpeningFee;
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
+
+    bytes32[] private buyOrders;
+    bytes32[] private sellOrders;
+    bytes32[] private orderbook;
+
+    mapping(bytes32 => Order) private orders;
 
     event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
@@ -96,6 +96,21 @@ contract Orderbook is Ownable {
         orders[_orderId].priority = sellOrders.length;
     }
 
+    /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
+    function openOrder(bytes _signature, bytes32 _orderId) private {
+        require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
+        require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
+
+        // recover trader address from the signature
+        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
+        address trader = Utils.addr(data, _signature);
+        orders[_orderId].state = OrderState.Open;
+        orders[_orderId].trader = trader;
+        orders[_orderId].broker = msg.sender;
+        orders[_orderId].blockNumber = block.number;
+        orderbook.push(_orderId);
+    }
+
     /// @notice Confirm an order match between orders. The confirmer must be a
     /// registered Darknode and the orders must be in the Open state. A
     /// malicious confirmation by a Darknode will result in a bond slash of the
@@ -151,23 +166,23 @@ contract Orderbook is Ownable {
     /// @notice Retrieves the order ID of the buy order at the provided index.
     /// @param _index The index to retrieve the order ID at.
     /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function buyOrder(uint256 _index) external view returns (bytes32, bool) {
+    function buyOrderAtIndex(uint256 _index) external view returns (bytes32) {
         if (_index >= buyOrders.length) {
-            return ("", false);
+            return 0x0;
         }
 
-        return (buyOrders[_index], true);
+        return buyOrders[_index];
     }
 
     /// @notice Retrieves the order ID of the sell order at the provided index.
     /// @param _index The index to retrieve the order ID at.
     /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function sellOrder(uint256 _index) external view returns (bytes32, bool) {
+    function sellOrderAtIndex(uint256 _index) external view returns (bytes32) {
         if (_index >= sellOrders.length) {
-            return ("", false);
+            return 0x0;
         }
 
-        return (sellOrders[_index], true);
+        return sellOrders[_index];
     }
 
     /// @notice returns status of the given orderID.
@@ -203,6 +218,11 @@ contract Orderbook is Ownable {
         return orders[_orderId].confirmer;
     }
 
+    /// @notice returns the block number when the order being last modified.
+    function orderBlockNumber(bytes32 _orderId) external view returns (uint256) {
+        return orders[_orderId].blockNumber;
+    }
+
     /// @notice returns the block depth of the orderId
     function orderDepth(bytes32 _orderId) external view returns (uint256) {
         if (orders[_orderId].blockNumber == 0) {
@@ -211,24 +231,19 @@ contract Orderbook is Ownable {
         return (block.number - orders[_orderId].blockNumber);
     }
 
-    /// @notice returns the block number when the order being last modified.
-    function orderBlockNumber(bytes32 _orderId) external view returns (uint256) {
-        return orders[_orderId].blockNumber;
-    }
-
     /// @notice returns the number of orders in the orderbook
-    function getOrdersCount() external view returns (uint256) {
+    function ordersCount() external view returns (uint256) {
         return buyOrders.length + sellOrders.length;
     }
 
     /// @notice returns orderId of the given index in the orderbook list and
     /// true if exists, otherwise it will return empty bytes and false.
-    function getOrder(uint256 _index) external view returns (bytes32, bool) {
+    function orderAtIndex(uint256 _index) external view returns (bytes32) {
         if (_index >= orderbook.length) {
-            return ("", false);
+            return 0x0;
         }
 
-        return (orderbook[_index], true);
+        return orderbook[_index];
     }
 
     /// @notice returns order details of the orders starting from the offset.
@@ -256,21 +271,6 @@ contract Orderbook is Ownable {
         }
 
         return (orderIDs, traderAddresses, states);
-    }
-
-    /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
-    function openOrder(bytes _signature, bytes32 _orderId) private {
-        require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
-        require(orders[_orderId].state == OrderState.Undefined, "invalid order status");
-
-        // recover trader address from the signature
-        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderId);
-        address trader = Utils.addr(data, _signature);
-        orders[_orderId].state = OrderState.Open;
-        orders[_orderId].trader = trader;
-        orders[_orderId].broker = msg.sender;
-        orders[_orderId].blockNumber = block.number;
-        orderbook.push(_orderId);
     }
 }
 

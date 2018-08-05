@@ -8,7 +8,6 @@ import "./SettlementUtils.sol";
 
 /// @notice Allows order confirmations to be challenged, penalizing darknodes
 /// who have confirmed two mismatched orders.
-/// @author Republic Protocol
 contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public trustedDarknodeRegistry;
@@ -80,6 +79,10 @@ contract DarknodeSlasher is Ownable {
     function submitChallenge(bytes32 _buyID, bytes32 _sellID) external {
         // Check that the match hasn't been submitted previously
         require(!challengeSubmitted[_buyID][_sellID], "already challenged");
+
+        // Check that the order details have been submitted
+        require(orderDetailsSubmitted[_buyID], "details unavailable");
+        require(orderDetailsSubmitted[_sellID], "details unavailable");
 
         // Check that the orders were submitted to one another
         require(SettlementUtils.verifyOrderPair(trustedOrderbook, _buyID, _sellID), "invalid challenge");

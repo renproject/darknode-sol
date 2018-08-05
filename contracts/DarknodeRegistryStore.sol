@@ -4,7 +4,9 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
-/// @author Republic Protocol
+/// @notice This contract stores data and funds for the DarknodeRegistry
+/// contract. The data / fund logic and storage have been seperated to improve
+/// upgradability (Hub and Spoke pattern)
 contract DarknodeRegistryStore is Ownable {
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
@@ -41,7 +43,7 @@ contract DarknodeRegistryStore is Ownable {
     LinkedList.List private darknodes;
 
     // RepublicToken.
-    RepublicToken private ren;
+    RepublicToken public ren;
 
     /// @param _ren The address of the RepublicToken contract.
     constructor(RepublicToken _ren) public {

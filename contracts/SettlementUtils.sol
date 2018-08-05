@@ -4,8 +4,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./Orderbook.sol";
 
-/// @title A library for calculating and verifying order match details
-/// @author Republic Protocol
+/// @notice A library for calculating and verifying order match details
 library SettlementUtils {
     using SafeMath for uint256;
     

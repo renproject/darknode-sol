@@ -39,10 +39,10 @@ contract DarknodeRegistry is Ownable {
     Epoch public previousEpoch;
 
     /// Republic ERC20 token contract used to transfer bonds.
-    RepublicToken private ren;
+    RepublicToken public ren;
 
     /// Darknode Registry Store is the storage contract for darknodes.
-    DarknodeRegistryStore private store;
+    DarknodeRegistryStore public store;
     
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
