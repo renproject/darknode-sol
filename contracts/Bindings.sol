@@ -7,9 +7,8 @@ import "./Orderbook.sol";
 import "./RepublicToken.sol";
 import "./Settlement.sol";
 
-/**
- * @notice Bindings imports all of the contracts for generating the Go bindings.
- */
+/// @notice Bindings imports all of the contracts for generating the Go
+/// bindings.
 contract Bindings {
     // CONTRACT LEFT BLANK INTENTIONALLY
 }

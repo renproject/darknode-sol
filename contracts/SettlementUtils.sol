@@ -18,7 +18,6 @@ library SettlementUtils {
         uint256 minimumVolume;
     }
 
-    /********** SETTLEMENT FUNCTIONS ******************************************/
     /// @notice Calculates the ID of the order
     /// @param order the order to hash
     function hashOrder(OrderDetails order) internal pure returns (bytes32) {

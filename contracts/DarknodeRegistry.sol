@@ -6,8 +6,7 @@ import "./DarknodeRegistryStore.sol";
 
 
 /// @notice DarknodeRegistry is responsible for the registration and
-/// deregistration of darknodes. Registration requires the deposit of a bond.
-/// @author Republic Protocol
+/// deregistration of Darknodes.
 contract DarknodeRegistry is Ownable {
 
     /// @notice Darknode pods are shuffled after a fixed number of blocks.
@@ -17,12 +16,6 @@ contract DarknodeRegistry is Ownable {
         uint256 epochhash;
         uint256 blocknumber;
     }
-
-    /// Republic ERC20 token contract used to transfer bonds.
-    RepublicToken ren;
-
-    /// Darknode Registry Store is the storage contract for darknodes.
-    DarknodeRegistryStore private store;
 
     uint256 public numDarknodes;
     uint256 public numDarknodesNextEpoch;
@@ -45,6 +38,11 @@ contract DarknodeRegistry is Ownable {
     Epoch public currentEpoch;
     Epoch public previousEpoch;
 
+    /// Republic ERC20 token contract used to transfer bonds.
+    RepublicToken private ren;
+
+    /// Darknode Registry Store is the storage contract for darknodes.
+    DarknodeRegistryStore private store;
     
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
@@ -100,12 +98,13 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
-    /// @notice The DarknodeRegistry constructor.
     /// @param _renAddress The address of the RepublicToken contract.
+    /// @param _storeAddress The address of the DarknodeRegistryStore contract.
     /// @param _minimumBond The minimum bond amount that can be submitted by a
-    ///        darknode.
-    /// @param _minimumPodSize The minimum size of a pod.
-    /// @param _minimumEpochInterval The minimum number of blocks between epochs.
+    ///        Darknode.
+    /// @param _minimumPodSize The minimum size of a Darknode pod.
+    /// @param _minimumEpochInterval The minimum number of blocks between
+    ///        epochs.
     constructor(
         RepublicToken _renAddress,
         DarknodeRegistryStore _storeAddress,
@@ -170,12 +169,12 @@ contract DarknodeRegistry is Ownable {
     }
 
     /// @notice Deregister a darknode. The darknode will not be deregisterd
-    /// until the end of the epoch. At this time, the bond can be refunded by
-    /// calling the refund method.
+    /// until the end of the epoch. After another epoch, the bond can be
+    /// refunded by calling the refund method.
     /// @param _darknodeID The darknode ID that will be deregistered. The caller
     ///        of this method store.darknodeRegisteredAt(_darknodeID) must be
     //         the owner of this darknode.
-    function deregister(address _darknodeID) public onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
+    function deregister(address _darknodeID) external onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the darknode for deregistration
         store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + minimumEpochInterval);
         numDarknodesNextEpoch--;
@@ -184,9 +183,9 @@ contract DarknodeRegistry is Ownable {
         emit LogDarknodeDeregistered(_darknodeID);
     }
 
-    ///  @notice Progress the epoch if it is possible and necessary to do so.
-    ///  This captures the current timestamp and current blockhash and overrides
-    ///  yhe current epoch.
+    /// @notice Progress the epoch if it is possible to do so. This captures
+    /// the current timestamp and current blockhash and overrides the current
+    /// epoch.
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
             // The first epoch must be called by the owner of the contract
@@ -209,28 +208,24 @@ contract DarknodeRegistry is Ownable {
         numDarknodes = numDarknodesNextEpoch;
 
         // If any update functions have been called, update the values now
-
         if (nextMinimumBond != minimumBond) {
             minimumBond = nextMinimumBond;
             emit LogMinimumBondUpdated(minimumBond, nextMinimumBond);
         }
-
         if (nextMinimumPodSize != minimumPodSize) {
             minimumPodSize = nextMinimumPodSize;
             emit LogMinimumPodSizeUpdated(minimumPodSize, nextMinimumPodSize);
         }
-
         if (nextMinimumEpochInterval != minimumEpochInterval) {
             minimumEpochInterval = nextMinimumEpochInterval;
             emit LogMinimumEpochIntervalUpdated(minimumEpochInterval, nextMinimumEpochInterval);
         }
-
         if (nextSlasher != slasher) {
             slasher = nextSlasher;
             emit LogSlasherUpdated(slasher, nextSlasher);
         }
 
-        /// Emit an event
+        // Emit an event
         emit LogNewEpoch();
     }
 
@@ -375,16 +370,22 @@ contract DarknodeRegistry is Ownable {
         return registeredAt != 0 && registeredAt > currentEpoch.blocknumber;
     }
 
+    /// @notice Returns if a darknode is in the pending deregistered state. In
+    /// this state a darknode is still considered registered.
     function isPendingDeregistration(address _darknodeID) external view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         return deregisteredAt != 0 && deregisteredAt > currentEpoch.blocknumber;
     }
 
+    /// @notice Returns if a darknode is in the deregistered state.
     function isDeregistered(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocknumber;
     }
 
+    /// @notice Returns if a darknode can be deregistered. This is true if the
+    /// darknodes is in the registered state and has not attempted to
+    /// deregister yet.
     function isDeregisterable(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         // The Darknode is currently in the registered state and has not been
@@ -392,9 +393,9 @@ contract DarknodeRegistry is Ownable {
         return isRegistered(_darknodeID) && deregisteredAt == 0;
     }
 
-    /// @notice Returns if a darknode is in the refunded state. This is true for
-    /// darknodes that have never been registered, or darknodes that have been
-    /// deregistered and refunded.
+    /// @notice Returns if a darknode is in the refunded state. This is true
+    /// for darknodes that have never been registered, or darknodes that have
+    /// been deregistered and refunded.
     function isRefunded(address _darknodeID) public view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
@@ -431,8 +432,8 @@ contract DarknodeRegistry is Ownable {
         return registered && notDeregistered;
     }
 
-    /// @notice Returns a list of darknodes registered for either the current or
-    /// the previous epoch. See `getDarknodes` for documentation on the
+    /// @notice Returns a list of darknodes registered for either the curren
+    /// or the previous epoch. See `getDarknodes` for documentation on the
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
     ///        the current epoch.

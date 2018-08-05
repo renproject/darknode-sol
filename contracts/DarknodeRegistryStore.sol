@@ -43,8 +43,6 @@ contract DarknodeRegistryStore is Ownable {
     // RepublicToken.
     RepublicToken private ren;
 
-    /// @notice The DarknodeRegistryStore constructor.
-    ///
     /// @param _ren The address of the RepublicToken contract.
     constructor(RepublicToken _ren) public {
         ren = _ren;
@@ -103,7 +101,7 @@ contract DarknodeRegistryStore is Ownable {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
         darknodeRegistry[darknodeID].bond = bond;
         if (previousBond > bond) {
-            require(ren.transfer(owner, previousBond - bond));
+            require(ren.transfer(owner, previousBond - bond), "cannot transfer bond");
         }
     }
 

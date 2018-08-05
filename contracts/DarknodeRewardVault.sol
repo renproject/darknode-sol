@@ -6,11 +6,10 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-/// @notice The Darknode Reward Vault contract is responsible for holding fees
-/// for darknodes for settling orders. Fees can be withdrawn to the address
-/// of the darknode's operator. Fees can be in ETH or in ERC20 tokens.
+/// @notice The DarknodeRewardVault contract is responsible for holding fees
+/// for darknodes for settling orders. Fees can be withdrawn to the address of
+/// the darknode's operator. Fees can be in ETH or in ERC20 tokens.
 /// Docs: https://github.com/republicprotocol/republic-sol/blob/master/docs/02-darknode-reward-vault.md
-/// @author Republic Protocol
 contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
@@ -23,8 +22,6 @@ contract DarknodeRewardVault is Ownable {
 
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
 
-    /// @notice The constructor.
-    ///
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
     ///        the vault to lookup Darknode owners.
     constructor(DarknodeRegistry _darknodeRegistry) public {

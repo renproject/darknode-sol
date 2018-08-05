@@ -36,7 +36,7 @@ contract DarknodeSlasher is Ownable {
     }
 
     /// @notice Submits the details for one of the two orders of a challenge.
-    /// The details are required to verify that the orders shout not have been
+    /// The details are required to verify that the orders should not have been
     /// matched together. The parameters are the same as `submitOrder` in the
     /// Settlement interface.
     function submitChallengeOrder(
@@ -68,7 +68,15 @@ contract DarknodeSlasher is Ownable {
         orderDetailsSubmitted[orderID] = true;
     }
 
-    /// @notice Submits 
+    /// @notice Submits a challenge for two orders. This challenge is a claim
+    /// that two orders were confirmed that should not have been confirmed.
+    /// Before calling this method, `submitOrder` must be called for both the
+    /// `_buyID` and `_sellID` orders.
+    ///
+    /// @param _buyID The order ID of a buy order that was maliciously
+    ///        confirmed with the `_sellID`.
+    /// @param _sellID The order ID of a sell order that was maliciously
+    ///        confirmed with the `_buyID`.
     function submitChallenge(bytes32 _buyID, bytes32 _sellID) external {
         // Check that the match hasn't been submitted previously
         require(!challengeSubmitted[_buyID][_sellID], "already challenged");
