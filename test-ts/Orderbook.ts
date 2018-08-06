@@ -42,7 +42,7 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("can update the darknode registry address", async () => {
         await orderbook.updateDarknodeRegistry(0x0);
-        (await orderbook.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        (await orderbook.darknodeRegistry()).should.equal(testUtils.NULL);
         await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateDarknodeRegistry(dnr.address);
@@ -249,19 +249,14 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to retrieve trader from signature", async function () {
-        const id = "0x6b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        const account = accounts[6];
+        const id = testUtils.randomID();
 
-        // tslint:disable:max-line-length
-        const data = "0x52657075626c69632050726f746f636f6c3a206f70656e3a206b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
-        const signature = "0x5f9b4834c252960cec91116f1138262cca723a579dfc1a3405c9900862c63a415885c79d1e8ced229cfc753df6db88309141a7c1a2478d2d77956982288868311b";
-        // tslint:enable:max-line-length
+        const signature = await web3.eth.sign(testUtils.openPrefix + id.slice(2), account);
 
-        let prefix = web3.utils.toHex("Republic Protocol: open: ");
-        data.should.equal((prefix + id.slice(2)));
-
-        await ren.approve(orderbook.address, INGRESS_FEE, { from: accounts[0] });
-        await orderbook.openBuyOrder(signature, id, { from: accounts[0] });
-        (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66");
+        await ren.approve(orderbook.address, INGRESS_FEE, { from: broker });
+        await orderbook.openBuyOrder(signature, id, { from: broker });
+        (await orderbook.orderTrader.call(id)).should.equal(account);
     });
 
     it("should be able to read data from the contract", async function () {
@@ -276,9 +271,8 @@ contract("Orderbook", function (accounts: string[]) {
             buyOrderId = testUtils.randomID();
             sellOrderId = testUtils.randomID();
 
-            let prefix = web3.utils.toHex("Republic Protocol: open: ");
-            let buyHash = prefix + buyOrderId.slice(2);
-            let sellHash = prefix + sellOrderId.slice(2);
+            let buyHash = testUtils.openPrefix + buyOrderId.slice(2);
+            let sellHash = testUtils.openPrefix + sellOrderId.slice(2);
             let buySignature = await web3.eth.sign(buyHash, accounts[0]);
             let sellSignature = await web3.eth.sign(sellHash, accounts[0]);
 
@@ -296,10 +290,10 @@ contract("Orderbook", function (accounts: string[]) {
 
             // Negative test for get order
             (await _orderbook.buyOrderAtIndex.call(1))
-                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+                .should.equal(testUtils.NULL32);
 
             (await _orderbook.sellOrderAtIndex.call(1))
-                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+                .should.equal(testUtils.NULL32);
 
             // Get order from the orderbook
             (await _orderbook.orderAtIndex.call(0))
@@ -311,7 +305,7 @@ contract("Orderbook", function (accounts: string[]) {
 
             // Get order from the orderbook
             (await _orderbook.orderAtIndex.call(2))
-                .should.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+                .should.equal(testUtils.NULL32);
         }
 
         await _orderbook.confirmOrder(buyOrderId, sellOrderId, { from: darknode });

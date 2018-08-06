@@ -1,9 +1,7 @@
 const UtilsTest = artifacts.require("UtilsTest.sol");
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-chai.should();
+import BigNumber from "bignumber.js";
+import * as testUtils from "../helper/testUtils";
 
 contract("Utils", function (accounts: string[]) {
 
@@ -21,7 +19,7 @@ contract("Utils", function (accounts: string[]) {
 
         // -1 underflows to 2**256 - 1
         hexToAscii(await utilsTest.uintToBytes(-1)).toString()
-            .should.equal("115792089237316195423570985008687907853269984665640564039457584007913129639935");
+            .should.equal((new BigNumber(2)).pow(256).minus(1).toFixed());
     });
 
     // Doesn't replace verifying the function logic - but the function will
@@ -35,12 +33,11 @@ contract("Utils", function (accounts: string[]) {
     });
 
     it("can recover address from signature", async function () {
-        const id = "0x6b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
-
-        // tslint:disable-next-line:max-line-length
-        const signature = "0x5f9b4834c252960cec91116f1138262cca723a579dfc1a3405c9900862c63a415885c79d1e8ced229cfc753df6db88309141a7c1a2478d2d77956982288868311b";
-
-        (await utilsTest.addr(id, signature)).should.equal("0xE2bddAF2C7650182D9E3F8Ba19d538937d976309");
+        const account = accounts[9];
+        const id = testUtils.randomID();
+        let signature = await web3.eth.sign(id, account);
+        // Recover address
+        (await utilsTest.addr(id, signature)).should.equal(account);
     });
 });
 
