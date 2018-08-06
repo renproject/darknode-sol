@@ -118,14 +118,14 @@ library LinkedList {
     * @param node The node to insert at the end of the list.
     */
     function append(List storage self, address node) internal {
-        // isInList(node) is checked in insertBefore  
+        // isInList(node) is checked in insertBefore
 
         insertAfter(self, end(self), node);
     }
 
     function swap(List storage self, address left, address right) internal {
         // isInList(left) and isInList(right) are checked in remove
-    
+
         address previousRight = self.list[right].previous;
         remove(self, right);
         insertAfter(self, left, right);

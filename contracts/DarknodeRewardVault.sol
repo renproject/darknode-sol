@@ -6,7 +6,10 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-/// @author Republic Protocol
+/// @notice The DarknodeRewardVault contract is responsible for holding fees
+/// for darknodes for settling orders. Fees can be withdrawn to the address of
+/// the darknode's operator. Fees can be in ETH or in ERC20 tokens.
+/// Docs: https://github.com/republicprotocol/republic-sol/blob/master/docs/02-darknode-reward-vault.md
 contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
@@ -17,12 +20,10 @@ contract DarknodeRewardVault is Ownable {
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
-    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
-    /// @notice The constructor.
-    ///
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
-    ///                          the vault to lookup Darknode owners.
+    ///        the vault to lookup Darknode owners.
     constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
     }
@@ -40,16 +41,16 @@ contract DarknodeRewardVault is Ownable {
     /// party and claiming ownership).
     ///
     /// @param _darknode The address of the Darknode that will receive the
-    ///                  fees.
+    ///        fees.
     /// @param _token The address of the ERC20 token being used to pay the fee.
-    ///               A special address is used for Ether.
+    ///        A special address is used for Ether.
     /// @param _value The amount of fees in the smallest unit of the token.
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value, "mismatched tx value");
         } else {
             require(msg.value == 0, "unexpected ether transfer");
-            require(_token.transferFrom(msg.sender, address(this), _value));
+            require(_token.transferFrom(msg.sender, address(this), _value), "token transfer failed");
         }
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }
@@ -59,14 +60,13 @@ contract DarknodeRewardVault is Ownable {
     /// cannot be withdrawn.
     ///
     /// @param _darknode The address of the Darknode whose fees are being
-    ///                  withdrawn. The owner of this Darknode will receive the
-    ///                  fees.
+    ///        withdrawn. The owner of this Darknode will receive the fees.
     /// @param _token The address of the ERC20 token to withdraw.
     function withdraw(address _darknode, ERC20 _token) public {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
 
         require(darknodeOwner != 0x0, "invalid darknode owner");
-        
+
         uint256 value = darknodeBalances[_darknode][_token];
         darknodeBalances[_darknode][_token] = 0;
 

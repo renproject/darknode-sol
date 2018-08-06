@@ -1,12 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-
-/// @title A library for calculating and verifying order match details
-/// @author Republic Protocol
+/// @notice A library for calculating and verifying order match details
 library SettlementUtils {
-    using SafeMath for uint256;
-    
+
     struct OrderDetails {
         bytes details;
         uint64 settlementID;
@@ -16,7 +12,6 @@ library SettlementUtils {
         uint256 minimumVolume;
     }
 
-    /********** SETTLEMENT FUNCTIONS ******************************************/
     /// @notice Calculates the ID of the order
     /// @param order the order to hash
     function hashOrder(OrderDetails order) internal pure returns (bytes32) {
@@ -33,19 +28,42 @@ library SettlementUtils {
     }
 
     /// @notice Verifies that two orders match when considering the tokens,
-    /// price, volumes / minimum volumes and settlement IDs. verifyMatch is used
+    /// price, volumes / minimum volumes and settlement IDs. verifyMatchDetails is used
     /// my the DarknodeSlasher to verify challenges. Settlement layers may also
     /// use this function.
-    /// Note that it doesn't check that the orders belong to distinct traders.
+    /// @dev When verifying two orders for settlement, you should also:
+    ///   1) verify the orders have been confirmed together
+    ///   2) verify the orders' traders are distinct
     /// @param _buy The buy order details.
     /// @param _sell The sell order details.
-    function verifyMatch(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
-        return (verifyTokens(_buy.tokens, _sell.tokens) && // Buy and sell tokens should match
-                _buy.price >= _sell.price && // Buy price should be greater than sell price
-                _buy.volume >= _sell.minimumVolume &&  // Buy volume should be greater than sell minimum volume
-                _sell.volume >= _buy.minimumVolume &&  // Sell volume should be greater than buy minimum volume
-                _buy.settlementID == _sell.settlementID  // Require that the orders were submitted to the same settlement layer
-            );
+    function verifyMatchDetails(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
+
+        // Buy and sell tokens should match
+        if (!verifyTokens(_buy.tokens, _sell.tokens)) {
+            return false;
+        }
+
+        // Buy price should be greater than sell price
+        if (_buy.price < _sell.price) {
+            return false;
+        }
+
+        // // Buy volume should be greater than sell minimum volume
+        if (_buy.volume < _sell.minimumVolume) {
+            return false;
+        }
+
+        // Sell volume should be greater than buy minimum volume
+        if (_sell.volume < _buy.minimumVolume) {
+            return false;
+        }
+
+        // Require that the orders were submitted to the same settlement layer
+        if (_buy.settlementID != _sell.settlementID) {
+            return false;
+        }
+
+        return true;
     }
 
     /// @notice Verifies that two token requirements can be matched.

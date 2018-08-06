@@ -4,7 +4,9 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
-/// @author Republic Protocol
+/// @notice This contract stores data and funds for the DarknodeRegistry
+/// contract. The data / fund logic and storage have been seperated to improve
+/// upgradability.
 contract DarknodeRegistryStore is Ownable {
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
@@ -41,10 +43,8 @@ contract DarknodeRegistryStore is Ownable {
     LinkedList.List private darknodes;
 
     // RepublicToken.
-    RepublicToken private ren;
+    RepublicToken public ren;
 
-    /// @notice The DarknodeRegistryStore constructor.
-    ///
     /// @param _ren The address of the RepublicToken contract.
     constructor(RepublicToken _ren) public {
         ren = _ren;
@@ -77,14 +77,19 @@ contract DarknodeRegistryStore is Ownable {
         LinkedList.append(darknodes, _darknodeID);
     }
 
+    /// @notice Returns the address of the first darknode in the store
     function begin() external view onlyOwner returns(address) {
         return LinkedList.begin(darknodes);
     }
 
+    /// @notice Returns the address of the next darknode in the store after the
+    /// given address.
     function next(address darknodeID) external view onlyOwner returns(address) {
         return LinkedList.next(darknodes, darknodeID);
-    } 
+    }
 
+    /// @notice Removes a darknode from the store and transfers its bond to the
+    /// owner of this contract.
     function removeDarknode(address darknodeID) external onlyOwner {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
@@ -92,34 +97,42 @@ contract DarknodeRegistryStore is Ownable {
         require(ren.transfer(owner, bond), "bond transfer failed");
     }
 
+    /// @notice Updates the bond of the darknode. If the bond is being decreased,
+    /// the difference is sent to the owner of this contract.
     function updateDarknodeBond(address darknodeID, uint256 bond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
         darknodeRegistry[darknodeID].bond = bond;
         if (previousBond > bond) {
-            require(ren.transfer(owner, previousBond - bond));
+            require(ren.transfer(owner, previousBond - bond), "cannot transfer bond");
         }
     }
 
+    /// @notice Updates the deregistration timestamp of a darknode.
     function updateDarknodeDeregisteredAt(address darknodeID, uint256 deregisteredAt) external onlyOwner {
         darknodeRegistry[darknodeID].deregisteredAt = deregisteredAt;
     }
 
+    /// @notice Returns the owner of a given darknode.
     function darknodeOwner(address darknodeID) external view onlyOwner returns (address) {
         return darknodeRegistry[darknodeID].owner;
     }
 
+    /// @notice Returns the bond of a given darknode.
     function darknodeBond(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].bond;
     }
 
+    /// @notice Returns the registration time of a given darknode.
     function darknodeRegisteredAt(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].registeredAt;
     }
 
+    /// @notice Returns the deregistration time of a given darknode.
     function darknodeDeregisteredAt(address darknodeID) external view onlyOwner returns (uint256) {
         return darknodeRegistry[darknodeID].deregisteredAt;
     }
 
+    /// @notice Returns the encryption public key of a given darknode.
     function darknodePublicKey(address darknodeID) external view onlyOwner returns (bytes) {
         return darknodeRegistry[darknodeID].publicKey;
     }

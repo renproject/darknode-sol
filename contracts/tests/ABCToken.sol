@@ -2,12 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
-/**
- * @title SimpleToken
- * @dev Very simple ERC20 Token example, where all tokens are pre-assigned to the creator.
- * Note they can later distribute these tokens as they wish using `transfer` and other
- * `StandardToken` functions.
- */
+/// @notice A test ERC20 token with 12 decimals.
 contract ABCToken is StandardToken {
 
     string public constant name = "ABC Test Token"; // solium-disable-line uppercase

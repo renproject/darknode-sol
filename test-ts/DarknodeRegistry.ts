@@ -75,7 +75,8 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
     it("can not call epoch before the minimum time interval", async () => {
         await dnr.epoch();
-        await dnr.epoch().should.be.rejectedWith(null, /revert/); // TODO: Why isn't reason returned?
+        // TODO: Why isn't reason returned?
+        await dnr.epoch().should.be.rejectedWith(null, /revert/);
     });
 
     it("can register multiple Dark Nodes and check registration", async () => {
@@ -305,7 +306,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     // Takes 30 minutes - keep as it.skip when not running
-    it.skip("can register 6000 dark nodes", async () => {
+    it.skip("[LONG] can register 6000 dark nodes", async () => {
         const MAX_DARKNODES = 6000;
 
         // Fund the darknode operator (6000 dark nodes cost a lot to operate!)

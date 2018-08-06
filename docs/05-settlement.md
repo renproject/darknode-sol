@@ -22,14 +22,26 @@ The current version of the *Settlement ABI* only supports settlements that invol
 
 ### Submitting orders for settlement
 
+Darknodes will call this function to prepare orders for settlement. The `submitOrder` function should only be accepted once per order. The `submitOrder` function should not pay the fees immediately, but should record the Darknode that called the function. Fees paid by the Settlement Layer should split the fee between the two Darknodes that called `submitOrder`. 
+
 ```sol
-function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) { /* ... */ }
+function submitOrder(bytes _order, uint64 _settlement, uint64 _tokens, uint256 _price, uint256 _volume, uint256 _minVolume) external { /* ... */ }
 ```
 
 ### Executing a settlement
 
+Darknodes will call this function to execute a settlement between two orders. The `settle` function should only be accepted for orders that have already been submitted. The `settle` function should only be accepted once per order. The `settle` function must pay fees to the appropriate Darknode immediately.
+
 ```sol
-function settle(bytes32 _buy, bytes32 _sell) { /* ... */ }
+function settle(bytes32 _buy, bytes32 _sell) external { /* ... */ }
+```
+
+### Gas Price Limit
+
+Settlement Layers must implement a maximum gas price for the `submitOrder` function. The maximum gas price can be arbitrary, but must be enforced.
+
+```sol
+function submitOrderGasPriceLimit() external view returns (uint256) { /* ... */}
 ```
 
 ### Requirements
@@ -37,7 +49,8 @@ function settle(bytes32 _buy, bytes32 _sell) { /* ... */ }
 Third-party dark pools have the flexibility to define the exact rules for Settlement Layers, including the fee structure, however, Darknodes will not accept a third-party dark pool unless its Settlement Layers respect some basic requirements. Settlement Layers must:
 
 1. verify the submitted orders are submitted by a registered Darknode,
-1. verify the submitted orders are a confirmed match in the [Orderbook](./04-orderbook.md), and
-3. pay a fee to the Darknodes using the [Darknode Reward Vault](./02-darknode-reward-vault.md).
+2. verify the submitted orders are a confirmed match in the [Orderbook](./04-orderbook.md),
+3. pay a fee to the Darknodes using the [Darknode Reward Vault](./02-darknode-reward-vault.md), and
+4. pay the fee to the Darknodes that called `submitOrder`.
 
 Meeting these requirement is considered necessary, but not sufficient, for being accepted by the Darknodes. For example, a Settlement Layer might define a fee payment to the Darknodes in accordance with (2), but it might use a token that is not recognised by the Darknodes as valuable.
