@@ -24,6 +24,7 @@ export function PUBK(i: string) {
 }
 
 export const NULL = "0x0000000000000000000000000000000000000000";
+export const NULL32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export async function waitForEpoch(dnr: any) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
@@ -44,8 +45,8 @@ export const randomID = () => {
     return web3.utils.sha3(Math.random().toString());
 };
 
-const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
-const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
+export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
+export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
 export const openBuyOrder = async (orderbook, broker, account, orderID?) => {
     if (!orderID) {

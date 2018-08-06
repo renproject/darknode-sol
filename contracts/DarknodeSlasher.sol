@@ -8,13 +8,12 @@ import "./SettlementUtils.sol";
 
 /// @notice Allows order confirmations to be challenged, penalizing darknodes
 /// who have confirmed two mismatched orders.
-/// @author Republic Protocol
 contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public trustedDarknodeRegistry;
     Orderbook public trustedOrderbook;
 
-    mapping(bytes32 => bool) public orderDetailsSubmitted;
+    mapping(bytes32 => bool) public orderSubmitted;
     mapping(bytes32 => mapping(bytes32 => bool)) public challengeSubmitted;
     mapping(bytes32 => SettlementUtils.OrderDetails) public orderDetails;
     mapping(bytes32 => address) public challengers;
@@ -22,7 +21,7 @@ contract DarknodeSlasher is Ownable {
     /// @notice Restricts calling a function to registered or deregistered darknodes
     modifier onlyDarknode() {
         require(
-            trustedDarknodeRegistry.isRegistered(msg.sender) || 
+            trustedDarknodeRegistry.isRegistered(msg.sender) ||
             trustedDarknodeRegistry.isDeregistered(msg.sender),
             "must be darknode");
         _;
@@ -60,12 +59,12 @@ contract DarknodeSlasher is Ownable {
         bytes32 orderID = SettlementUtils.hashOrder(order);
 
         // Check the order details haven't already been submitted
-        require(!orderDetailsSubmitted[orderID], "already submitted");
+        require(!orderSubmitted[orderID], "already submitted");
 
         // Store the order details and the challenger
         orderDetails[orderID] = order;
         challengers[orderID] = msg.sender;
-        orderDetailsSubmitted[orderID] = true;
+        orderSubmitted[orderID] = true;
     }
 
     /// @notice Submits a challenge for two orders. This challenge is a claim
@@ -81,8 +80,12 @@ contract DarknodeSlasher is Ownable {
         // Check that the match hasn't been submitted previously
         require(!challengeSubmitted[_buyID][_sellID], "already challenged");
 
+        // Check that the order details have been submitted
+        require(orderSubmitted[_buyID], "details unavailable");
+        require(orderSubmitted[_sellID], "details unavailable");
+
         // Check that the orders were submitted to one another
-        require(SettlementUtils.verifyOrderPair(trustedOrderbook, _buyID, _sellID), "invalid challenge");
+        require(trustedOrderbook.orderMatch(_buyID) == _sellID, "unconfirmed orders");
 
         // The challenge is valid if 1) the order details (prices, volumes,
         // settlement IDs or tokens) are not compatible, or if 2) the orders

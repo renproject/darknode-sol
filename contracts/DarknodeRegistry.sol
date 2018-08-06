@@ -39,11 +39,11 @@ contract DarknodeRegistry is Ownable {
     Epoch public previousEpoch;
 
     /// Republic ERC20 token contract used to transfer bonds.
-    RepublicToken private ren;
+    RepublicToken public ren;
 
     /// Darknode Registry Store is the storage contract for darknodes.
-    DarknodeRegistryStore private store;
-    
+    DarknodeRegistryStore public store;
+
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
     /// @param _bond The amount of REN that was transferred as bond.
@@ -161,7 +161,7 @@ contract DarknodeRegistry is Ownable {
             currentEpoch.blocknumber + minimumEpochInterval,
             0
         );
-        
+
         numDarknodesNextEpoch++;
 
         // Emit an event.
@@ -250,7 +250,7 @@ contract DarknodeRegistry is Ownable {
         // Will be updated next epoch
         nextMinimumPodSize = _nextMinimumPodSize;
     }
- 
+
     /// @notice Allows the contract owner to update the minimum epoch interval.
     /// @param _nextMinimumEpochInterval The minimum number of blocks between epochs.
     function updateMinimumEpochInterval(uint256 _nextMinimumEpochInterval) external onlyOwner {
@@ -274,7 +274,7 @@ contract DarknodeRegistry is Ownable {
     /// @param _prover The guitly prover whose bond is being slashed
     /// @param _challenger1 The first of the two darknodes who submitted the challenge
     /// @param _challenger2 The second of the two darknodes who submitted the challenge
-    function slash(address _prover, address _challenger1, address _challenger2) 
+    function slash(address _prover, address _challenger1, address _challenger2)
         external
         onlySlasher
     {
@@ -283,7 +283,7 @@ contract DarknodeRegistry is Ownable {
 
         // Slash the bond of the failed provder in half
         store.updateDarknodeBond(_prover, penalty);
-        
+
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_prover)) {
             store.updateDarknodeDeregisteredAt(_prover, currentEpoch.blocknumber + minimumEpochInterval);
@@ -334,7 +334,7 @@ contract DarknodeRegistry is Ownable {
         return store.darknodePublicKey(_darknodeID);
     }
 
-    /// @notice Retrieves a list of darknodes which are registered for the 
+    /// @notice Retrieves a list of darknodes which are registered for the
     /// current epoch.
     /// @param _start A darknode ID used as an offset for the list. If _start is
     ///        0x0, the first dark node will be used. _start won't be
@@ -352,13 +352,13 @@ contract DarknodeRegistry is Ownable {
         return getDarknodesFromEpochs(_start, count, false);
     }
 
-    /// @notice Retrieves a list of darknodes which were registered for the 
+    /// @notice Retrieves a list of darknodes which were registered for the
     /// previous epoch. See `getDarknodes` for the paramater documentation.
     function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[]) {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodesPreviousEpoch;
-        } 
+        }
         return getDarknodesFromEpochs(_start, count, true);
     }
 
@@ -441,7 +441,7 @@ contract DarknodeRegistry is Ownable {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
-        } 
+        }
 
         address[] memory nodes = new address[](count);
 

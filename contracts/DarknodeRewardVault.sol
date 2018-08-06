@@ -20,7 +20,7 @@ contract DarknodeRewardVault is Ownable {
 
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
-    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);    
+    event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
     ///        the vault to lookup Darknode owners.
@@ -49,6 +49,7 @@ contract DarknodeRewardVault is Ownable {
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value, "mismatched tx value");
         } else {
+            require(msg.value == 0, "unexpected ether transfer");
             require(_token.transferFrom(msg.sender, address(this), _value), "token transfer failed");
         }
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
@@ -65,7 +66,7 @@ contract DarknodeRewardVault is Ownable {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
 
         require(darknodeOwner != 0x0, "invalid darknode owner");
-        
+
         uint256 value = darknodeBalances[_darknode][_token];
         darknodeBalances[_darknode][_token] = 0;
 

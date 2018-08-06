@@ -1,14 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-
-import "./Orderbook.sol";
-
-/// @title A library for calculating and verifying order match details
-/// @author Republic Protocol
+/// @notice A library for calculating and verifying order match details
 library SettlementUtils {
-    using SafeMath for uint256;
-    
+
     struct OrderDetails {
         bytes details;
         uint64 settlementID;
@@ -33,29 +27,13 @@ library SettlementUtils {
         );
     }
 
-    /// @notice Verifies that two orders have been confirmed to one another
-    /// in the provided orderbook.
-    /// @param _orderbookContract The address of the Orderbook contract.
-    /// @param _buyID The ID of the buy order.
-    /// @param _sellID The ID of the sell order.
-    function verifyOrderPair(Orderbook _orderbookContract, bytes32 _buyID, bytes32 _sellID)
-    internal view returns (bool) {
-        bytes32[] memory buyMatches = _orderbookContract.orderMatches(_buyID);
-        for (uint256 i = 0; i < buyMatches.length; i++) {
-            if (buyMatches[i] == _sellID) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /// @notice Verifies that two orders match when considering the tokens,
     /// price, volumes / minimum volumes and settlement IDs. verifyMatchDetails is used
     /// my the DarknodeSlasher to verify challenges. Settlement layers may also
     /// use this function.
     /// @dev When verifying two orders for settlement, you should also:
-    ///   1) verify the orders have been confirmed together (see `verifyOrderPair`)
-    ///   2) verify the orders' traders are distinc
+    ///   1) verify the orders have been confirmed together
+    ///   2) verify the orders' traders are distinct
     /// @param _buy The buy order details.
     /// @param _sell The sell order details.
     function verifyMatchDetails(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
@@ -79,12 +57,12 @@ library SettlementUtils {
         if (_sell.volume < _buy.minimumVolume) {
             return false;
         }
-        
+
         // Require that the orders were submitted to the same settlement layer
         if (_buy.settlementID != _sell.settlementID) {
             return false;
         }
-        
+
         return true;
     }
 

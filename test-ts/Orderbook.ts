@@ -42,7 +42,7 @@ contract("Orderbook", function (accounts: string[]) {
 
     it("can update the darknode registry address", async () => {
         await orderbook.updateDarknodeRegistry(0x0);
-        (await orderbook.darknodeRegistry()).should.equal("0x0000000000000000000000000000000000000000");
+        (await orderbook.darknodeRegistry()).should.equal(testUtils.NULL);
         await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
         await orderbook.updateDarknodeRegistry(dnr.address);
@@ -108,7 +108,7 @@ contract("Orderbook", function (accounts: string[]) {
         // Confirmed Order
         let confirmedOrder = await testUtils.openBuyOrder(orderbook, broker, accounts[1]);
         let match = await testUtils.openSellOrder(orderbook, broker, accounts[3]);
-        await orderbook.confirmOrder(confirmedOrder, [match], { from: darknode });
+        await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         await testUtils.cancelOrder(orderbook, broker, accounts[1], confirmedOrder)
             .should.be.rejectedWith(null, /invalid order state/);
@@ -150,7 +150,7 @@ contract("Orderbook", function (accounts: string[]) {
 
         // Confirm orders
         for (let i = 0; i < Math.ceil(accounts.length / 2); i++) {
-            await orderbook.confirmOrder(buyIDs[i], [sellIDs[i]], { from: darknode });
+            await orderbook.confirmOrder(buyIDs[i], sellIDs[i], { from: darknode });
         }
     });
 
@@ -164,7 +164,7 @@ contract("Orderbook", function (accounts: string[]) {
         // Confirmed Order
         let confirmedOrder = await testUtils.openSellOrder(orderbook, broker, accounts[1]);
         let match = await testUtils.openBuyOrder(orderbook, broker, accounts[3]);
-        await orderbook.confirmOrder(confirmedOrder, [match], { from: darknode });
+        await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         // Canceled order
         let canceledOrder = await testUtils.openSellOrder(orderbook, broker, accounts[1]);
@@ -173,19 +173,19 @@ contract("Orderbook", function (accounts: string[]) {
         // Unopened Order
         let unopenedOrder = testUtils.randomID();
 
-        await orderbook.confirmOrder(confirmedOrder, [openedOrder], { from: darknode })
+        await orderbook.confirmOrder(confirmedOrder, openedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [confirmedOrder], { from: darknode })
-            .should.be.rejectedWith(null, /invalid order status/);
-
-        await orderbook.confirmOrder(unopenedOrder, [openedOrder], { from: darknode })
-            .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [unopenedOrder], { from: darknode })
+        await orderbook.confirmOrder(openedOrder, confirmedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
 
-        await orderbook.confirmOrder(canceledOrder, [openedOrder], { from: darknode })
+        await orderbook.confirmOrder(unopenedOrder, openedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
-        await orderbook.confirmOrder(openedOrder, [canceledOrder], { from: darknode })
+        await orderbook.confirmOrder(openedOrder, unopenedOrder, { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+
+        await orderbook.confirmOrder(canceledOrder, openedOrder, { from: darknode })
+            .should.be.rejectedWith(null, /invalid order status/);
+        await orderbook.confirmOrder(openedOrder, canceledOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
     });
 
@@ -194,9 +194,9 @@ contract("Orderbook", function (accounts: string[]) {
         let order1 = testUtils.randomID();
         let order2 = testUtils.randomID();
 
-        await orderbook.confirmOrder(order1, [order2], { from: accounts[1] })
+        await orderbook.confirmOrder(order1, order2, { from: accounts[1] })
             .should.be.rejectedWith(null, /must be registered darknode/);
-        await orderbook.confirmOrder(order2, [order1], { from: accounts[1] })
+        await orderbook.confirmOrder(order2, order1, { from: accounts[1] })
             .should.be.rejectedWith(null, /must be registered darknode/);
     });
 
@@ -249,19 +249,14 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to retrieve trader from signature", async function () {
-        const id = "0x6b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
+        const account = accounts[6];
+        const id = testUtils.randomID();
 
-        // tslint:disable:max-line-length
-        const data = "0x52657075626c69632050726f746f636f6c3a206f70656e3a206b461b846c349ffe77d33c77d92598cfff854ef2aabe72567cd844be75261b9d";
-        const signature = "0x5f9b4834c252960cec91116f1138262cca723a579dfc1a3405c9900862c63a415885c79d1e8ced229cfc753df6db88309141a7c1a2478d2d77956982288868311b";
-        // tslint:enable:max-line-length
+        const signature = await web3.eth.sign(testUtils.openPrefix + id.slice(2), account);
 
-        let prefix = web3.utils.toHex("Republic Protocol: open: ");
-        data.should.equal((prefix + id.slice(2)));
-
-        await ren.approve(orderbook.address, INGRESS_FEE, { from: accounts[0] });
-        await orderbook.openBuyOrder(signature, id, { from: accounts[0] });
-        (await orderbook.orderTrader.call(id)).should.equal("0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66");
+        await ren.approve(orderbook.address, INGRESS_FEE, { from: broker });
+        await orderbook.openBuyOrder(signature, id, { from: broker });
+        (await orderbook.orderTrader.call(id)).should.equal(account);
     });
 
     it("should be able to read data from the contract", async function () {
@@ -276,9 +271,8 @@ contract("Orderbook", function (accounts: string[]) {
             buyOrderId = testUtils.randomID();
             sellOrderId = testUtils.randomID();
 
-            let prefix = web3.utils.toHex("Republic Protocol: open: ");
-            let buyHash = prefix + buyOrderId.slice(2);
-            let sellHash = prefix + sellOrderId.slice(2);
+            let buyHash = testUtils.openPrefix + buyOrderId.slice(2);
+            let sellHash = testUtils.openPrefix + sellOrderId.slice(2);
             let buySignature = await web3.eth.sign(buyHash, accounts[0]);
             let sellSignature = await web3.eth.sign(sellHash, accounts[0]);
 
@@ -287,40 +281,34 @@ contract("Orderbook", function (accounts: string[]) {
         }
 
         { // should be able to retrieve orders by index
-            (await _orderbook.buyOrder.call(0))
-                .should.deep.equal({ 0: buyOrderId, 1: true });
+            (await _orderbook.buyOrderAtIndex.call(0))
+                .should.equal(buyOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.sellOrder.call(0))
-                .should.deep.equal({ 0: sellOrderId, 1: true });
+            (await _orderbook.sellOrderAtIndex.call(0))
+                .should.equal(sellOrderId);
 
             // Negative test for get order
-            (await _orderbook.buyOrder.call(1))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.buyOrderAtIndex.call(1))
+                .should.equal(testUtils.NULL32);
 
-            (await _orderbook.sellOrder.call(1))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.sellOrderAtIndex.call(1))
+                .should.equal(testUtils.NULL32);
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(0))
-                .should.deep.equal({ 0: buyOrderId, 1: true });
+            (await _orderbook.orderAtIndex.call(0))
+                .should.equal(buyOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(1))
-                .should.deep.equal({ 0: sellOrderId, 1: true });
+            (await _orderbook.orderAtIndex.call(1))
+                .should.equal(sellOrderId);
 
             // Get order from the orderbook
-            (await _orderbook.getOrder.call(2))
-                .should.deep.equal(
-                    { 0: "0x0000000000000000000000000000000000000000000000000000000000000000", 1: false }
-                );
+            (await _orderbook.orderAtIndex.call(2))
+                .should.equal(testUtils.NULL32);
         }
 
-        await _orderbook.confirmOrder(buyOrderId, [sellOrderId], { from: darknode });
+        await _orderbook.confirmOrder(buyOrderId, sellOrderId, { from: darknode });
         const confirmationBlockNumber = (await web3.eth.getBlock("latest")).number;
 
         { // should be able to retrieve order details
@@ -331,11 +319,11 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal(2);
 
             // Get order match
-            (await _orderbook.orderMatches.call(buyOrderId))
-                .should.deep.equal([sellOrderId]);
+            (await _orderbook.orderMatch.call(buyOrderId))
+                .should.deep.equal(sellOrderId);
 
-            (await _orderbook.orderMatches.call(sellOrderId))
-                .should.deep.equal([buyOrderId]);
+            (await _orderbook.orderMatch.call(sellOrderId))
+                .should.deep.equal(buyOrderId);
 
             // Get matched order
             (await _orderbook.orderPriority.call(buyOrderId)).toNumber()
@@ -358,7 +346,7 @@ contract("Orderbook", function (accounts: string[]) {
                 .should.equal(confirmationBlockNumber);
 
             // Get blocknumber
-            (await _orderbook.getOrdersCount.call()).toNumber()
+            (await _orderbook.ordersCount.call()).toNumber()
                 .should.equal(2);
         }
     });
