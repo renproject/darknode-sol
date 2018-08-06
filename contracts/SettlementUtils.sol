@@ -1,10 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-
 /// @notice A library for calculating and verifying order match details
 library SettlementUtils {
-    using SafeMath for uint256;
 
     struct OrderDetails {
         bytes details;
