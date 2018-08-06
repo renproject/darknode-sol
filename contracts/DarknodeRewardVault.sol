@@ -48,6 +48,7 @@ contract DarknodeRewardVault is Ownable {
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value, "mismatched tx value");
         } else {
+            require(msg.value == 0, "unexpected ether transfer");
             require(_token.transferFrom(msg.sender, address(this), _value));
         }
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);

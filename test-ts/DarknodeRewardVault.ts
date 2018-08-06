@@ -1,5 +1,4 @@
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const RepublicToken = artifacts.require("RepublicToken");
 const ABCToken = artifacts.require("ABCToken");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
@@ -107,6 +106,13 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
 
         await darknodeRewardVault.deposit(darknode1, ETH.address, 1)
             .should.be.rejectedWith(null, /mismatched tx value/);
+    });
+
+    it("cannot deposit ether and erc20 with the same transaction", async () => {
+        await TOKEN1.approve(darknodeRewardVault.address, 10);
+        await darknodeRewardVault.deposit(
+            darknode1, TOKEN1.address, 10, {value: 10})
+            .should.be.rejectedWith(null, /unexpected ether transfer/);
     });
 
     it("checks success of ERC20 withdrawal before updating balances", async () => {
