@@ -148,8 +148,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("8"), 1, "0x100000000", 1, 1, 0];
         const SELL = [web3.utils.sha3("9"), 1, "0x1", 1, 1, 0];
 
-        let sellID = await settlementTest.hashOrder(...BUY);
-        let buyID = await settlementTest.hashOrder(...SELL);
+        let buyID = await settlementTest.hashOrder(...BUY);
+        let sellID = await settlementTest.hashOrder(...SELL);
 
         // Slash should be rejected if buy details aren't available
         await slasher.submitChallenge(buyID, sellID)
