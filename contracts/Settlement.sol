@@ -9,7 +9,7 @@ interface Settlement {
         uint64 _settlementID,
         uint64 _tokens,
         uint256 _price,
-        uint256 _volume, 
+        uint256 _volume,
         uint256 _minimumVolume
     ) external;
 

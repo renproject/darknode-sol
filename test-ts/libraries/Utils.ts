@@ -26,7 +26,7 @@ contract("Utils", function (accounts: string[]) {
 
     // Doesn't replace verifying the function logic - but the function will
     // likely only be used for values up to 10'000 anyway.
-    it.skip("can convert numbers from 0 to 10'000 to string", async function () {
+    it.skip("[LONG] can convert numbers from 0 to 10'000 to string", async function () {
         for (let i = 0; i <= 10000; i++) {
             process.stdout.write(`\rConverting #${i}`);
             hexToAscii(await utilsTest.uintToBytes(i)).toString().should.equal(`${i}`);

@@ -9,7 +9,7 @@ import "./libraries/Utils.sol";
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
 /// will only store a subset of order states, such as cancelation, to improve
 /// the throughput of orders.
-contract Orderbook is Ownable {    
+contract Orderbook is Ownable {
 
     /// @notice OrderState enumerates the possible states of an order. All
     /// orders default to the Undefined state.
@@ -46,7 +46,7 @@ contract Orderbook is Ownable {
     }
 
     /// @notice The Orderbook constructor.
-    /// 
+    ///
     /// @param _orderOpeningFee The fee in REN for opening an order. This is
     ///        given in AI, the smallest denomination of REN.
     /// @param _renAddress The address of the RepublicToken contract.

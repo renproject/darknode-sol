@@ -21,7 +21,7 @@ contract DarknodeSlasher is Ownable {
     /// @notice Restricts calling a function to registered or deregistered darknodes
     modifier onlyDarknode() {
         require(
-            trustedDarknodeRegistry.isRegistered(msg.sender) || 
+            trustedDarknodeRegistry.isRegistered(msg.sender) ||
             trustedDarknodeRegistry.isDeregistered(msg.sender),
             "must be darknode");
         _;

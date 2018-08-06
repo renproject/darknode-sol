@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 /// @notice A library for calculating and verifying order match details
 library SettlementUtils {
     using SafeMath for uint256;
-    
+
     struct OrderDetails {
         bytes details;
         uint64 settlementID;
@@ -60,12 +60,12 @@ library SettlementUtils {
         if (_sell.volume < _buy.minimumVolume) {
             return false;
         }
-        
+
         // Require that the orders were submitted to the same settlement layer
         if (_buy.settlementID != _sell.settlementID) {
             return false;
         }
-        
+
         return true;
     }
 

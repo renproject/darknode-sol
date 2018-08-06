@@ -86,7 +86,7 @@ contract DarknodeRegistryStore is Ownable {
     /// given address.
     function next(address darknodeID) external view onlyOwner returns(address) {
         return LinkedList.next(darknodes, darknodeID);
-    } 
+    }
 
     /// @notice Removes a darknode from the store and transfers its bond to the
     /// owner of this contract.
