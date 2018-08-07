@@ -12,7 +12,7 @@
     "coverage-ts": "trap \"npm run clean\" INT TERM; (npm run coverage-setup && tsc && solidity-coverage); npm run clean"
   },
   "dependencies": {
-    "openzeppelin-solidity": "1.10.0"
+    "openzeppelin-solidity": "1.11.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
