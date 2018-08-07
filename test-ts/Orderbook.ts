@@ -1,5 +1,7 @@
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const RepublicToken = artifacts.require("RepublicToken");
+import { RepublicTokenContract } from "./bindings/republic_token";
+import { DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { OrderbookContract } from "./bindings/orderbook";
+
 const Orderbook = artifacts.require("Orderbook");
 
 import * as testUtils from "./helper/testUtils";
@@ -7,11 +9,14 @@ import { INGRESS_FEE, MINIMUM_BOND } from "./helper/testUtils";
 
 contract("Orderbook", function (accounts: string[]) {
 
-    let ren, dnr, orderbook, darknode, broker;
+    let ren: RepublicTokenContract;
+    let dnr: DarknodeRegistryContract;
+    let orderbook: OrderbookContract;
+    let darknode: string, broker: string;
 
     before(async function () {
-        ren = await RepublicToken.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        ren = await artifacts.require("RepublicToken").deployed();
+        dnr = await artifacts.require("DarknodeRegistry").deployed();
         orderbook = await Orderbook.deployed();
 
         // The following tests rely on accounts not being empty
@@ -41,7 +46,7 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("can update the darknode registry address", async () => {
-        await orderbook.updateDarknodeRegistry(0x0);
+        await orderbook.updateDarknodeRegistry(testUtils.NULL);
         (await orderbook.darknodeRegistry()).should.equal(testUtils.NULL);
         await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner

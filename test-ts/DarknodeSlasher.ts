@@ -1,27 +1,29 @@
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const Orderbook = artifacts.require("Orderbook");
-const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const RepublicToken = artifacts.require("RepublicToken");
-const SettlementUtilsTest = artifacts.require("SettlementUtilsTest");
-
 import * as testUtils from "./helper/testUtils";
 import { INGRESS_FEE, MINIMUM_BOND } from "./helper/testUtils";
 import { BN } from "bn.js";
+import { DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { RepublicTokenContract } from "./bindings/republic_token";
+import { OrderbookContract } from "./bindings/orderbook";
+import { DarknodeSlasherContract } from "./bindings/darknode_slasher";
+import { SettlementUtilsTestContract } from "./bindings/settlement_utils_test";
 
 contract("Darknode Slasher", function (accounts: string[]) {
 
-    let dnr, ren, orderbook, slasher, settlementTest;
+    let dnr: DarknodeRegistryContract;
+    let ren: RepublicTokenContract;
+    let orderbook: OrderbookContract;
+    let slasher: DarknodeSlasherContract;
+    let settlementTest: SettlementUtilsTestContract;
     const [darknode5, darknode6, darknode7] = [accounts[5], accounts[6], accounts[7]];
     const broker = accounts[0];
 
     before(async function () {
-        settlementTest = await SettlementUtilsTest.new();
+        settlementTest = await artifacts.require("SettlementUtilsTest").new();
 
-        ren = await RepublicToken.deployed();
-        dnr = await DarknodeRegistry.deployed();
-        orderbook = await Orderbook.deployed();
-        slasher = await DarknodeSlasher.deployed();
+        ren = await artifacts.require("RepublicToken").deployed();
+        dnr = await artifacts.require("DarknodeRegistry").deployed();
+        orderbook = await artifacts.require("Orderbook").deployed();
+        slasher = await artifacts.require("DarknodeSlasher").deployed();
 
         // Broker
         await ren.transfer(broker, INGRESS_FEE * 10);
@@ -53,15 +55,15 @@ contract("Darknode Slasher", function (accounts: string[]) {
     it("anyone other than registered darknodes cannot submit challenge order", async () => {
         const ORDER = [web3.utils.sha3("1"), 1, "0x100000000", 10, 1000, 0];
 
-        await slasher.submitChallengeOrder(...ORDER, { from: accounts[1] })
+        await slasher.submitChallengeOrder.apply(this, [...ORDER, { from: accounts[1] }])
             .should.be.rejectedWith(null, /must be darknode/);
     });
 
     it("should fail to submit challenge order twice", async () => {
         const ORDER = [web3.utils.sha3("2"), 1, "0x100000000", 10, 1000, 0];
-        await slasher.submitChallengeOrder(...ORDER, { from: darknode5 });
+        await slasher.submitChallengeOrder.apply(this, [...ORDER, { from: darknode5 }]);
 
-        await slasher.submitChallengeOrder(...ORDER, { from: darknode5 })
+        await slasher.submitChallengeOrder.apply(this, [...ORDER, { from: darknode5 }])
             .should.be.rejectedWith(null, /already submitted/);
     });
 
@@ -69,11 +71,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("3"), 2, "0x100000000", 10, 1, 2];
         const SELL = [web3.utils.sha3("4"), 2, "0x1", 10, 1, 2];
 
-        await slasher.submitChallengeOrder(...BUY, { from: darknode5 });
-        await slasher.submitChallengeOrder(...SELL, { from: darknode6 });
+        await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
+        await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let buyID = await settlementTest.hashOrder(...BUY);
-        let sellID = await settlementTest.hashOrder(...SELL);
+        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
@@ -82,7 +84,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
         // The confirmer's bond will be halved
         const bondBefore = await dnr.getDarknodeBond(darknode7);
         await slasher.submitChallenge(buyID, sellID);
-        let bondAfter = await dnr.getDarknodeBond(darknode7);
+        let bondAfter = new BN(await dnr.getDarknodeBond(darknode7));
         bondAfter.mul(new BN(2)).should.bignumber.equal(bondBefore);
     });
 
@@ -90,11 +92,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("5"), 2, "0x100000000", 10, 1, 2];
         const SELL = [web3.utils.sha3("6"), 2, "0x1", 10, 1, 2];
 
-        await slasher.submitChallengeOrder(...BUY, { from: darknode5 });
-        await slasher.submitChallengeOrder(...SELL, { from: darknode6 });
+        await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
+        await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let buyID = await settlementTest.hashOrder(...BUY);
-        let sellID = await settlementTest.hashOrder(...SELL);
+        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
@@ -113,11 +115,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("6"), 1, "0x100000000", 10, 1000, 0];
         const SELL = [web3.utils.sha3("7"), 1, "0x1", 10, 10000, 0];
 
-        await slasher.submitChallengeOrder(...BUY, { from: darknode5 });
-        await slasher.submitChallengeOrder(...SELL, { from: darknode6 });
+        await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
+        await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let sellID = await settlementTest.hashOrder(...BUY);
-        let buyID = await settlementTest.hashOrder(...SELL);
+        let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
@@ -131,11 +133,11 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("7"), 1, "0x100000000", 1, 1, 0];
         const SELL = [web3.utils.sha3("8"), 1, "0x1", 1, 1, 0];
 
-        await slasher.submitChallengeOrder(...BUY, { from: darknode5 });
-        await slasher.submitChallengeOrder(...SELL, { from: darknode6 });
+        await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
+        await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let sellID = await settlementTest.hashOrder(...BUY);
-        let buyID = await settlementTest.hashOrder(...SELL);
+        let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
         await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
         await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
 
@@ -148,14 +150,14 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("8"), 1, "0x100000000", 1, 1, 0];
         const SELL = [web3.utils.sha3("9"), 1, "0x1", 1, 1, 0];
 
-        let buyID = await settlementTest.hashOrder(...BUY);
-        let sellID = await settlementTest.hashOrder(...SELL);
+        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         // Slash should be rejected if buy details aren't available
         await slasher.submitChallenge(buyID, sellID)
             .should.be.rejectedWith(/details unavailable/);
 
-        await slasher.submitChallengeOrder(...BUY, { from: darknode5 });
+        await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
 
         // Slash should be rejected if sell details aren't available
         await slasher.submitChallenge(buyID, sellID)

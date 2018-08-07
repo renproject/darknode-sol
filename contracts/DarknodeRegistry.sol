@@ -162,7 +162,7 @@ contract DarknodeRegistry is Ownable {
             0
         );
 
-        numDarknodesNextEpoch++;
+        numDarknodesNextEpoch += 1;
 
         // Emit an event.
         emit LogDarknodeRegistered(_darknodeID, _bond);
@@ -177,7 +177,7 @@ contract DarknodeRegistry is Ownable {
     function deregister(address _darknodeID) external onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
         // Flag the darknode for deregistration
         store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + minimumEpochInterval);
-        numDarknodesNextEpoch--;
+        numDarknodesNextEpoch -= 1;
 
         // Emit an event
         emit LogDarknodeDeregistered(_darknodeID);
@@ -287,7 +287,7 @@ contract DarknodeRegistry is Ownable {
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_prover)) {
             store.updateDarknodeDeregisteredAt(_prover, currentEpoch.blocknumber + minimumEpochInterval);
-            numDarknodesNextEpoch--;
+            numDarknodesNextEpoch -= 1;
             emit LogDarknodeDeregistered(_prover);
         }
 
@@ -470,7 +470,7 @@ contract DarknodeRegistry is Ownable {
             }
             nodes[n] = next;
             next = store.next(next);
-            n++;
+            n += 1;
         }
         return nodes;
     }

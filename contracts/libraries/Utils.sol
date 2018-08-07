@@ -19,7 +19,7 @@ library Utils {
         uint256 v2 = v;
         while (v2 > 0) {
             v2 /= 10;
-            digits++;
+            digits += 1;
         }
 
         bytes memory result = new bytes(digits);

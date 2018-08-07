@@ -1,14 +1,15 @@
-const UtilsTest = artifacts.require("UtilsTest.sol");
 
-import BigNumber from "bignumber.js";
+import { UtilsTestContract } from "../bindings/utils_test";
+
 import * as testUtils from "../helper/testUtils";
+import { BN } from "bn.js";
 
 contract("Utils", function (accounts: string[]) {
 
-    let utilsTest;
+    let utilsTest: UtilsTestContract;
 
     before(async function () {
-        utilsTest = await UtilsTest.new();
+        utilsTest = await artifacts.require("UtilsTest.sol").new();
     });
 
     it("can convert number to string", async function () {
@@ -18,8 +19,8 @@ contract("Utils", function (accounts: string[]) {
         hexToAscii(await utilsTest.uintToBytes(10000)).toString().should.equal("10000");
 
         // -1 underflows to 2**256 - 1
-        hexToAscii(await utilsTest.uintToBytes(-1)).toString()
-            .should.equal((new BigNumber(2)).pow(256).minus(1).toFixed());
+        hexToAscii(await utilsTest.uintToBytes(-1))
+            .should.equal((new BN(2)).pow(new BN(256)).sub(new BN(1)).toString());
     });
 
     // Doesn't replace verifying the function logic - but the function will
@@ -41,6 +42,6 @@ contract("Utils", function (accounts: string[]) {
     });
 });
 
-const hexToAscii = (hex) => {
+const hexToAscii = (hex: string) => {
     return Buffer.from(hex.slice(2), "hex").toString();
 };

@@ -1,16 +1,17 @@
-const linkedListTest = artifacts.require("LinkedListTest.sol");
+
+import { LinkedListTestContract } from "../bindings/linked_list_test";
 
 import { ID, NULL } from "../helper/testUtils";
 
 contract("LinkedList", function () {
 
-    let linkedList;
+    let linkedList: LinkedListTestContract;
 
     const [NODE1, NODE2, NODE3, NODE4, NOT_NODE1, NOT_NODE2] =
         [ID("1"), ID("2"), ID("3"), ID("4"), ID("NOT1"), ID("NOT2")];
 
     before(async function () {
-        linkedList = await linkedListTest.new();
+        linkedList = await artifacts.require("LinkedListTest.sol").new();
     });
 
     it("can append", async function () {
@@ -53,11 +54,11 @@ contract("LinkedList", function () {
     });
 
     it("can get the last node of the given list", async () => {
-        (await linkedList.end.call()).should.equal(NODE3);
+        (await linkedList.end()).should.equal(NODE3);
     });
 
     it("can get the first node of the given list", async () => {
-        (await linkedList.begin.call()).should.equal(NODE1);
+        (await linkedList.begin()).should.equal(NODE1);
     });
 
     it("handle removing NULL", async () => {

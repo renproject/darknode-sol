@@ -152,8 +152,8 @@ contract Orderbook is Ownable {
             // or miner submits a cancelOrder with a higher fee everytime they
             // see an openOrder from a particular trader. To solve this, order
             // cancelations should be stored against a specific trader.
-            // This will be resolved by requiring broker signatures for order
-            // opening/cancellation.
+            // Note: This is not a problem for `openOrder`, which will require
+            // broker signatures.
             require(orders[_orderID].state == OrderState.Undefined, "invalid order state");
         }
 
