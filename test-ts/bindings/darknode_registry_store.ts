@@ -3,16 +3,16 @@ import { BN } from "bn.js";
 
 // tslint:disable:max-line-length
 export interface DarknodeRegistryStoreContract {
-    renounceOwnership(options?: Tx): TransactionObject<void>;
+    renounceOwnership(options?: Tx): Promise<TransactionObject<void>>;
     ren(options?: Tx): Promise<string>;
     owner(options?: Tx): Promise<string>;
-    transferOwnership(_newOwner: string, options?: Tx): TransactionObject<void>;
-    appendDarknode(_darknodeID: string, _darknodeOwner: string, _bond: number|string|BN, _publicKey: string, _registeredAt: number|string|BN, _deregisteredAt: number|string|BN, options?: Tx): TransactionObject<void>;
+    transferOwnership(_newOwner: string, options?: Tx): Promise<TransactionObject<void>>;
+    appendDarknode(_darknodeID: string, _darknodeOwner: string, _bond: number|string|BN, _publicKey: string, _registeredAt: number|string|BN, _deregisteredAt: number|string|BN, options?: Tx): Promise<TransactionObject<void>>;
     begin(options?: Tx): Promise<string>;
     next(darknodeID: string, options?: Tx): Promise<string>;
-    removeDarknode(darknodeID: string, options?: Tx): TransactionObject<void>;
-    updateDarknodeBond(darknodeID: string, bond: number|string|BN, options?: Tx): TransactionObject<void>;
-    updateDarknodeDeregisteredAt(darknodeID: string, deregisteredAt: number|string|BN, options?: Tx): TransactionObject<void>;
+    removeDarknode(darknodeID: string, options?: Tx): Promise<TransactionObject<void>>;
+    updateDarknodeBond(darknodeID: string, bond: number|string|BN, options?: Tx): Promise<TransactionObject<void>>;
+    updateDarknodeDeregisteredAt(darknodeID: string, deregisteredAt: number|string|BN, options?: Tx): Promise<TransactionObject<void>>;
     darknodeOwner(darknodeID: string, options?: Tx): Promise<string>;
     darknodeBond(darknodeID: string, options?: Tx): Promise<number|string|BN>;
     darknodeRegisteredAt(darknodeID: string, options?: Tx): Promise<number|string|BN>;

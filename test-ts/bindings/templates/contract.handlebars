@@ -8,7 +8,7 @@ export interface {{contractName}}Contract {
     {{this.tsName}}({{> typed_params inputs=inputs}}): Promise<{{> return_type outputs=outputs}}>;
     {{/this.constant}}
     {{^this.constant}}
-    {{this.tsName}}({{> typed_params inputs=inputs}}): TransactionObject<void>;
+    {{this.tsName}}({{> typed_params inputs=inputs}}): Promise<TransactionObject<void>>;
     {{/this.constant}}
 {{/each}}
     address: string;
