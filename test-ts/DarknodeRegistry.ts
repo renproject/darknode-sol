@@ -1,20 +1,23 @@
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const RepublicToken = artifacts.require("RepublicToken");
+import { DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { RepublicTokenContract } from "./bindings/republic_token";
+import { DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
 
 import {
     ID, PUBK, NULL, waitForEpoch,
     MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL,
 } from "./helper/testUtils";
+import { BN } from "bn.js";
 
 contract("DarknodeRegistry", function (accounts: string[]) {
 
-    let ren, dnrs, dnr;
+    let ren: RepublicTokenContract;
+    let dnrs: DarknodeRegistryStoreContract;
+    let dnr: DarknodeRegistryContract;
 
     before(async function () {
-        ren = await RepublicToken.deployed();
-        dnrs = await DarknodeRegistryStore.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        ren = await artifacts.require("RepublicToken").deployed();
+        dnrs = await artifacts.require("DarknodeRegistryStore").deployed();
+        dnr = await artifacts.require("DarknodeRegistry").deployed();
 
         for (let i = 1; i < accounts.length; i++) {
             await ren.transfer(accounts[i], MINIMUM_BOND);
@@ -67,7 +70,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
-        const lowBond = MINIMUM_BOND.minus(1);
+        const lowBond = MINIMUM_BOND.sub(new BN(1));
         await ren.approve(dnr.address, lowBond, { from: accounts[0] });
         await dnr.register(ID("A"), PUBK("A"), lowBond).should.be.rejectedWith(null, /insufficient bond/);
         await dnr.register(ID("A"), PUBK("A"), MINIMUM_BOND).should.be.rejectedWith(null, /revert/); // failed transfer
@@ -299,7 +302,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
     it("transfer ownership of the dark node store", async () => {
         await dnr.transferStoreOwnership(accounts[0]);
-        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.multipliedBy(1000));
+        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.mul(new BN(1000)));
         await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND)
             .should.be.rejectedWith(null, /revert/); // ren transfer error
         await dnrs.transferOwnership(dnr.address);
@@ -317,7 +320,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
             );
         }
 
-        await ren.approve(dnr.address, MINIMUM_BOND.multipliedBy(MAX_DARKNODES));
+        await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(MAX_DARKNODES)));
 
         for (let i = 0; i < MAX_DARKNODES; i++) {
             process.stdout.write(`\rRegistering Darknode #${i + 1}`);
@@ -331,12 +334,12 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let nodes = await dnr.getDarknodes.call(start, 50);
+            let nodes = await dnr.getDarknodes(start, 50);
             console.log(nodes);
             start = nodes[nodes.length - 1];
         } while (start !== NULL);
 
-        const numDarknodes = await dnr.numDarknodes.call();
+        const numDarknodes = await dnr.numDarknodes();
         numDarknodes.should.bignumber.equal(MAX_DARKNODES);
 
         for (let i = 0; i < MAX_DARKNODES; i++) {

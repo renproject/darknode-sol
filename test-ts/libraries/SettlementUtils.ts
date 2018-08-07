@@ -1,21 +1,24 @@
-const SettlementUtilsTest = artifacts.require("SettlementUtilsTest");
-const Orderbook = artifacts.require("Orderbook");
-const RepublicToken = artifacts.require("RepublicToken");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+import { SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
+import { OrderbookContract } from "../bindings/orderbook";
+import { RepublicTokenContract } from "../bindings/republic_token";
+import { DarknodeRegistryContract } from "../bindings/darknode_registry";
 
-import { openBuyOrder, openSellOrder, INGRESS_FEE, MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
+import { INGRESS_FEE, MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
 
 contract("SettlementUtils", function (accounts: string[]) {
 
-    let settlementTest, orderbook, ren, dnr;
+    let settlementTest: SettlementUtilsTestContract;
+    let orderbook: OrderbookContract;
+    let ren: RepublicTokenContract;
+    let dnr: DarknodeRegistryContract;
     const broker = accounts[1];
     const darknode = accounts[2];
 
     before(async function () {
-        settlementTest = await SettlementUtilsTest.new();
-        orderbook = await Orderbook.deployed();
-        ren = await RepublicToken.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        settlementTest = await artifacts.require("SettlementUtilsTest").new();
+        orderbook = await artifacts.require("Orderbook").deployed();
+        ren = await artifacts.require("RepublicToken").deployed();
+        dnr = await artifacts.require("DarknodeRegistry").deployed();
 
         // Broker
         await ren.transfer(broker, INGRESS_FEE * 10);
@@ -33,13 +36,13 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY2 = [web3.utils.sha3("0"), 1, "0x1", 11, 10000, 0];
         const SELL = [web3.utils.sha3("0"), 1, "0x100000000", 10, 1000, 0];
 
-        const buyID_1 = await settlementTest.hashOrder(...BUY1);
-        const buyID_2 = await settlementTest.hashOrder(...BUY2);
-        const sellID = await settlementTest.hashOrder(...SELL);
+        const buyID_1 = await settlementTest.hashOrder.apply(this, [...BUY1]);
+        const buyID_2 = await settlementTest.hashOrder.apply(this, [...BUY2]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
-        await settlementTest.submitOrder(...BUY1);
-        await settlementTest.submitOrder(...BUY2);
-        await settlementTest.submitOrder(...SELL);
+        await settlementTest.submitOrder.apply(this, [...BUY1]);
+        await settlementTest.submitOrder.apply(this, [...BUY2]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID_1, sellID))
             .should.be.true;
@@ -52,10 +55,10 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("0"), 2, "0x1", 1, 1, 0];
         const SELL = [web3.utils.sha3("0"), 2, "0x1", 1, 1, 0];
 
-        const buyID = await settlementTest.hashOrder(...BUY);
-        const sellID = await settlementTest.hashOrder(...SELL);
-        await settlementTest.submitOrder(...BUY);
-        await settlementTest.submitOrder(...SELL);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        await settlementTest.submitOrder.apply(this, [...BUY]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID, sellID))
             .should.be.false;
@@ -66,10 +69,10 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("0"), 2, "0x1", 9, 1, 0];
         const SELL = [web3.utils.sha3("0"), 2, "0x100000000", 10, 1, 0];
 
-        const buyID = await settlementTest.hashOrder(...BUY);
-        const sellID = await settlementTest.hashOrder(...SELL);
-        await settlementTest.submitOrder(...BUY);
-        await settlementTest.submitOrder(...SELL);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        await settlementTest.submitOrder.apply(this, [...BUY]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID, sellID))
             .should.be.false;
@@ -80,10 +83,10 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("0"), 2, "0x1", 1, 1, 0];
         const SELL = [web3.utils.sha3("0"), 2, "0x100000000", 1, 2, 2];
 
-        const buyID = await settlementTest.hashOrder(...BUY);
-        const sellID = await settlementTest.hashOrder(...SELL);
-        await settlementTest.submitOrder(...BUY);
-        await settlementTest.submitOrder(...SELL);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        await settlementTest.submitOrder.apply(this, [...BUY]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID, sellID))
             .should.be.false;
@@ -94,10 +97,10 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("0"), 2, "0x1", 1, 2, 2];
         const SELL = [web3.utils.sha3("0"), 2, "0x100000000", 1, 1, 0];
 
-        const buyID = await settlementTest.hashOrder(...BUY);
-        const sellID = await settlementTest.hashOrder(...SELL);
-        await settlementTest.submitOrder(...BUY);
-        await settlementTest.submitOrder(...SELL);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        await settlementTest.submitOrder.apply(this, [...BUY]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID, sellID))
             .should.be.false;
@@ -108,10 +111,10 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("0"), 1, "0x1", 1, 1, 0];
         const SELL = [web3.utils.sha3("0"), 2, "0x100000000", 1, 1, 0];
 
-        const buyID = await settlementTest.hashOrder(...BUY);
-        const sellID = await settlementTest.hashOrder(...SELL);
-        await settlementTest.submitOrder(...BUY);
-        await settlementTest.submitOrder(...SELL);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        await settlementTest.submitOrder.apply(this, [...BUY]);
+        await settlementTest.submitOrder.apply(this, [...SELL]);
 
         (await settlementTest.verifyMatchDetails(buyID, sellID))
             .should.be.false;

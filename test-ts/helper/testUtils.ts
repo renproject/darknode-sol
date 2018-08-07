@@ -4,14 +4,14 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as chaiBigNumber from "chai-bignumber";
 
 import BigNumber from "bignumber.js";
+import { BN } from "bn.js";
 
 chai.use(chaiAsPromised);
 chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
 const config = require("../../migrations/config.js");
-export const { INGRESS_FEE, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
-export const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
+export const { MINIMUM_BOND, INGRESS_FEE, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
 // Makes an ID for a darknode
 export function ID(i: string) {
@@ -31,7 +31,7 @@ export async function waitForEpoch(dnr: any) {
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {
-            const tx = await dnr.epoch();
+            await dnr.epoch();
             return;
         } catch (err) {
             // epoch reverted, epoch interval hasn't passed

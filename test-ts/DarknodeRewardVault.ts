@@ -4,9 +4,9 @@ const ABCToken = artifacts.require("ABCToken");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const Reverter = artifacts.require("Reverter");
 
-import BigNumber from "bignumber.js";
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
+import { BN } from "bn.js";
 
 contract("DarknodeRewardVault", function (accounts: string[]) {
 
@@ -90,12 +90,11 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
 
         for (const token of [TOKEN1, TOKEN2, ETH]) {
             for (const darknode of [darknode1, darknode2]) {
-                const balanceBefore = await token.balanceOf(darknodeOperator);
+                const balanceBefore = new BN(await token.balanceOf(darknodeOperator));
                 await darknodeRewardVault.withdraw(darknode, token.address);
-                const balanceAfter = new BigNumber(await token.balanceOf(darknodeOperator));
+                const balanceAfter = new BN(await token.balanceOf(darknodeOperator));
 
-                balanceAfter.toFixed()
-                    .should.equal(new BigNumber(balanceBefore).plus(sum[darknode][token.address]).toFixed());
+                balanceAfter.should.bignumber.equal(balanceBefore.add(new BN(sum[darknode][token.address])));
             }
         }
     });
