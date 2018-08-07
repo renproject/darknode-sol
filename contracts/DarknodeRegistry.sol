@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
 import "./RepublicToken.sol";
 import "./DarknodeRegistryStore.sol";
-
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
