@@ -11,9 +11,10 @@ library SettlementUtils {
         uint256 minimumVolume;
     }
 
-    /// @notice Calculates the ID of the order
-    /// @param details ...
-    /// @param order the order to hash
+    /// @notice Calculates the ID of the order.
+    /// @param details Order details that are not required for settlement
+    ///        execution. They are combined as a single byte array.
+    /// @param order The order details required for settlement execution.
     function hashOrder(bytes details, OrderDetails memory order) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
