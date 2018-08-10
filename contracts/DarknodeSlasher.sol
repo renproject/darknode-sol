@@ -47,7 +47,6 @@ contract DarknodeSlasher is Ownable {
         uint256 minimumVolume
     ) external onlyDarknode {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            details: details,
             settlementID: settlementID,
             tokens: tokens,
             price: price,
@@ -56,7 +55,7 @@ contract DarknodeSlasher is Ownable {
         });
 
         // Hash the order
-        bytes32 orderID = SettlementUtils.hashOrder(order);
+        bytes32 orderID = SettlementUtils.hashOrder(details, order);
 
         // Check the order details haven't already been submitted
         require(!orderSubmitted[orderID], "already submitted");

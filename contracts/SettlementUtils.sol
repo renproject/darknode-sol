@@ -4,7 +4,6 @@ pragma solidity ^0.4.24;
 library SettlementUtils {
 
     struct OrderDetails {
-        bytes details;
         uint64 settlementID;
         uint64 tokens;
         uint256 price;
@@ -12,12 +11,14 @@ library SettlementUtils {
         uint256 minimumVolume;
     }
 
-    /// @notice Calculates the ID of the order
-    /// @param order the order to hash
-    function hashOrder(OrderDetails order) internal pure returns (bytes32) {
+    /// @notice Calculates the ID of the order.
+    /// @param details Order details that are not required for settlement
+    ///        execution. They are combined as a single byte array.
+    /// @param order The order details required for settlement execution.
+    function hashOrder(bytes details, OrderDetails memory order) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
-                order.details,
+                details,
                 order.settlementID,
                 order.tokens,
                 order.price,
@@ -36,7 +37,7 @@ library SettlementUtils {
     ///   2) verify the orders' traders are distinct
     /// @param _buy The buy order details.
     /// @param _sell The sell order details.
-    function verifyMatchDetails(OrderDetails _buy, OrderDetails _sell) internal pure returns (bool) {
+    function verifyMatchDetails(OrderDetails memory _buy, OrderDetails memory _sell) internal pure returns (bool) {
 
         // Buy and sell tokens should match
         if (!verifyTokens(_buy.tokens, _sell.tokens)) {
@@ -66,12 +67,14 @@ library SettlementUtils {
         return true;
     }
 
-    /// @notice Verifies that two token requirements can be matched.
+    /// @notice Verifies that two token requirements can be matched and that the
+    /// tokens are formatted correctly.
     /// @param _buyTokens The buy token details.
     /// @param _sellToken The sell token details.
     function verifyTokens(uint64 _buyTokens, uint64 _sellToken) internal pure returns (bool) {
         return (uint32(_buyTokens) == uint32(_sellToken >> 32) &&
-                uint32(_sellToken) == uint32(_buyTokens >> 32)
+                uint32(_sellToken) == uint32(_buyTokens >> 32) &&
+                uint32(_buyTokens >> 32) <= uint32(_buyTokens)
         );
     }
 }
