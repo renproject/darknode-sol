@@ -16,14 +16,13 @@ contract SettlementUtilsTest {
         uint256 minimumVolume
     ) public {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            details: details,
             settlementID: settlementID,
             tokens: tokens,
             price: price,
             volume: volume,
             minimumVolume: minimumVolume
         });
-        bytes32 orderID = SettlementUtils.hashOrder(order);
+        bytes32 orderID = SettlementUtils.hashOrder(details, order);
         orderDetails[orderID] = order;
     }
 
@@ -36,14 +35,13 @@ contract SettlementUtilsTest {
         uint256 minimumVolume
     ) public pure returns (bytes32) {
         SettlementUtils.OrderDetails memory order = SettlementUtils.OrderDetails({
-            details: details,
             settlementID: settlementID,
             tokens: tokens,
             price: price,
             volume: volume,
             minimumVolume: minimumVolume
         });
-        return SettlementUtils.hashOrder(order);
+        return SettlementUtils.hashOrder(details, order);
     }
 
     function verifyMatchDetails(bytes32 _buyID, bytes32 _sellID) public view returns (bool) {
