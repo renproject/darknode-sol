@@ -30,8 +30,6 @@ contract Orderbook is Ownable {
     RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
 
-    bytes32[] private buyOrders;
-    bytes32[] private sellOrders;
     bytes32[] private orderbook;
 
     mapping(bytes32 => Order) private orders;
@@ -70,34 +68,14 @@ contract Orderbook is Ownable {
         darknodeRegistry = _newDarknodeRegistry;
     }
 
-    /// @notice Open a buy order in the orderbook. The order must be in the
+    /// @notice Open an order in the orderbook. The order must be in the
     /// Undefined state and an allowance of REN is required to pay the opening
     /// fee.
     ///
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderID The hash of the order.
-    function openBuyOrder(bytes _signature, bytes32 _orderID) external {
-        openOrder(_signature, _orderID);
-        buyOrders.push(_orderID);
-        orders[_orderID].priority = buyOrders.length;
-    }
-
-    /// @notice Open a sell order in the orderbook. The order must be in the
-    /// Undefined state and an allowance of REN is required to pay the opening
-    /// fee.
-    ///
-    /// @param _signature Signature of a message that defines the trader. The
-    ///        message is "Republic Protocol: open: {orderId}".
-    /// @param _orderID The hash of the order.
-    function openSellOrder(bytes _signature, bytes32 _orderID) external {
-        openOrder(_signature, _orderID);
-        sellOrders.push(_orderID);
-        orders[_orderID].priority = sellOrders.length;
-    }
-
-    /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
-    function openOrder(bytes _signature, bytes32 _orderID) private {
+    function openOrder(bytes _signature, bytes32 _orderID) external {
         require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
         require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
@@ -109,6 +87,7 @@ contract Orderbook is Ownable {
         orders[_orderID].broker = msg.sender;
         orders[_orderID].blockNumber = block.number;
         orderbook.push(_orderID);
+        orders[_orderID].priority = orderbook.length;
     }
 
     /// @notice Confirm an order match between orders. The confirmer must be a
@@ -161,28 +140,6 @@ contract Orderbook is Ownable {
         orders[_orderID].blockNumber = block.number;
     }
 
-    /// @notice Retrieves the order ID of the buy order at the provided index.
-    /// @param _index The index to retrieve the order ID at.
-    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function buyOrderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= buyOrders.length) {
-            return 0x0;
-        }
-
-        return buyOrders[_index];
-    }
-
-    /// @notice Retrieves the order ID of the sell order at the provided index.
-    /// @param _index The index to retrieve the order ID at.
-    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function sellOrderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= sellOrders.length) {
-            return 0x0;
-        }
-
-        return sellOrders[_index];
-    }
-
     /// @notice returns status of the given orderID.
     function orderState(bytes32 _orderID) external view returns (OrderState) {
         return orders[_orderID].state;
@@ -231,17 +188,7 @@ contract Orderbook is Ownable {
 
     /// @notice returns the number of orders in the orderbook
     function ordersCount() external view returns (uint256) {
-        return buyOrders.length + sellOrders.length;
-    }
-
-    /// @notice returns orderId of the given index in the orderbook list and
-    /// true if exists, otherwise it will return empty bytes and false.
-    function orderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= orderbook.length) {
-            return 0x0;
-        }
-
-        return orderbook[_index];
+        return orderbook.length;
     }
 
     /// @notice returns order details of the orders starting from the offset.

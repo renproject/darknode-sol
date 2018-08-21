@@ -10,7 +10,7 @@ export interface DarknodeSlasherContract {
     renounceOwnership(options?: Tx): Promise<Transaction>;
     challengeSubmitted(index_0: string, index_1: string, options?: Tx): Promise<boolean>;
     owner(options?: Tx): Promise<string>;
-    orderDetails(index_0: string, options?: Tx): Promise<[string, number|string|BN, number|string|BN, number|string|BN, number|string|BN, number|string|BN]>;
+    orderDetails(index_0: string, options?: Tx): Promise<[number|string|BN, number|string|BN, number|string|BN, number|string|BN, number|string|BN]>;
     transferOwnership(_newOwner: string, options?: Tx): Promise<Transaction>;
     challengers(index_0: string, options?: Tx): Promise<string>;
     trustedDarknodeRegistry(options?: Tx): Promise<string>;

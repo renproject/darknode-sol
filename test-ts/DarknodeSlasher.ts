@@ -77,8 +77,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
         let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
-        await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
-        await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
+        await testUtils.openOrder(orderbook, broker, accounts[8], buyID);
+        await testUtils.openOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         // The confirmer's bond will be halved
@@ -98,8 +98,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
         let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
-        await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
-        await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
+        await testUtils.openOrder(orderbook, broker, accounts[8], buyID);
+        await testUtils.openOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         await slasher.submitChallenge(buyID, sellID);
@@ -120,8 +120,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
         let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
-        await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
-        await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
+        await testUtils.openOrder(orderbook, broker, accounts[8], buyID);
+        await testUtils.openOrder(orderbook, broker, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
 
         // Slash should be rejected
@@ -138,8 +138,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
         let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
         let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
-        await testUtils.openBuyOrder(orderbook, broker, accounts[8], buyID);
-        await testUtils.openSellOrder(orderbook, broker, accounts[9], sellID);
+        await testUtils.openOrder(orderbook, broker, accounts[8], buyID);
+        await testUtils.openOrder(orderbook, broker, accounts[9], sellID);
 
         // Slash should be rejected
         await slasher.submitChallenge(buyID, sellID)

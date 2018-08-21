@@ -29,7 +29,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("should return empty list when no darknodes are registered", async () => {
-        let nodes = (await dnr.getPreviousDarknodes.call(NULL, 100)).filter((x) => x !== NULL);
+        let nodes = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
         (nodes.length).should.equal(0);
     });
 
@@ -140,7 +140,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("can get the current epoch's registered dark nodes", async () => {
-        const nodes = (await dnr.getDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+        const nodes = (await dnr.getDarknodes(NULL, 0)).filter((x) => x !== NULL);
         (nodes.length).should.equal(accounts.length - 6);
         nodes[0].should.equal(ID("3"));
         nodes[1].should.equal(ID("4"));
@@ -149,12 +149,12 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("can get the previous epoch's registered dark nodes", async () => {
-        let nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+        let nodes = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
         (nodes.length).should.equal(accounts.length);
 
         await waitForEpoch(dnr);
 
-        nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
+        nodes = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
         (nodes.length).should.equal(accounts.length - 6);
     });
 
@@ -163,7 +163,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let newNodes = await dnr.getDarknodes.call(start, 2);
+            let newNodes = await dnr.getDarknodes(start, 2);
             start = newNodes[newNodes.length - 1];
             for (const node of newNodes) {
                 if (node !== NULL && nodes.indexOf(node) === -1) {
@@ -184,7 +184,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let newNodes = await dnr.getPreviousDarknodes.call(start, 2);
+            let newNodes = await dnr.getPreviousDarknodes(start, 2);
             start = newNodes[newNodes.length - 1];
             for (const node of newNodes) {
                 if (node !== NULL && nodes.indexOf(node) === -1) {

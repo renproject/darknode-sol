@@ -5,6 +5,7 @@ import * as chaiBigNumber from "chai-bignumber";
 
 import BigNumber from "bignumber.js";
 import { BN } from "bn.js";
+import { OrderbookContract } from "../bindings/orderbook";
 
 chai.use(chaiAsPromised);
 chai.use(chaiBigNumber(BigNumber));
@@ -48,31 +49,19 @@ export const randomID = () => {
 export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
 export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
-export const openBuyOrder = async (orderbook, broker, account, orderID?) => {
+export const openOrder = async (orderbook: OrderbookContract, broker: string, account: string, orderID?: string) => {
     if (!orderID) {
         orderID = randomID();
     }
 
     let hash = openPrefix + orderID.slice(2);
     let signature = await web3.eth.sign(hash, account);
-    await orderbook.openBuyOrder(signature, orderID, { from: broker });
+    await orderbook.openOrder(signature, orderID, { from: broker });
 
     return orderID;
 };
 
-export const openSellOrder = async (orderbook, broker, account, orderID?) => {
-    if (!orderID) {
-        orderID = randomID();
-    }
-
-    let hash = openPrefix + orderID.slice(2);
-    let signature = await web3.eth.sign(hash, account);
-    await orderbook.openSellOrder(signature, orderID, { from: broker });
-
-    return orderID;
-};
-
-export const cancelOrder = async (orderbook, broker, account, orderID) => {
+export const cancelOrder = async (orderbook: OrderbookContract, broker: string, account: string, orderID: string) => {
     // Cancel canceled order
     const hash = closePrefix + orderID.slice(2);
     const signature = await web3.eth.sign(hash, account);
