@@ -25,7 +25,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("first epoch can only be called by the owner", async () => {
-        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorised/);
+        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorized/);
     });
 
     it("should return empty list when no darknodes are registered", async () => {

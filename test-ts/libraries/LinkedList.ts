@@ -82,7 +82,7 @@ contract("LinkedList", function () {
         await linkedList.insertBefore(NOT_NODE1, NOT_NODE2).should.be.rejectedWith(null, /not in list/);
     });
 
-    it("should not insert a node aldready in the list", async () => {
+    it("should not insert a node already in the list", async () => {
         await linkedList.insertAfter(NODE2, NODE3).should.be.rejectedWith(null, /already in list/);
     });
 
@@ -90,7 +90,7 @@ contract("LinkedList", function () {
         await linkedList.insertBefore(NODE3, NODE2).should.be.rejectedWith(null, /already in list/);
     });
 
-    it("should not prepend a value that aldready exists", async () => {
+    it("should not prepend a value that already exists", async () => {
         await linkedList.prepend(NODE2).should.be.rejectedWith(null, /already in list/);
     });
 

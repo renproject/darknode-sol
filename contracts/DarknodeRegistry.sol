@@ -189,7 +189,7 @@ contract DarknodeRegistry is Ownable {
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
             // The first epoch must be called by the owner of the contract
-            require(msg.sender == owner, "not authorised (first epochs)");
+            require(msg.sender == owner, "not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed

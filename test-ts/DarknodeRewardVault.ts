@@ -58,7 +58,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
         (await darknodeRewardVault.darknodeRegistry()).should.equal(dnr.address);
     });
 
-    it("can deposit and withdaw funds", async () => {
+    it("can deposit and withdraw funds", async () => {
         let sum = {
             [darknode1]: {
                 [TOKEN1.address]: 0,
@@ -110,7 +110,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     it("cannot deposit ether and erc20 with the same transaction", async () => {
         await TOKEN1.approve(darknodeRewardVault.address, 10);
         await darknodeRewardVault.deposit(
-            darknode1, TOKEN1.address, 10, {value: 10})
+            darknode1, TOKEN1.address, 10, { value: 10 })
             .should.be.rejectedWith(null, /unexpected ether transfer/);
     });
 
