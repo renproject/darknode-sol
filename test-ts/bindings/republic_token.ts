@@ -8,6 +8,7 @@ export interface RepublicTokenContract {
     name(options?: Tx): Promise<string>;
     approve(_spender: string, _value: number|string|BN, options?: Tx): Promise<Transaction>;
     totalSupply(options?: Tx): Promise<number|string|BN>;
+    transferFrom(_from: string, _to: string, _value: number|string|BN, options?: Tx): Promise<Transaction>;
     INITIAL_SUPPLY(options?: Tx): Promise<number|string|BN>;
     decimals(options?: Tx): Promise<number|string|BN>;
     unpause(options?: Tx): Promise<Transaction>;
@@ -19,12 +20,11 @@ export interface RepublicTokenContract {
     pause(options?: Tx): Promise<Transaction>;
     owner(options?: Tx): Promise<string>;
     symbol(options?: Tx): Promise<string>;
+    transfer(_to: string, _value: number|string|BN, options?: Tx): Promise<Transaction>;
     increaseApproval(_spender: string, _addedValue: number|string|BN, options?: Tx): Promise<Transaction>;
     allowance(_owner: string, _spender: string, options?: Tx): Promise<number|string|BN>;
     transferOwnership(_newOwner: string, options?: Tx): Promise<Transaction>;
     transferTokens(beneficiary: string, amount: number|string|BN, options?: Tx): Promise<Transaction>;
-    transfer(_to: string, _value: number|string|BN, options?: Tx): Promise<Transaction>;
-    transferFrom(_from: string, _to: string, _value: number|string|BN, options?: Tx): Promise<Transaction>;
     address: string;
 }
 // tslint:enable:max-line-length

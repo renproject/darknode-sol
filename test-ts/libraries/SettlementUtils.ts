@@ -1,28 +1,20 @@
 import { SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
-import { OrderbookContract } from "../bindings/orderbook";
 import { RepublicTokenContract } from "../bindings/republic_token";
 import { DarknodeRegistryContract } from "../bindings/darknode_registry";
 
-import { INGRESS_FEE, MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
+import { MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
 
 contract("SettlementUtils", function (accounts: string[]) {
 
     let settlementTest: SettlementUtilsTestContract;
-    let orderbook: OrderbookContract;
     let ren: RepublicTokenContract;
     let dnr: DarknodeRegistryContract;
-    const broker = accounts[1];
     const darknode = accounts[2];
 
     before(async function () {
         settlementTest = await artifacts.require("SettlementUtilsTest").new();
-        orderbook = await artifacts.require("Orderbook").deployed();
         ren = await artifacts.require("RepublicToken").deployed();
         dnr = await artifacts.require("DarknodeRegistry").deployed();
-
-        // Broker
-        await ren.transfer(broker, INGRESS_FEE * 10);
-        await ren.approve(orderbook.address, INGRESS_FEE * 10, { from: broker });
 
         // Register darknode
         await ren.transfer(darknode, MINIMUM_BOND);

@@ -5,6 +5,7 @@ pragma solidity ^0.4.24;
 interface BrokerVerifier {
     function verifyOpenSignature(
         address _trader,
-        bytes _signature
-    ) external;
+        bytes _signature,
+        bytes32 _orderID
+    ) external returns (bool);
 }

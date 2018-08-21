@@ -2,9 +2,9 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as chaiBigNumber from "chai-bignumber";
+import * as crypto from "crypto";
 
 import BigNumber from "bignumber.js";
-import { BN } from "bn.js";
 import { OrderbookContract } from "../bindings/orderbook";
 
 chai.use(chaiAsPromised);
@@ -12,7 +12,7 @@ chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
 const config = require("../../migrations/config.js");
-export const { MINIMUM_BOND, INGRESS_FEE, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+export const { MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
 // Makes an ID for a darknode
 export function ID(i: string) {
@@ -26,6 +26,10 @@ export function PUBK(i: string) {
 
 export const NULL = "0x0000000000000000000000000000000000000000";
 export const NULL32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+export const randomBytes = (bytes: number): string => {
+    return `0x${crypto.randomBytes(bytes).toString("hex")}`;
+};
 
 export async function waitForEpoch(dnr: any) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
@@ -49,21 +53,24 @@ export const randomID = () => {
 export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
 export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
-export const openOrder = async (orderbook: OrderbookContract, broker: string, account: string, orderID?: string) => {
+export const openOrder = async (
+    orderbook: OrderbookContract,
+    settlementID: number,
+    account: string,
+    orderID?: string
+) => {
     if (!orderID) {
         orderID = randomID();
     }
 
-    let hash = openPrefix + orderID.slice(2);
-    let signature = await web3.eth.sign(hash, account);
-    await orderbook.openOrder(signature, orderID, { from: broker });
+    // Use random 65 bytes so that the gas aren't skewed by not having a
+    // signature
+    const signature = randomBytes(65);
+    await orderbook.openOrder(settlementID, signature, orderID, { from: account });
 
     return orderID;
 };
 
-export const cancelOrder = async (orderbook: OrderbookContract, broker: string, account: string, orderID: string) => {
-    // Cancel canceled order
-    const hash = closePrefix + orderID.slice(2);
-    const signature = await web3.eth.sign(hash, account);
-    await orderbook.cancelOrder(signature, orderID, { from: broker });
+export const cancelOrder = async (orderbook: OrderbookContract, account: string, orderID: string) => {
+    await orderbook.cancelOrder(orderID, { from: account });
 };
