@@ -34,7 +34,9 @@ contract Orderbook is Ownable {
 
     bytes32[] private orderbook;
 
-    mapping(bytes32 => Order) private orders;
+    // Order details are exposed through directly accessing this mapping, or
+    // through the getter functions below for each of the order's fields.
+    mapping(bytes32 => Order) public orders;
 
     event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
