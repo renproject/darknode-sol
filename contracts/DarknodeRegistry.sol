@@ -62,7 +62,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice Emitted when a new epoch has begun.
     event LogNewEpoch();
 
-    /// @notice Emitted when a constructor paramater has been updated.
+    /// @notice Emitted when a constructor parameter has been updated.
     event LogMinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
     event LogMinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event LogMinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
@@ -156,7 +156,7 @@ contract DarknodeRegistry is Ownable {
         // REN allowance
         require(_bond >= minimumBond, "insufficient bond");
         // require(ren.allowance(msg.sender, address(this)) >= _bond);
-        require(ren.transferFrom(msg.sender, address(this), _bond), "bond trasfer failed");
+        require(ren.transferFrom(msg.sender, address(this), _bond), "bond transfer failed");
         ren.transfer(address(store), _bond);
 
         // Flag this darknode for registration
@@ -175,7 +175,7 @@ contract DarknodeRegistry is Ownable {
         emit LogDarknodeRegistered(_darknodeID, _bond);
     }
 
-    /// @notice Deregister a darknode. The darknode will not be deregisterd
+    /// @notice Deregister a darknode. The darknode will not be deregistered
     /// until the end of the epoch. After another epoch, the bond can be
     /// refunded by calling the refund method.
     /// @param _darknodeID The darknode ID that will be deregistered. The caller
@@ -278,7 +278,7 @@ contract DarknodeRegistry is Ownable {
     ///   1/8 is rewarded to the first challenger
     ///   1/8 is rewarded to the second challenger
     ///   1/4 becomes unassigned
-    /// @param _prover The guitly prover whose bond is being slashed
+    /// @param _prover The guilty prover whose bond is being slashed
     /// @param _challenger1 The first of the two darknodes who submitted the challenge
     /// @param _challenger2 The second of the two darknodes who submitted the challenge
     function slash(address _prover, address _challenger1, address _challenger2)
@@ -288,7 +288,7 @@ contract DarknodeRegistry is Ownable {
         uint256 penalty = store.darknodeBond(_prover) / 2;
         uint256 reward = penalty / 4;
 
-        // Slash the bond of the failed provder in half
+        // Slash the bond of the failed prover in half
         store.updateDarknodeBond(_prover, penalty);
 
         // If the darknode has not been deregistered then deregister it
@@ -360,7 +360,7 @@ contract DarknodeRegistry is Ownable {
     }
 
     /// @notice Retrieves a list of darknodes which were registered for the
-    /// previous epoch. See `getDarknodes` for the paramater documentation.
+    /// previous epoch. See `getDarknodes` for the parameter documentation.
     function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[]) {
         uint256 count = _count;
         if (count == 0) {
@@ -439,7 +439,7 @@ contract DarknodeRegistry is Ownable {
         return registered && notDeregistered;
     }
 
-    /// @notice Returns a list of darknodes registered for either the curren
+    /// @notice Returns a list of darknodes registered for either the current
     /// or the previous epoch. See `getDarknodes` for documentation on the
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use

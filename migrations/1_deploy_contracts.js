@@ -9,7 +9,6 @@ const SettlementRegistry = artifacts.require("SettlementRegistry.sol");
 const config = require("./config.js");
 
 module.exports = async function (deployer, network) {
-    const VERSION = "0.1.0";
 
     await deployer
         .deploy(
@@ -17,12 +16,12 @@ module.exports = async function (deployer, network) {
         )
         .then(() => deployer.deploy(
             DarknodeRegistryStore,
-            VERSION,
+            config.VERSION,
             RepublicToken.address,
         ))
         .then(() => deployer.deploy(
             DarknodeRegistry,
-            VERSION,
+            config.VERSION,
             RepublicToken.address,
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
@@ -31,18 +30,18 @@ module.exports = async function (deployer, network) {
         ))
         .then(() => deployer.deploy(
             SettlementRegistry,
-            VERSION,
+            config.VERSION,
         ))
         .then(() => deployer.deploy(
             Orderbook,
-            VERSION,
+            config.VERSION,
             RepublicToken.address,
             DarknodeRegistry.address,
             SettlementRegistry.address,
         ))
         .then(() => deployer.deploy(
             DarknodeRewardVault,
-            VERSION,
+            config.VERSION,
             DarknodeRegistry.address
         ))
         .then(async () => {
@@ -51,7 +50,7 @@ module.exports = async function (deployer, network) {
         })
         .then(() => deployer.deploy(
             DarknodeSlasher,
-            VERSION,
+            config.VERSION,
             DarknodeRegistry.address,
             Orderbook.address,
         ))
