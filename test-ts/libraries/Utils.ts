@@ -1,15 +1,17 @@
-
-import { UtilsTestContract } from "../bindings/utils_test";
+import { BN } from "bn.js";
 
 import * as testUtils from "../helper/testUtils";
-import { BN } from "bn.js";
+
+import { UtilsTestContract, UtilsTestArtifact } from "../bindings/utils_test";
+
+const UtilsTest = artifacts.require("UtilsTest") as UtilsTestArtifact;
 
 contract("Utils", function (accounts: string[]) {
 
     let utilsTest: UtilsTestContract;
 
     before(async function () {
-        utilsTest = await artifacts.require("UtilsTest.sol").new();
+        utilsTest = await UtilsTest.new();
     });
 
     it("can convert number to string", async function () {

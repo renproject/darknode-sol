@@ -1,8 +1,12 @@
-import { SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
-import { RepublicTokenContract } from "../bindings/republic_token";
-import { DarknodeRegistryContract } from "../bindings/darknode_registry";
+import { SettlementUtilsTestContract, SettlementUtilsTestArtifact } from "../bindings/settlement_utils_test";
+import { RepublicTokenContract, RepublicTokenArtifact } from "../bindings/republic_token";
+import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "../bindings/darknode_registry";
 
 import { MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
+
+const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 contract("SettlementUtils", function (accounts: string[]) {
 
@@ -12,9 +16,9 @@ contract("SettlementUtils", function (accounts: string[]) {
     const darknode = accounts[2];
 
     before(async function () {
-        settlementTest = await artifacts.require("SettlementUtilsTest").new();
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
+        settlementTest = await SettlementUtilsTest.new();
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
 
         // Register darknode
         await ren.transfer(darknode, MINIMUM_BOND);

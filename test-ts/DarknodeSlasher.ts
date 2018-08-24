@@ -1,13 +1,24 @@
+import { BN } from "bn.js";
+
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
-import { BN } from "bn.js";
-import { DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { RepublicTokenContract } from "./bindings/republic_token";
-import { OrderbookContract } from "./bindings/orderbook";
-import { DarknodeSlasherContract } from "./bindings/darknode_slasher";
-import { SettlementUtilsTestContract } from "./bindings/settlement_utils_test";
-import { SettlementRegistryContract } from "./bindings/settlement_registry";
+
+import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
+import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
+import { OrderbookContract, OrderbookArtifact } from "./bindings/orderbook";
+import { DarknodeSlasherContract, DarknodeSlasherArtifact } from "./bindings/darknode_slasher";
+import { SettlementUtilsTestContract, SettlementUtilsTestArtifact } from "./bindings/settlement_utils_test";
+import { SettlementRegistryContract, SettlementRegistryArtifact } from "./bindings/settlement_registry";
 import { BrokerVerifierContract } from "./bindings/broker_verifier";
+import { ApprovingBrokerArtifact } from "./bindings/approving_broker";
+
+const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const Orderbook = artifacts.require("Orderbook") as OrderbookArtifact;
+const DarknodeSlasher = artifacts.require("DarknodeSlasher") as DarknodeSlasherArtifact;
+const SettlementRegistry = artifacts.require("SettlementRegistry") as SettlementRegistryArtifact;
+const ApprovingBroker = artifacts.require("ApprovingBroker") as ApprovingBrokerArtifact;
 
 contract("Darknode Slasher", function (accounts: string[]) {
 
@@ -21,16 +32,16 @@ contract("Darknode Slasher", function (accounts: string[]) {
     const approvingBrokerID = 0x539;
 
     before(async function () {
-        settlementTest = await artifacts.require("SettlementUtilsTest").new();
+        settlementTest = await SettlementUtilsTest.new();
 
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
-        orderbook = await artifacts.require("Orderbook").deployed();
-        slasher = await artifacts.require("DarknodeSlasher").deployed();
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
+        orderbook = await Orderbook.deployed();
+        slasher = await DarknodeSlasher.deployed();
 
-        const settlementRegistry: SettlementRegistryContract = await artifacts.require("SettlementRegistry").deployed();
+        const settlementRegistry: SettlementRegistryContract = await SettlementRegistry.deployed();
 
-        const approvingBroker: BrokerVerifierContract = await artifacts.require("ApprovingBroker").new();
+        const approvingBroker: BrokerVerifierContract = await ApprovingBroker.new();
 
         await settlementRegistry.registerSettlement(approvingBrokerID, testUtils.NULL, approvingBroker.address);
 

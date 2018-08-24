@@ -1,13 +1,20 @@
-import { RepublicTokenContract } from "./bindings/republic_token";
-import { DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { OrderbookContract } from "./bindings/orderbook";
-
-const Orderbook = artifacts.require("Orderbook");
-
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
-import { SettlementRegistryContract } from "./bindings/settlement_registry";
+
+import { SettlementRegistryContract, SettlementRegistryArtifact } from "./bindings/settlement_registry";
 import { BrokerVerifierContract } from "./bindings/broker_verifier";
+import { ApprovingBrokerArtifact } from "./bindings/approving_broker";
+import { DisapprovingBrokerArtifact } from "./bindings/disapproving_broker";
+import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
+import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
+import { OrderbookContract, OrderbookArtifact } from "./bindings/orderbook";
+
+const Orderbook = artifacts.require("Orderbook") as OrderbookArtifact;
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const SettlementRegistry = artifacts.require("SettlementRegistry") as SettlementRegistryArtifact;
+const ApprovingBroker = artifacts.require("ApprovingBroker") as ApprovingBrokerArtifact;
+const DisapprovingBroker = artifacts.require("DisapprovingBroker") as DisapprovingBrokerArtifact;
 
 contract("Orderbook", function (accounts: string[]) {
 
@@ -21,12 +28,12 @@ contract("Orderbook", function (accounts: string[]) {
     const disapprovingBrokerID = 0x540;
 
     before(async function () {
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
         orderbook = await Orderbook.deployed();
-        settlementRegistry = await artifacts.require("SettlementRegistry").deployed();
-        const approvingBroker: BrokerVerifierContract = await artifacts.require("ApprovingBroker").new();
-        const disapprovingBroker: BrokerVerifierContract = await artifacts.require("DisapprovingBroker").new();
+        settlementRegistry = await SettlementRegistry.deployed();
+        const approvingBroker: BrokerVerifierContract = await ApprovingBroker.new();
+        const disapprovingBroker: BrokerVerifierContract = await DisapprovingBroker.new();
 
         await settlementRegistry.registerSettlement(approvingBrokerID, testUtils.NULL, approvingBroker.address);
         await settlementRegistry.registerSettlement(disapprovingBrokerID, testUtils.NULL, disapprovingBroker.address);
@@ -198,7 +205,12 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to retrieve orders", async function () {
-        const _orderbook: OrderbookContract = await Orderbook.new(ren.address, dnr.address, settlementRegistry.address);
+        const _orderbook: OrderbookContract = await Orderbook.new(
+            "VERSION",
+            ren.address,
+            dnr.address,
+            settlementRegistry.address
+        );
 
         const ids = {};
 
@@ -230,7 +242,12 @@ contract("Orderbook", function (accounts: string[]) {
     });
 
     it("should be able to read data from the contract", async function () {
-        const _orderbook: OrderbookContract = await Orderbook.new(ren.address, dnr.address, settlementRegistry.address);
+        const _orderbook: OrderbookContract = await Orderbook.new(
+            "VERSION",
+            ren.address,
+            dnr.address,
+            settlementRegistry.address
+        );
 
         const buyOrderId = await testUtils.openOrder(_orderbook, approvingBrokerID, accounts[0]);
         const sellOrderId = await testUtils.openOrder(_orderbook, approvingBrokerID, accounts[0]);

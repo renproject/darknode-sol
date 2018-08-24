@@ -1,12 +1,17 @@
-import { DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { RepublicTokenContract } from "./bindings/republic_token";
-import { DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
+import { BN } from "bn.js";
 
 import {
     ID, PUBK, NULL, waitForEpoch,
     MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL,
 } from "./helper/testUtils";
-import { BN } from "bn.js";
+
+import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
+import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
+import { DarknodeRegistryStoreContract, DarknodeRegistryStoreArtifact } from "./bindings/darknode_registry_store";
+
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 contract("DarknodeRegistry", function (accounts: string[]) {
 
@@ -15,9 +20,9 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     let dnr: DarknodeRegistryContract;
 
     before(async function () {
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnrs = await artifacts.require("DarknodeRegistryStore").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
+        ren = await RepublicToken.deployed();
+        dnrs = await DarknodeRegistryStore.deployed();
+        dnr = await DarknodeRegistry.deployed();
 
         for (let i = 1; i < accounts.length; i++) {
             await ren.transfer(accounts[i], MINIMUM_BOND);

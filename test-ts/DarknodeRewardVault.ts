@@ -1,9 +1,17 @@
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
 import { BN } from "bn.js";
-import { RepublicTokenContract } from "./bindings/republic_token";
-import { DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
+import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
+import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
+import { DarknodeRewardVaultContract, DarknodeRewardVaultArtifact } from "./bindings/darknode_reward_vault";
+import { ABCTokenArtifact } from "./bindings/a_b_c_token";
+import { ReverterArtifact } from "./bindings/reverter";
+
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const DarknodeRewardVault = artifacts.require("DarknodeRewardVault") as DarknodeRewardVaultArtifact;
+const ABCToken = artifacts.require("ABCToken") as ABCTokenArtifact;
+const Reverter = artifacts.require("Reverter") as ReverterArtifact;
 
 contract("DarknodeRewardVault", function (accounts: string[]) {
 
@@ -15,12 +23,12 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
 
     before(async function () {
 
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
-        darknodeRewardVault = await artifacts.require("DarknodeRewardVault").deployed();
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
+        darknodeRewardVault = await DarknodeRewardVault.deployed();
 
-        TOKEN1 = await artifacts.require("RepublicToken").new();
-        TOKEN2 = await artifacts.require("ABCToken").new();
+        TOKEN1 = await RepublicToken.new();
+        TOKEN2 = await ABCToken.new();
         ETH = {
             address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
             decimals: () => 18,
@@ -125,7 +133,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     });
 
     it("checks success of ETH withdrawal before updating balances", async () => {
-        const reverter = await artifacts.require("Reverter").new();
+        const reverter = await Reverter.new();
         const darknode3 = accounts[5];
         await ren.approve(reverter.address, MINIMUM_BOND);
         await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND);

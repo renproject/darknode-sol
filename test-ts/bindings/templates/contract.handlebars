@@ -17,4 +17,12 @@ export interface {{contractName}}Contract {
 {{/each}}
     address: string;
 }
+
+export interface {{contractName}}Artifact {
+    address: string;
+    "new"({{> typed_params inputs=ctor.inputs}}): Promise<{{contractName}}Contract>;
+    at(address: string): Promise<{{contractName}}Contract>;
+    deployed(): Promise<{{contractName}}Contract>;
+}
+
 // tslint:enable:max-line-length

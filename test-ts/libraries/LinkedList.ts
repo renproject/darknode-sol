@@ -1,7 +1,8 @@
-
-import { LinkedListTestContract } from "../bindings/linked_list_test";
-
 import { ID, NULL } from "../helper/testUtils";
+
+import { LinkedListTestContract, LinkedListTestArtifact } from "../bindings/linked_list_test";
+
+const LinkedListTest = artifacts.require("LinkedListTest") as LinkedListTestArtifact;
 
 contract("LinkedList", function () {
 
@@ -11,7 +12,7 @@ contract("LinkedList", function () {
         [ID("1"), ID("2"), ID("3"), ID("4"), ID("NOT1"), ID("NOT2")];
 
     before(async function () {
-        linkedList = await artifacts.require("LinkedListTest.sol").new();
+        linkedList = await LinkedListTest.new();
     });
 
     it("can append", async function () {
