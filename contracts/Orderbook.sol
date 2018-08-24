@@ -12,6 +12,7 @@ import "./libraries/Utils.sol";
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
 contract Orderbook is Ownable {
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice OrderState enumerates the possible states of an order. All
     /// orders default to the Undefined state.
@@ -47,17 +48,20 @@ contract Orderbook is Ownable {
         _;
     }
 
-    /// @notice The Orderbook constructor.
+    /// @notice The contract constructor.
     ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _renAddress The address of the RepublicToken contract.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
     /// @param _settlementRegistry The address of the SettlementRegistry
     ///        contract.
     constructor(
+        string _VERSION,
         RepublicToken _renAddress,
         DarknodeRegistry _darknodeRegistry,
         SettlementRegistry _settlementRegistry
     ) public {
+        VERSION = _VERSION;
         ren = _renAddress;
         darknodeRegistry = _darknodeRegistry;
         settlementRegistry = _settlementRegistry;

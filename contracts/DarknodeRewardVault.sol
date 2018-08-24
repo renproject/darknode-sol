@@ -13,6 +13,8 @@ import "./DarknodeRegistry.sol";
 contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
 
+    string public VERSION; // Passed in as a constructor parameter.
+
     /// @notice The special address for Ether.
     address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -22,9 +24,13 @@ contract DarknodeRewardVault is Ownable {
 
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
     ///        the vault to lookup Darknode owners.
-    constructor(DarknodeRegistry _darknodeRegistry) public {
+    constructor(string _VERSION, DarknodeRegistry _darknodeRegistry) public {
+        VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
     }
 

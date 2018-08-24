@@ -8,6 +8,7 @@ import "./Settlement.sol";
 /// @notice SettlementRegistry allows a Settlement layer to register the
 /// contracts used for match settlement and for broker signature verification.
 contract SettlementRegistry is Ownable {
+    string public VERSION; // Passed in as a constructor parameter.
 
     struct SettlementDetails {
         bool registered;
@@ -22,6 +23,13 @@ contract SettlementRegistry is Ownable {
     event LogSettlementRegistered(uint64 settlementID, Settlement settlementContract, BrokerVerifier brokerVerifierContract);
     event LogSettlementUpdated(uint64 settlementID, Settlement settlementContract, BrokerVerifier brokerVerifierContract);
     event LogSettlementDeregistered(uint64 settlementID);
+
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
+    constructor(string _VERSION) public {
+        VERSION = _VERSION;
+    }
 
     /// @notice Returns the settlement contract of a settlement layer.
     function settlementRegistration(uint64 _settlementID) external view returns (bool) {

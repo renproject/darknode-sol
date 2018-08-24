@@ -8,6 +8,7 @@ import "./DarknodeRegistryStore.sol";
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
 contract DarknodeRegistry is Ownable {
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknode pods are shuffled after a fixed number of blocks.
     /// An Epoch stores an epoch hash used as an (insecure) RNG seed, and the
@@ -98,6 +99,9 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _renAddress The address of the RepublicToken contract.
     /// @param _storeAddress The address of the DarknodeRegistryStore contract.
     /// @param _minimumBond The minimum bond amount that can be submitted by a
@@ -106,12 +110,15 @@ contract DarknodeRegistry is Ownable {
     /// @param _minimumEpochInterval The minimum number of blocks between
     ///        epochs.
     constructor(
+        string _VERSION,
         RepublicToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
         uint256 _minimumEpochInterval
     ) public {
+        VERSION = _VERSION;
+
         store = _storeAddress;
         ren = _renAddress;
 

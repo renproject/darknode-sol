@@ -9,6 +9,7 @@ import "./SettlementUtils.sol";
 /// @notice Allows order confirmations to be challenged, penalizing darknodes
 /// who have confirmed two mismatched orders.
 contract DarknodeSlasher is Ownable {
+    string public VERSION; // Passed in as a constructor parameter.
 
     DarknodeRegistry public trustedDarknodeRegistry;
     Orderbook public trustedOrderbook;
@@ -27,9 +28,13 @@ contract DarknodeSlasher is Ownable {
         _;
     }
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _orderbook The address of the Orderbook contract
-    constructor(DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public {
+    constructor(string _VERSION, DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public {
+        VERSION = _VERSION;
         trustedDarknodeRegistry = _darknodeRegistry;
         trustedOrderbook = _orderbook;
     }

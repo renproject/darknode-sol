@@ -9,6 +9,7 @@ import "./RepublicToken.sol";
 /// contract. The data / fund logic and storage have been seperated to improve
 /// upgradability.
 contract DarknodeRegistryStore is Ownable {
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
     /// address that registered the darknode, the bond is the amount of REN that
@@ -46,8 +47,15 @@ contract DarknodeRegistryStore is Ownable {
     // RepublicToken.
     RepublicToken public ren;
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RepublicToken contract.
-    constructor(RepublicToken _ren) public {
+    constructor(
+        string _VERSION,
+        RepublicToken _ren
+    ) public {
+        VERSION = _VERSION;
         ren = _ren;
     }
 
