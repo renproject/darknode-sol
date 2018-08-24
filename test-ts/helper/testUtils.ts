@@ -42,7 +42,7 @@ export async function waitForEpoch(dnr: any) {
             // epoch reverted, epoch interval hasn't passed
         }
         // Sleep for `timeout` seconds
-        await new Promise(resolve => setTimeout(resolve, timeout * 1000));
+        await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
     }
 }
 
@@ -57,7 +57,7 @@ export const openOrder = async (
     orderbook: OrderbookContract,
     settlementID: number,
     account: string,
-    orderID?: string
+    orderID?: string,
 ) => {
     if (!orderID) {
         orderID = randomID();

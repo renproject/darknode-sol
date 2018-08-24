@@ -1,11 +1,12 @@
-import { Tx, TransactionReceipt, Log } from "web3/types";
+// tslint:disable
+
 import { BN } from "bn.js";
+import { Log, TransactionReceipt, Tx } from "web3/types";
 
 export interface Transaction { receipt: TransactionReceipt; tx: string; logs: Log[]; }
 
 type BigNumber = string | number | BN;
 
-// tslint:disable:max-line-length
 export interface {{contractName}}Contract {
 {{#each methods}}
     {{#this.constant}}
@@ -24,5 +25,3 @@ export interface {{contractName}}Artifact {
     at(address: string): Promise<{{contractName}}Contract>;
     deployed(): Promise<{{contractName}}Contract>;
 }
-
-// tslint:enable:max-line-length

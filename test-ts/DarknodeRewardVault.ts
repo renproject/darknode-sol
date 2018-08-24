@@ -1,10 +1,13 @@
-import * as testUtils from "./helper/testUtils";
-import { MINIMUM_BOND } from "./helper/testUtils";
 import { BN } from "bn.js";
-import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
-import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
-import { DarknodeRewardVaultContract, DarknodeRewardVaultArtifact } from "./bindings/darknode_reward_vault";
+
+import * as testUtils from "./helper/testUtils";
+
+import { MINIMUM_BOND } from "./helper/testUtils";
+
 import { ABCTokenArtifact } from "./bindings/a_b_c_token";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeRewardVaultArtifact, DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 import { ReverterArtifact } from "./bindings/reverter";
 
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
@@ -13,7 +16,7 @@ const DarknodeRewardVault = artifacts.require("DarknodeRewardVault") as Darknode
 const ABCToken = artifacts.require("ABCToken") as ABCTokenArtifact;
 const Reverter = artifacts.require("Reverter") as ReverterArtifact;
 
-contract("DarknodeRewardVault", function (accounts: string[]) {
+contract("DarknodeRewardVault", (accounts: string[]) => {
 
     let ren: RepublicTokenContract;
     let dnr: DarknodeRegistryContract;
@@ -21,7 +24,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     let darknode1: string, darknode2: string, darknodeOperator: string;
     let TOKEN1, TOKEN2, ETH;
 
-    before(async function () {
+    before(async () => {
 
         ren = await RepublicToken.deployed();
         dnr = await DarknodeRegistry.deployed();
@@ -67,7 +70,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     });
 
     it("can deposit and withdraw funds", async () => {
-        let sum = {
+        const sum = {
             [darknode1]: {
                 [TOKEN1.address]: 0,
                 [TOKEN2.address]: 0,
@@ -77,20 +80,20 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
                 [TOKEN1.address]: 0,
                 [TOKEN2.address]: 0,
                 [ETH.address]: 0,
-            }
+            },
         };
 
         // Deposit rewards
         for (const token of [TOKEN1, TOKEN2, ETH]) {
             const decimals = await token.decimals();
-            for (let i = 0; i < accounts.length; i++) {
+            for (const account of accounts) {
                 for (const darknode of [darknode1, darknode2]) {
-                    let fee = Math.floor(Math.random() * decimals);
-                    await token.transfer(accounts[i], fee);
+                    const fee = Math.floor(Math.random() * decimals);
+                    await token.transfer(account, fee);
 
                     const value = token === ETH ? fee : 0;
-                    await token.approve(darknodeRewardVault.address, fee, { from: accounts[i] });
-                    await darknodeRewardVault.deposit(darknode, token.address, fee, { value, from: accounts[i] });
+                    await token.approve(darknodeRewardVault.address, fee, { from: account });
+                    await darknodeRewardVault.deposit(darknode, token.address, fee, { value, from: account });
                     sum[darknode][token.address] += fee;
                 }
             }

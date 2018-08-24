@@ -1,25 +1,25 @@
 import { BN } from "bn.js";
 
 import {
-    ID, PUBK, NULL, waitForEpoch,
-    MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL,
+    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,
+    NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
-import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
-import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
-import { DarknodeRegistryStoreContract, DarknodeRegistryStoreArtifact } from "./bindings/darknode_registry_store";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
-contract("DarknodeRegistry", function (accounts: string[]) {
+contract("DarknodeRegistry", (accounts: string[]) => {
 
     let ren: RepublicTokenContract;
     let dnrs: DarknodeRegistryStoreContract;
     let dnr: DarknodeRegistryContract;
 
-    before(async function () {
+    before(async () => {
         ren = await RepublicToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
@@ -34,7 +34,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
     });
 
     it("should return empty list when no darknodes are registered", async () => {
-        let nodes = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
+        const nodes = (await dnr.getPreviousDarknodes(NULL, 100)).filter((x) => x !== NULL);
         (nodes.length).should.equal(0);
     });
 
@@ -168,7 +168,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let newNodes = await dnr.getDarknodes(start, 2);
+            const newNodes = await dnr.getDarknodes(start, 2);
             start = newNodes[newNodes.length - 1];
             for (const node of newNodes) {
                 if (node !== NULL && nodes.indexOf(node) === -1) {
@@ -189,7 +189,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let newNodes = await dnr.getPreviousDarknodes(start, 2);
+            const newNodes = await dnr.getPreviousDarknodes(start, 2);
             start = newNodes[newNodes.length - 1];
             for (const node of newNodes) {
                 if (node !== NULL && nodes.indexOf(node) === -1) {
@@ -232,9 +232,9 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         (await dnr.isDeregistered(ID("4"))).should.be.true;
         (await dnr.isDeregistered(ID("7"))).should.be.true;
         (await dnr.isDeregistered(ID("8"))).should.be.true;
-        let previousDarknodesEpoch1 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
+        const previousDarknodesEpoch1 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
         await waitForEpoch(dnr);
-        let previousDarknodesEpoch2 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
+        const previousDarknodesEpoch2 = (await dnr.getPreviousDarknodes(NULL, 0)).filter((x) => x !== NULL);
         (previousDarknodesEpoch1.length - previousDarknodesEpoch2.length).should.be.equal(4);
         (await dnr.isDeregistered(ID("3"))).should.be.true;
         (await dnr.isDeregistered(ID("4"))).should.be.true;
@@ -321,7 +321,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
         for (let i = 1; i < accounts.length; i++) {
             const balance = await web3.eth.getBalance(accounts[i]);
             web3.eth.sendTransaction(
-                { to: accounts[0], from: accounts[i], value: balance, gasPrice: 0 }
+                { to: accounts[0], from: accounts[i], value: balance, gasPrice: 0 },
             );
         }
 
@@ -339,7 +339,7 @@ contract("DarknodeRegistry", function (accounts: string[]) {
 
         let start = NULL;
         do {
-            let nodes = await dnr.getDarknodes(start, 50);
+            const nodes = await dnr.getDarknodes(start, 50);
             console.log(nodes);
             start = nodes[nodes.length - 1];
         } while (start !== NULL);

@@ -1,13 +1,13 @@
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
 
-import { SettlementRegistryContract, SettlementRegistryArtifact } from "./bindings/settlement_registry";
-import { BrokerVerifierContract } from "./bindings/broker_verifier";
 import { ApprovingBrokerArtifact } from "./bindings/approving_broker";
+import { BrokerVerifierContract } from "./bindings/broker_verifier";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DisapprovingBrokerArtifact } from "./bindings/disapproving_broker";
-import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
-import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
-import { OrderbookContract, OrderbookArtifact } from "./bindings/orderbook";
+import { OrderbookArtifact, OrderbookContract } from "./bindings/orderbook";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { SettlementRegistryArtifact, SettlementRegistryContract } from "./bindings/settlement_registry";
 
 const Orderbook = artifacts.require("Orderbook") as OrderbookArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
@@ -16,7 +16,7 @@ const SettlementRegistry = artifacts.require("SettlementRegistry") as Settlement
 const ApprovingBroker = artifacts.require("ApprovingBroker") as ApprovingBrokerArtifact;
 const DisapprovingBroker = artifacts.require("DisapprovingBroker") as DisapprovingBrokerArtifact;
 
-contract("Orderbook", function (accounts: string[]) {
+contract("Orderbook", (accounts: string[]) => {
 
     let ren: RepublicTokenContract;
     let dnr: DarknodeRegistryContract;
@@ -27,7 +27,7 @@ contract("Orderbook", function (accounts: string[]) {
     const approvingBrokerID = 0x539;
     const disapprovingBrokerID = 0x540;
 
-    before(async function () {
+    before(async () => {
         ren = await RepublicToken.deployed();
         dnr = await DarknodeRegistry.deployed();
         orderbook = await Orderbook.deployed();
@@ -40,8 +40,8 @@ contract("Orderbook", function (accounts: string[]) {
 
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
-        for (let i = 0; i < accounts.length; i++) {
-            await ren.transfer(accounts[i], MINIMUM_BOND);
+        for (const account of accounts) {
+            await ren.transfer(account, MINIMUM_BOND);
         }
 
         // Register all nodes
@@ -61,31 +61,30 @@ contract("Orderbook", function (accounts: string[]) {
         (await orderbook.darknodeRegistry()).should.equal(dnr.address);
     });
 
-    it("should be able to open orders", async function () {
-        for (let i = 0; i < accounts.length; i++) {
-            await testUtils.openOrder(orderbook, approvingBrokerID, accounts[i]);
-            await testUtils.openOrder(orderbook, approvingBrokerID, accounts[i]);
+    it("should be able to open orders", async () => {
+        for (const account of accounts) {
+            await testUtils.openOrder(orderbook, approvingBrokerID, account);
+            await testUtils.openOrder(orderbook, approvingBrokerID, account);
         }
     });
 
-    it("should be rejected when trying to open an order without no REN allowance", async function () {
+    it("should be rejected when trying to open an order without no REN allowance", async () => {
         await testUtils.openOrder(orderbook, disapprovingBrokerID, accounts[0])
             .should.be.rejectedWith(null, /invalid broker signature/); // erc20 transfer error
     });
 
-    it("should be rejected when trying to open an opened order", async function () {
-        for (let i = 0; i < accounts.length; i++) {
-
-            const orderID = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[0]);
-            await testUtils.openOrder(orderbook, approvingBrokerID, accounts[0], orderID)
+    it("should be rejected when trying to open an opened order", async () => {
+        for (const account of accounts) {
+            const orderID = await testUtils.openOrder(orderbook, approvingBrokerID, account);
+            await testUtils.openOrder(orderbook, approvingBrokerID, account, orderID)
                 .should.be.rejectedWith(null, /invalid order status/);
 
-            await testUtils.openOrder(orderbook, approvingBrokerID, accounts[0], orderID)
+            await testUtils.openOrder(orderbook, approvingBrokerID, account, orderID)
                 .should.be.rejectedWith(null, /invalid order status/);
         }
     });
 
-    it("should be able to cancel orders", async function () {
+    it("should be able to cancel orders", async () => {
         const ids = {};
 
         for (let i = 0; i < accounts.length; i++) {
@@ -97,18 +96,18 @@ contract("Orderbook", function (accounts: string[]) {
         }
     });
 
-    it("should not be able to cancel orders that are not open", async function () {
+    it("should not be able to cancel orders that are not open", async () => {
 
-        let orderID = testUtils.randomID();
+        const orderID = testUtils.randomID();
         await testUtils.cancelOrder(orderbook, accounts[0], orderID)
             .should.be.rejectedWith(null, /invalid order state/);
     });
 
-    it("should not be able to cancel confirmed orders", async function () {
+    it("should not be able to cancel confirmed orders", async () => {
 
         // Confirmed Order
-        let confirmedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
-        let match = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[3]);
+        const confirmedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
+        const match = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[3]);
         await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         await testUtils.cancelOrder(orderbook, accounts[1], confirmedOrder)
@@ -118,7 +117,7 @@ contract("Orderbook", function (accounts: string[]) {
             .should.be.rejectedWith(null, /invalid order state/);
     });
 
-    it("should be rejected when trying to cancel orders signed by someone else", async function () {
+    it("should be rejected when trying to cancel orders signed by someone else", async () => {
         const ids = {};
 
         for (let i = 0; i < accounts.length; i++) {
@@ -131,7 +130,7 @@ contract("Orderbook", function (accounts: string[]) {
         }
     });
 
-    it("should be able to confirm orders", async function () {
+    it("should be able to confirm orders", async () => {
         const buyIDs = {};
         const sellIDs = {};
 
@@ -147,23 +146,23 @@ contract("Orderbook", function (accounts: string[]) {
         }
     });
 
-    it("should be rejected when trying to confirm an non-open order", async function () {
+    it("should be rejected when trying to confirm an non-open order", async () => {
         // Setup
 
         // Opened Order
-        let openedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[0]);
+        const openedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[0]);
 
         // Confirmed Order
-        let confirmedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
-        let match = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[3]);
+        const confirmedOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
+        const match = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[3]);
         await orderbook.confirmOrder(confirmedOrder, match, { from: darknode });
 
         // Canceled order
-        let canceledOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
+        const canceledOrder = await testUtils.openOrder(orderbook, approvingBrokerID, accounts[1]);
         await testUtils.cancelOrder(orderbook, accounts[1], canceledOrder);
 
         // Unopened Order
-        let unopenedOrder = testUtils.randomID();
+        const unopenedOrder = testUtils.randomID();
 
         await orderbook.confirmOrder(confirmedOrder, openedOrder, { from: darknode })
             .should.be.rejectedWith(null, /invalid order status/);
@@ -181,9 +180,9 @@ contract("Orderbook", function (accounts: string[]) {
             .should.be.rejectedWith(null, /invalid order status/);
     });
 
-    it("should be rejected when an un-registered node trying to confirm orders", async function () {
-        let order1 = testUtils.randomID();
-        let order2 = testUtils.randomID();
+    it("should be rejected when an un-registered node trying to confirm orders", async () => {
+        const order1 = testUtils.randomID();
+        const order2 = testUtils.randomID();
 
         await orderbook.confirmOrder(order1, order2, { from: accounts[1] })
             .should.be.rejectedWith(null, /must be registered darknode/);
@@ -191,9 +190,9 @@ contract("Orderbook", function (accounts: string[]) {
             .should.be.rejectedWith(null, /must be registered darknode/);
     });
 
-    it("should be able to get the depth of orderID", async function () {
+    it("should be able to get the depth of orderID", async () => {
 
-        let orderID = testUtils.randomID();
+        const orderID = testUtils.randomID();
 
         (await orderbook.orderDepth(orderID))
             .should.bignumber.equal(0);
@@ -204,22 +203,22 @@ contract("Orderbook", function (accounts: string[]) {
             .should.bignumber.equal(1);
     });
 
-    it("should be able to retrieve orders", async function () {
-        const _orderbook: OrderbookContract = await Orderbook.new(
+    it("should be able to retrieve orders", async () => {
+        const orderbookAlt: OrderbookContract = await Orderbook.new(
             "VERSION",
             ren.address,
             dnr.address,
-            settlementRegistry.address
+            settlementRegistry.address,
         );
 
         const ids = {};
 
         for (let i = 0; i < accounts.length; i++) {
-            ids[i] = await testUtils.openOrder(_orderbook, approvingBrokerID, accounts[i]);
+            ids[i] = await testUtils.openOrder(orderbookAlt, approvingBrokerID, accounts[i]);
         }
 
         const offset = 1;
-        const orders = await _orderbook.getOrders(offset, accounts.length - offset);
+        const orders = await orderbookAlt.getOrders(offset, accounts.length - offset);
 
         orders[0].length.should.equal(accounts.length - offset);
 
@@ -233,73 +232,74 @@ contract("Orderbook", function (accounts: string[]) {
         }
 
         // Start is out of range
-        (await _orderbook.getOrders(10000, 1))
+        (await orderbookAlt.getOrders(10000, 1))
             .should.deep.equal({ 0: [], 1: [], 2: [] });
 
         // End is out of range
-        (await _orderbook.getOrders(0, 10000))[0]
+        (await orderbookAlt.getOrders(0, 10000))[0]
             .length.should.equal(accounts.length);
     });
 
-    it("should be able to read data from the contract", async function () {
-        const _orderbook: OrderbookContract = await Orderbook.new(
+    it("should be able to read data from the contract", async () => {
+        const orderbookAlt: OrderbookContract = await Orderbook.new(
             "VERSION",
             ren.address,
             dnr.address,
-            settlementRegistry.address
+            settlementRegistry.address,
         );
 
-        const buyOrderId = await testUtils.openOrder(_orderbook, approvingBrokerID, accounts[0]);
-        const sellOrderId = await testUtils.openOrder(_orderbook, approvingBrokerID, accounts[0]);
+        const buyOrderId = await testUtils.openOrder(orderbookAlt, approvingBrokerID, accounts[0]);
+        const sellOrderId = await testUtils.openOrder(orderbookAlt, approvingBrokerID, accounts[0]);
 
         { // should be able to retrieve orders by index
-            (await _orderbook.getOrders(0, 1))[0]
+            (await orderbookAlt.getOrders(0, 1))[0]
                 .should.eql([buyOrderId]);
 
             // Get order from the orderbook
-            (await _orderbook.getOrders(1, 1))[0]
+            (await orderbookAlt.getOrders(1, 1))[0]
                 .should.eql([sellOrderId]);
 
             // Negative test for get order
-            (await _orderbook.getOrders(2, 1))
+            (await orderbookAlt.getOrders(2, 1))
+                // tslint:disable-next-line:object-literal-key-quotes
                 .should.eql({ "0": [], "1": [], "2": [] });
         }
 
-        await _orderbook.confirmOrder(buyOrderId, sellOrderId, { from: darknode });
+        await orderbookAlt.confirmOrder(buyOrderId, sellOrderId, { from: darknode });
         const confirmationBlockNumber = (await web3.eth.getBlock("latest")).number;
 
         { // should be able to retrieve order details
             // Get order status
-            (await _orderbook.orderState(buyOrderId))
+            (await orderbookAlt.orderState(buyOrderId))
                 .should.bignumber.equal(2);
-            (await _orderbook.orderState(sellOrderId))
+            (await orderbookAlt.orderState(sellOrderId))
                 .should.bignumber.equal(2);
 
             // Get order match
-            (await _orderbook.orderMatch(buyOrderId))
+            (await orderbookAlt.orderMatch(buyOrderId))
                 .should.deep.equal(sellOrderId);
 
-            (await _orderbook.orderMatch(sellOrderId))
+            (await orderbookAlt.orderMatch(sellOrderId))
                 .should.deep.equal(buyOrderId);
 
             // Get matched order
-            (await _orderbook.orderPriority(buyOrderId))
+            (await orderbookAlt.orderPriority(buyOrderId))
                 .should.bignumber.equal(1);
 
             // Get trader
-            (await _orderbook.orderTrader(buyOrderId))
+            (await orderbookAlt.orderTrader(buyOrderId))
                 .should.equal(accounts[0]);
 
             // Get confirmer
-            (await _orderbook.orderConfirmer(buyOrderId))
+            (await orderbookAlt.orderConfirmer(buyOrderId))
                 .should.equal(darknode);
 
             // Get blocknumber
-            (await _orderbook.orderBlockNumber(buyOrderId))
+            (await orderbookAlt.orderBlockNumber(buyOrderId))
                 .should.bignumber.equal(confirmationBlockNumber);
 
             // Get blocknumber
-            (await _orderbook.ordersCount())
+            (await orderbookAlt.ordersCount())
                 .should.bignumber.equal(2);
         }
     });

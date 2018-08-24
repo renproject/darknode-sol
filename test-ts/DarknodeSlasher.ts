@@ -3,14 +3,14 @@ import { BN } from "bn.js";
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
 
-import { DarknodeRegistryContract, DarknodeRegistryArtifact } from "./bindings/darknode_registry";
-import { RepublicTokenContract, RepublicTokenArtifact } from "./bindings/republic_token";
-import { OrderbookContract, OrderbookArtifact } from "./bindings/orderbook";
-import { DarknodeSlasherContract, DarknodeSlasherArtifact } from "./bindings/darknode_slasher";
-import { SettlementUtilsTestContract, SettlementUtilsTestArtifact } from "./bindings/settlement_utils_test";
-import { SettlementRegistryContract, SettlementRegistryArtifact } from "./bindings/settlement_registry";
-import { BrokerVerifierContract } from "./bindings/broker_verifier";
 import { ApprovingBrokerArtifact } from "./bindings/approving_broker";
+import { BrokerVerifierContract } from "./bindings/broker_verifier";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./bindings/darknode_slasher";
+import { OrderbookArtifact, OrderbookContract } from "./bindings/orderbook";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { SettlementRegistryArtifact, SettlementRegistryContract } from "./bindings/settlement_registry";
+import { SettlementUtilsTestArtifact, SettlementUtilsTestContract } from "./bindings/settlement_utils_test";
 
 const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
@@ -20,7 +20,7 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher") as DarknodeSlasherA
 const SettlementRegistry = artifacts.require("SettlementRegistry") as SettlementRegistryArtifact;
 const ApprovingBroker = artifacts.require("ApprovingBroker") as ApprovingBrokerArtifact;
 
-contract("Darknode Slasher", function (accounts: string[]) {
+contract("Darknode Slasher", (accounts: string[]) => {
 
     let dnr: DarknodeRegistryContract;
     let ren: RepublicTokenContract;
@@ -31,7 +31,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
 
     const approvingBrokerID = 0x539;
 
-    before(async function () {
+    before(async () => {
         settlementTest = await SettlementUtilsTest.new();
 
         ren = await RepublicToken.deployed();
@@ -90,8 +90,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
         await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
-        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[8], buyID);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[9], sellID);
@@ -100,7 +100,7 @@ contract("Darknode Slasher", function (accounts: string[]) {
         // The confirmer's bond will be halved
         const bondBefore = await dnr.getDarknodeBond(darknode7);
         await slasher.submitChallenge(buyID, sellID);
-        let bondAfter = new BN(await dnr.getDarknodeBond(darknode7));
+        const bondAfter = new BN(await dnr.getDarknodeBond(darknode7));
         bondAfter.mul(new BN(2)).should.bignumber.equal(bondBefore);
     });
 
@@ -111,8 +111,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
         await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
-        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[8], buyID);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[9], sellID);
@@ -134,8 +134,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
         await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
-        let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[8], buyID);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[9], sellID);
         await orderbook.confirmOrder(buyID, sellID, { from: darknode7 });
@@ -152,8 +152,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         await slasher.submitChallengeOrder.apply(this, [...BUY, { from: darknode5 }]);
         await slasher.submitChallengeOrder.apply(this, [...SELL, { from: darknode6 }]);
 
-        let sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
-        let buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const buyID = await settlementTest.hashOrder.apply(this, [...SELL]);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[8], buyID);
         await testUtils.openOrder(orderbook, approvingBrokerID, accounts[9], sellID);
 
@@ -166,8 +166,8 @@ contract("Darknode Slasher", function (accounts: string[]) {
         const BUY = [web3.utils.sha3("8"), 1, "0x100000000", 1, 1, 0];
         const SELL = [web3.utils.sha3("9"), 1, "0x1", 1, 1, 0];
 
-        let buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
-        let sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
+        const buyID = await settlementTest.hashOrder.apply(this, [...BUY]);
+        const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         // Slash should be rejected if buy details aren't available
         await slasher.submitChallenge(buyID, sellID)

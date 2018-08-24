@@ -4,7 +4,7 @@
 
 /// <reference types="chai" />
 
-declare module 'chai-bignumber' {
+declare module "chai-bignumber" {
     function chaiBigNumber(bignumber: any): (chai: any, utils: any) => void;
 
     namespace chaiBigNumber {

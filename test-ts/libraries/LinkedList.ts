@@ -1,21 +1,21 @@
 import { ID, NULL } from "../helper/testUtils";
 
-import { LinkedListTestContract, LinkedListTestArtifact } from "../bindings/linked_list_test";
+import { LinkedListTestArtifact, LinkedListTestContract } from "../bindings/linked_list_test";
 
 const LinkedListTest = artifacts.require("LinkedListTest") as LinkedListTestArtifact;
 
-contract("LinkedList", function () {
+contract("LinkedList", () => {
 
     let linkedList: LinkedListTestContract;
 
     const [NODE1, NODE2, NODE3, NODE4, NOT_NODE1, NOT_NODE2] =
         [ID("1"), ID("2"), ID("3"), ID("4"), ID("NOT1"), ID("NOT2")];
 
-    before(async function () {
+    before(async () => {
         linkedList = await LinkedListTest.new();
     });
 
-    it("can append", async function () {
+    it("can append", async () => {
         await linkedList.append(NODE1);
         (await linkedList.isInList(NODE1)).should.equal(true);
     });

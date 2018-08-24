@@ -2,19 +2,19 @@ import { BN } from "bn.js";
 
 import * as testUtils from "../helper/testUtils";
 
-import { UtilsTestContract, UtilsTestArtifact } from "../bindings/utils_test";
+import { UtilsTestArtifact, UtilsTestContract } from "../bindings/utils_test";
 
 const UtilsTest = artifacts.require("UtilsTest") as UtilsTestArtifact;
 
-contract("Utils", function (accounts: string[]) {
+contract("Utils", (accounts: string[]) => {
 
     let utilsTest: UtilsTestContract;
 
-    before(async function () {
+    before(async () => {
         utilsTest = await UtilsTest.new();
     });
 
-    it("can convert number to string", async function () {
+    it("can convert number to string", async () => {
         hexToAscii(await utilsTest.uintToBytes(0)).toString().should.equal("0");
         hexToAscii(await utilsTest.uintToBytes(32)).toString().should.equal("32");
         hexToAscii(await utilsTest.uintToBytes(57)).toString().should.equal("57");
@@ -27,7 +27,7 @@ contract("Utils", function (accounts: string[]) {
 
     // Doesn't replace verifying the function logic - but the function will
     // likely only be used for values up to 10'000 anyway.
-    it.skip("[LONG] can convert numbers from 0 to 10'000 to string", async function () {
+    it.skip("[LONG] can convert numbers from 0 to 10'000 to string", async () => {
         for (let i = 0; i <= 10000; i++) {
             process.stdout.write(`\rConverting #${i}`);
             hexToAscii(await utilsTest.uintToBytes(i)).toString().should.equal(`${i}`);
@@ -35,10 +35,10 @@ contract("Utils", function (accounts: string[]) {
         console.log("");
     });
 
-    it("can recover address from signature", async function () {
+    it("can recover address from signature", async () => {
         const account = accounts[9];
         const id = testUtils.randomID();
-        let signature = await web3.eth.sign(id, account);
+        const signature = await web3.eth.sign(id, account);
         // Recover address
         (await utilsTest.addr(id, signature)).should.equal(account);
     });

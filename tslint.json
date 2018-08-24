@@ -1,0 +1,25 @@
+{
+    "extends": [
+        "tslint:recommended"
+    ],
+    "rules": {
+        "quotemark": [
+            true,
+            "double"
+        ],
+        "interface-name": false,
+        "max-classes-per-file": false,
+        "no-console": false,
+        "no-empty-interface": false,
+        "no-var-requires": false,
+        "object-literal-sort-keys": false,
+        "no-implicit-dependencies": false,
+        "ordered-imports": true,
+        "no-object-literal-type-assertion": true,
+        "semicolon": true,
+        "eofline": true,
+        "no-non-null-assertion": true,
+        "no-unused-expression": false,
+        "one-variable-per-declaration": false
+    }
+}
