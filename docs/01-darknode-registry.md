@@ -41,7 +41,7 @@ p ← 1
 x ← h mod n
 
 for i in 1 .. n do
-    p(x) ← 0
+    p(i) ← 0
 
 for i in 1 .. n do
     while p(x) > 0 do
