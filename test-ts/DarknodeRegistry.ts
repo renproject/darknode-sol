@@ -257,8 +257,27 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await ren.balanceOf(accounts[7])).should.bignumber.equal(MINIMUM_BOND);
     });
 
+    it("anyone can refund", async () => {
+        const owner = accounts[2];
+        const id = ID("3");
+        const pubk = PUBK("3");
+        // Register
+        await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
+        await dnr.register(id, pubk, MINIMUM_BOND, { from: owner });
+        await waitForEpoch(dnr);
+        // Deregister
+        await dnr.deregister(id, { from: owner });
+        (await dnr.isPendingDeregistration(id)).should.be.true;
+        await waitForEpoch(dnr);
+        await waitForEpoch(dnr);
+        await dnr.refund(id, { from: accounts[0] });
+
+        (await dnr.isRefunded(id)).should.be.true;
+        (await ren.balanceOf(owner)).should.bignumber.equal(MINIMUM_BOND);
+    });
+
     it("should fail to refund twice", async () => {
-        await dnr.refund(ID("3")).should.be.rejectedWith(null, /must be darknode owner/);
+        await dnr.refund(ID("3")).should.be.rejectedWith(null, /must be deregistered for at least one epoch/);
     });
 
     it("should throw if refund fails", async () => {
@@ -277,7 +296,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("should not refund for an address which is never registered", async () => {
-        await dnr.refund(ID("-1")).should.be.rejectedWith(null, /must be darknode owner/);
+        await dnr.refund(ID("-1")).should.be.rejectedWith(null, /must be deregistered for at least one epoch/);
     });
 
     it("anyone except the slasher can not call slash", async () => {

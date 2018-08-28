@@ -305,11 +305,14 @@ contract DarknodeRegistry is Ownable {
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
-    /// darknode available for registration again.
+    /// darknode available for registration again. Anyone can call this function
+    /// but the bond will always be refunded to the darknode owner.
     ///
     /// @param _darknodeID The darknode ID that will be refunded. The caller
     ///        of this method must be the owner of this darknode.
-    function refund(address _darknodeID) external onlyDarknodeOwner(_darknodeID) onlyRefundable(_darknodeID) {
+    function refund(address _darknodeID) external onlyRefundable(_darknodeID) {
+        address darknodeOwner = store.darknodeOwner(_darknodeID);
+
         // Remember the bond amount
         uint256 amount = store.darknodeBond(_darknodeID);
 
@@ -317,10 +320,10 @@ contract DarknodeRegistry is Ownable {
         store.removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        ren.transfer(msg.sender, amount);
+        ren.transfer(darknodeOwner, amount);
 
         // Emit an event.
-        emit LogDarknodeOwnerRefunded(msg.sender, amount);
+        emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.
