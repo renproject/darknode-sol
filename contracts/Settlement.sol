@@ -13,7 +13,7 @@ interface Settlement {
         uint256 _minimumVolume
     ) external;
 
-    function submitOrderGasPriceLimit() external view returns (uint256);
+    function submissionGasPriceLimit() external view returns (uint256);
 
     function settle(
         bytes32 _buyID,
