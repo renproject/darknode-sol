@@ -19,4 +19,11 @@ interface Settlement {
         bytes32 _buyID,
         bytes32 _sellID
     ) external;
+
+    /// @notice orderStatus should return the status of the order, which should
+    /// be:
+    ///     0  - Order not seen before
+    ///     1  - Order details submitted
+    ///     >1 - Order settled, or settlement no longer possible
+    function orderStatus(bytes32 _orderID) external view returns (uint8);
 }
