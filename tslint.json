@@ -20,6 +20,7 @@
         "eofline": true,
         "no-non-null-assertion": true,
         "no-unused-expression": false,
-        "one-variable-per-declaration": false
+        "one-variable-per-declaration": false,
+        "space-before-function-paren": false
     }
 }

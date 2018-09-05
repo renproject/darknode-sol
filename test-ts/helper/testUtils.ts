@@ -7,6 +7,9 @@ import * as crypto from "crypto";
 import BigNumber from "bignumber.js";
 import { OrderbookContract } from "../bindings/orderbook";
 
+// Import chai log helper
+import "./logs";
+
 chai.use(chaiAsPromised);
 chai.use(chaiBigNumber(BigNumber));
 chai.should();
@@ -29,6 +32,10 @@ export const NULL32 = "0x0000000000000000000000000000000000000000000000000000000
 
 export const randomBytes = (bytes: number): string => {
     return `0x${crypto.randomBytes(bytes).toString("hex")}`;
+};
+
+export const randomAddress = (): string => {
+    return web3.utils.toChecksumAddress(randomBytes(20));
 };
 
 export async function waitForEpoch(dnr: any) {

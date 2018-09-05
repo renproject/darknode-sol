@@ -13,10 +13,17 @@ interface Settlement {
         uint256 _minimumVolume
     ) external;
 
-    function submitOrderGasPriceLimit() external view returns (uint256);
+    function submissionGasPriceLimit() external view returns (uint256);
 
     function settle(
         bytes32 _buyID,
         bytes32 _sellID
     ) external;
+
+    /// @notice orderStatus should return the status of the order, which should
+    /// be:
+    ///     0  - Order not seen before
+    ///     1  - Order details submitted
+    ///     >1 - Order settled, or settlement no longer possible
+    function orderStatus(bytes32 _orderID) external view returns (uint8);
 }
