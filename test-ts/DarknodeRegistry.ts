@@ -112,6 +112,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.deregister(ID("-1")).should.be.rejectedWith(null, /must be deregisterable/);
     });
 
+    it("only darknode owner can deregister darknode", async () => {
+        await dnr.deregister(ID("1"), { from: accounts[9] }).should.be.rejectedWith(null, /must be darknode owner/);
+    });
+
     it("can get the owner of the Dark Node", async () => {
         (await dnr.getDarknodeOwner(ID("1"))).should.equal(accounts[0]);
     });
