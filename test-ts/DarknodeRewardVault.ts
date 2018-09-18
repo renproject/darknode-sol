@@ -115,14 +115,14 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
             .should.be.rejectedWith(null, /revert/); // erc20 transfer error
 
         await darknodeRewardVault.deposit(darknode1, ETH.address, 1)
-            .should.be.rejectedWith(null, /mismatched tx value/);
+            .should.be.rejectedWith(null, /mismatched ether value/);
     });
 
     it("cannot deposit ether and erc20 with the same transaction", async () => {
         await TOKEN1.approve(darknodeRewardVault.address, 10);
         await darknodeRewardVault.deposit(
             darknode1, TOKEN1.address, 10, { value: 10 })
-            .should.be.rejectedWith(null, /unexpected ether transfer/);
+            .should.be.rejectedWith(null, /unexpected ether value/);
     });
 
     it("checks success of ERC20 withdrawal before updating balances", async () => {

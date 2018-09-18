@@ -5,6 +5,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
+import "./CompatibleERC20.sol";
 
 /// @notice The DarknodeRewardVault contract is responsible for holding fees
 /// for darknodes for settling orders. Fees can be withdrawn to the address of
@@ -12,6 +13,7 @@ import "./DarknodeRegistry.sol";
 /// Docs: https://github.com/republicprotocol/republic-sol/blob/master/docs/02-darknode-reward-vault.md
 contract DarknodeRewardVault is Ownable {
     using SafeMath for uint256;
+    using CompatibleERC20Functions for CompatibleERC20;
 
     string public VERSION; // Passed in as a constructor parameter.
 
@@ -53,10 +55,13 @@ contract DarknodeRewardVault is Ownable {
     /// @param _value The amount of fees in the smallest unit of the token.
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         if (address(_token) == ETHEREUM) {
-            require(msg.value == _value, "mismatched tx value");
+            require(msg.value == _value, "mismatched ether value");
         } else {
-            require(msg.value == 0, "unexpected ether transfer");
-            require(_token.transferFrom(msg.sender, address(this), _value), "token transfer failed");
+            require(msg.value == 0, "unexpected ether value");
+            require(
+                CompatibleERC20(_token).compliantTransferFrom(msg.sender, address(this), _value),
+                "fee transfer failed"
+            );
         }
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
     }

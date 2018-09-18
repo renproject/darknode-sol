@@ -58,7 +58,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // Not registered yet
         await settlementRegistry.deregisterSettlement(id)
-            .should.be.rejectedWith(null, /note registered/);
+            .should.be.rejectedWith(null, /not registered/);
 
         // Register Settlement
         await settlementRegistry.registerSettlement(id, settlement, verifier);
