@@ -8,9 +8,9 @@ coverageEnv
 coverage.json
 .coveralls.yml
 .env
-.merged/
-build
-test
+/build
+/.merged
+/test
 local_*
 test-ts/bindings/*.ts
 
