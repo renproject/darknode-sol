@@ -90,7 +90,10 @@ contract("CompliantERC20", (accounts) => {
             });
 
             it("throws for invalid approve", async () => {
-                // Get balances before depositing
+                // Transfer to the contract
+                await token.transfer(testContract.address, 1);
+
+                // Get balances before transferring back
                 const beforeSelf = new BN(await token.balanceOf(accounts[0]));
                 const beforeTest = new BN(await token.balanceOf(testContract.address));
 
@@ -99,8 +102,7 @@ contract("CompliantERC20", (accounts) => {
                 await testContract.approve(token.address, 1)
                     .should.be.rejectedWith(null, /revert/);
 
-                // Can transfer from the contract (after transferring to it)
-                await token.transfer(testContract.address, 1);
+                // Can transfer from the contract
                 await token.transferFrom(testContract.address, accounts[0], 1);
 
                 // Compare balances after depositing
