@@ -16,7 +16,7 @@
     "openzeppelin-solidity": "1.11.0"
   },
   "devDependencies": {
-    "@0xproject/abi-gen": "^1.0.5",
+    "@0xproject/abi-gen": "^1.0.8",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7.1.0",
     "@types/crypto-js": "^3.1.42",
