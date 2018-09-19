@@ -2,12 +2,12 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
-/// @notice A test ERC20 token with 18 decimals.
-contract XYZToken is StandardToken {
+/// @notice A test ERC20 token with 12 decimals.
+contract ImpreciseToken is StandardToken {
 
-    string public constant name = "XYZ Test Token"; // solium-disable-line uppercase
-    string public constant symbol = "XYZ"; // solium-disable-line uppercase
-    uint8 public constant decimals = 18; // solium-disable-line uppercase
+    string public constant name = "Imprecise Token"; // solium-disable-line uppercase
+    string public constant symbol = "IPT"; // solium-disable-line uppercase
+    uint8 public constant decimals = 9; // solium-disable-line uppercase
 
     uint256 public constant INITIAL_SUPPLY = 1000000000 * (10 ** uint256(decimals));
 

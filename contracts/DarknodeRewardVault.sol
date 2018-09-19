@@ -84,7 +84,10 @@ contract DarknodeRewardVault is Ownable {
         if (address(_token) == ETHEREUM) {
             darknodeOwner.transfer(value);
         } else {
-            require(_token.transfer(darknodeOwner, value), "token transfer failed");
+            require(
+                CompatibleERC20(_token).compliantTransfer(darknodeOwner, value),
+                "token transfer failed"
+            );
         }
     }
 

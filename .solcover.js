@@ -3,11 +3,10 @@ module.exports = {
     testrpcOptions: "-d --accounts 10 --port 8555",
     skipFiles: [
         "RepublicToken.sol",
-	"migrations/Migrations.sol",
-        "test/tokens/ABCToken.sol",
+        "migrations/Migrations.sol",
+        "test/tokens/ImpreciseToken.sol",
         "test/tokens/NonCompliantToken.sol",
         "test/tokens/NormalToken.sol",
         "test/tokens/ReturnsFalseToken.sol",
-        "test/tokens/XYZToken.sol",
     ],
 };
