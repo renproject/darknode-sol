@@ -1,11 +1,13 @@
 module.exports = {
-  copyPackages: ['openzeppelin-solidity'], // needed to import from node_modules
-  testrpcOptions: '-d --accounts 10 --port 8555',
-  skipFiles: [
-    'RepublicToken.sol',
-    'tests/ABCToken.sol',
-    'tests/XYZToken.sol',
-    'tests/Reverter.sol',
-    'migrations/Migrations.sol'
-  ],
+    copyPackages: ["openzeppelin-solidity"], // needed to import from node_modules
+    testrpcOptions: "-d --accounts 10 --port 8555",
+    skipFiles: [
+        "RepublicToken.sol",
+	"migrations/Migrations.sol",
+        "test/tokens/ABCToken.sol",
+        "test/tokens/NonCompliantToken.sol",
+        "test/tokens/NormalToken.sol",
+        "test/tokens/ReturnsFalseToken.sol",
+        "test/tokens/XYZToken.sol",
+    ],
 };
