@@ -54,16 +54,14 @@ contract DarknodeRewardVault is Ownable {
     ///        A special address is used for Ether.
     /// @param _value The amount of fees in the smallest unit of the token.
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
+        uint256 receivedValue = _value;
         if (address(_token) == ETHEREUM) {
             require(msg.value == _value, "mismatched ether value");
         } else {
             require(msg.value == 0, "unexpected ether value");
-            require(
-                CompatibleERC20(_token).compliantTransferFrom(msg.sender, address(this), _value),
-                "fee transfer failed"
-            );
+            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, address(this), _value);
         }
-        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_value);
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(receivedValue);
     }
 
     /// @notice Withdraw fees earned by a Darknode. The fees will be sent to
@@ -84,10 +82,7 @@ contract DarknodeRewardVault is Ownable {
         if (address(_token) == ETHEREUM) {
             darknodeOwner.transfer(value);
         } else {
-            require(
-                CompatibleERC20(_token).compliantTransfer(darknodeOwner, value),
-                "token transfer failed"
-            );
+            CompatibleERC20(_token).safeTransfer(darknodeOwner, value);
         }
     }
 

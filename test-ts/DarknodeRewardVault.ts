@@ -8,21 +8,18 @@ import { MINIMUM_BOND } from "./helper/testUtils";
 
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DarknodeRewardVaultArtifact, DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
-import { ImpreciseTokenArtifact } from "./bindings/imprecise_token";
-import { NonCompliantTokenArtifact } from "./bindings/non_compliant_token";
-import { NormalTokenArtifact } from "./bindings/normal_token";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
-import { ReturnsFalseTokenArtifact } from "./bindings/returns_false_token";
 import { ReverterArtifact } from "./bindings/reverter";
 
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault") as DarknodeRewardVaultArtifact;
 const Reverter = artifacts.require("Reverter") as ReverterArtifact;
-const ImpreciseToken = artifacts.require("ImpreciseToken") as ImpreciseTokenArtifact;
-const NonCompliantToken = artifacts.require("NonCompliantToken") as NonCompliantTokenArtifact;
-const NormalToken = artifacts.require("NormalToken") as NormalTokenArtifact;
-const ReturnsFalseToken = artifacts.require("ReturnsFalseToken") as ReturnsFalseTokenArtifact;
+const ImpreciseToken = artifacts.require("ImpreciseToken") as RepublicTokenArtifact;
+const NonCompliantToken = artifacts.require("NonCompliantToken") as RepublicTokenArtifact;
+const NormalToken = artifacts.require("NormalToken") as RepublicTokenArtifact;
+const ReturnsFalseToken = artifacts.require("ReturnsFalseToken") as RepublicTokenArtifact;
+const TokenWithFees = artifacts.require("TokenWithFees") as RepublicTokenArtifact;
 
 contract("DarknodeRewardVault", (accounts: string[]) => {
 
@@ -30,7 +27,19 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
     let dnr: DarknodeRegistryContract;
     let darknodeRewardVault: DarknodeRewardVaultContract;
     let darknode1: string, darknode2: string, darknodeOperator: string;
-    let TOKEN1, TOKEN2, TOKEN3, TOKEN4, TOKEN5, ETH;
+    let TOKEN1;
+
+    const ETH = {
+        address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        decimals: async () => 18,
+        approve: async (to, value) => null,
+        transfer: async (to, value) => null,
+        balanceOf: async (address) => web3.eth.getBalance(address),
+    } as any as RepublicTokenContract;
+
+    const ETHArtifact = {
+        new: async () => ETH,
+    };
 
     before(async () => {
 
@@ -39,18 +48,6 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
         darknodeRewardVault = await DarknodeRewardVault.deployed();
 
         TOKEN1 = await RepublicToken.new();
-        TOKEN2 = await ImpreciseToken.new();
-        TOKEN3 = await NormalToken.new();
-        TOKEN4 = await NonCompliantToken.new();
-        TOKEN5 = await ReturnsFalseToken.new();
-
-        ETH = {
-            address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-            decimals: () => 18,
-            approve: () => null,
-            transfer: (to, value) => null,
-            balanceOf: (address) => web3.eth.getBalance(address),
-        };
 
         // Register all nodes
         darknode1 = accounts[8];
@@ -83,20 +80,29 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
 
     context("can deposit and withdraw funds", async () => {
 
+        const testCases = [
+            { contract: ETHArtifact, fees: 0, desc: "ether" },
+            { contract: RepublicToken, fees: 0, desc: "ren" },
+            { contract: NormalToken, fees: 0, desc: "standard token" },
+            { contract: ReturnsFalseToken, fees: 0, desc: "alternate token" },
+            { contract: NonCompliantToken, fees: 0, desc: "non compliant token" },
+            { contract: TokenWithFees, fees: 3, desc: "token with fees" },
+            { contract: ImpreciseToken, fees: 3, desc: "imprecise token" },
+        ];
+
         // Deposit rewards
-        const names = ["TOKEN1", "TOKEN2", "TOKEN3", "TOKEN4", "TOKEN5", "ETH"];
-        for (let i = 0; i < names.length; i++) {
-            it(names[i], async () => {
+        for (const testCase of testCases) {
+            it(testCase.desc, async () => {
 
                 const sum = {
                     [darknode1]: new BigNumber(0),
                     [darknode2]: new BigNumber(0),
                 };
 
-                const token = [TOKEN1, TOKEN2, TOKEN3, TOKEN4, TOKEN5, ETH][i];
+                const token = await testCase.contract.new();
                 const decimals = await token.decimals();
 
-                // Set fee balance to 0 by withdrawing
+                // Set reward balance to 0 by withdrawing
                 for (const darknode of [darknode1, darknode2]) {
                     sum[darknode] = new BigNumber(
                         (await darknodeRewardVault.darknodeBalances(darknode, token.address)).toString(),
@@ -105,17 +111,30 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
 
                 for (const account of accounts) {
                     for (const darknode of [darknode1, darknode2]) {
-                        const fee = new BigNumber(Math.random())
-                            .multipliedBy(new BigNumber(10).exponentiatedBy(decimals))
-                            .integerValue();
-                        await token.transfer(account, fee);
+                        // FIXME: Test has some rounding issues with fees
 
-                        const value = token === ETH ? fee.toFixed() : 0;
-                        await token.approve(darknodeRewardVault.address, fee, { from: account });
+                        const reward = new BigNumber(Math.random())
+                            .multipliedBy(new BigNumber(10).exponentiatedBy(new BN(decimals).toNumber() - 14))
+                            .integerValue(BigNumber.ROUND_FLOOR)
+                            .multipliedBy(new BigNumber(10).exponentiatedBy(14));
+                        const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                        await token.transfer(account, reward.toFixed());
+
+                        const newReward = reward.minus(fee);
+                        const newFee = newReward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                        const value = token === ETH ? newReward.toFixed() : 0;
+                        await token.approve(darknodeRewardVault.address, newReward.toFixed(), { from: account });
                         await darknodeRewardVault.deposit(
-                            darknode, token.address, fee.toFixed(), { value, from: account },
-                        );
-                        sum[darknode] = sum[darknode].plus(fee);
+                            darknode, token.address, newReward.toFixed(), { value, from: account },
+                        ).should.not.be.rejected;
+
+                        const newNewReward = newReward.minus(newFee);
+                        const newNewFee = newNewReward.multipliedBy(testCase.fees / 1000)
+                            .integerValue(BigNumber.ROUND_FLOOR);
+
+                        sum[darknode] = sum[darknode].plus(newNewReward.minus(newNewFee));
                     }
                 }
 
@@ -124,7 +143,11 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
                     await darknodeRewardVault.withdraw(darknode, token.address);
                     const balanceAfter = new BN(await token.balanceOf(darknodeOperator));
 
-                    balanceAfter.should.bignumber.equal(balanceBefore.add(new BN(sum[darknode].toFixed())));
+                    const reward = sum[darknode];
+                    const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                    balanceAfter.sub(balanceBefore)
+                        .should.bignumber.equal(reward);
                 }
             });
         }
