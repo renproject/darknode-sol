@@ -79,6 +79,21 @@ contract("CompliantERC20", (accounts) => {
 
                 // Approve and deposit
                 await token.approve(mock.address, 0);
+                await mock.naiveDeposit(token.address, VALUE)
+                    .should.be.rejectedWith(null, /revert/);
+
+                // Compare balances after depositing
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
+                (await token.balanceOf(mock.address)).should.bignumber.equal(after);
+            });
+
+            it("throws for invalid transferFrom (with fee)", async () => {
+                // Get balances before depositing
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
+
+                // Approve and deposit
+                await token.approve(mock.address, 0);
                 await mock.deposit(token.address, VALUE)
                     .should.be.rejectedWith(null, /revert/);
 
