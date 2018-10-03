@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
@@ -9,6 +10,8 @@ import "./RepublicToken.sol";
 /// contract. The data / fund logic and storage have been separated to improve
 /// upgradability.
 contract DarknodeRegistryStore is Ownable {
+    using SafeMath for uint256;
+
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
@@ -114,7 +117,7 @@ contract DarknodeRegistryStore is Ownable {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
         require(decreasedBond < previousBond, "new bond larger than previous bond");
         darknodeRegistry[darknodeID].bond = decreasedBond;
-        require(ren.transfer(owner, previousBond - decreasedBond), "cannot transfer bond");
+        require(ren.transfer(owner, previousBond.sub(decreasedBond)), "cannot transfer bond");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.

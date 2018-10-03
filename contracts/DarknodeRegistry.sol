@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./RepublicToken.sol";
 import "./DarknodeRegistryStore.sol";
@@ -8,6 +9,8 @@ import "./DarknodeRegistryStore.sol";
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
 contract DarknodeRegistry is Ownable {
+    using SafeMath for uint256;
+
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknode pods are shuffled after a fixed number of blocks.
@@ -165,11 +168,11 @@ contract DarknodeRegistry is Ownable {
             msg.sender,
             _bond,
             _publicKey,
-            currentEpoch.blocknumber + minimumEpochInterval,
+            currentEpoch.blocknumber.add(minimumEpochInterval),
             0
         );
 
-        numDarknodesNextEpoch += 1;
+        numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
         emit LogDarknodeRegistered(_darknodeID, _bond);
@@ -182,12 +185,7 @@ contract DarknodeRegistry is Ownable {
     ///        of this method store.darknodeRegisteredAt(_darknodeID) must be
     //         the owner of this darknode.
     function deregister(address _darknodeID) external onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
-        // Flag the darknode for deregistration
-        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + minimumEpochInterval);
-        numDarknodesNextEpoch -= 1;
-
-        // Emit an event
-        emit LogDarknodeDeregistered(_darknodeID);
+        deregisterDarknode(_darknodeID);
     }
 
     /// @notice Progress the epoch if it is possible to do so. This captures
@@ -200,7 +198,7 @@ contract DarknodeRegistry is Ownable {
         }
 
         // Require that the epoch interval has passed
-        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
+        require(block.number >= currentEpoch.blocknumber.add(minimumEpochInterval), "epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
@@ -293,9 +291,7 @@ contract DarknodeRegistry is Ownable {
 
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_prover)) {
-            store.updateDarknodeDeregisteredAt(_prover, currentEpoch.blocknumber + minimumEpochInterval);
-            numDarknodesNextEpoch -= 1;
-            emit LogDarknodeDeregistered(_prover);
+            deregisterDarknode(_prover);
         }
 
         // Reward the challengers with less than the penalty so that it is not
@@ -483,5 +479,15 @@ contract DarknodeRegistry is Ownable {
             n += 1;
         }
         return nodes;
+    }
+
+    /// Private function called by `deregister` and `slash`
+    function deregisterDarknode(address _darknodeID) private {
+        // Flag the darknode for deregistration
+        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber.add(minimumEpochInterval));
+        numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
+
+        // Emit an event
+        emit LogDarknodeDeregistered(_darknodeID);
     }
 }

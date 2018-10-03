@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 import "./SettlementRegistry.sol";
@@ -12,6 +13,8 @@ import "./libraries/Utils.sol";
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
 contract Orderbook is Ownable {
+    using SafeMath for uint256;
+
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice OrderState enumerates the possible states of an order. All
@@ -176,10 +179,11 @@ contract Orderbook is Ownable {
         if (orders[_orderID].blockNumber == 0) {
             return 0;
         }
-        return (block.number - orders[_orderID].blockNumber);
+        return (block.number.sub(orders[_orderID].blockNumber));
     }
 
-    /// @notice returns the number of orders in the orderbook
+    /// @notice returns the total number of orders in the orderbook, including
+    /// orders that are no longer open
     function ordersCount() external view returns (uint256) {
         return orderbook.length;
     }
@@ -193,7 +197,7 @@ contract Orderbook is Ownable {
         // If the provided limit is more than the number of orders after the offset,
         // decrease the limit
         uint256 limit = _limit;
-        if (_offset + limit > orderbook.length) {
+        if (_offset.add(limit) > orderbook.length) {
             limit = orderbook.length - _offset;
         }
 
