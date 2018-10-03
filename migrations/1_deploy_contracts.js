@@ -13,11 +13,7 @@ module.exports = async function (deployer, network) {
     const VERSION_STRING = `${network}-${config.VERSION}`;
 
     await deployer
-        .deploy(
-            RepublicToken, {
-                overwrite: network !== "f0"
-            }
-        )
+        .deploy(RepublicToken)
         .then(() => deployer.deploy(
             DarknodeRegistryStore,
             VERSION_STRING,
