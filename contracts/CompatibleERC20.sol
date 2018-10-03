@@ -67,10 +67,10 @@ library CompatibleERC20Functions {
             // 32 bytes: ERC20 of types (1) or (2)
             case 32 {
                 // Copy the return data into scratch space
-                returndatacopy(0x0, 0x0, 32)
+                returndatacopy(0, 0, 32)
 
                 // Load  the return data into returnData
-                returnData := mload(0x0)
+                returnData := mload(0)
             }
 
             // Other return size: return false
