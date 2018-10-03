@@ -108,14 +108,13 @@ contract DarknodeRegistryStore is Ownable {
         require(ren.transfer(owner, bond), "bond transfer failed");
     }
 
-    /// @notice Updates the bond of the darknode. If the bond is being
-    /// decreased, the difference is sent to the owner of this contract.
-    function updateDarknodeBond(address darknodeID, uint256 bond) external onlyOwner {
+    /// @notice Updates the bond of the darknode. The new bond must be smaller
+    /// than the previous bond of the darknode.
+    function updateDarknodeBond(address darknodeID, uint256 decreasedBond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        darknodeRegistry[darknodeID].bond = bond;
-        if (previousBond > bond) {
-            require(ren.transfer(owner, previousBond - bond), "cannot transfer bond");
-        }
+        require(decreasedBond < previousBond, "new bond larger than previous bond");
+        darknodeRegistry[darknodeID].bond = decreasedBond;
+        require(ren.transfer(owner, previousBond - decreasedBond), "cannot transfer bond");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.

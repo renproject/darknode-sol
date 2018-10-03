@@ -330,9 +330,23 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("transfer ownership of the dark node store", async () => {
         await dnr.transferStoreOwnership(accounts[0]);
-        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.mul(new BN(1000)));
+        await dnrs.transferOwnership(dnr.address);
+    });
+
+    it("can't arbitrarily increase bond", async () => {
+        await dnr.transferStoreOwnership(accounts[0]);
+        const difference = new BN(1);
+        const previousRenBalance = new BN(await ren.balanceOf(accounts[0]));
+        // Can decrease bond (used for bond slashing)
+        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.sub(difference));
+
+        // Decreasing bond transfers different to owner
+        const afterRenBalance = new BN(await ren.balanceOf(accounts[0]));
+        afterRenBalance.sub(previousRenBalance).should.be.bignumber.equal(difference);
+
+        // Can't increase bond
         await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND)
-            .should.be.rejectedWith(null, /revert/); // ren transfer error
+            .should.be.rejectedWith(null, /new bond larger than previous bond/);
         await dnrs.transferOwnership(dnr.address);
     });
 
