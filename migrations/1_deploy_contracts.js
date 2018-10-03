@@ -39,7 +39,6 @@ module.exports = async function (deployer, network) {
         .then(() => deployer.deploy(
             Orderbook,
             VERSION_STRING,
-            RepublicToken.address,
             DarknodeRegistry.address,
             SettlementRegistry.address,
         ))

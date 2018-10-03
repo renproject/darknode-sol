@@ -220,7 +220,6 @@ contract("Orderbook", (accounts: string[]) => {
     it("should be able to retrieve orders", async () => {
         const orderbookAlt: OrderbookContract = await Orderbook.new(
             "VERSION",
-            ren.address,
             dnr.address,
             settlementRegistry.address,
         );
@@ -257,7 +256,6 @@ contract("Orderbook", (accounts: string[]) => {
     it("should be able to read data from the contract", async () => {
         const orderbookAlt: OrderbookContract = await Orderbook.new(
             "VERSION",
-            ren.address,
             dnr.address,
             settlementRegistry.address,
         );

@@ -29,7 +29,6 @@ contract Orderbook is Ownable {
         bytes32 matchedOrder; // Order confirmed in a match with this order
     }
 
-    RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
     SettlementRegistry public settlementRegistry;
 
@@ -51,18 +50,15 @@ contract Orderbook is Ownable {
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _renAddress The address of the RepublicToken contract.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
     /// @param _settlementRegistry The address of the SettlementRegistry
     ///        contract.
     constructor(
         string _VERSION,
-        RepublicToken _renAddress,
         DarknodeRegistry _darknodeRegistry,
         SettlementRegistry _settlementRegistry
     ) public {
         VERSION = _VERSION;
-        ren = _renAddress;
         darknodeRegistry = _darknodeRegistry;
         settlementRegistry = _settlementRegistry;
     }
