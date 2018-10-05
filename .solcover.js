@@ -5,6 +5,7 @@ module.exports = {
         "RepublicToken.sol",
         "migrations/Migrations.sol",
         "test/CompatibleERC20Test.sol",
+        "test/Reverter.sol",
         "test/tokens/ImpreciseToken.sol",
         "test/tokens/NonCompliantToken.sol",
         "test/tokens/NormalToken.sol",
