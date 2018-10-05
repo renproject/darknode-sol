@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /// @notice The BrokerVerifier interface defines the functions that a settlement
 /// layer's broker verifier contract must implement.

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /// @notice DisapprovingBroker implements the BrokerVerifier interface, always
 /// rejecting signatures.

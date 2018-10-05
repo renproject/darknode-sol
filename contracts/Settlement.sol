@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /// @notice The Settlement interface defines the functions that a settlement
 /// layer must implement.
