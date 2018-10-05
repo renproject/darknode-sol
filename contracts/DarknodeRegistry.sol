@@ -159,7 +159,7 @@ contract DarknodeRegistry is Ownable {
         // REN allowance
         require(_bond >= minimumBond, "insufficient bond");
         // Transfer bond to store
-        require(ren.transferFrom(msg.sender, address(store), _bond), "bond transfer failed");
+        require(ren.transferFrom(msg.sender, store, _bond), "bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
@@ -295,8 +295,8 @@ contract DarknodeRegistry is Ownable {
 
         // Reward the challengers with less than the penalty so that it is not
         // worth challenging yourself
-        require(ren.transfer(store.darknodeOwner(_challenger1), reward));
-        require(ren.transfer(store.darknodeOwner(_challenger2), reward));
+        require(ren.transfer(store.darknodeOwner(_challenger1), reward), "reward transfer failed");
+        require(ren.transfer(store.darknodeOwner(_challenger2), reward), "reward transfer failed");
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
@@ -315,7 +315,7 @@ contract DarknodeRegistry is Ownable {
         store.removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        require(ren.transfer(darknodeOwner, amount));
+        require(ren.transfer(darknodeOwner, amount), "bond transfer failed");
 
         // Emit an event.
         emit LogDarknodeOwnerRefunded(darknodeOwner, amount);

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -111,7 +111,7 @@ contract DarknodeRegistryStore is Ownable {
         require(ren.transfer(owner, bond), "bond transfer failed");
     }
 
-    /// @notice Updates the bond of the darknode. The new bond must be smaller
+    /// @notice Updates the bond of a darknode. The new bond must be smaller
     /// than the previous bond of the darknode.
     function updateDarknodeBond(address darknodeID, uint256 decreasedBond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;

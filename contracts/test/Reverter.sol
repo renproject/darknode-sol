@@ -11,7 +11,7 @@ contract Reverter {
 
     function register(DarknodeRegistry dnr, RepublicToken ren, address _darknodeID, bytes _publicKey, uint256 _bond) public {
         // REN allowance
-        require(ren.transferFrom(msg.sender, address(this), _bond));
+        require(ren.transferFrom(msg.sender, this, _bond), "bond transfer failed");
         ren.approve(dnr, _bond);
         dnr.register(_darknodeID, _publicKey, _bond);
     }

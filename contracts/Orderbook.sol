@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -46,7 +46,7 @@ contract Orderbook is Ownable {
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
+        require(darknodeRegistry.isRegistered(_sender), "must be registered darknode");
         _;
     }
 
@@ -135,7 +135,7 @@ contract Orderbook is Ownable {
         require(orders[_orderID].state == OrderState.Open, "invalid order state");
 
         // Require the msg.sender to be the trader or the broker verifier
-        address brokerVerifier = address(settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID));
+        address brokerVerifier = settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID);
         require(msg.sender == orders[_orderID].trader || msg.sender == brokerVerifier, "not authorized");
 
         orders[_orderID].state = OrderState.Canceled;

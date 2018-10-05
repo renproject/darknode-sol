@@ -55,11 +55,11 @@ contract DarknodeRewardVault is Ownable {
     /// @param _value The amount of fees in the smallest unit of the token.
     function deposit(address _darknode, ERC20 _token, uint256 _value) public payable {
         uint256 receivedValue = _value;
-        if (address(_token) == ETHEREUM) {
+        if (_token == ETHEREUM) {
             require(msg.value == _value, "mismatched ether value");
         } else {
             require(msg.value == 0, "unexpected ether value");
-            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, address(this), _value);
+            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, this, _value);
         }
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(receivedValue);
     }
@@ -72,14 +72,14 @@ contract DarknodeRewardVault is Ownable {
     ///        withdrawn. The owner of this Darknode will receive the fees.
     /// @param _token The address of the ERC20 token to withdraw.
     function withdraw(address _darknode, ERC20 _token) public {
-        address darknodeOwner = darknodeRegistry.getDarknodeOwner(address(_darknode));
+        address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
 
         require(darknodeOwner != 0x0, "invalid darknode owner");
 
         uint256 value = darknodeBalances[_darknode][_token];
         darknodeBalances[_darknode][_token] = 0;
 
-        if (address(_token) == ETHEREUM) {
+        if (_token == ETHEREUM) {
             darknodeOwner.transfer(value);
         } else {
             CompatibleERC20(_token).safeTransfer(darknodeOwner, value);
