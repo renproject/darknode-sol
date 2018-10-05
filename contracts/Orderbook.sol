@@ -69,6 +69,9 @@ contract Orderbook is Ownable {
     /// @notice Allows the owner to update the address of the DarknodeRegistry
     /// contract.
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
+        // Basic validation knowing that DarknodeRegistry exposes VERSION
+        require(bytes(_newDarknodeRegistry.VERSION()).length > 0, "invalid darknode registry contract");
+
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }

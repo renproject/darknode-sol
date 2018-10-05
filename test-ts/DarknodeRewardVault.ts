@@ -70,12 +70,24 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
     });
 
     it("can update the darknode registry address", async () => {
-        await darknodeRewardVault.updateDarknodeRegistry(testUtils.NULL);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal(testUtils.NULL);
-        await darknodeRewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+        const previousDarknodeRegistry = await darknodeRewardVault.darknodeRegistry();
+
+        // [CHECK] The function validates the new darknode registry
+        await darknodeRewardVault.updateDarknodeRegistry(testUtils.NULL)
+            .should.be.rejectedWith(null, /revert/);
+
+        // [ACTION] Update the darknode registry to another address
+        await darknodeRewardVault.updateDarknodeRegistry(darknodeRewardVault.address);
+        // [CHECK] Verify the darknode registry address has been updated
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(darknodeRewardVault.address);
+
+        // [CHECK] Only the owner can update the darknode registry
+        await darknodeRewardVault.updateDarknodeRegistry(previousDarknodeRegistry, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await darknodeRewardVault.updateDarknodeRegistry(dnr.address);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal(dnr.address);
+
+        // [RESET] Reset the darknode registry to the previous address
+        await darknodeRewardVault.updateDarknodeRegistry(previousDarknodeRegistry);
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(previousDarknodeRegistry);
     });
 
     context("can deposit and withdraw funds", async () => {

@@ -62,12 +62,24 @@ contract("Orderbook", (accounts: string[]) => {
     });
 
     it("can update the darknode registry address", async () => {
-        await orderbook.updateDarknodeRegistry(testUtils.NULL);
-        (await orderbook.darknodeRegistry()).should.equal(testUtils.NULL);
-        await orderbook.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+        const previousDarknodeRegistry = await orderbook.darknodeRegistry();
+
+        // [CHECK] The function validates the new darknode registry
+        await orderbook.updateDarknodeRegistry(testUtils.NULL)
+            .should.be.rejectedWith(null, /revert/);
+
+        // [ACTION] Update the darknode registry to another address
+        await orderbook.updateDarknodeRegistry(orderbook.address);
+        // [CHECK] Verify the darknode registry address has been updated
+        (await orderbook.darknodeRegistry()).should.equal(orderbook.address);
+
+        // [CHECK] Only the owner can update the darknode registry
+        await orderbook.updateDarknodeRegistry(previousDarknodeRegistry, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await orderbook.updateDarknodeRegistry(dnr.address);
-        (await orderbook.darknodeRegistry()).should.equal(dnr.address);
+
+        // [RESET] Reset the darknode registry to the previous address
+        await orderbook.updateDarknodeRegistry(previousDarknodeRegistry);
+        (await orderbook.darknodeRegistry()).should.equal(previousDarknodeRegistry);
     });
 
     it("should be able to open orders", async () => {

@@ -273,6 +273,7 @@ contract DarknodeRegistry is Ownable {
     /// address.
     /// @param _slasher The new slasher address.
     function updateSlasher(address _slasher) external onlyOwner {
+        require(_slasher != 0x0, "invalid slasher address");
         nextSlasher = _slasher;
     }
 

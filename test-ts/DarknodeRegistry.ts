@@ -303,6 +303,31 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.refund(ID("-1")).should.be.rejectedWith(null, /must be deregistered for at least one epoch/);
     });
 
+    it("can update slasher address", async () => {
+        const previousSlasher = await dnr.slasher();
+        const newSlasher = accounts[3];
+        // [CHECK] This test assumes different previous and new slashers
+        previousSlasher.should.not.equal(newSlasher);
+
+        // [CHECK] The slasher can't be updated to 0x0
+        await dnr.updateSlasher(NULL)
+            .should.be.rejectedWith(null, "invalid slasher address");
+
+        // [ACTION] Update slasher address
+        await dnr.updateSlasher(newSlasher);
+        // [CHECK] Verify the address hasn't changed before an epoch
+        (await dnr.slasher()).should.equal(previousSlasher);
+
+        // [CHECK] Verify the new slasher address after an epoch
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(newSlasher);
+
+        // [RESET] Reset the slasher address to the previous slasher address
+        await dnr.updateSlasher(previousSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(previousSlasher);
+    });
+
     it("anyone except the slasher can not call slash", async () => {
         const previousSlasher = await dnr.slasher();
         const slasher = accounts[3];

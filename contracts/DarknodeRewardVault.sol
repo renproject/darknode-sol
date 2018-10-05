@@ -37,6 +37,9 @@ contract DarknodeRewardVault is Ownable {
     }
 
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
+        // Basic validation knowing that DarknodeRegistry exposes VERSION
+        require(bytes(_newDarknodeRegistry.VERSION()).length > 0, "invalid darknode registry contract");
+
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
