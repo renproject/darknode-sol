@@ -329,12 +329,37 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("transfer ownership of the dark node store", async () => {
+        // [ACTION] Initiate ownership transfer to wrong account
+        await dnr.transferStoreOwnership(accounts[1]);
+
+        // [ACTION] Can correct ownership transfer
         await dnr.transferStoreOwnership(accounts[0]);
+
+        // [CHECK] Owner should still be the DNR
+        (await dnrs.owner()).should.equal(dnr.address);
+
+        // [ACTION] Claim ownership
+        await dnrs.claimOwnership();
+
+        // [CHECK] Owner should now be main account
+        (await dnrs.owner()).should.equal(accounts[0]);
+
+        // [RESET] Initiate ownership transfer back to DNR
         await dnrs.transferOwnership(dnr.address);
+
+        // [CHECK] Owner should still be main account
+        (await dnrs.owner()).should.equal(accounts[0]);
+
+        // [RESET] Claim ownership
+        await dnr.claimStoreOwnership();
+
+        // [CHECK] Owner should now be the DNR
+        (await dnrs.owner()).should.equal(dnr.address);
     });
 
     it("can't arbitrarily increase bond", async () => {
         await dnr.transferStoreOwnership(accounts[0]);
+        await dnrs.claimOwnership();
         const difference = new BN(1);
         const previousRenBalance = new BN(await ren.balanceOf(accounts[0]));
         // Can decrease bond (used for bond slashing)
@@ -348,6 +373,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND)
             .should.be.rejectedWith(null, /new bond larger than previous bond/);
         await dnrs.transferOwnership(dnr.address);
+        await dnr.claimStoreOwnership();
     });
 
     // Takes 30 minutes - keep as it.skip when not running

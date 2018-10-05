@@ -233,11 +233,18 @@ contract DarknodeRegistry is Ownable {
         emit LogNewEpoch();
     }
 
-    /// @notice Allows the contract owner to transfer ownership of the
-    /// DarknodeRegistryStore.
+    /// @notice Allows the contract owner to initiate an ownership transfer of
+    /// the DarknodeRegistryStore. 
     /// @param _newOwner The address to transfer the ownership to.
     function transferStoreOwnership(address _newOwner) external onlyOwner {
         store.transferOwnership(_newOwner);
+    }
+
+    /// @notice Claims ownership of the store passed in to the constructor.
+    /// `transferStoreOwnership` must have previously been called when
+    /// transferring from another Darknode Registry.
+    function claimStoreOwnership() external onlyOwner {
+        store.claimOwnership();
     }
 
     /// @notice Allows the contract owner to update the minimum bond.
