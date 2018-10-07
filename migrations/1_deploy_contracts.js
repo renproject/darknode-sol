@@ -1,27 +1,27 @@
-const RepublicToken = artifacts.require("RepublicToken.sol");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore.sol");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry.sol");
-const DarknodeSlasher = artifacts.require("DarknodeSlasher.sol");
-const Orderbook = artifacts.require("Orderbook.sol");
-const DarknodeRewardVault = artifacts.require("DarknodeRewardVault.sol");
-const SettlementRegistry = artifacts.require("SettlementRegistry.sol");
+const RepublicToken = artifacts.require("RepublicToken");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+const Orderbook = artifacts.require("Orderbook");
+const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
+const SettlementRegistry = artifacts.require("SettlementRegistry");
 
 const config = require("./config.js");
 
 module.exports = async function (deployer, network) {
 
+    const VERSION_STRING = `${network}-${config.VERSION}`;
+
     await deployer
-        .deploy(
-            RepublicToken, { overwrite: network !== "f0" }
-        )
+        .deploy(RepublicToken)
         .then(() => deployer.deploy(
             DarknodeRegistryStore,
-            config.VERSION,
+            VERSION_STRING,
             RepublicToken.address,
         ))
         .then(() => deployer.deploy(
             DarknodeRegistry,
-            config.VERSION,
+            VERSION_STRING,
             RepublicToken.address,
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
@@ -30,33 +30,36 @@ module.exports = async function (deployer, network) {
         ))
         .then(() => deployer.deploy(
             SettlementRegistry,
-            config.VERSION,
+            VERSION_STRING,
         ))
         .then(() => deployer.deploy(
             Orderbook,
-            config.VERSION,
-            RepublicToken.address,
+            VERSION_STRING,
             DarknodeRegistry.address,
             SettlementRegistry.address,
         ))
         .then(() => deployer.deploy(
             DarknodeRewardVault,
-            config.VERSION,
+            VERSION_STRING,
             DarknodeRegistry.address
         ))
         .then(async () => {
+            // Initiate ownership transfer of DNR store 
             const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
             await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
+
+            // Claim ownership
+            const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
+            await darknodeRegistry.claimStoreOwnership();
         })
         .then(() => deployer.deploy(
             DarknodeSlasher,
-            config.VERSION,
+            VERSION_STRING,
             DarknodeRegistry.address,
             Orderbook.address,
         ))
         .then(async () => {
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-            darknodeRegistry.updateSlasher(DarknodeSlasher.address);
-        })
-        ;
+            await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
+        });
 }

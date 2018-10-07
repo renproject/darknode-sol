@@ -1,6 +1,7 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 import "./SettlementRegistry.sol";
@@ -12,6 +13,8 @@ import "./libraries/Utils.sol";
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
 contract Orderbook is Ownable {
+    using SafeMath for uint256;
+
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice OrderState enumerates the possible states of an order. All
@@ -29,7 +32,6 @@ contract Orderbook is Ownable {
         bytes32 matchedOrder; // Order confirmed in a match with this order
     }
 
-    RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
     SettlementRegistry public settlementRegistry;
 
@@ -44,25 +46,22 @@ contract Orderbook is Ownable {
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
+        require(darknodeRegistry.isRegistered(_sender), "must be registered darknode");
         _;
     }
 
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _renAddress The address of the RepublicToken contract.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
     /// @param _settlementRegistry The address of the SettlementRegistry
     ///        contract.
     constructor(
         string _VERSION,
-        RepublicToken _renAddress,
         DarknodeRegistry _darknodeRegistry,
         SettlementRegistry _settlementRegistry
     ) public {
         VERSION = _VERSION;
-        ren = _renAddress;
         darknodeRegistry = _darknodeRegistry;
         settlementRegistry = _settlementRegistry;
     }
@@ -70,6 +69,9 @@ contract Orderbook is Ownable {
     /// @notice Allows the owner to update the address of the DarknodeRegistry
     /// contract.
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
+        // Basic validation knowing that DarknodeRegistry exposes VERSION
+        require(bytes(_newDarknodeRegistry.VERSION()).length > 0, "invalid darknode registry contract");
+
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
@@ -136,7 +138,7 @@ contract Orderbook is Ownable {
         require(orders[_orderID].state == OrderState.Open, "invalid order state");
 
         // Require the msg.sender to be the trader or the broker verifier
-        address brokerVerifier = address(settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID));
+        address brokerVerifier = settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID);
         require(msg.sender == orders[_orderID].trader || msg.sender == brokerVerifier, "not authorized");
 
         orders[_orderID].state = OrderState.Canceled;
@@ -180,10 +182,11 @@ contract Orderbook is Ownable {
         if (orders[_orderID].blockNumber == 0) {
             return 0;
         }
-        return (block.number - orders[_orderID].blockNumber);
+        return (block.number.sub(orders[_orderID].blockNumber));
     }
 
-    /// @notice returns the number of orders in the orderbook
+    /// @notice returns the total number of orders in the orderbook, including
+    /// orders that are no longer open
     function ordersCount() external view returns (uint256) {
         return orderbook.length;
     }
@@ -197,7 +200,7 @@ contract Orderbook is Ownable {
         // If the provided limit is more than the number of orders after the offset,
         // decrease the limit
         uint256 limit = _limit;
-        if (_offset + limit > orderbook.length) {
+        if (_offset.add(limit) > orderbook.length) {
             limit = orderbook.length - _offset;
         }
 

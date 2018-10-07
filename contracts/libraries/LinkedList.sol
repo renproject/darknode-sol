@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
