@@ -265,17 +265,20 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const owner = accounts[2];
         const id = ID("3");
         const pubk = PUBK("3");
-        // Register
+
+        // [SETUP] Register and then deregister nodes
         await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
         await dnr.register(id, pubk, MINIMUM_BOND, { from: owner });
         await waitForEpoch(dnr);
-        // Deregister
         await dnr.deregister(id, { from: owner });
         (await dnr.isPendingDeregistration(id)).should.be.true;
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
+
+        // [ACTION] Refund
         await dnr.refund(id, { from: accounts[0] });
 
+        // [CHECK] Refund was successful and bond was returned
         (await dnr.isRefunded(id)).should.be.true;
         (await ren.balanceOf(owner)).should.bignumber.equal(MINIMUM_BOND);
     });
@@ -285,6 +288,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("should throw if refund fails", async () => {
+        // [SETUP]
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
         await dnr.register(ID("3"), PUBK("3"), MINIMUM_BOND);
         await waitForEpoch(dnr);
@@ -293,9 +297,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
 
+        // [CHECK] Refund fails if transfer fails
         await ren.pause();
         await dnr.refund(ID("3")).should.be.rejectedWith(null, /revert/); // paused contract
         await ren.unpause();
+
+        // [RESET]
         await dnr.refund(ID("3"));
     });
 
@@ -304,9 +311,9 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can update slasher address", async () => {
+        // [CHECK] This test assumes different previous and new slashers
         const previousSlasher = await dnr.slasher();
         const newSlasher = accounts[3];
-        // [CHECK] This test assumes different previous and new slashers
         previousSlasher.should.not.equal(newSlasher);
 
         // [CHECK] The slasher can't be updated to 0x0
@@ -329,10 +336,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("anyone except the slasher can not call slash", async () => {
+        // [SETUP] Set slasher to accounts[3]
         const previousSlasher = await dnr.slasher();
         const slasher = accounts[3];
         await dnr.updateSlasher(slasher);
 
+        // [SETUP] Register darknodes 3, 4, 7 and 8
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[6] });
@@ -345,11 +354,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.deregister(ID("4"), { from: accounts[3] });
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
+
+        // [CHECK] Only the slasher can call `slash`
         await dnr.slash(ID("3"), ID("7"), ID("8"), { from: accounts[4] })
             .should.be.rejectedWith(null, /must be slasher/);
         await dnr.slash(ID("3"), ID("7"), ID("8"), { from: slasher });
         await dnr.slash(ID("4"), ID("7"), ID("8"), { from: slasher });
 
+        // [RESET] Reset slasher to the slasher contract
         await dnr.updateSlasher(previousSlasher);
     });
 
@@ -383,20 +395,46 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can't arbitrarily increase bond", async () => {
+        // [SETUP] Transfer store to main account
         await dnr.transferStoreOwnership(accounts[0]);
         await dnrs.claimOwnership();
-        const difference = new BN(1);
-        const previousRenBalance = new BN(await ren.balanceOf(accounts[0]));
-        // Can decrease bond (used for bond slashing)
-        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND.sub(difference));
 
-        // Decreasing bond transfers different to owner
+        const previousRenBalance = new BN(await ren.balanceOf(accounts[0]));
+
+        // [ACTION] Decrease bond (used for bond slashing)
+        const difference = new BN(1);
+        const previousBond = new BN(await dnrs.darknodeBond(ID("7")));
+        await dnrs.updateDarknodeBond(ID("7"), previousBond.sub(difference));
+
+        // [CHECK] Decreasing bond transfers different to owner
         const afterRenBalance = new BN(await ren.balanceOf(accounts[0]));
         afterRenBalance.sub(previousRenBalance).should.be.bignumber.equal(difference);
 
-        // Can't increase bond
-        await dnrs.updateDarknodeBond(ID("7"), MINIMUM_BOND)
-            .should.be.rejectedWith(null, /new bond larger than previous bond/);
+        // [CHECK] Can't increase bond again
+        await dnrs.updateDarknodeBond(ID("7"), previousBond)
+            .should.be.rejectedWith(null, /bond not decreased/);
+
+        // [RESET] Transfer store back to DNR
+        await dnrs.transferOwnership(dnr.address);
+        await dnr.claimStoreOwnership();
+    });
+
+    it("can't decrease bond without transferring REN", async () => {
+        // [SETUP] Transfer store to main account
+        await dnr.transferStoreOwnership(accounts[0]);
+        await dnrs.claimOwnership();
+
+        // [SETUP] Pause REN to make transfer fail
+        await ren.pause();
+
+        // [CHECK] Can't decrease bond if REN is paused
+        await dnrs.updateDarknodeBond(ID("7"), new BN(0))
+            .should.be.rejectedWith(null, /revert/);
+
+        // [RESET] Unpause REN
+        await ren.unpause();
+
+        // [RESET] Transfer store back to DNR
         await dnrs.transferOwnership(dnr.address);
         await dnr.claimStoreOwnership();
     });

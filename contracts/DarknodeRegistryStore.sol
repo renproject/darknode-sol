@@ -115,9 +115,9 @@ contract DarknodeRegistryStore is Claimable {
     /// than the previous bond of the darknode.
     function updateDarknodeBond(address darknodeID, uint256 decreasedBond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        require(decreasedBond < previousBond, "new bond larger than previous bond");
+        require(decreasedBond < previousBond, "bond not decreased");
         darknodeRegistry[darknodeID].bond = decreasedBond;
-        require(ren.transfer(owner, previousBond.sub(decreasedBond)), "cannot transfer bond");
+        require(ren.transfer(owner, previousBond.sub(decreasedBond)), "bond transfer failed");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.
