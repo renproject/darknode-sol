@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
@@ -23,7 +23,7 @@ library LinkedList {
     }
 
     /**
-    * @notice LinkedList uses a mapping from addresss to nodes. Each address
+    * @notice LinkedList uses a mapping from address to nodes. Each address
     * uniquely identifies a node, and in this way they are used like pointers.
     */
     struct List {

@@ -1,15 +1,21 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
+import "./SettlementRegistry.sol";
+import "./BrokerVerifier.sol";
 import "./libraries/Utils.sol";
 
 /// @notice The Orderbook contract stores the state and priority of orders and
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
-/// will only store a subset of order states, such as cancelation, to improve
+/// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
 contract Orderbook is Ownable {
+    using SafeMath for uint256;
+
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice OrderState enumerates the possible states of an order. All
     /// orders default to the Undefined state.
@@ -19,95 +25,83 @@ contract Orderbook is Ownable {
     struct Order {
         OrderState state;     // State of the order
         address trader;       // Trader that owns the order
-        address broker;       // Broker that approved this order
         address confirmer;    // Darknode that confirmed the order in a match
+        uint64 settlementID;  // The settlement that signed the order opening
         uint256 priority;     // Logical time priority of this order
         uint256 blockNumber;  // Block number of the most recent state change
         bytes32 matchedOrder; // Order confirmed in a match with this order
     }
 
-    uint256 public orderOpeningFee;
-    RepublicToken public ren;
     DarknodeRegistry public darknodeRegistry;
+    SettlementRegistry public settlementRegistry;
 
-    bytes32[] private buyOrders;
-    bytes32[] private sellOrders;
     bytes32[] private orderbook;
 
-    mapping(bytes32 => Order) private orders;
+    // Order details are exposed through directly accessing this mapping, or
+    // through the getter functions below for each of the order's fields.
+    mapping(bytes32 => Order) public orders;
 
     event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
-        require(darknodeRegistry.isRegistered(address(_sender)), "must be registered darknode");
+        require(darknodeRegistry.isRegistered(_sender), "must be registered darknode");
         _;
     }
 
-    /// @notice The Orderbook constructor.
+    /// @notice The contract constructor.
     ///
-    /// @param _orderOpeningFee The fee in REN for opening an order. This is
-    ///        given in AI, the smallest denomination of REN.
-    /// @param _renAddress The address of the RepublicToken contract.
+    /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
-    constructor(uint256 _orderOpeningFee, RepublicToken _renAddress, DarknodeRegistry _darknodeRegistry) public {
-        orderOpeningFee = _orderOpeningFee;
-        ren = _renAddress;
+    /// @param _settlementRegistry The address of the SettlementRegistry
+    ///        contract.
+    constructor(
+        string _VERSION,
+        DarknodeRegistry _darknodeRegistry,
+        SettlementRegistry _settlementRegistry
+    ) public {
+        VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
-    }
-
-    /// @notice Allows the owner to update the fee for opening orders.
-    function updateFee(uint256 _newOrderOpeningFee) external onlyOwner {
-        emit LogFeeUpdated(orderOpeningFee, _newOrderOpeningFee);
-        orderOpeningFee = _newOrderOpeningFee;
+        settlementRegistry = _settlementRegistry;
     }
 
     /// @notice Allows the owner to update the address of the DarknodeRegistry
     /// contract.
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
+        // Basic validation knowing that DarknodeRegistry exposes VERSION
+        require(bytes(_newDarknodeRegistry.VERSION()).length > 0, "invalid darknode registry contract");
+
         emit LogDarknodeRegistryUpdated(darknodeRegistry, _newDarknodeRegistry);
         darknodeRegistry = _newDarknodeRegistry;
     }
 
-    /// @notice Open a buy order in the orderbook. The order must be in the
-    /// Undefined state and an allowance of REN is required to pay the opening
-    /// fee.
+    /// @notice Open an order in the orderbook. The order must be in the
+    /// Undefined state.
     ///
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderID The hash of the order.
-    function openBuyOrder(bytes _signature, bytes32 _orderID) external {
-        openOrder(_signature, _orderID);
-        buyOrders.push(_orderID);
-        orders[_orderID].priority = buyOrders.length;
-    }
-
-    /// @notice Open a sell order in the orderbook. The order must be in the
-    /// Undefined state and an allowance of REN is required to pay the opening
-    /// fee.
-    ///
-    /// @param _signature Signature of a message that defines the trader. The
-    ///        message is "Republic Protocol: open: {orderId}".
-    /// @param _orderID The hash of the order.
-    function openSellOrder(bytes _signature, bytes32 _orderID) external {
-        openOrder(_signature, _orderID);
-        sellOrders.push(_orderID);
-        orders[_orderID].priority = sellOrders.length;
-    }
-
-    /// @notice Private function used by `openBuyOrder` and `openSellOrder`.
-    function openOrder(bytes _signature, bytes32 _orderID) private {
-        require(ren.transferFrom(msg.sender, this, orderOpeningFee), "fee transfer failed");
+    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID) external {
         require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
-        // recover trader address from the signature
-        bytes memory data = abi.encodePacked("Republic Protocol: open: ", _orderID);
-        address trader = Utils.addr(data, _signature);
-        orders[_orderID].state = OrderState.Open;
-        orders[_orderID].trader = trader;
-        orders[_orderID].broker = msg.sender;
-        orders[_orderID].blockNumber = block.number;
+        address trader = msg.sender;
+
+        // Verify the order signature
+        require(settlementRegistry.settlementRegistration(_settlementID), "settlement not registered");
+        BrokerVerifier brokerVerifier = settlementRegistry.brokerVerifierContract(_settlementID);
+        require(brokerVerifier.verifyOpenSignature(trader, _signature, _orderID), "invalid broker signature");
+
+        orders[_orderID] = Order({
+            state: OrderState.Open,
+            trader: trader,
+            confirmer: 0x0,
+            settlementID: _settlementID,
+            priority: orderbook.length + 1,
+            blockNumber: block.number,
+            matchedOrder: 0x0
+        });
+
         orderbook.push(_orderID);
     }
 
@@ -133,54 +127,22 @@ contract Orderbook is Ownable {
         orders[_matchedOrderID].blockNumber = block.number;
     }
 
-    /// @notice Cancel an order in the orderbook. The order must be in the
-    /// Undefined or Open state.
+    /// @notice Cancel an open order in the orderbook. An order can be cancelled
+    /// by the trader who opened the order, or by the broker verifier contract.
+    /// This allows the settlement layer to implement their own logic for
+    /// cancelling orders without trader interaction (e.g. to ban a trader from
+    /// a specific darkpool, or to use multiple order-matching platforms)
     ///
-    /// @param _signature Signature of a message from the trader. The message
-    ///        is "Republic Protocol: cancel: {orderId}".
     /// @param _orderID The hash of the order.
-    function cancelOrder(bytes _signature, bytes32 _orderID) external {
-        if (orders[_orderID].state == OrderState.Open) {
-            // Recover trader address from the signature
-            bytes memory data = abi.encodePacked("Republic Protocol: cancel: ", _orderID);
-            address trader = Utils.addr(data, _signature);
-            require(orders[_orderID].trader == trader, "invalid signature");
-        } else {
-            // An unopened order can be canceled to ensure that it cannot be
-            // opened in the future.
-            // FIXME: This create the possibility of a DoS attack where a node
-            // or miner submits a cancelOrder with a higher fee everytime they
-            // see an openOrder from a particular trader. To solve this, order
-            // cancelations should be stored against a specific trader.
-            // Note: This is not a problem for `openOrder`, which will require
-            // broker signatures.
-            require(orders[_orderID].state == OrderState.Undefined, "invalid order state");
-        }
+    function cancelOrder(bytes32 _orderID) external {
+        require(orders[_orderID].state == OrderState.Open, "invalid order state");
+
+        // Require the msg.sender to be the trader or the broker verifier
+        address brokerVerifier = settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID);
+        require(msg.sender == orders[_orderID].trader || msg.sender == brokerVerifier, "not authorized");
 
         orders[_orderID].state = OrderState.Canceled;
         orders[_orderID].blockNumber = block.number;
-    }
-
-    /// @notice Retrieves the order ID of the buy order at the provided index.
-    /// @param _index The index to retrieve the order ID at.
-    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function buyOrderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= buyOrders.length) {
-            return 0x0;
-        }
-
-        return buyOrders[_index];
-    }
-
-    /// @notice Retrieves the order ID of the sell order at the provided index.
-    /// @param _index The index to retrieve the order ID at.
-    /// @return (the order ID, true) or (empty bytes, false) for an invalid index
-    function sellOrderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= sellOrders.length) {
-            return 0x0;
-        }
-
-        return sellOrders[_index];
     }
 
     /// @notice returns status of the given orderID.
@@ -205,12 +167,6 @@ contract Orderbook is Ownable {
         return orders[_orderID].trader;
     }
 
-    /// @notice returns the broker of the given orderID.
-    /// Broker is the one who represent the trader to send the tx.
-    function orderBroker(bytes32 _orderID) external view returns (address) {
-        return orders[_orderID].broker;
-    }
-
     /// @notice returns the darknode address which confirms the given orderID.
     function orderConfirmer(bytes32 _orderID) external view returns (address) {
         return orders[_orderID].confirmer;
@@ -226,22 +182,13 @@ contract Orderbook is Ownable {
         if (orders[_orderID].blockNumber == 0) {
             return 0;
         }
-        return (block.number - orders[_orderID].blockNumber);
+        return (block.number.sub(orders[_orderID].blockNumber));
     }
 
-    /// @notice returns the number of orders in the orderbook
+    /// @notice returns the total number of orders in the orderbook, including
+    /// orders that are no longer open
     function ordersCount() external view returns (uint256) {
-        return buyOrders.length + sellOrders.length;
-    }
-
-    /// @notice returns orderId of the given index in the orderbook list and
-    /// true if exists, otherwise it will return empty bytes and false.
-    function orderAtIndex(uint256 _index) external view returns (bytes32) {
-        if (_index >= orderbook.length) {
-            return 0x0;
-        }
-
-        return orderbook[_index];
+        return orderbook.length;
     }
 
     /// @notice returns order details of the orders starting from the offset.
@@ -253,7 +200,7 @@ contract Orderbook is Ownable {
         // If the provided limit is more than the number of orders after the offset,
         // decrease the limit
         uint256 limit = _limit;
-        if (_offset + limit > orderbook.length) {
+        if (_offset.add(limit) > orderbook.length) {
             limit = orderbook.length - _offset;
         }
 

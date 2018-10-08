@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /// @notice A library for calculating and verifying order match details
 library SettlementUtils {
@@ -72,9 +72,10 @@ library SettlementUtils {
     /// @param _buyTokens The buy token details.
     /// @param _sellToken The sell token details.
     function verifyTokens(uint64 _buyTokens, uint64 _sellToken) internal pure returns (bool) {
-        return (uint32(_buyTokens) == uint32(_sellToken >> 32) &&
-                uint32(_sellToken) == uint32(_buyTokens >> 32) &&
-                uint32(_buyTokens >> 32) <= uint32(_buyTokens)
+        return ((
+                uint32(_buyTokens) == uint32(_sellToken >> 32)) && (
+                uint32(_sellToken) == uint32(_buyTokens >> 32)) && (
+                uint32(_buyTokens >> 32) <= uint32(_buyTokens))
         );
     }
 }

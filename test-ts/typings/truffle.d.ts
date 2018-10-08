@@ -7,26 +7,20 @@ import Web3 from "web3";
  */
 
 interface ContractFunction {
-    (title: string, fn: (this: Suite, accounts?: string[]) => void): Suite;
-    (title: string): Suite;
+    (title: string, fn?: (this: Suite, accounts?: string[]) => void): Suite;
     only: ExclusiveContractFunction;
     skip: PendingContractFunction;
 }
 
-interface ExclusiveContractFunction {
-    (title: string, fn: (this: Suite, accounts?: string[]) => void): Suite;
-    (title: string): Suite;
-}
+type ExclusiveContractFunction = (title: string, fn?: (this: Suite, accounts?: string[]) => void) => Suite;
 
-interface PendingContractFunction {
-    (title: string, fn: (this: Suite, accounts?: string[]) => void): Suite | void;
-}
+type PendingContractFunction = (title: string, fn: (this: Suite, accounts?: string[]) => void) => Suite | void;
 
 interface Contract<T> {
-    "new"(...args): Promise<T>,
-    deployed(): Promise<T>,
-    at(address: string): T,
-    address: string,
+    address: string;
+    "new"(...args): Promise<T>;
+    deployed(): Promise<T>;
+    at(address: string): T;
 }
 
 /**
@@ -34,7 +28,7 @@ interface Contract<T> {
  */
 
 interface Artifacts {
-    require(name: string): Contract<any>,
+    require(name: string): Contract<any>;
 }
 
 /**

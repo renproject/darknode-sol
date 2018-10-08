@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "./DarknodeRegistry.sol";
 import "./DarknodeRewardVault.sol";
@@ -6,9 +6,10 @@ import "./DarknodeSlasher.sol";
 import "./Orderbook.sol";
 import "./RepublicToken.sol";
 import "./Settlement.sol";
+import "./SettlementRegistry.sol";
+import "./BrokerVerifier.sol";
 
-/// @notice Bindings imports all of the contracts for generating the Go
-/// bindings.
+/// @notice Bindings imports all of the contracts for generating bindings.
+/* solium-disable no-empty-blocks */
 contract Bindings {
-    // CONTRACT LEFT BLANK INTENTIONALLY
 }

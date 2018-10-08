@@ -1,28 +1,24 @@
-import { SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
-import { OrderbookContract } from "../bindings/orderbook";
-import { RepublicTokenContract } from "../bindings/republic_token";
-import { DarknodeRegistryContract } from "../bindings/darknode_registry";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "../bindings/darknode_registry";
+import { RepublicTokenArtifact, RepublicTokenContract } from "../bindings/republic_token";
+import { SettlementUtilsTestArtifact, SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
 
-import { INGRESS_FEE, MINIMUM_BOND, waitForEpoch, PUBK } from "../helper/testUtils";
+import { MINIMUM_BOND, PUBK, waitForEpoch } from "../helper/testUtils";
 
-contract("SettlementUtils", function (accounts: string[]) {
+const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+
+contract("SettlementUtils", (accounts: string[]) => {
 
     let settlementTest: SettlementUtilsTestContract;
-    let orderbook: OrderbookContract;
     let ren: RepublicTokenContract;
     let dnr: DarknodeRegistryContract;
-    const broker = accounts[1];
     const darknode = accounts[2];
 
-    before(async function () {
-        settlementTest = await artifacts.require("SettlementUtilsTest").new();
-        orderbook = await artifacts.require("Orderbook").deployed();
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
-
-        // Broker
-        await ren.transfer(broker, INGRESS_FEE * 10);
-        await ren.approve(orderbook.address, INGRESS_FEE * 10, { from: broker });
+    before(async () => {
+        settlementTest = await SettlementUtilsTest.new();
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
 
         // Register darknode
         await ren.transfer(darknode, MINIMUM_BOND);
@@ -36,17 +32,17 @@ contract("SettlementUtils", function (accounts: string[]) {
         const BUY2 = [web3.utils.sha3("0"), 1, "0x1", 11, 10000, 0];
         const SELL = [web3.utils.sha3("0"), 1, "0x100000000", 10, 1000, 0];
 
-        const buyID_1 = await settlementTest.hashOrder.apply(this, [...BUY1]);
-        const buyID_2 = await settlementTest.hashOrder.apply(this, [...BUY2]);
+        const buyID1 = await settlementTest.hashOrder.apply(this, [...BUY1]);
+        const buyID2 = await settlementTest.hashOrder.apply(this, [...BUY2]);
         const sellID = await settlementTest.hashOrder.apply(this, [...SELL]);
 
         await settlementTest.submitOrder.apply(this, [...BUY1]);
         await settlementTest.submitOrder.apply(this, [...BUY2]);
         await settlementTest.submitOrder.apply(this, [...SELL]);
 
-        (await settlementTest.verifyMatchDetails(buyID_1, sellID))
+        (await settlementTest.verifyMatchDetails(buyID1, sellID))
             .should.be.true;
-        (await settlementTest.verifyMatchDetails(buyID_2, sellID))
+        (await settlementTest.verifyMatchDetails(buyID2, sellID))
             .should.be.true;
     });
 

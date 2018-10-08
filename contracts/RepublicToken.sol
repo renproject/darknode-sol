@@ -1,9 +1,8 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 
-/// @notice This is NOT the vesion deployed for the REN token
 contract RepublicToken is PausableToken, BurnableToken {
 
     string public constant name = "Republic Token";
@@ -18,6 +17,7 @@ contract RepublicToken is PausableToken, BurnableToken {
     }
 
     function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
+        /* solium-disable error-reason */
         require(amount > 0);
 
         balances[owner] = balances[owner].sub(amount);
@@ -25,17 +25,5 @@ contract RepublicToken is PausableToken, BurnableToken {
         emit Transfer(owner, beneficiary, amount);
 
         return true;
-    }
-
-    function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
-        // Do not allow sending REN to this contract
-        require(_to != address(this));
-        return super.transfer(_to, _value);
-    }
-
-    function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
-        // Do not allow sending REN to this contract
-        require(_to != address(this));
-        return super.transferFrom(_from, _to, _value);
     }
 }

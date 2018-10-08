@@ -1,33 +1,53 @@
-import * as testUtils from "./helper/testUtils";
-import { MINIMUM_BOND } from "./helper/testUtils";
-import { BN } from "bn.js";
-import { RepublicTokenContract } from "./bindings/republic_token";
-import { DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
+import BigNumber from "bignumber.js";
 
-contract("DarknodeRewardVault", function (accounts: string[]) {
+import { BN } from "bn.js";
+
+import * as testUtils from "./helper/testUtils";
+
+import { MINIMUM_BOND } from "./helper/testUtils";
+
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeRewardVaultArtifact, DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { ReverterArtifact } from "./bindings/reverter";
+
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const DarknodeRewardVault = artifacts.require("DarknodeRewardVault") as DarknodeRewardVaultArtifact;
+const Reverter = artifacts.require("Reverter") as ReverterArtifact;
+const ImpreciseToken = artifacts.require("ImpreciseToken") as RepublicTokenArtifact;
+const NonCompliantToken = artifacts.require("NonCompliantToken") as RepublicTokenArtifact;
+const NormalToken = artifacts.require("NormalToken") as RepublicTokenArtifact;
+const ReturnsFalseToken = artifacts.require("ReturnsFalseToken") as RepublicTokenArtifact;
+const TokenWithFees = artifacts.require("TokenWithFees") as RepublicTokenArtifact;
+
+contract("DarknodeRewardVault", (accounts: string[]) => {
 
     let ren: RepublicTokenContract;
     let dnr: DarknodeRegistryContract;
     let darknodeRewardVault: DarknodeRewardVaultContract;
     let darknode1: string, darknode2: string, darknodeOperator: string;
-    let TOKEN1, TOKEN2, ETH;
+    let TOKEN1;
 
-    before(async function () {
+    const ETH = {
+        address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        decimals: async () => 18,
+        approve: async (to, value) => null,
+        transfer: async (to, value) => null,
+        balanceOf: async (address) => web3.eth.getBalance(address),
+    } as any as RepublicTokenContract;
 
-        ren = await artifacts.require("RepublicToken").deployed();
-        dnr = await artifacts.require("DarknodeRegistry").deployed();
-        darknodeRewardVault = await artifacts.require("DarknodeRewardVault").deployed();
+    const ETHArtifact = {
+        new: async () => ETH,
+    };
 
-        TOKEN1 = await artifacts.require("RepublicToken").new();
-        TOKEN2 = await artifacts.require("ABCToken").new();
-        ETH = {
-            address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-            decimals: () => 18,
-            approve: () => null,
-            transfer: (to, value) => null,
-            balanceOf: (address) => web3.eth.getBalance(address),
-        };
+    before(async () => {
+
+        ren = await RepublicToken.deployed();
+        dnr = await DarknodeRegistry.deployed();
+        darknodeRewardVault = await DarknodeRewardVault.deployed();
+
+        TOKEN1 = await RepublicToken.new();
 
         // Register all nodes
         darknode1 = accounts[8];
@@ -50,52 +70,98 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     });
 
     it("can update the darknode registry address", async () => {
-        await darknodeRewardVault.updateDarknodeRegistry(testUtils.NULL);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal(testUtils.NULL);
-        await darknodeRewardVault.updateDarknodeRegistry(dnr.address, { from: accounts[1] })
+        const previousDarknodeRegistry = await darknodeRewardVault.darknodeRegistry();
+
+        // [CHECK] The function validates the new darknode registry
+        await darknodeRewardVault.updateDarknodeRegistry(testUtils.NULL)
+            .should.be.rejectedWith(null, /revert/);
+
+        // [ACTION] Update the darknode registry to another address
+        await darknodeRewardVault.updateDarknodeRegistry(darknodeRewardVault.address);
+        // [CHECK] Verify the darknode registry address has been updated
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(darknodeRewardVault.address);
+
+        // [CHECK] Only the owner can update the darknode registry
+        await darknodeRewardVault.updateDarknodeRegistry(previousDarknodeRegistry, { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await darknodeRewardVault.updateDarknodeRegistry(dnr.address);
-        (await darknodeRewardVault.darknodeRegistry()).should.equal(dnr.address);
+
+        // [RESET] Reset the darknode registry to the previous address
+        await darknodeRewardVault.updateDarknodeRegistry(previousDarknodeRegistry);
+        (await darknodeRewardVault.darknodeRegistry()).should.equal(previousDarknodeRegistry);
     });
 
-    it("can deposit and withdaw funds", async () => {
-        let sum = {
-            [darknode1]: {
-                [TOKEN1.address]: 0,
-                [TOKEN2.address]: 0,
-                [ETH.address]: 0,
-            },
-            [darknode2]: {
-                [TOKEN1.address]: 0,
-                [TOKEN2.address]: 0,
-                [ETH.address]: 0,
-            }
-        };
+    context("can deposit and withdraw funds", async () => {
+
+        const testCases = [
+            { contract: ETHArtifact, fees: 0, desc: "ether" },
+            { contract: RepublicToken, fees: 0, desc: "ren" },
+            { contract: NormalToken, fees: 0, desc: "standard token" },
+            { contract: ReturnsFalseToken, fees: 0, desc: "alternate token" },
+            { contract: NonCompliantToken, fees: 0, desc: "non compliant token" },
+            { contract: TokenWithFees, fees: 3, desc: "token with fees" },
+            { contract: ImpreciseToken, fees: 3, desc: "imprecise token" },
+        ];
 
         // Deposit rewards
-        for (const token of [TOKEN1, TOKEN2, ETH]) {
-            const decimals = await token.decimals();
-            for (let i = 0; i < accounts.length; i++) {
+        for (const testCase of testCases) {
+            it(testCase.desc, async () => {
+
+                const sum = {
+                    [darknode1]: new BigNumber(0),
+                    [darknode2]: new BigNumber(0),
+                };
+
+                const token = await testCase.contract.new();
+                const decimals = await token.decimals();
+
+                // Set reward balance to 0 by withdrawing
                 for (const darknode of [darknode1, darknode2]) {
-                    let fee = Math.floor(Math.random() * decimals);
-                    await token.transfer(accounts[i], fee);
-
-                    const value = token === ETH ? fee : 0;
-                    await token.approve(darknodeRewardVault.address, fee, { from: accounts[i] });
-                    await darknodeRewardVault.deposit(darknode, token.address, fee, { value, from: accounts[i] });
-                    sum[darknode][token.address] += fee;
+                    sum[darknode] = new BigNumber(
+                        (await darknodeRewardVault.darknodeBalances(darknode, token.address)).toString(),
+                    );
                 }
-            }
-        }
 
-        for (const token of [TOKEN1, TOKEN2, ETH]) {
-            for (const darknode of [darknode1, darknode2]) {
-                const balanceBefore = new BN(await token.balanceOf(darknodeOperator));
-                await darknodeRewardVault.withdraw(darknode, token.address);
-                const balanceAfter = new BN(await token.balanceOf(darknodeOperator));
+                for (const account of accounts) {
+                    for (const darknode of [darknode1, darknode2]) {
+                        // FIXME: Test has some rounding issues with fees
 
-                balanceAfter.should.bignumber.equal(balanceBefore.add(new BN(sum[darknode][token.address])));
-            }
+                        const reward = new BigNumber(Math.random())
+                            .multipliedBy(new BigNumber(10).exponentiatedBy(new BN(decimals).toNumber() - 14))
+                            .integerValue(BigNumber.ROUND_FLOOR)
+                            .multipliedBy(new BigNumber(10).exponentiatedBy(14));
+                        const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                        await token.transfer(account, reward.toFixed());
+
+                        const newReward = reward.minus(fee);
+                        const newFee = newReward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                        const value = token === ETH ? newReward.toFixed() : 0;
+                        await token.approve(darknodeRewardVault.address, newReward.toFixed(), { from: account });
+                        await darknodeRewardVault.deposit(
+                            darknode, token.address, newReward.toFixed(), { value, from: account },
+                        ).should.not.be.rejected;
+
+                        const newNewReward = newReward.minus(newFee);
+                        const newNewFee = newNewReward.multipliedBy(testCase.fees / 1000)
+                            .integerValue(BigNumber.ROUND_FLOOR);
+
+                        sum[darknode] = sum[darknode].plus(newNewReward.minus(newNewFee));
+                    }
+                }
+
+                for (const darknode of [darknode1, darknode2]) {
+                    const balanceBefore = new BN(await token.balanceOf(darknodeOperator));
+                    await darknodeRewardVault.withdraw(darknode, token.address);
+                    const balanceAfter = new BN(await token.balanceOf(darknodeOperator));
+
+                    const reward = sum[darknode];
+                    const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
+
+                    balanceAfter.sub(balanceBefore)
+                        .should.bignumber.equal(reward);
+                }
+            });
         }
     });
 
@@ -104,14 +170,14 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
             .should.be.rejectedWith(null, /revert/); // erc20 transfer error
 
         await darknodeRewardVault.deposit(darknode1, ETH.address, 1)
-            .should.be.rejectedWith(null, /mismatched tx value/);
+            .should.be.rejectedWith(null, /mismatched ether value/);
     });
 
     it("cannot deposit ether and erc20 with the same transaction", async () => {
         await TOKEN1.approve(darknodeRewardVault.address, 10);
         await darknodeRewardVault.deposit(
-            darknode1, TOKEN1.address, 10, {value: 10})
-            .should.be.rejectedWith(null, /unexpected ether transfer/);
+            darknode1, TOKEN1.address, 10, { value: 10 })
+            .should.be.rejectedWith(null, /unexpected ether value/);
     });
 
     it("checks success of ERC20 withdrawal before updating balances", async () => {
@@ -125,7 +191,7 @@ contract("DarknodeRewardVault", function (accounts: string[]) {
     });
 
     it("checks success of ETH withdrawal before updating balances", async () => {
-        const reverter = await artifacts.require("Reverter").new();
+        const reverter = await Reverter.new();
         const darknode3 = accounts[5];
         await ren.approve(reverter.address, MINIMUM_BOND);
         await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND);

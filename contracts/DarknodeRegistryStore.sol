@@ -1,35 +1,40 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.25;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
-/// contract. The data / fund logic and storage have been seperated to improve
+/// contract. The data / fund logic and storage have been separated to improve
 /// upgradability.
-contract DarknodeRegistryStore is Ownable {
+contract DarknodeRegistryStore is Claimable {
+    using SafeMath for uint256;
+
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknodes are stored in the darknode struct. The owner is the
     /// address that registered the darknode, the bond is the amount of REN that
-    /// was transferred during registration, and the public key is the encryption
-    /// key that should be used when sending sensitive information to the darknode.
+    /// was transferred during registration, and the public key is the
+    /// encryption key that should be used when sending sensitive information to
+    /// the darknode.
     struct Darknode {
         // The owner of a Darknode is the address that called the register
         // function. The owner is the only address that is allowed to
         // deregister the Darknode, unless the Darknode is slashed for
-        // malicious behaviour.
+        // malicious behavior.
         address owner;
 
         // The bond is the amount of REN submitted as a bond by the Darknode.
         // This amount is reduced when the Darknode is slashed for malicious
-        // behaviour.
+        // behavior.
         uint256 bond;
 
-        // The block numer at which the Darknode is considered registered.
+        // The block number at which the Darknode is considered registered.
         uint256 registeredAt;
 
-        // The block numer at which the Darknode is considered deregistered.
+        // The block number at which the Darknode is considered deregistered.
         uint256 deregisteredAt;
 
         // The public key used by this Darknode for encrypting sensitive data
@@ -46,12 +51,20 @@ contract DarknodeRegistryStore is Ownable {
     // RepublicToken.
     RepublicToken public ren;
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RepublicToken contract.
-    constructor(RepublicToken _ren) public {
+    constructor(
+        string _VERSION,
+        RepublicToken _ren
+    ) public {
+        VERSION = _VERSION;
         ren = _ren;
     }
 
-    /// @notice Instantiates a darknode and appends it to the darknodes linkedlist.
+    /// @notice Instantiates a darknode and appends it to the darknodes
+    /// linked-list.
     ///
     /// @param _darknodeID The darknode's ID.
     /// @param _darknodeOwner The darknode's owner's address
@@ -98,14 +111,13 @@ contract DarknodeRegistryStore is Ownable {
         require(ren.transfer(owner, bond), "bond transfer failed");
     }
 
-    /// @notice Updates the bond of the darknode. If the bond is being decreased,
-    /// the difference is sent to the owner of this contract.
-    function updateDarknodeBond(address darknodeID, uint256 bond) external onlyOwner {
+    /// @notice Updates the bond of a darknode. The new bond must be smaller
+    /// than the previous bond of the darknode.
+    function updateDarknodeBond(address darknodeID, uint256 decreasedBond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        darknodeRegistry[darknodeID].bond = bond;
-        if (previousBond > bond) {
-            require(ren.transfer(owner, previousBond - bond), "cannot transfer bond");
-        }
+        require(decreasedBond < previousBond, "bond not decreased");
+        darknodeRegistry[darknodeID].bond = decreasedBond;
+        require(ren.transfer(owner, previousBond.sub(decreasedBond)), "bond transfer failed");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.

@@ -1,6 +1,7 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./RepublicToken.sol";
 import "./DarknodeRegistryStore.sol";
@@ -8,6 +9,9 @@ import "./DarknodeRegistryStore.sol";
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
 contract DarknodeRegistry is Ownable {
+    using SafeMath for uint256;
+
+    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice Darknode pods are shuffled after a fixed number of blocks.
     /// An Epoch stores an epoch hash used as an (insecure) RNG seed, and the
@@ -61,7 +65,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice Emitted when a new epoch has begun.
     event LogNewEpoch();
 
-    /// @notice Emitted when a constructor paramater has been updated.
+    /// @notice Emitted when a constructor parameter has been updated.
     event LogMinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
     event LogMinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
     event LogMinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
@@ -98,6 +102,9 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
+    /// @notice The contract constructor.
+    ///
+    /// @param _VERSION A string defining the contract version.
     /// @param _renAddress The address of the RepublicToken contract.
     /// @param _storeAddress The address of the DarknodeRegistryStore contract.
     /// @param _minimumBond The minimum bond amount that can be submitted by a
@@ -106,12 +113,15 @@ contract DarknodeRegistry is Ownable {
     /// @param _minimumEpochInterval The minimum number of blocks between
     ///        epochs.
     constructor(
+        string _VERSION,
         RepublicToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
         uint256 _minimumEpochInterval
     ) public {
+        VERSION = _VERSION;
+
         store = _storeAddress;
         ren = _renAddress;
 
@@ -148,9 +158,8 @@ contract DarknodeRegistry is Ownable {
     function register(address _darknodeID, bytes _publicKey, uint256 _bond) external onlyRefunded(_darknodeID) {
         // REN allowance
         require(_bond >= minimumBond, "insufficient bond");
-        // require(ren.allowance(msg.sender, address(this)) >= _bond);
-        require(ren.transferFrom(msg.sender, address(this), _bond), "bond trasfer failed");
-        ren.transfer(address(store), _bond);
+        // Transfer bond to store
+        require(ren.transferFrom(msg.sender, store, _bond), "bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
@@ -158,29 +167,24 @@ contract DarknodeRegistry is Ownable {
             msg.sender,
             _bond,
             _publicKey,
-            currentEpoch.blocknumber + minimumEpochInterval,
+            currentEpoch.blocknumber.add(minimumEpochInterval),
             0
         );
 
-        numDarknodesNextEpoch += 1;
+        numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
         emit LogDarknodeRegistered(_darknodeID, _bond);
     }
 
-    /// @notice Deregister a darknode. The darknode will not be deregisterd
+    /// @notice Deregister a darknode. The darknode will not be deregistered
     /// until the end of the epoch. After another epoch, the bond can be
     /// refunded by calling the refund method.
     /// @param _darknodeID The darknode ID that will be deregistered. The caller
     ///        of this method store.darknodeRegisteredAt(_darknodeID) must be
     //         the owner of this darknode.
     function deregister(address _darknodeID) external onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
-        // Flag the darknode for deregistration
-        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber + minimumEpochInterval);
-        numDarknodesNextEpoch -= 1;
-
-        // Emit an event
-        emit LogDarknodeDeregistered(_darknodeID);
+        deregisterDarknode(_darknodeID);
     }
 
     /// @notice Progress the epoch if it is possible to do so. This captures
@@ -189,11 +193,11 @@ contract DarknodeRegistry is Ownable {
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
             // The first epoch must be called by the owner of the contract
-            require(msg.sender == owner, "not authorised (first epochs)");
+            require(msg.sender == owner, "not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed
-        require(block.number >= currentEpoch.blocknumber + minimumEpochInterval, "epoch interval has not passed");
+        require(block.number >= currentEpoch.blocknumber.add(minimumEpochInterval), "epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
@@ -229,11 +233,18 @@ contract DarknodeRegistry is Ownable {
         emit LogNewEpoch();
     }
 
-    /// @notice Allows the contract owner to transfer ownership of the
-    /// DarknodeRegistryStore.
+    /// @notice Allows the contract owner to initiate an ownership transfer of
+    /// the DarknodeRegistryStore. 
     /// @param _newOwner The address to transfer the ownership to.
     function transferStoreOwnership(address _newOwner) external onlyOwner {
         store.transferOwnership(_newOwner);
+    }
+
+    /// @notice Claims ownership of the store passed in to the constructor.
+    /// `transferStoreOwnership` must have previously been called when
+    /// transferring from another Darknode Registry.
+    function claimStoreOwnership() external onlyOwner {
+        store.claimOwnership();
     }
 
     /// @notice Allows the contract owner to update the minimum bond.
@@ -262,6 +273,7 @@ contract DarknodeRegistry is Ownable {
     /// address.
     /// @param _slasher The new slasher address.
     function updateSlasher(address _slasher) external onlyOwner {
+        require(_slasher != 0x0, "invalid slasher address");
         nextSlasher = _slasher;
     }
 
@@ -271,7 +283,7 @@ contract DarknodeRegistry is Ownable {
     ///   1/8 is rewarded to the first challenger
     ///   1/8 is rewarded to the second challenger
     ///   1/4 becomes unassigned
-    /// @param _prover The guitly prover whose bond is being slashed
+    /// @param _prover The guilty prover whose bond is being slashed
     /// @param _challenger1 The first of the two darknodes who submitted the challenge
     /// @param _challenger2 The second of the two darknodes who submitted the challenge
     function slash(address _prover, address _challenger1, address _challenger2)
@@ -281,28 +293,29 @@ contract DarknodeRegistry is Ownable {
         uint256 penalty = store.darknodeBond(_prover) / 2;
         uint256 reward = penalty / 4;
 
-        // Slash the bond of the failed provder in half
+        // Slash the bond of the failed prover in half
         store.updateDarknodeBond(_prover, penalty);
 
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_prover)) {
-            store.updateDarknodeDeregisteredAt(_prover, currentEpoch.blocknumber + minimumEpochInterval);
-            numDarknodesNextEpoch -= 1;
-            emit LogDarknodeDeregistered(_prover);
+            deregisterDarknode(_prover);
         }
 
         // Reward the challengers with less than the penalty so that it is not
         // worth challenging yourself
-        ren.transfer(store.darknodeOwner(_challenger1), reward);
-        ren.transfer(store.darknodeOwner(_challenger2), reward);
+        require(ren.transfer(store.darknodeOwner(_challenger1), reward), "reward transfer failed");
+        require(ren.transfer(store.darknodeOwner(_challenger2), reward), "reward transfer failed");
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
-    /// darknode available for registration again.
+    /// darknode available for registration again. Anyone can call this function
+    /// but the bond will always be refunded to the darknode owner.
     ///
     /// @param _darknodeID The darknode ID that will be refunded. The caller
     ///        of this method must be the owner of this darknode.
-    function refund(address _darknodeID) external onlyDarknodeOwner(_darknodeID) onlyRefundable(_darknodeID) {
+    function refund(address _darknodeID) external onlyRefundable(_darknodeID) {
+        address darknodeOwner = store.darknodeOwner(_darknodeID);
+
         // Remember the bond amount
         uint256 amount = store.darknodeBond(_darknodeID);
 
@@ -310,10 +323,10 @@ contract DarknodeRegistry is Ownable {
         store.removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        ren.transfer(msg.sender, amount);
+        require(ren.transfer(darknodeOwner, amount), "bond transfer failed");
 
         // Emit an event.
-        emit LogDarknodeOwnerRefunded(msg.sender, amount);
+        emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.
@@ -353,7 +366,7 @@ contract DarknodeRegistry is Ownable {
     }
 
     /// @notice Retrieves a list of darknodes which were registered for the
-    /// previous epoch. See `getDarknodes` for the paramater documentation.
+    /// previous epoch. See `getDarknodes` for the parameter documentation.
     function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[]) {
         uint256 count = _count;
         if (count == 0) {
@@ -432,7 +445,7 @@ contract DarknodeRegistry is Ownable {
         return registered && notDeregistered;
     }
 
-    /// @notice Returns a list of darknodes registered for either the curren
+    /// @notice Returns a list of darknodes registered for either the current
     /// or the previous epoch. See `getDarknodes` for documentation on the
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
@@ -473,5 +486,15 @@ contract DarknodeRegistry is Ownable {
             n += 1;
         }
         return nodes;
+    }
+
+    /// Private function called by `deregister` and `slash`
+    function deregisterDarknode(address _darknodeID) private {
+        // Flag the darknode for deregistration
+        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber.add(minimumEpochInterval));
+        numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
+
+        // Emit an event
+        emit LogDarknodeDeregistered(_darknodeID);
     }
 }
