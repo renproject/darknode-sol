@@ -56,7 +56,7 @@ contract("Orderbook", (accounts: string[]) => {
         // Register all nodes
         darknode = accounts[8];
         await ren.approve(dnr.address, MINIMUM_BOND, { from: darknode });
-        await dnr.register(darknode, "0x00", MINIMUM_BOND, { from: darknode });
+        await dnr.register(darknode, "0x00", { from: darknode });
 
         await dnr.epoch();
     });

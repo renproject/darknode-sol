@@ -54,9 +54,9 @@ contract("Darknode Slasher", (accounts: string[]) => {
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
 
-        await dnr.register(darknode5, testUtils.PUBK("1"), MINIMUM_BOND, { from: accounts[1] });
-        await dnr.register(darknode6, testUtils.PUBK("2"), MINIMUM_BOND, { from: accounts[2] });
-        await dnr.register(darknode7, testUtils.PUBK("3"), MINIMUM_BOND, { from: accounts[3] });
+        await dnr.register(darknode5, testUtils.PUBK("1"), { from: accounts[1] });
+        await dnr.register(darknode6, testUtils.PUBK("2"), { from: accounts[2] });
+        await dnr.register(darknode7, testUtils.PUBK("3"), { from: accounts[3] });
         await testUtils.waitForEpoch(dnr);
 
         (await dnr.isRegistered(darknode5)).should.be.true;

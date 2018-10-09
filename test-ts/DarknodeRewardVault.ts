@@ -58,7 +58,7 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
         for (const darknode of [darknode1, darknode2]) {
             await ren.transfer(darknodeOperator, MINIMUM_BOND);
             await ren.approve(dnr.address, MINIMUM_BOND, { from: darknodeOperator });
-            await dnr.register(darknode, "0x00", MINIMUM_BOND, { from: darknodeOperator });
+            await dnr.register(darknode, "0x00", { from: darknodeOperator });
         }
         await dnr.epoch();
 

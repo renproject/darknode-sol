@@ -13,7 +13,7 @@ contract Reverter {
         // REN allowance
         require(ren.transferFrom(msg.sender, this, _bond), "bond transfer failed");
         ren.approve(dnr, _bond);
-        dnr.register(_darknodeID, _publicKey, _bond);
+        dnr.register(_darknodeID, _publicKey);
     }
 
     function () public payable {

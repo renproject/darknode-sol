@@ -143,29 +143,28 @@ contract DarknodeRegistry is Ownable {
         numDarknodesPreviousEpoch = 0;
     }
 
-    /// @notice Register a darknode and transfer the bond to this contract. The
-    /// caller must provide a public encryption key for the darknode as well as
-    /// a bond in REN. The bond must be provided as an ERC20 allowance. The dark
-    /// node will remain pending registration until the next epoch. Only after
-    /// this period can the darknode be deregistered. The caller of this method
-    /// will be stored as the owner of the darknode.
+    /// @notice Register a darknode and transfer the bond to this contract.
+    /// Before registering, the bond transfer must be approved in the REN
+    /// contract. The caller must provide a public encryption key for the
+    /// darknode. The darknode will remain pending registration until the next
+    /// epoch. Only after this period can the darknode be deregistered. The
+    /// caller of this method will be stored as the owner of the darknode.
     ///
     /// @param _darknodeID The darknode ID that will be registered.
     /// @param _publicKey The public key of the darknode. It is stored to allow
     ///        other darknodes and traders to encrypt messages to the trader.
-    /// @param _bond The bond that will be paid. It must be greater than, or
-    ///        equal to, the minimum bond.
-    function register(address _darknodeID, bytes _publicKey, uint256 _bond) external onlyRefunded(_darknodeID) {
-        // REN allowance
-        require(_bond >= minimumBond, "insufficient bond");
+    function register(address _darknodeID, bytes _publicKey) external onlyRefunded(_darknodeID) {
+        // Use the current minimum bond as the darknode's bond.
+        uint256 bond = minimumBond;
+
         // Transfer bond to store
-        require(ren.transferFrom(msg.sender, store, _bond), "bond transfer failed");
+        require(ren.transferFrom(msg.sender, store, bond), "bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
             _darknodeID,
             msg.sender,
-            _bond,
+            bond,
             _publicKey,
             currentEpoch.blocknumber.add(minimumEpochInterval),
             0
@@ -174,7 +173,7 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
-        emit LogDarknodeRegistered(_darknodeID, _bond);
+        emit LogDarknodeRegistered(_darknodeID, bond);
     }
 
     /// @notice Deregister a darknode. The darknode will not be deregistered
