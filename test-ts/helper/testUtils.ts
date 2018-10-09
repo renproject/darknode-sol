@@ -5,6 +5,10 @@ import * as chaiBigNumber from "chai-bignumber";
 import * as crypto from "crypto";
 
 import BigNumber from "bignumber.js";
+
+import { BN } from "bn.js";
+
+import { DarknodeRegistryContract } from "../bindings/darknode_registry";
 import { OrderbookContract } from "../bindings/orderbook";
 
 // Import chai log helper
@@ -15,16 +19,18 @@ chai.use(chaiBigNumber(BigNumber));
 chai.should();
 
 const config = require("../../migrations/config.js");
-export const { MINIMUM_BOND, MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+
+export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
 
 // Makes an ID for a darknode
-export function ID(i: string) {
-    return web3.utils.toChecksumAddress(web3.utils.sha3(i).slice(0, 42));
+export function ID(i: string | number) {
+    return web3.utils.toChecksumAddress(web3.utils.sha3(i.toString()).slice(0, 42));
 }
 
 // Makes a public key for a darknode
-export function PUBK(i: string) {
-    return web3.utils.sha3(i);
+export function PUBK(i: string | number) {
+    return web3.utils.sha3(i.toString());
 }
 
 export const NULL = "0x0000000000000000000000000000000000000000";
@@ -38,7 +44,7 @@ export const randomAddress = (): string => {
     return web3.utils.toChecksumAddress(randomBytes(20));
 };
 
-export async function waitForEpoch(dnr: any) {
+export async function waitForEpoch(dnr: DarknodeRegistryContract) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
     while (true) {
         // Must be an on-chain call, or the time won't be updated
