@@ -1,19 +1,28 @@
 node_modules
+.env
+/build
+/.merged
+local_*
+/bindings.go
+
+# Tests
 .node-xmlhttprequest-sync-*
-scTopics
 allFiredEvents
 in_complete_tests
+/test
+/test-ts/bindings/*.ts
+
+# Coverage
 coverage
 coverageEnv
 coverage.json
 .coveralls.yml
-.env
-/build
-/.merged
-/test
-local_*
-test-ts/bindings/*.ts
-bindings.go
+scTopics
+
+# Profiler
+/profiler.json
+/spTopics
+/profilerEnv
 
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
