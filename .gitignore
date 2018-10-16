@@ -1,3 +1,4 @@
+# General
 node_modules
 .env
 /build
@@ -24,6 +25,7 @@ scTopics
 /spTopics
 /profilerEnv
 
+# Include solidity dependencies
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
 !node_modules/openzeppelin-solidity/contracts/
