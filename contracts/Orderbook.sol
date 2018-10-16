@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
@@ -12,28 +12,27 @@ import "./libraries/Utils.sol";
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
-contract Orderbook is Ownable {
+contract Orderbook is Claimable {
     using SafeMath for uint256;
-
-    string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice OrderState enumerates the possible states of an order. All
     /// orders default to the Undefined state.
     enum OrderState {Undefined, Open, Confirmed, Canceled}
 
-    /// @notice Order stores a subset of the public data associated with an order.
-    struct Order {
-        OrderState state;     // State of the order
-        address trader;       // Trader that owns the order
-        address confirmer;    // Darknode that confirmed the order in a match
-        uint64 settlementID;  // The settlement that signed the order opening
-        uint256 priority;     // Logical time priority of this order
-        uint256 blockNumber;  // Block number of the most recent state change
-        bytes32 matchedOrder; // Order confirmed in a match with this order
-    }
+    string public VERSION; // Passed in as a constructor parameter.
 
     DarknodeRegistry public darknodeRegistry;
     SettlementRegistry public settlementRegistry;
+
+    /// @notice Order stores a subset of the public data associated with an order.
+    struct Order {
+        OrderState state;     // State of the order
+        uint32  OrderType;    // Type of the order
+        uint64  settlementID; // The settlement that signed the order opening
+        address trader;       // Trader that owns the order
+        address confirmer;    // Darknode that confirmed the order in a match
+        bytes32 matchedOrder; // Order confirmed in a match with this order
+    }
 
     bytes32[] private orderbook;
 
@@ -41,8 +40,12 @@ contract Orderbook is Ownable {
     // through the getter functions below for each of the order's fields.
     mapping(bytes32 => Order) public orders;
 
-    event LogFeeUpdated(uint256 previousFee, uint256 nextFee);
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
+    event LogSettlementRegistryUpdated(SettlementRegistry previousSettlementRegistry, SettlementRegistry nextSettlementRegistry);
+
+    event LogOrderOpen(bytes32 indexed orderID, uint256 blockNumber);
+    event LogOrderConfirmed(bytes32 indexed orderID, uint256 blockNumber);
+    event LogOrderCanceled(bytes32 indexed orderID);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
@@ -76,6 +79,16 @@ contract Orderbook is Ownable {
         darknodeRegistry = _newDarknodeRegistry;
     }
 
+    /// @notice Allows the owner to update the address of the SettlementRegistry
+    /// contract.
+    function updateSettlementRegistry(SettlementRegistry _newSettlementRegistry) external onlyOwner {
+        // Basic validation knowing that SettlementRegistry exposes VERSION
+        require(bytes(_newSettlementRegistry.VERSION()).length > 0, "invalid settlement registry contract");
+
+        emit LogSettlementRegistryUpdated(settlementRegistry, _newSettlementRegistry);
+        settlementRegistry = _newSettlementRegistry;
+    }
+
     /// @notice Open an order in the orderbook. The order must be in the
     /// Undefined state.
     ///
@@ -97,10 +110,11 @@ contract Orderbook is Ownable {
             trader: trader,
             confirmer: 0x0,
             settlementID: _settlementID,
-            priority: orderbook.length + 1,
             blockNumber: block.number,
             matchedOrder: 0x0
         });
+        LogOrderOpen(_orderID, block.number);
+        LogOrderPriority(_orderID, orderbook.length + 1);
 
         orderbook.push(_orderID);
     }
@@ -119,12 +133,13 @@ contract Orderbook is Ownable {
         orders[_orderID].state = OrderState.Confirmed;
         orders[_orderID].confirmer = msg.sender;
         orders[_orderID].matchedOrder = _matchedOrderID;
-        orders[_orderID].blockNumber = block.number;
 
         orders[_matchedOrderID].state = OrderState.Confirmed;
         orders[_matchedOrderID].confirmer = msg.sender;
         orders[_matchedOrderID].matchedOrder = _orderID;
-        orders[_matchedOrderID].blockNumber = block.number;
+
+        LogOrderConfirmed(_orderID, block.number);
+        LogOrderOpen(_matchedOrderID, block.number);
     }
 
     /// @notice Cancel an open order in the orderbook. An order can be cancelled
@@ -137,12 +152,14 @@ contract Orderbook is Ownable {
     function cancelOrder(bytes32 _orderID) external {
         require(orders[_orderID].state == OrderState.Open, "invalid order state");
 
-        // Require the msg.sender to be the trader or the broker verifier
-        address brokerVerifier = settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID);
-        require(msg.sender == orders[_orderID].trader || msg.sender == brokerVerifier, "not authorized");
+        // Require the msg.sender to be the trader or the broker verifier :
+        if (msg.sender != orders[_orderID].trader){
+            address brokerVerifier = settlementRegistry.brokerVerifierContract(orders[_orderID].settlementID);
+            require(msg.sender == brokerVerifier, "not authorized");
+        }
 
         orders[_orderID].state = OrderState.Canceled;
-        orders[_orderID].blockNumber = block.number;
+        LogOrderCanceled(_orderID);
     }
 
     /// @notice returns status of the given orderID.
@@ -155,12 +172,6 @@ contract Orderbook is Ownable {
         return orders[_orderID].matchedOrder;
     }
 
-    /// @notice returns the priority of the given orderID.
-    /// The priority is the index of the order in the orderbook.
-    function orderPriority(bytes32 _orderID) external view returns (uint256) {
-        return orders[_orderID].priority;
-    }
-
     /// @notice returns the trader of the given orderID.
     /// Trader is the one who signs the message and does the actual trading.
     function orderTrader(bytes32 _orderID) external view returns (address) {
@@ -170,19 +181,6 @@ contract Orderbook is Ownable {
     /// @notice returns the darknode address which confirms the given orderID.
     function orderConfirmer(bytes32 _orderID) external view returns (address) {
         return orders[_orderID].confirmer;
-    }
-
-    /// @notice returns the block number when the order being last modified.
-    function orderBlockNumber(bytes32 _orderID) external view returns (uint256) {
-        return orders[_orderID].blockNumber;
-    }
-
-    /// @notice returns the block depth of the orderId
-    function orderDepth(bytes32 _orderID) external view returns (uint256) {
-        if (orders[_orderID].blockNumber == 0) {
-            return 0;
-        }
-        return (block.number.sub(orders[_orderID].blockNumber));
     }
 
     /// @notice returns the total number of orders in the orderbook, including
