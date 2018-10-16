@@ -45,7 +45,7 @@ contract Orderbook is Claimable {
 
     event LogOrderOpen(bytes32 indexed orderID, uint256 blockNumber);
     event LogOrderConfirmed(bytes32 indexed orderID, uint256 blockNumber);
-    event LogOrderCanceled(bytes32 indexed orderID);
+    event LogOrderCanceled(bytes32 indexed orderID, uint256 blockNumber);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
@@ -114,7 +114,6 @@ contract Orderbook is Claimable {
             matchedOrder: 0x0
         });
         LogOrderOpen(_orderID, block.number);
-        LogOrderPriority(_orderID, orderbook.length + 1);
 
         orderbook.push(_orderID);
     }
@@ -139,7 +138,7 @@ contract Orderbook is Claimable {
         orders[_matchedOrderID].matchedOrder = _orderID;
 
         LogOrderConfirmed(_orderID, block.number);
-        LogOrderOpen(_matchedOrderID, block.number);
+        LogOrderConfirmed(_matchedOrderID, block.number);
     }
 
     /// @notice Cancel an open order in the orderbook. An order can be cancelled
@@ -159,7 +158,7 @@ contract Orderbook is Claimable {
         }
 
         orders[_orderID].state = OrderState.Canceled;
-        LogOrderCanceled(_orderID);
+        LogOrderCanceled(_orderID, block.number);
     }
 
     /// @notice returns status of the given orderID.
