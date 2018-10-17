@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 /// @notice A library for calculating and verifying order match details
 library SettlementUtils {
