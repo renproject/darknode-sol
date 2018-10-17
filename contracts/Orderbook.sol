@@ -1,7 +1,7 @@
 pragma solidity ^0.4.25;
 
-import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
 import "./SettlementRegistry.sol";
@@ -12,7 +12,7 @@ import "./libraries/Utils.sol";
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
-contract Orderbook is Claimable {
+contract Orderbook is Ownable{
     using SafeMath for uint256;
 
     /// @notice OrderState enumerates the possible states of an order. All
@@ -27,8 +27,9 @@ contract Orderbook is Claimable {
     /// @notice Order stores a subset of the public data associated with an order.
     struct Order {
         OrderState state;     // State of the order
-        uint32  OrderType;    // Type of the order
+        uint32  orderType;    // Type of the order
         uint64  settlementID; // The settlement that signed the order opening
+        uint64  expiration;   // The expiration time of the order
         address trader;       // Trader that owns the order
         address confirmer;    // Darknode that confirmed the order in a match
         bytes32 matchedOrder; // Order confirmed in a match with this order
@@ -69,6 +70,12 @@ contract Orderbook is Claimable {
         settlementRegistry = _settlementRegistry;
     }
 
+    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry, SettlementRegistry _settlementRegistry) isInitializer("Orderbook", "0") public {
+        VERSION = _VERSION;
+        darknodeRegistry = _darknodeRegistry;
+        settlementRegistry = _settlementRegistry;
+    }
+
     /// @notice Allows the owner to update the address of the DarknodeRegistry
     /// contract.
     function updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) external onlyOwner {
@@ -95,7 +102,7 @@ contract Orderbook is Claimable {
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderID The hash of the order.
-    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID) external {
+    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 expiration) external {
         require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
         address trader = msg.sender;
@@ -106,12 +113,13 @@ contract Orderbook is Claimable {
         require(brokerVerifier.verifyOpenSignature(trader, _signature, _orderID), "invalid broker signature");
 
         orders[_orderID] = Order({
+            orderType : _orderType,
             state: OrderState.Open,
             trader: trader,
             confirmer: 0x0,
             settlementID: _settlementID,
-            blockNumber: block.number,
-            matchedOrder: 0x0
+            matchedOrder: 0x0,
+            expiration: _expiration
         });
         LogOrderOpen(_orderID, block.number);
 
@@ -128,6 +136,8 @@ contract Orderbook is Claimable {
     function confirmOrder(bytes32 _orderID, bytes32 _matchedOrderID) external onlyDarknode(msg.sender) {
         require(orders[_orderID].state == OrderState.Open, "invalid order status");
         require(orders[_matchedOrderID].state == OrderState.Open, "invalid order status");
+        require(orders[_orderID].expiration > block.timestamp, "order already expired");
+        require(orders[_matchedOrderID].expiration > block.timestamp, "order already expired");
 
         orders[_orderID].state = OrderState.Confirmed;
         orders[_orderID].confirmer = msg.sender;
@@ -180,6 +190,16 @@ contract Orderbook is Claimable {
     /// @notice returns the darknode address which confirms the given orderID.
     function orderConfirmer(bytes32 _orderID) external view returns (address) {
         return orders[_orderID].confirmer;
+    }
+
+    /// @notice returns the type of the given orderID.
+    function orderType(bytes32 _orderID) external view returns (uint32) {
+        return orders[_orderID].orderType;
+    }
+
+    /// @notice returns the expiration time of the given orderID.
+    function orderExpiration(bytes32 _orderID) external view returns (uint64) {
+        return orders[_orderID].expiration;
     }
 
     /// @notice returns the total number of orders in the orderbook, including
