@@ -539,7 +539,7 @@ contract DarknodeRegistry is Migratable, Ownable {
         bytes _publicKey,
         uint256 _registeredAt,
         uint256 _deregisteredAt
-    ) internal onlyOwner {
+    ) internal {
         Darknode memory darknode = Darknode({
             owner: _darknodeOwner,
             bond: _bond,
@@ -564,7 +564,7 @@ contract DarknodeRegistry is Migratable, Ownable {
 
     /// @notice Removes a darknode from the store and transfers its bond to the
     /// owner of this contract.
-    function _removeDarknode(address _darknodeID) internal onlyOwner {
+    function _removeDarknode(address _darknodeID) internal {
         uint256 bond = darknodeRegistry[_darknodeID].bond;
         delete darknodeRegistry[_darknodeID];
         LinkedList.remove(darknodes, _darknodeID);
@@ -573,7 +573,7 @@ contract DarknodeRegistry is Migratable, Ownable {
 
     /// @notice Updates the bond of a darknode. The new bond must be smaller
     /// than the previous bond of the darknode.
-    function _updateDarknodeBond(address _darknodeID, uint256 _decreasedBond) internal onlyOwner {
+    function _updateDarknodeBond(address _darknodeID, uint256 _decreasedBond) internal {
         uint256 previousBond = darknodeRegistry[_darknodeID].bond;
         require(_decreasedBond < previousBond, "bond not decreased");
         darknodeRegistry[_darknodeID].bond = _decreasedBond;
