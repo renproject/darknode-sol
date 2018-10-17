@@ -339,7 +339,7 @@ contract DarknodeRegistry is Migratable, Ownable {
     /// @param _darknodeID The darknode ID that will be refunded. The caller
     ///        of this method must be the owner of this darknode.
     function refund(address _darknodeID) external onlyRefundable(_darknodeID) {
-        address owner = _darknodeOwner(_darknodeID);
+        address darknodeOwner = _darknodeOwner(_darknodeID);
 
         // Remember the bond amount
         uint256 amount = _darknodeBond(_darknodeID);
@@ -351,7 +351,7 @@ contract DarknodeRegistry is Migratable, Ownable {
         require(ren.transfer(owner, amount), "bond transfer failed");
 
         // Emit an event.
-        emit LogDarknodeOwnerRefunded(_darknodeOwner(_darknodeID), amount);
+        emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.
