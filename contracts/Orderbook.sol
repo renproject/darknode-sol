@@ -1,18 +1,20 @@
 pragma solidity ^0.4.24;
 
+import "zos-lib/contracts/migrations/Migratable.sol";
+
 import "openzeppelin-zos/contracts/math/SafeMath.sol";
 import "openzeppelin-zos/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
 import "./SettlementRegistry.sol";
-import "./BrokerVerifier.sol";
+import "./interfaces/BrokerVerifier.sol";
 import "./libraries/Utils.sol";
 
 /// @notice The Orderbook contract stores the state and priority of orders and
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
-contract Orderbook is Ownable{
+contract Orderbook is Migratable, Ownable {
     using SafeMath for uint256;
 
     /// @notice OrderState enumerates the possible states of an order. All
@@ -60,17 +62,11 @@ contract Orderbook is Ownable{
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract.
     /// @param _settlementRegistry The address of the SettlementRegistry
     ///        contract.
-    constructor(
+    function initialize(
         string _VERSION,
         DarknodeRegistry _darknodeRegistry,
         SettlementRegistry _settlementRegistry
-    ) public {
-        VERSION = _VERSION;
-        darknodeRegistry = _darknodeRegistry;
-        settlementRegistry = _settlementRegistry;
-    }
-
-    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry, SettlementRegistry _settlementRegistry) isInitializer("Orderbook", "0") public {
+    ) public isInitializer("Orderbook", "0") {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         settlementRegistry = _settlementRegistry;
@@ -102,7 +98,7 @@ contract Orderbook is Ownable{
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderID The hash of the order.
-    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 expiration) external {
+    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 _expiration) external {
         require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
         address trader = msg.sender;
@@ -121,7 +117,7 @@ contract Orderbook is Ownable{
             matchedOrder: 0x0,
             expiration: _expiration
         });
-        LogOrderOpen(_orderID, block.number);
+        emit LogOrderOpen(_orderID, block.number);
 
         orderbook.push(_orderID);
     }
@@ -147,8 +143,8 @@ contract Orderbook is Ownable{
         orders[_matchedOrderID].confirmer = msg.sender;
         orders[_matchedOrderID].matchedOrder = _orderID;
 
-        LogOrderConfirmed(_orderID, block.number);
-        LogOrderConfirmed(_matchedOrderID, block.number);
+        emit LogOrderConfirmed(_orderID, block.number);
+        emit LogOrderConfirmed(_matchedOrderID, block.number);
     }
 
     /// @notice Cancel an open order in the orderbook. An order can be cancelled
@@ -168,7 +164,7 @@ contract Orderbook is Ownable{
         }
 
         orders[_orderID].state = OrderState.Canceled;
-        LogOrderCanceled(_orderID, block.number);
+        emit LogOrderCanceled(_orderID, block.number);
     }
 
     /// @notice returns status of the given orderID.

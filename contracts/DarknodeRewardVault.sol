@@ -1,17 +1,19 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "zos-lib/contracts/migrations/Migratable.sol";
+
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
+import "openzeppelin-zos/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
-import "./CompatibleERC20.sol";
+import "./libraries/CompatibleERC20.sol";
 
 /// @notice The DarknodeRewardVault contract is responsible for holding fees
 /// for darknodes for settling orders. Fees can be withdrawn to the address of
 /// the darknode's operator. Fees can be in ETH or in ERC20 tokens.
 /// Docs: https://github.com/republicprotocol/republic-sol/blob/master/docs/02-darknode-reward-vault.md
-contract DarknodeRewardVault is Ownable {
+contract DarknodeRewardVault is Migratable, Ownable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for CompatibleERC20;
 
@@ -31,7 +33,8 @@ contract DarknodeRewardVault is Ownable {
     /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
     ///        the vault to lookup Darknode owners.
-    constructor(string _VERSION, DarknodeRegistry _darknodeRegistry) public {
+    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry) public isInitializer("DarknodeRewardVault", "0") {
+
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
     }

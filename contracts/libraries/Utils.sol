@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ECRecovery.sol";
+import "openzeppelin-zos/contracts/ECRecovery.sol";
 
 library Utils {
 

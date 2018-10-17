@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/math/Math.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
+import "openzeppelin-zos/contracts/math/Math.sol";
 
 /// @notice Implements safeTransfer, safeTransferFrom and
 /// safeApprove for CompatibleERC20.

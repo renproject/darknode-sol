@@ -19,3 +19,4 @@ node_modules/openzeppelin-solidity/*
 !node_modules/openzeppelin-solidity/contracts/
 
 .zos.session
+zos.local.json

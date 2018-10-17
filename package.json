@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "openzeppelin-solidity": "1.11.0",
-    "openzeppelin-zos": "1.9.4",
+    "openzeppelin-zos": "^1.9.4",
     "zos-lib": "1.4.1"
   },
   "devDependencies": {

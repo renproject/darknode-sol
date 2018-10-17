@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-zos/contracts/token/ERC20/PausableToken.sol";
+import "openzeppelin-zos/contracts/token/ERC20/BurnableToken.sol";
 
 contract RepublicToken is PausableToken, BurnableToken {
 

@@ -1,7 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "zos-lib/contracts/migrations/Migratable.sol";
+
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
 
 import "./libraries/LinkedList.sol";
 import "./RepublicToken.sol";
@@ -9,7 +11,7 @@ import "./RepublicToken.sol";
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been separated to improve
 /// upgradability.
-contract DarknodeRegistryStore is Claimable {
+contract DarknodeRegistryStore is Migratable, Ownable {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -55,10 +57,10 @@ contract DarknodeRegistryStore is Claimable {
     ///
     /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RepublicToken contract.
-    constructor(
+    function initialize(
         string _VERSION,
         RepublicToken _ren
-    ) public {
+    ) public isInitializer("DarknodeRegistryStore", "0") {
         VERSION = _VERSION;
         ren = _ren;
     }

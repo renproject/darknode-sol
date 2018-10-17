@@ -1,14 +1,16 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "zos-lib/contracts/migrations/Migratable.sol";
+
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
 
 import "./RepublicToken.sol";
 import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistry is Ownable {
+contract DarknodeRegistry is Migratable, Ownable {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -112,14 +114,15 @@ contract DarknodeRegistry is Ownable {
     /// @param _minimumPodSize The minimum size of a Darknode pod.
     /// @param _minimumEpochInterval The minimum number of blocks between
     ///        epochs.
-    constructor(
+    function initialize(
         string _VERSION,
         RepublicToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
         uint256 _minimumEpochInterval
-    ) public {
+    ) public isInitializer("DarknodeRegistry", "1") {
+
         VERSION = _VERSION;
 
         store = _storeAddress;
@@ -243,7 +246,7 @@ contract DarknodeRegistry is Ownable {
     /// `transferStoreOwnership` must have previously been called when
     /// transferring from another Darknode Registry.
     function claimStoreOwnership() external onlyOwner {
-        store.claimOwnership();
+        // store.claimOwnership();
     }
 
     /// @notice Allows the contract owner to update the minimum bond.

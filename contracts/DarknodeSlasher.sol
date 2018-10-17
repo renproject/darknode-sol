@@ -1,14 +1,16 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zos-lib/contracts/migrations/Migratable.sol";
+
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
 import "./Orderbook.sol";
-import "./SettlementUtils.sol";
+import "./libraries/SettlementUtils.sol";
 
 /// @notice Allows order confirmations to be challenged, penalizing darknodes
 /// who have confirmed two mismatched orders.
-contract DarknodeSlasher is Ownable {
+contract DarknodeSlasher is Migratable, Ownable {
     string public VERSION; // Passed in as a constructor parameter.
 
     DarknodeRegistry public trustedDarknodeRegistry;
@@ -33,7 +35,8 @@ contract DarknodeSlasher is Ownable {
     /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _orderbook The address of the Orderbook contract
-    constructor(string _VERSION, DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public {
+    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public isInitializer("DarknodeSlasher", "0") {
+        
         VERSION = _VERSION;
         trustedDarknodeRegistry = _darknodeRegistry;
         trustedOrderbook = _orderbook;

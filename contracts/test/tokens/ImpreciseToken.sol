@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "openzeppelin-zos/contracts/token/ERC20/StandardToken.sol";
 
 /// @notice A test ERC20 token with 12 decimals.
 contract ImpreciseToken is StandardToken {

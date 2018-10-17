@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../SettlementUtils.sol";
+import "../libraries/SettlementUtils.sol";
 
 /// @notice A contract that exposes the SettlementUtils functions for testing.
 contract SettlementUtilsTest {

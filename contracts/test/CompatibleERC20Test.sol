@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-zos/contracts/math/SafeMath.sol";
 
-import "../CompatibleERC20.sol";
+import "../libraries/CompatibleERC20.sol";
 
 contract CompatibleERC20Test  {
     using SafeMath for uint256;

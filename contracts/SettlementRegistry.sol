@@ -1,13 +1,15 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zos-lib/contracts/migrations/Migratable.sol";
 
-import "./BrokerVerifier.sol";
-import "./Settlement.sol";
+import "openzeppelin-zos/contracts/ownership/Ownable.sol";
+
+import "./interfaces/BrokerVerifier.sol";
+import "./interfaces/Settlement.sol";
 
 /// @notice SettlementRegistry allows a Settlement layer to register the
 /// contracts used for match settlement and for broker signature verification.
-contract SettlementRegistry is Ownable {
+contract SettlementRegistry is Migratable, Ownable {
     string public VERSION; // Passed in as a constructor parameter.
 
     struct SettlementDetails {
@@ -27,7 +29,7 @@ contract SettlementRegistry is Ownable {
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    constructor(string _VERSION) public {
+    function initialize(string _VERSION) public isInitializer("SettlementRegistry", "0") {
         VERSION = _VERSION;
     }
 
