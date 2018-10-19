@@ -47,10 +47,9 @@ contract Orderbook is Migratable, Ownable {
     event LogSettlementRegistryUpdated(SettlementRegistry previousSettlementRegistry, SettlementRegistry nextSettlementRegistry);
 
     // The priority is the index of the order in the orderbook, started from 0.
-    event LogOrderOpen(bytes32 indexed orderID, uint256 indexed priority);
+    event LogOrderOpen(bytes32 indexed orderID, uint256 indexed priority, uint64 indexed expiration);
     event LogOrderConfirmed(bytes32 indexed orderID);
     event LogOrderCanceled(bytes32 indexed orderID);
-    event LogOrderExpiration(bytes32 indexed orderID, uint64 indexed expiration);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
@@ -121,8 +120,7 @@ contract Orderbook is Migratable, Ownable {
             settlementID: _settlementID,
             matchedOrder: 0x0
         });
-        emit LogOrderExpiration(_orderID, _expiration);
-        emit LogOrderOpen(_orderID, buyOrders.length);
+        emit LogOrderOpen(_orderID, buyOrders.length, _expiration);
 
         buyOrders.push(_orderID);
     }
@@ -154,8 +152,7 @@ contract Orderbook is Migratable, Ownable {
             settlementID: _settlementID,
             matchedOrder: 0x0
             });
-        emit LogOrderExpiration(_orderID, _expiration);
-        emit LogOrderOpen(_orderID, sellOrders.length);
+        emit LogOrderOpen(_orderID, sellOrders.length, _expiration);
 
         sellOrders.push(_orderID);
     }
