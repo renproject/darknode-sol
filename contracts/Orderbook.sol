@@ -31,13 +31,13 @@ contract Orderbook is Migratable, Ownable {
         OrderState state;     // State of the order
         uint32  orderType;    // Type of the order
         uint64  settlementID; // The settlement that signed the order opening
-        uint64  expiration;   // The expiration time of the order
         address trader;       // Trader that owns the order
         address confirmer;    // Darknode that confirmed the order in a match
         bytes32 matchedOrder; // Order confirmed in a match with this order
     }
 
-    bytes32[] private orderbook;
+    bytes32[] private buyOrders;
+    bytes32[] private sellOrders;
 
     // Order details are exposed through directly accessing this mapping, or
     // through the getter functions below for each of the order's fields.
@@ -46,9 +46,11 @@ contract Orderbook is Migratable, Ownable {
     event LogDarknodeRegistryUpdated(DarknodeRegistry previousDarknodeRegistry, DarknodeRegistry nextDarknodeRegistry);
     event LogSettlementRegistryUpdated(SettlementRegistry previousSettlementRegistry, SettlementRegistry nextSettlementRegistry);
 
-    event LogOrderOpen(bytes32 indexed orderID, uint256 blockNumber);
-    event LogOrderConfirmed(bytes32 indexed orderID, uint256 blockNumber);
-    event LogOrderCanceled(bytes32 indexed orderID, uint256 blockNumber);
+    // The priority is the index of the order in the orderbook, started from 0.
+    event LogOrderOpen(bytes32 indexed orderID, uint256 indexed priority);
+    event LogOrderConfirmed(bytes32 indexed orderID);
+    event LogOrderCanceled(bytes32 indexed orderID);
+    event LogOrderExpiration(bytes32 indexed orderID, uint64 indexed expiration);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _sender) {
@@ -92,13 +94,16 @@ contract Orderbook is Migratable, Ownable {
         settlementRegistry = _newSettlementRegistry;
     }
 
-    /// @notice Open an order in the orderbook. The order must be in the
+    /// @notice Open an buy order in the orderbook. The order must be in the
     /// Undefined state.
     ///
+    /// @param _settlementID ID of the way of settlment.
     /// @param _signature Signature of the message that defines the trader. The
     ///        message is "Republic Protocol: open: {orderId}".
     /// @param _orderID The hash of the order.
-    function openOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 _expiration) external {
+    /// @param _orderType Type of the order.
+    /// @param _expiration Time when the order will expire.
+    function openBuyOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 _expiration) external {
         require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
 
         address trader = msg.sender;
@@ -114,12 +119,45 @@ contract Orderbook is Migratable, Ownable {
             trader: trader,
             confirmer: 0x0,
             settlementID: _settlementID,
-            matchedOrder: 0x0,
-            expiration: _expiration
+            matchedOrder: 0x0
         });
-        emit LogOrderOpen(_orderID, block.number);
+        emit LogOrderExpiration(_orderID, _expiration);
+        emit LogOrderOpen(_orderID, buyOrders.length);
 
-        orderbook.push(_orderID);
+        buyOrders.push(_orderID);
+    }
+
+    /// @notice Open an sell order in the orderbook. The order must be in the
+    /// Undefined state.
+    ///
+    /// @param _settlementID ID of the way of settlment.
+    /// @param _signature Signature of the message that defines the trader. The
+    ///        message is "Republic Protocol: open: {orderId}".
+    /// @param _orderID The hash of the order.
+    /// @param _orderType Type of the order.
+    /// @param _expiration Time when the order will expire.
+    function openSellOrder(uint64 _settlementID, bytes _signature, bytes32 _orderID, uint32 _orderType, uint64 _expiration) external {
+        require(orders[_orderID].state == OrderState.Undefined, "invalid order status");
+
+        address trader = msg.sender;
+
+        // Verify the order signature
+        require(settlementRegistry.settlementRegistration(_settlementID), "settlement not registered");
+        BrokerVerifier brokerVerifier = settlementRegistry.brokerVerifierContract(_settlementID);
+        require(brokerVerifier.verifyOpenSignature(trader, _signature, _orderID), "invalid broker signature");
+
+        orders[_orderID] = Order({
+            orderType : _orderType,
+            state: OrderState.Open,
+            trader: trader,
+            confirmer: 0x0,
+            settlementID: _settlementID,
+            matchedOrder: 0x0
+            });
+        emit LogOrderExpiration(_orderID, _expiration);
+        emit LogOrderOpen(_orderID, sellOrders.length);
+
+        sellOrders.push(_orderID);
     }
 
     /// @notice Confirm an order match between orders. The confirmer must be a
@@ -132,8 +170,6 @@ contract Orderbook is Migratable, Ownable {
     function confirmOrder(bytes32 _orderID, bytes32 _matchedOrderID) external onlyDarknode(msg.sender) {
         require(orders[_orderID].state == OrderState.Open, "invalid order status");
         require(orders[_matchedOrderID].state == OrderState.Open, "invalid order status");
-        require(orders[_orderID].expiration > block.timestamp, "order already expired");
-        require(orders[_matchedOrderID].expiration > block.timestamp, "order already expired");
 
         orders[_orderID].state = OrderState.Confirmed;
         orders[_orderID].confirmer = msg.sender;
@@ -143,8 +179,8 @@ contract Orderbook is Migratable, Ownable {
         orders[_matchedOrderID].confirmer = msg.sender;
         orders[_matchedOrderID].matchedOrder = _orderID;
 
-        emit LogOrderConfirmed(_orderID, block.number);
-        emit LogOrderConfirmed(_matchedOrderID, block.number);
+        emit LogOrderConfirmed(_orderID);
+        emit LogOrderConfirmed(_matchedOrderID);
     }
 
     /// @notice Cancel an open order in the orderbook. An order can be cancelled
@@ -164,7 +200,7 @@ contract Orderbook is Migratable, Ownable {
         }
 
         orders[_orderID].state = OrderState.Canceled;
-        emit LogOrderCanceled(_orderID, block.number);
+        emit LogOrderCanceled(_orderID);
     }
 
     /// @notice returns status of the given orderID.
@@ -193,28 +229,24 @@ contract Orderbook is Migratable, Ownable {
         return orders[_orderID].orderType;
     }
 
-    /// @notice returns the expiration time of the given orderID.
-    function orderExpiration(bytes32 _orderID) external view returns (uint64) {
-        return orders[_orderID].expiration;
-    }
-
     /// @notice returns the total number of orders in the orderbook, including
     /// orders that are no longer open
     function ordersCount() external view returns (uint256) {
-        return orderbook.length;
+        return buyOrders.length + sellOrders.length;
     }
 
+
     /// @notice returns order details of the orders starting from the offset.
-    function getOrders(uint256 _offset, uint256 _limit) external view returns (bytes32[], address[], uint8[]) {
-        if (_offset >= orderbook.length) {
+    function getBuyOrders(uint256 _offset, uint256 _limit) external view returns (bytes32[], address[], uint8[]) {
+        if (_offset >= buyOrders.length) {
             return;
         }
 
         // If the provided limit is more than the number of orders after the offset,
         // decrease the limit
         uint256 limit = _limit;
-        if (_offset.add(limit) > orderbook.length) {
-            limit = orderbook.length - _offset;
+        if (_offset.add(limit) > buyOrders.length) {
+            limit = buyOrders.length - _offset;
         }
 
         bytes32[] memory orderIDs = new bytes32[](limit);
@@ -222,7 +254,34 @@ contract Orderbook is Migratable, Ownable {
         uint8[] memory states = new uint8[](limit);
 
         for (uint256 i = 0; i < limit; i++) {
-            bytes32 order = orderbook[i + _offset];
+            bytes32 order = buyOrders[i + _offset];
+            orderIDs[i] = order;
+            traderAddresses[i] = orders[order].trader;
+            states[i] = uint8(orders[order].state);
+        }
+
+        return (orderIDs, traderAddresses, states);
+    }
+
+    /// @notice returns order details of the orders starting from the offset.
+    function getSellOrders(uint256 _offset, uint256 _limit) external view returns (bytes32[], address[], uint8[]){
+        if (_offset >= sellOrders.length) {
+            return;
+        }
+
+        // If the provided limit is more than the number of orders after the offset,
+        // decrease the limit
+        uint256 limit = _limit;
+        if (_offset.add(limit) > sellOrders.length) {
+            limit = sellOrders.length - _offset;
+        }
+
+        bytes32[] memory orderIDs = new bytes32[](limit);
+        address[] memory traderAddresses = new address[](limit);
+        uint8[] memory states = new uint8[](limit);
+
+        for (uint256 i = 0; i < limit; i++) {
+            bytes32 order = sellOrders[i + _offset];
             orderIDs[i] = order;
             traderAddresses[i] = orders[order].trader;
             states[i] = uint8(orders[order].state);
