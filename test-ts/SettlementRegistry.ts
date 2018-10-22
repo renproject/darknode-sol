@@ -1,5 +1,3 @@
-import { BN } from "bn.js";
-
 import {
     NULL, randomAddress,
 } from "./helper/testUtils";
@@ -32,23 +30,23 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // Register Settlement
         (await settlementRegistry.registerSettlement(id, settlement, verifier) as any)
             .should.emit.logs([
-                SettlementRegistryEvents.LogSettlementRegistered(new BN(id), settlement, verifier),
+                SettlementRegistryEvents.LogSettlementRegistered(id, settlement, verifier),
             ]);
 
         // Check details after registration
         const details = await settlementRegistry.settlementDetails(id);
 
-        details.registered.should.be.true;
+        details/*.registered*/[0].should.be.true;
         (await settlementRegistry.settlementRegistration(id))
             .should.be.true;
 
-        details.settlementContract.should.equal(settlement);
+        details/*.settlementContract*/[1].should.address.equal(settlement);
         (await settlementRegistry.settlementContract(id))
-            .should.equal(settlement);
+            .should.address.equal(settlement);
 
-        details.brokerVerifierContract.should.equal(verifier);
+        details/*.brokerVerifierContract*/[2].should.address.equal(verifier);
         (await settlementRegistry.brokerVerifierContract(id))
-            .should.equal(verifier);
+            .should.address.equal(verifier);
     });
 
     it("can deregister a settlement", async () => {
@@ -65,14 +63,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // Deregister Settlement
         (await settlementRegistry.deregisterSettlement(id))
             .should.emit.logs([
-                SettlementRegistryEvents.LogSettlementDeregistered(new BN(id)),
+                SettlementRegistryEvents.LogSettlementDeregistered(id),
             ]);
 
         // Check details after deregistration
         const details = await settlementRegistry.settlementDetails(id);
-        details.registered.should.be.false;
-        details.settlementContract.should.equal(NULL);
-        details.brokerVerifierContract.should.equal(NULL);
+        details/*.registered*/[0].should.be.false;
+        details/*.settlementContract*/[1].should.address.equal(NULL);
+        details/*.brokerVerifierContract*/[2].should.address.equal(NULL);
     });
 
     it("can update a settlement", async () => {
@@ -87,14 +85,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const newVerifier = randomAddress();
         (await settlementRegistry.registerSettlement(id, settlement, newVerifier))
             .should.emit.logs([
-                SettlementRegistryEvents.LogSettlementUpdated(new BN(id), settlement, newVerifier),
+                SettlementRegistryEvents.LogSettlementUpdated(id, settlement, newVerifier),
             ]);
 
         // Check details after updating
         const details = await settlementRegistry.settlementDetails(id);
-        details.registered.should.be.true;
-        details.settlementContract.should.equal(settlement);
-        details.brokerVerifierContract.should.equal(newVerifier);
+        details/*.registered*/[0].should.be.true;
+        details/*.settlementContract*/[1].should.address.equal(settlement);
+        details/*.brokerVerifierContract*/[2].should.address.equal(newVerifier);
     });
 
     it("only the owner can register and deregister", async () => {

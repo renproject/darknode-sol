@@ -21,8 +21,8 @@ contract("SettlementUtils", (accounts: string[]) => {
         dnr = await DarknodeRegistry.deployed();
 
         // Register darknode
-        await ren.transfer(darknode, MINIMUM_BOND);
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: darknode });
+        await ren.transfer(darknode, MINIMUM_BOND.toFixed());
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: darknode });
         await dnr.register(darknode, PUBK("1"), { from: darknode });
         await waitForEpoch(dnr);
     });

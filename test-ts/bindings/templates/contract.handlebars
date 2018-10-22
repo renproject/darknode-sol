@@ -1,11 +1,13 @@
 // tslint:disable
 
-import { BN } from "bn.js";
-import { Log, Provider, TransactionReceipt, Tx } from "web3/types";
+type Log = any;
+type Provider = any;
+type TransactionReceipt = any;
+type Tx = any;
 
 export interface Transaction { receipt: TransactionReceipt; tx: string; logs: Log[]; }
 
-type BigNumber = string | number | BN;
+type BigNumber = string | number;
 
 {{#if events}}
 export const {{contractName}}Events = {

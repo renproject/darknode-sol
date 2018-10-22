@@ -50,12 +50,12 @@ contract("Orderbook", (accounts: string[]) => {
         // The following tests rely on accounts not being empty
         accounts.length.should.be.greaterThan(0);
         for (const account of accounts) {
-            await ren.transfer(account, MINIMUM_BOND);
+            await ren.transfer(account, MINIMUM_BOND.toFixed());
         }
 
         // Register all nodes
         darknode = accounts[8];
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: darknode });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: darknode });
         await dnr.register(darknode, "0x00", { from: darknode });
 
         await dnr.epoch();
@@ -257,8 +257,8 @@ contract("Orderbook", (accounts: string[]) => {
         }
 
         // Start is out of range
-        (await orderbookAlt.getOrders(10000, 1))
-            .should.deep.equal({ 0: [], 1: [], 2: [] });
+        const ordersOffset = await orderbookAlt.getOrders(10000, 1);
+        ordersOffset[0].length.should.equal(0);
 
         // End is out of range
         (await orderbookAlt.getOrders(0, 10000))[0]
@@ -284,9 +284,8 @@ contract("Orderbook", (accounts: string[]) => {
                 .should.eql([sellOrderId]);
 
             // Negative test for get order
-            (await orderbookAlt.getOrders(2, 1))
-                // tslint:disable-next-line:object-literal-key-quotes
-                .should.eql({ "0": [], "1": [], "2": [] });
+            const orders = await orderbookAlt.getOrders(2, 1);
+            orders[0].length.should.equal(0);
         }
 
         await orderbookAlt.confirmOrder(buyOrderId, sellOrderId, { from: darknode });

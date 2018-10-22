@@ -2,9 +2,7 @@ import * as chai from "chai";
 
 import BigNumber from "bignumber.js";
 
-import { BN } from "bn.js";
-
-interface Log {
+export interface Log {
     event: string;
     args: object;
 }
@@ -76,18 +74,21 @@ chai.use(function (newChai: any, utils: any): void {
                 // skip if the property is from prototype
                 if (!expectedLog.args.hasOwnProperty(arg)) { continue; }
 
-                const expectedArg = expectedLog.args[arg];
-                const actualArg = actualLog.args[arg];
+                let expectedArg = expectedLog.args[arg];
+                let actualArg = actualLog.args[arg];
 
-                let sameValues;
-                if (BN.isBN(expectedArg) || expectedArg.isBigNumber) {
-                    sameValues = (new BigNumber(expectedArg).eq(new BigNumber(actualArg)));
-                } else {
-                    sameValues = (expectedArg === actualLog.args[arg]);
+                if (typeof (expectedArg) === "string") {
+                    expectedArg = expectedArg.toLowerCase();
                 }
 
+                if (typeof (actualArg) === "string") {
+                    actualArg = actualArg.toLowerCase();
+                }
+
+                const comparison = (new BigNumber(expectedArg).eq(new BigNumber(actualArg)));
+
                 this.assert(
-                    sameValues,
+                    comparison,
                     `expected ${arg} to be #{exp} instead of #{act} in log ${expectedLog.event}`,
                     `expected ${arg} to be different from #{exp} in log ${expectedLog.event}`,
                     expectedLog.args[arg].toString(),

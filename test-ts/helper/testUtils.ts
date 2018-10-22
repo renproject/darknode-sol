@@ -1,18 +1,19 @@
-
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as chaiBigNumber from "chai-bignumber";
 import * as crypto from "crypto";
 
 import BigNumber from "bignumber.js";
-
-import { BN } from "bn.js";
+// import * as Web3 from "web3";
 
 import { DarknodeRegistryContract } from "../bindings/darknode_registry";
 import { OrderbookContract } from "../bindings/orderbook";
 
-// Import chai log helper
+// Import chai helpers
+import "./address";
 import "./logs";
+
+// (global as any).web3 = new Web3((global as any).web3.currentProvider);
 
 chai.use(chaiAsPromised);
 chai.use(chaiBigNumber(BigNumber));
@@ -21,9 +22,9 @@ chai.should();
 const config = require("../../migrations/config.js");
 export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
-export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
+export const MINIMUM_BOND = new BigNumber(config.MINIMUM_BOND);
 
-// Makes an ID for a darknode
+// Makes a check-summed ID for a darknode
 export function ID(i: string | number) {
     return web3.utils.toChecksumAddress(web3.utils.sha3(i.toString()).slice(0, 42));
 }
@@ -86,4 +87,13 @@ export const openOrder = async (
 
 export const cancelOrder = async (orderbook: OrderbookContract, account: string, orderID: string) => {
     await orderbook.cancelOrder(orderID, { from: account });
+};
+
+export const web3Sign = (web3, bytes: string, account: string): Promise<string> => {
+    const oldVersion = web3.version.api && web3.version.api.slice(0, 1) === "0";
+    if (oldVersion) {
+        return web3.eth.sign(account, bytes);
+    } else {
+        return web3.eth.sign(bytes, account);
+    }
 };
