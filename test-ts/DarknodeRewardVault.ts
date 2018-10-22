@@ -1,7 +1,5 @@
 import BigNumber from "bignumber.js";
 
-import { BN } from "bn.js";
-
 import * as testUtils from "./helper/testUtils";
 
 import { MINIMUM_BOND } from "./helper/testUtils";
@@ -56,8 +54,8 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
         darknodeOperator = accounts[9];
 
         for (const darknode of [darknode1, darknode2]) {
-            await ren.transfer(darknodeOperator, MINIMUM_BOND);
-            await ren.approve(dnr.address, MINIMUM_BOND, { from: darknodeOperator });
+            await ren.transfer(darknodeOperator, MINIMUM_BOND.toFixed());
+            await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: darknodeOperator });
             await dnr.register(darknode, "0x00", { from: darknodeOperator });
         }
         await dnr.epoch();
@@ -116,9 +114,7 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
 
                 // Set reward balance to 0 by withdrawing
                 for (const darknode of [darknode1, darknode2]) {
-                    sum[darknode] = new BigNumber(
-                        (await darknodeRewardVault.darknodeBalances(darknode, token.address)).toString(),
-                    );
+                    sum[darknode] = new BigNumber(await darknodeRewardVault.darknodeBalances(darknode, token.address));
                 }
 
                 for (const account of accounts) {
@@ -126,7 +122,10 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
                         // FIXME: Test has some rounding issues with fees
 
                         const reward = new BigNumber(Math.random())
-                            .multipliedBy(new BigNumber(10).exponentiatedBy(new BN(decimals).toNumber() - 14))
+                            .multipliedBy(
+                                new BigNumber(10)
+                                    .exponentiatedBy(new BigNumber(decimals).toNumber() - 14),
+                            )
                             .integerValue(BigNumber.ROUND_FLOOR)
                             .multipliedBy(new BigNumber(10).exponentiatedBy(14));
                         const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
@@ -151,14 +150,14 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
                 }
 
                 for (const darknode of [darknode1, darknode2]) {
-                    const balanceBefore = new BN(await token.balanceOf(darknodeOperator));
+                    const balanceBefore = new BigNumber((await token.balanceOf(darknodeOperator)));
                     await darknodeRewardVault.withdraw(darknode, token.address);
-                    const balanceAfter = new BN(await token.balanceOf(darknodeOperator));
+                    const balanceAfter = new BigNumber((await token.balanceOf(darknodeOperator)));
 
                     const reward = sum[darknode];
                     const fee = reward.multipliedBy(testCase.fees / 1000).integerValue(BigNumber.ROUND_FLOOR);
 
-                    balanceAfter.sub(balanceBefore)
+                    balanceAfter.minus(balanceBefore)
                         .should.bignumber.equal(reward);
                 }
             });
@@ -193,8 +192,8 @@ contract("DarknodeRewardVault", (accounts: string[]) => {
     it("checks success of ETH withdrawal before updating balances", async () => {
         const reverter = await Reverter.new();
         const darknode3 = accounts[5];
-        await ren.approve(reverter.address, MINIMUM_BOND);
-        await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND);
+        await ren.approve(reverter.address, MINIMUM_BOND.toFixed());
+        await reverter.register(dnr.address, ren.address, darknode3, "0x00", MINIMUM_BOND.toFixed());
         await dnr.epoch();
 
         await darknodeRewardVault.deposit(darknode3, ETH.address, 10, { value: 10 });

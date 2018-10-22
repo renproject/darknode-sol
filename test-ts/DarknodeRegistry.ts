@@ -1,4 +1,4 @@
-import { BN } from "bn.js";
+import BigNumber from "bignumber.js";
 
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,
@@ -25,7 +25,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         dnr = await DarknodeRegistry.deployed();
 
         for (let i = 1; i < accounts.length; i++) {
-            await ren.transfer(accounts[i], MINIMUM_BOND);
+            await ren.transfer(accounts[i], MINIMUM_BOND.toFixed());
         }
     });
 
@@ -42,9 +42,9 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateMinimumBond(0x1);
         await waitForEpoch(dnr);
         (await dnr.minimumBond()).should.bignumber.equal(1);
-        await dnr.updateMinimumBond(MINIMUM_BOND, { from: accounts[1] })
+        await dnr.updateMinimumBond(MINIMUM_BOND.toFixed(), { from: accounts[1] })
             .should.be.rejectedWith(null, /revert/); // not owner
-        await dnr.updateMinimumBond(MINIMUM_BOND);
+        await dnr.updateMinimumBond(MINIMUM_BOND.toFixed());
         (await dnr.minimumBond()).should.bignumber.equal(1);
         await waitForEpoch(dnr);
         (await dnr.minimumBond()).should.bignumber.equal(MINIMUM_BOND);
@@ -75,8 +75,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
-        const lowBond = MINIMUM_BOND.sub(new BN(1));
-        await ren.approve(dnr.address, lowBond, { from: accounts[0] });
+        const lowBond = MINIMUM_BOND.minus(1);
+        await ren.approve(dnr.address, lowBond.toFixed(), { from: accounts[0] });
         await dnr.register(ID("A"), PUBK("A")).should.be.rejectedWith(null, /revert/); // failed transfer
     });
 
@@ -89,7 +89,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can register, deregister and refund Darknodes", async () => {
         // [ACTION] Register
         for (let i = 0; i < accounts.length; i++) {
-            await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
+            await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
 
@@ -133,7 +133,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.isRegisteredInPreviousEpoch(id)).should.be.false;
 
         // [ACTION] Register
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: owner });
         await dnr.register(id, pubk, { from: owner });
 
         // [CHECK]
@@ -239,16 +239,16 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const id = ID("0");
         const pubk = PUBK("0");
 
-        const renBalanceBefore = new BN(await ren.balanceOf(owner));
+        const renBalanceBefore = new BigNumber((await ren.balanceOf(owner)));
 
         // Approve more than minimum bond
-        await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(2)), { from: owner });
+        await ren.approve(dnr.address, MINIMUM_BOND.times(2).toFixed(), { from: owner });
 
         // Register
         await dnr.register(id, pubk, { from: owner });
 
         // Only minimum bond should have been transferred
-        (await ren.balanceOf(owner)).should.bignumber.equal(renBalanceBefore.sub(MINIMUM_BOND));
+        (await ren.balanceOf(owner)).should.bignumber.equal(renBalanceBefore.minus(MINIMUM_BOND));
 
         // [RESET]
         await waitForEpoch(dnr);
@@ -260,14 +260,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("[SETUP] Register darknodes for next tests", async () => {
         for (let i = 0; i < accounts.length; i++) {
-            await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
+            await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
         await dnr.epoch();
     });
 
     it("can not register a node twice", async () => {
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[0] });
         await dnr.register(ID("0"), PUBK("0"))
             .should.be.rejectedWith(null, /must be refunded or never registered/);
     });
@@ -315,10 +315,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can get the current epoch's registered dark nodes", async () => {
         const nodes = (await dnr.getDarknodes(NULL, 0)).filter((x) => x !== NULL);
         (nodes.length).should.equal(accounts.length - 6);
-        nodes[0].should.equal(ID("2"));
-        nodes[1].should.equal(ID("3"));
-        nodes[2].should.equal(ID("6"));
-        nodes[3].should.equal(ID("7"));
+        nodes[0].should.address.equal(ID("2"));
+        nodes[1].should.address.equal(ID("3"));
+        nodes[2].should.address.equal(ID("6"));
+        nodes[3].should.address.equal(ID("7"));
     });
 
     it("can get the previous epoch's registered dark nodes", async () => {
@@ -346,10 +346,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         } while (start !== NULL);
 
         (nodes.length).should.equal(accounts.length - 6);
-        nodes[0].should.equal(ID("2"));
-        nodes[1].should.equal(ID("3"));
-        nodes[2].should.equal(ID("6"));
-        nodes[3].should.equal(ID("7"));
+        nodes[0].should.address.equal(ID("2"));
+        nodes[1].should.address.equal(ID("3"));
+        nodes[2].should.address.equal(ID("6"));
+        nodes[3].should.address.equal(ID("7"));
     });
 
     it("can get the previous epoch's dark nodes in multiple calls", async () => {
@@ -367,10 +367,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         } while (start !== NULL);
 
         (nodes.length).should.equal(accounts.length - 6);
-        nodes[0].should.equal(ID("2"));
-        nodes[1].should.equal(ID("3"));
-        nodes[2].should.equal(ID("6"));
-        nodes[3].should.equal(ID("7"));
+        nodes[0].should.address.equal(ID("2"));
+        nodes[1].should.address.equal(ID("3"));
+        nodes[2].should.address.equal(ID("6"));
+        nodes[3].should.address.equal(ID("7"));
     });
 
     it("should fail to refund before deregistering", async () => {
@@ -431,7 +431,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const pubk = PUBK("2");
 
         // [SETUP] Register and then deregister nodes
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: owner });
         await dnr.register(id, pubk, { from: owner });
         await waitForEpoch(dnr);
         await dnr.deregister(id, { from: owner });
@@ -453,7 +453,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("should throw if refund fails", async () => {
         // [SETUP]
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[0] });
         await dnr.register(ID("2"), PUBK("2"));
         await waitForEpoch(dnr);
         await dnr.deregister(ID("2"));
@@ -507,10 +507,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateSlasher(slasher);
 
         // [SETUP] Register darknodes 3, 4, 7 and 8
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[6] });
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[7] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[2] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[3] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[6] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[7] });
         await dnr.register(ID("2"), PUBK("2"), { from: accounts[2] });
         await dnr.register(ID("3"), PUBK("3"), { from: accounts[3] });
         await dnr.register(ID("6"), PUBK("6"), { from: accounts[6] });
@@ -564,19 +564,19 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.transferStoreOwnership(accounts[0]);
         await dnrs.claimOwnership();
 
-        const previousRenBalance = new BN(await ren.balanceOf(accounts[0]));
+        const previousRenBalance = new BigNumber((await ren.balanceOf(accounts[0])));
 
         // [ACTION] Decrease bond (used for bond slashing)
-        const difference = new BN(1);
-        const previousBond = new BN(await dnrs.darknodeBond(ID("7")));
-        await dnrs.updateDarknodeBond(ID("7"), previousBond.sub(difference));
+        const difference = new BigNumber(1);
+        const previousBond = new BigNumber((await dnrs.darknodeBond(ID("7"))));
+        await dnrs.updateDarknodeBond(ID("7"), previousBond.minus(difference).toFixed());
 
         // [CHECK] Decreasing bond transfers different to owner
-        const afterRenBalance = new BN(await ren.balanceOf(accounts[0]));
-        afterRenBalance.sub(previousRenBalance).should.be.bignumber.equal(difference);
+        const afterRenBalance = new BigNumber((await ren.balanceOf(accounts[0])));
+        afterRenBalance.minus(previousRenBalance).should.be.bignumber.equal(difference);
 
         // [CHECK] Can't increase bond again
-        await dnrs.updateDarknodeBond(ID("7"), previousBond)
+        await dnrs.updateDarknodeBond(ID("7"), previousBond.toFixed())
             .should.be.rejectedWith(null, /bond not decreased/);
 
         // [RESET] Transfer store back to DNR
@@ -593,7 +593,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await ren.pause();
 
         // [CHECK] Can't decrease bond if REN is paused
-        await dnrs.updateDarknodeBond(ID("7"), new BN(0))
+        await dnrs.updateDarknodeBond(ID("7"), "0")
             .should.be.rejectedWith(null, /revert/);
 
         // [RESET] Unpause REN
@@ -616,7 +616,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             );
         }
 
-        await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(MAX_DARKNODES)));
+        await ren.approve(dnr.address, MINIMUM_BOND.times(new BigNumber(MAX_DARKNODES)).toFixed());
 
         for (let i = 0; i < MAX_DARKNODES; i++) {
             process.stdout.write(`\rRegistering Darknode #${i}`);

@@ -1,4 +1,4 @@
-import { BN } from "bn.js";
+import BigNumber from "bignumber.js";
 
 import * as testUtils from "./helper/testUtils";
 import { MINIMUM_BOND } from "./helper/testUtils";
@@ -46,13 +46,13 @@ contract("Darknode Slasher", (accounts: string[]) => {
         await settlementRegistry.registerSettlement(approvingBrokerID, testUtils.NULL, approvingBroker.address);
 
         // Register 3 darknodes
-        await ren.transfer(accounts[1], MINIMUM_BOND);
-        await ren.transfer(accounts[2], MINIMUM_BOND);
-        await ren.transfer(accounts[3], MINIMUM_BOND);
+        await ren.transfer(accounts[1], MINIMUM_BOND.toFixed());
+        await ren.transfer(accounts[2], MINIMUM_BOND.toFixed());
+        await ren.transfer(accounts[3], MINIMUM_BOND.toFixed());
 
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[1] });
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
-        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[1] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[2] });
+        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: accounts[3] });
 
         await dnr.register(darknode5, testUtils.PUBK("1"), { from: accounts[1] });
         await dnr.register(darknode6, testUtils.PUBK("2"), { from: accounts[2] });
@@ -100,8 +100,8 @@ contract("Darknode Slasher", (accounts: string[]) => {
         // The confirmer's bond will be halved
         const bondBefore = await dnr.getDarknodeBond(darknode7);
         await slasher.submitChallenge(buyID, sellID);
-        const bondAfter = new BN(await dnr.getDarknodeBond(darknode7));
-        bondAfter.mul(new BN(2)).should.bignumber.equal(bondBefore);
+        const bondAfter = new BigNumber((await dnr.getDarknodeBond(darknode7)));
+        bondAfter.times(2).should.bignumber.equal(bondBefore);
     });
 
     it("challenges can't be submitted multiple times", async () => {

@@ -23,22 +23,22 @@ contract("LinkedList", () => {
     it("can prepend", async () => {
         await linkedList.prepend(NODE2);
         (await linkedList.previous(NODE1))
-            .should.equal(NODE2);
+            .should.address.equal(NODE2);
     });
 
     it("can swap", async () => {
         await linkedList.swap(NODE1, NODE2);
-        (await linkedList.previous(NODE2)).should.equal(NODE1);
+        (await linkedList.previous(NODE2)).should.address.equal(NODE1);
     });
 
     it("can insertAfter", async () => {
         await linkedList.insertAfter(NODE2, NODE4);
-        (await linkedList.next(NODE2)).should.equal(NODE4);
+        (await linkedList.next(NODE2)).should.address.equal(NODE4);
     });
 
     it("can insertBefore", async () => {
         await linkedList.insertBefore(NODE4, NODE3);
-        (await linkedList.previous(NODE4)).should.equal(NODE3);
+        (await linkedList.previous(NODE4)).should.address.equal(NODE3);
     });
 
     it("can remove", async () => {
@@ -47,19 +47,19 @@ contract("LinkedList", () => {
     });
 
     it("can get previous node of the given node", async () => {
-        (await linkedList.previous(NODE2)).should.equal(NODE1);
+        (await linkedList.previous(NODE2)).should.address.equal(NODE1);
     });
 
     it("can get following node of the given node", async () => {
-        (await linkedList.next(NODE1)).should.equal(NODE2);
+        (await linkedList.next(NODE1)).should.address.equal(NODE2);
     });
 
     it("can get the last node of the given list", async () => {
-        (await linkedList.end()).should.equal(NODE3);
+        (await linkedList.end()).should.address.equal(NODE3);
     });
 
     it("can get the first node of the given list", async () => {
-        (await linkedList.begin()).should.equal(NODE1);
+        (await linkedList.begin()).should.address.equal(NODE1);
     });
 
     it("handle removing NULL", async () => {
