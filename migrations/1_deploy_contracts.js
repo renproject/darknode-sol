@@ -7,7 +7,8 @@ const Orderbook = artifacts.require("Orderbook");
 const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
 const SettlementRegistry = artifacts.require("SettlementRegistry");
 
-const config = require("./config.js");
+const config = require("./config");
+const deploy = require("./deploy");
 
 module.exports = async function (deployer, network, accounts) {
     ((global)).web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
@@ -26,10 +27,10 @@ module.exports = async function (deployer, network, accounts) {
     const initialVersion = '0.0.1';
 
     const project = await AppProject.fetchOrDeploy('republic-sol', initialVersion, {
-        from: accounts[0],
+        from: accounts[9],
     }, {});
 
-    return project;
+    await deploy(project, "0.2.0", accounts[8]);
 
     // const VERSION_STRING = `${network}-${config.VERSION}`;
 

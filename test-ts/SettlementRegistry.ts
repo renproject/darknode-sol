@@ -12,12 +12,7 @@ import * as Web3 from "web3";
 
 import { TestHelper } from "zos";
 
-const {
-    // AppProject,
-    Contracts,
-    // ImplementationDirectory,
-    // Package
-} = require("zos-lib");
+import * as deploy from "../migrations/deploy";
 
 contract("SettlementRegistry", (accounts: string[]) => {
 
@@ -27,18 +22,11 @@ contract("SettlementRegistry", (accounts: string[]) => {
     let settlementRegistry: SettlementRegistryContract;
 
     before(async () => {
-        const oldWeb3 = web3;
-        ((global) as any).web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        const previousWeb3 = web3;
+        web3 = new Web3(new Web3.providers.HttpProvider(web3.currentProvider.host));
         this.app = await TestHelper({ from: proxyOwner, gasPrice: 10000000000 });
-
-        const SettlementRegistry = Contracts.getFromLocal("SettlementRegistry");
-        settlementRegistry = await this.app.createProxy(SettlementRegistry, {
-            contractName: "SettlementRegistry",
-            initMethod: "initialize",
-            initArgs: ["0.0.1", contractOwner],
-        });
-
-        ((global) as any).web3 = oldWeb3;
+        ({ settlementRegistry } = await deploy(this.app, "0.0.1", contractOwner));
+        web3 = previousWeb3;
     });
 
     it("can register a settlement", async () => {
