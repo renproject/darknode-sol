@@ -1,30 +1,12 @@
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "../bindings/darknode_registry";
-import { RepublicTokenArtifact, RepublicTokenContract } from "../bindings/republic_token";
 import { SettlementUtilsTestArtifact, SettlementUtilsTestContract } from "../bindings/settlement_utils_test";
-
-import { MINIMUM_BOND, PUBK, waitForEpoch } from "../helper/testUtils";
-
 const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
-const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
-const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 contract("SettlementUtils", (accounts: string[]) => {
 
     let settlementTest: SettlementUtilsTestContract;
-    let ren: RepublicTokenContract;
-    let dnr: DarknodeRegistryContract;
-    const darknode = accounts[2];
 
     before(async () => {
         settlementTest = await SettlementUtilsTest.new();
-        ren = await RepublicToken.deployed();
-        dnr = await DarknodeRegistry.deployed();
-
-        // Register darknode
-        await ren.transfer(darknode, MINIMUM_BOND.toFixed());
-        await ren.approve(dnr.address, MINIMUM_BOND.toFixed(), { from: darknode });
-        await dnr.register(darknode, PUBK("1"), { from: darknode });
-        await waitForEpoch(dnr);
     });
 
     it("can verify match details", async () => {

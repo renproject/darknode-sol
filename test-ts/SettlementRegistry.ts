@@ -14,7 +14,7 @@ import { TestHelper } from "zos";
 
 import * as deployRepublicProtocolContracts from "../migrations/deploy";
 
-const config = require("../migrations/config");
+const defaultConfig = require("../migrations/config");
 
 contract("SettlementRegistry", (accounts: string[]) => {
 
@@ -27,11 +27,8 @@ contract("SettlementRegistry", (accounts: string[]) => {
         const previousWeb3 = web3;
         web3 = new Web3(new Web3.providers.HttpProvider(web3.currentProvider.host));
         this.app = await TestHelper({ from: proxyOwner, gasPrice: 10000000000 });
-        ({ settlementRegistry } = await deployRepublicProtocolContracts(
-            artifacts,
-            this.app,
-            { ...config, CONTRACT_OWNER: contractOwner },
-        ));
+        const config = { ...defaultConfig, CONTRACT_OWNER: contractOwner };
+        ({ settlementRegistry } = await deployRepublicProtocolContracts(artifacts, this.app, config));
         web3 = previousWeb3;
     });
 

@@ -8,10 +8,8 @@ contract TokenWithFees is ERC20 {
     string public constant symbol = "TWF";
     uint8 public constant decimals = 18;
     uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
-    address public feeEarner;
 
     constructor() public {
-        feeEarner = msg.sender;
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 
@@ -23,13 +21,14 @@ contract TokenWithFees is ERC20 {
 
     function transfer(address to, uint256 value) public returns (bool) {
         uint256 fee = (value * 3) / 1000;
-        super.transfer(feeEarner, fee);
+        ERC20._burn(msg.sender, fee);
         return super.transfer(to, value - fee);
     }
 
     function transferFrom(address from, address to, uint256 value) public returns (bool) {
         uint256 fee = (value * 3) / 1000;
-        super.transfer(feeEarner, fee);
-        return super.transferFrom(from, to, value.sub(fee));
+        bool returnValue = ERC20.transferFrom(from, to, value);
+        ERC20._burn(to, fee);
+        return returnValue;
     }
 }
