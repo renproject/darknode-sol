@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-zos/contracts/ECRecovery.sol";
+import "openzeppelin-eth/contracts/cryptography/ECDSA.sol";
 
 library Utils {
 
@@ -43,7 +43,7 @@ library Utils {
         bytes memory encoded = abi.encodePacked(prefix, uintToBytes(_hash.length), _hash);
         bytes32 prefixedHash = keccak256(encoded);
 
-        return ECRecovery.recover(prefixedHash, _signature);
+        return ECDSA.recover(prefixedHash, _signature);
     }
 
 }

@@ -1,16 +1,16 @@
 {
-  "name": "my-app",
+  "zosversion": "2",
+  "name": "republic-sol",
   "version": "0.1.0",
   "contracts": {
     "Orderbook": "Orderbook",
     "SettlementRegistry": "SettlementRegistry",
     "DarknodeSlasher": "DarknodeSlasher",
     "DarknodeRewardVault": "DarknodeRewardVault",
-    "DarknodeRegistryStore": "DarknodeRegistryStore",
     "DarknodeRegistry": "DarknodeRegistry"
   },
   "stdlib": {
-    "name": "openzeppelin-zos",
-    "version": "^1.9.4"
+    "name": "openzeppelin-eth",
+    "version": "^2.0.2"
   }
 }

@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "zos-lib/contracts/migrations/Migratable.sol";
+import "zos-lib/contracts/Initializable.sol";
 
-import "openzeppelin-zos/contracts/math/SafeMath.sol";
-import "openzeppelin-zos/contracts/ownership/Ownable.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/ownership/Ownable.sol";
 
 import "./DarknodeRegistry.sol";
 import "./SettlementRegistry.sol";
@@ -14,7 +14,7 @@ import "./libraries/Utils.sol";
 /// allows the Darknodes to easily reach consensus. Eventually, this contract
 /// will only store a subset of order states, such as cancellation, to improve
 /// the throughput of orders.
-contract Orderbook is Migratable, Ownable {
+contract Orderbook is Initializable, Ownable {
     using SafeMath for uint256;
 
     /// @notice OrderState enumerates the possible states of an order. All
@@ -67,7 +67,9 @@ contract Orderbook is Migratable, Ownable {
         string _VERSION,
         DarknodeRegistry _darknodeRegistry,
         SettlementRegistry _settlementRegistry
-    ) public isInitializer("Orderbook", "0") {
+    ) public initializer {
+        Ownable.initialize(msg.sender);
+
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         settlementRegistry = _settlementRegistry;

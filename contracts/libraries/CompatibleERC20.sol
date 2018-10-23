@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-zos/contracts/math/SafeMath.sol";
-import "openzeppelin-zos/contracts/math/Math.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/math/Math.sol";
 
 /// @notice Implements safeTransfer, safeTransferFrom and
 /// safeApprove for CompatibleERC20.
@@ -45,7 +45,7 @@ library CompatibleERC20Functions {
         CompatibleERC20(token).transferFrom(from, to, amount);
         require(previousReturnValue(), "transferFrom failed");
         uint256 balancesAfter = CompatibleERC20(token).balanceOf(to);
-        return Math.min256(amount, balancesAfter.sub(balancesBefore));
+        return Math.min(amount, balancesAfter.sub(balancesBefore));
     }
 
     /// @notice Checks the return value of the previous function. Returns true

@@ -7,14 +7,14 @@
     "coverage": "if [ -d \"test\" ]; then npm run warn; else npm run coverage-ts; fi;",
     "merge": "sol-merger \"./contracts/**/*.sol\"",
     "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33mnpm run clean\\033[0m'.\n\"",
-    "test-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && truffle test); npm run clean",
+    "test-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && NODE_ENV=test truffle test --network local); npm run clean",
     "coverage-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && solidity-coverage); npm run clean",
     "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null"
   },
   "dependencies": {
     "openzeppelin-solidity": "1.11.0",
-    "openzeppelin-zos": "^1.9.4",
-    "zos-lib": "1.4.1"
+    "openzeppelin-eth": "^2.0.2",
+    "zos-lib": "^2.0.0"
   },
   "devDependencies": {
     "@0xproject/abi-gen": "^1.0.12",
@@ -40,6 +40,7 @@
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "underscore": "^1.9.1",
-    "web3": "0.20.7"
+    "web3": "0.20.7",
+    "zos": "^2.0.0"
   }
 }

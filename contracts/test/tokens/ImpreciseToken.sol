@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-zos/contracts/token/ERC20/StandardToken.sol";
+import "openzeppelin-eth/contracts/token/ERC20/ERC20.sol";
 
 /// @notice A test ERC20 token with 12 decimals.
-contract ImpreciseToken is StandardToken {
+contract ImpreciseToken is ERC20 {
 
     string public constant name = "Imprecise Token"; // solium-disable-line uppercase
     string public constant symbol = "IPT"; // solium-disable-line uppercase
@@ -15,9 +15,7 @@ contract ImpreciseToken is StandardToken {
     * @dev Constructor that gives msg.sender all of existing tokens.
     */
     constructor() public {
-        totalSupply_ = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
-        emit Transfer(0x0, msg.sender, INITIAL_SUPPLY);
+        _mint(msg.sender, INITIAL_SUPPLY);
     }
 
 }

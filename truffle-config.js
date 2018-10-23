@@ -2,9 +2,10 @@ module.exports = {
   networks: {
     local: {
       host: "localhost",
-      port: 9545,
+      port: 8545,
       network_id: "*",
-      gas: 5000000
+      gas: 6721975,
+      gasPrice: 10000000000,
     },
   },
   mocha: {

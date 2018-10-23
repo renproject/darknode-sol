@@ -1,9 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-zos/contracts/token/ERC20/PausableToken.sol";
-import "openzeppelin-zos/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-eth/contracts/token/ERC20/ERC20Pausable.sol";
+import "openzeppelin-eth/contracts/token/ERC20/ERC20Burnable.sol";
+// import "openzeppelin-eth/contracts/token/ERC20/ERC20.sol";
 
-contract RepublicToken is PausableToken, BurnableToken {
+import "openzeppelin-eth/contracts/ownership/Ownable.sol";
+
+contract RepublicToken is ERC20Pausable, ERC20Burnable, Ownable {
 
     string public constant name = "Republic Token";
     string public constant symbol = "REN";
@@ -12,18 +15,11 @@ contract RepublicToken is PausableToken, BurnableToken {
 
     /// @notice The RepublicToken Constructor.
     constructor() public {
-        totalSupply_ = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
+        Ownable.initialize(msg.sender);
+        _mint(msg.sender, INITIAL_SUPPLY);
     }
 
-    function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
-        /* solium-disable error-reason */
-        require(amount > 0);
-
-        balances[owner] = balances[owner].sub(amount);
-        balances[beneficiary] = balances[beneficiary].add(amount);
-        emit Transfer(owner, beneficiary, amount);
-
-        return true;
-    }
+    // function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
+    //     return ERC20.transfer(beneficiary, amount);
+    // }
 }

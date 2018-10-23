@@ -1,16 +1,16 @@
 pragma solidity ^0.4.24;
 
-import "zos-lib/contracts/migrations/Migratable.sol";
+import "zos-lib/contracts/Initializable.sol";
 
-import "openzeppelin-zos/contracts/ownership/Ownable.sol";
-import "openzeppelin-zos/contracts/math/SafeMath.sol";
+import "openzeppelin-eth/contracts/ownership/Ownable.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
 
 import "./RepublicToken.sol";
 import "./libraries/LinkedList.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistry is Migratable, Ownable {
+contract DarknodeRegistry is Initializable, Ownable {
 
     bool internal _initialized;
     using SafeMath for uint256;
@@ -157,7 +157,8 @@ contract DarknodeRegistry is Migratable, Ownable {
         uint256 _minimumBond,
         uint256 _minimumPodSize,
         uint256 _minimumEpochInterval
-    ) public isInitializer("DarknodeRegistry", "1") {
+    ) public initializer {
+        Ownable.initialize(msg.sender);
 
         VERSION = _VERSION;
         ren = _renAddress;
@@ -232,7 +233,7 @@ contract DarknodeRegistry is Migratable, Ownable {
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
             // The first epoch must be called by the owner of the contract
-            require(msg.sender == owner, "not authorized (first epochs)");
+            require(msg.sender == owner(), "not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed
@@ -348,7 +349,7 @@ contract DarknodeRegistry is Migratable, Ownable {
         _removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        require(ren.transfer(owner, amount), "bond transfer failed");
+        require(ren.transfer(owner(), amount), "bond transfer failed");
 
         // Emit an event.
         emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
@@ -568,7 +569,7 @@ contract DarknodeRegistry is Migratable, Ownable {
         uint256 bond = darknodeRegistry[_darknodeID].bond;
         delete darknodeRegistry[_darknodeID];
         LinkedList.remove(darknodes, _darknodeID);
-        require(ren.transfer(owner, bond), "bond transfer failed");
+        require(ren.transfer(owner(), bond), "bond transfer failed");
     }
 
     /// @notice Updates the bond of a darknode. The new bond must be smaller
@@ -577,7 +578,7 @@ contract DarknodeRegistry is Migratable, Ownable {
         uint256 previousBond = darknodeRegistry[_darknodeID].bond;
         require(_decreasedBond < previousBond, "bond not decreased");
         darknodeRegistry[_darknodeID].bond = _decreasedBond;
-        require(ren.transfer(owner, previousBond.sub(_decreasedBond)), "bond transfer failed");
+        require(ren.transfer(owner(), previousBond.sub(_decreasedBond)), "bond transfer failed");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.
