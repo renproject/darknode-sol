@@ -66,9 +66,10 @@ contract Orderbook is Initializable, Ownable {
     function initialize(
         string _VERSION,
         DarknodeRegistry _darknodeRegistry,
-        SettlementRegistry _settlementRegistry
+        SettlementRegistry _settlementRegistry,
+        address _owner
     ) public initializer {
-        Ownable.initialize(msg.sender);
+        Ownable.initialize(_owner);
 
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;

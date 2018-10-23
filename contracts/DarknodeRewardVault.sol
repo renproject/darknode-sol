@@ -33,8 +33,12 @@ contract DarknodeRewardVault is Initializable, Ownable {
     /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The DarknodeRegistry contract that is used by
     ///        the vault to lookup Darknode owners.
-    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry) public initializer {
-        Ownable.initialize(msg.sender);
+    function initialize(
+        string _VERSION,
+        DarknodeRegistry _darknodeRegistry,
+        address _owner
+    ) public initializer {
+        Ownable.initialize(_owner);
 
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;

@@ -156,9 +156,10 @@ contract DarknodeRegistry is Initializable, Ownable {
         RepublicToken _renAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
-        uint256 _minimumEpochInterval
+        uint256 _minimumEpochInterval,
+        address _owner
     ) public initializer {
-        Ownable.initialize(msg.sender);
+        Ownable.initialize(_owner);
 
         VERSION = _VERSION;
         ren = _renAddress;

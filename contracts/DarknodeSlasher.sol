@@ -35,8 +35,13 @@ contract DarknodeSlasher is Initializable, Ownable {
     /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _orderbook The address of the Orderbook contract
-    function initialize(string _VERSION, DarknodeRegistry _darknodeRegistry, Orderbook _orderbook) public initializer {
-        Ownable.initialize(msg.sender);
+    function initialize(
+        string _VERSION,
+        DarknodeRegistry _darknodeRegistry,
+        Orderbook _orderbook,
+        address _owner
+    ) public initializer {
+        Ownable.initialize(_owner);
         
         VERSION = _VERSION;
         trustedDarknodeRegistry = _darknodeRegistry;
