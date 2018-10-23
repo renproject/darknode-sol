@@ -67,23 +67,23 @@ export const randomID = () => {
 export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
 export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
-export const openOrder = async (
-    orderbook: OrderbookContract,
-    settlementID: number,
-    account: string,
-    orderID?: string,
-) => {
-    if (!orderID) {
-        orderID = randomID();
-    }
+// export const openOrder = async (
+//     orderbook: OrderbookContract,
+//     settlementID: number,
+//     account: string,
+//     orderID?: string,
+// ) => {
+//     if (!orderID) {
+//         orderID = randomID();
+//     }
 
-    // Use random 65 bytes so that the gas aren't skewed by not having a
-    // signature
-    const signature = randomBytes(65);
-    await orderbook.openOrder(settlementID, signature, orderID, { from: account });
+//     // Use random 65 bytes so that the gas aren't skewed by not having a
+//     // signature
+//     const signature = randomBytes(65);
+//     await orderbook.openOrder(settlementID, signature, orderID, 0, 0 { from: account });
 
-    return orderID;
-};
+//     return orderID;
+// };
 
 export const cancelOrder = async (orderbook: OrderbookContract, account: string, orderID: string) => {
     await orderbook.cancelOrder(orderID, { from: account });

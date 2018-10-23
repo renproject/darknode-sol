@@ -8,14 +8,37 @@ import {
     SettlementRegistryEvents,
 } from "./bindings/settlement_registry";
 
-const SettlementRegistry = artifacts.require("SettlementRegistry") as SettlementRegistryArtifact;
+import * as Web3 from "web3";
 
-contract("DarknodeRegistry", (accounts: string[]) => {
+import { TestHelper } from "zos";
+
+const {
+    // AppProject,
+    Contracts,
+    // ImplementationDirectory,
+    // Package
+} = require("zos-lib");
+
+contract("SettlementRegistry", (accounts: string[]) => {
+
+    const proxyOwner = accounts[9];
+    const contractOwner = accounts[8];
 
     let settlementRegistry: SettlementRegistryContract;
 
     before(async () => {
-        settlementRegistry = await SettlementRegistry.deployed();
+        const oldWeb3 = web3;
+        ((global) as any).web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        this.app = await TestHelper({ from: proxyOwner, gasPrice: 10000000000 });
+
+        const SettlementRegistry = Contracts.getFromLocal("SettlementRegistry");
+        settlementRegistry = await this.app.createProxy(SettlementRegistry, {
+            contractName: "SettlementRegistry",
+            initMethod: "initialize",
+            initArgs: ["0.0.1", contractOwner],
+        });
+
+        ((global) as any).web3 = oldWeb3;
     });
 
     it("can register a settlement", async () => {
@@ -23,17 +46,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const settlement = randomAddress();
         const verifier = randomAddress();
 
-        // Should not be registered
+        // [CHECK] Should not be registered
         (await settlementRegistry.settlementRegistration(id))
             .should.be.false;
 
-        // Register Settlement
-        (await settlementRegistry.registerSettlement(id, settlement, verifier) as any)
+        // [ACTION] Register Settlement
+        (await settlementRegistry.registerSettlement(id, settlement, verifier, { from: contractOwner }))
             .should.emit.logs([
                 SettlementRegistryEvents.LogSettlementRegistered(id, settlement, verifier),
             ]);
 
-        // Check details after registration
+        // [CHECK] Check details after registration
         const details = await settlementRegistry.settlementDetails(id);
 
         details/*.registered*/[0].should.be.true;
@@ -54,20 +77,21 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const settlement = randomAddress();
         const verifier = randomAddress();
 
-        // Not registered yet
-        await settlementRegistry.deregisterSettlement(id)
+        // [CHECK] Not registered yet
+        await settlementRegistry.deregisterSettlement(id, { from: contractOwner })
             .should.be.rejectedWith(null, /not registered/);
 
-        // Register Settlement
-        await settlementRegistry.registerSettlement(id, settlement, verifier);
-        // Deregister Settlement
-        (await settlementRegistry.deregisterSettlement(id))
+        // [ACTION] Register Settlement
+        await settlementRegistry.registerSettlement(id, settlement, verifier, { from: contractOwner });
+        // [ACTION] Deregister Settlement
+        (await settlementRegistry.deregisterSettlement(id, { from: contractOwner }))
             .should.emit.logs([
                 SettlementRegistryEvents.LogSettlementDeregistered(id),
             ]);
 
-        // Check details after deregistration
-        const details = await settlementRegistry.settlementDetails(id);
+        // [CHECK] Check details after deregistration
+        const details = await settlementRegistry.settlementDetails(id, { from: accounts[1] });
+
         details/*.registered*/[0].should.be.false;
         details/*.settlementContract*/[1].should.address.equal(NULL);
         details/*.brokerVerifierContract*/[2].should.address.equal(NULL);
@@ -78,17 +102,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const settlement = randomAddress();
         const verifier = randomAddress();
 
-        // Register Settlement
-        await settlementRegistry.registerSettlement(id, settlement, verifier);
+        // [SETUP] Register Settlement
+        await settlementRegistry.registerSettlement(id, settlement, verifier, { from: contractOwner });
 
-        // Update Settlement
+        // [ACTION] Update Settlement
         const newVerifier = randomAddress();
-        (await settlementRegistry.registerSettlement(id, settlement, newVerifier))
+        (await settlementRegistry.registerSettlement(id, settlement, newVerifier, { from: contractOwner }))
             .should.emit.logs([
                 SettlementRegistryEvents.LogSettlementUpdated(id, settlement, newVerifier),
             ]);
 
-        // Check details after updating
+        // [CHECK] Check details after updating
         const details = await settlementRegistry.settlementDetails(id);
         details/*.registered*/[0].should.be.true;
         details/*.settlementContract*/[1].should.address.equal(settlement);
@@ -100,14 +124,18 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const settlement = randomAddress();
         const verifier = randomAddress();
 
-        await settlementRegistry.registerSettlement(id, settlement, verifier, { from: accounts[1] })
+        // [CHECK]
+        await settlementRegistry.registerSettlement(id, settlement, verifier, { from: accounts[2] })
             .should.be.rejectedWith(null, /revert/); // not owner
 
-        await settlementRegistry.registerSettlement(id, settlement, verifier);
+        // [ACTION]
+        await settlementRegistry.registerSettlement(id, settlement, verifier, { from: contractOwner });
 
-        await settlementRegistry.deregisterSettlement(id, { from: accounts[1] })
+        // [CHECK]
+        await settlementRegistry.deregisterSettlement(id, { from: accounts[2] })
             .should.be.rejectedWith(null, /revert/); // not owner
 
-        await settlementRegistry.deregisterSettlement(id);
+        // [ACTION]
+        await settlementRegistry.deregisterSettlement(id, { from: contractOwner });
     });
 });
