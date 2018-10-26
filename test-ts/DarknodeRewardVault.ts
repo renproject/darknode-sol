@@ -1,13 +1,13 @@
 import BigNumber from "bignumber.js";
 
-import * as testUtils from "./helper/testUtils";
+import * as testUtils from "../test-ts/helper/testUtils";
 
-import { MINIMUM_BOND } from "./helper/testUtils";
+import { MINIMUM_BOND } from "../test-ts/helper/testUtils";
 
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeRewardVaultArtifact, DarknodeRewardVaultContract } from "./bindings/darknode_reward_vault";
-import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
-import { ReverterArtifact } from "./bindings/reverter";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "../test-ts/bindings/darknode_registry";
+import { DarknodeRewardVaultArtifact, DarknodeRewardVaultContract } from "../test-ts/bindings/darknode_reward_vault";
+import { RepublicTokenArtifact, RepublicTokenContract } from "../test-ts/bindings/republic_token";
+import { ReverterArtifact } from "../test-ts/bindings/reverter";
 
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;

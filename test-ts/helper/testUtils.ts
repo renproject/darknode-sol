@@ -13,8 +13,6 @@ import { OrderbookContract } from "../bindings/orderbook";
 import "./address";
 import "./logs";
 
-// (global as any).web3 = new Web3((global as any).web3.currentProvider);
-
 chai.use(chaiAsPromised);
 chai.use(chaiBigNumber(BigNumber));
 chai.should();
@@ -45,14 +43,18 @@ export const randomAddress = (): string => {
     return web3.utils.toChecksumAddress(randomBytes(20));
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryContract) {
+export async function waitForEpoch(dnr: DarknodeRegistryContract, options: { from: string }) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {
-            await dnr.epoch();
+            // Uses `as any` because types require a { from } options field
+            await dnr.epoch(options);
             return;
         } catch (err) {
+            if (!("" + err).match(/epoch interval has not passed/)) {
+                throw err;
+            }
             // epoch reverted, epoch interval hasn't passed
         }
         // Sleep for `timeout` seconds

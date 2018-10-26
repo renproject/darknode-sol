@@ -7,7 +7,7 @@ import * as Web3 from "web3";
 chai.use(function (newChai: any, utils: any): void {
     const property = "address";
 
-    const toChecksumAddress = (new Web3()).toChecksumAddress;
+    const toChecksumAddress = (new (Web3 as any)()).utils.toChecksumAddress;
 
     newChai.Assertion.addProperty(property, function () {
         utils.flag(this, property, true);

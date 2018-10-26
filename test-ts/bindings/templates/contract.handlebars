@@ -23,7 +23,7 @@ export interface {{contractName}}Contract {
     {{this.tsName}}({{> typed_params inputs=inputs}}): Promise<{{> return_type outputs=outputs}}>;
     {{/this.constant}}
     {{^this.constant}}
-    {{this.tsName}}({{> typed_params inputs=inputs}}): Promise<Transaction>;
+    {{this.tsName}}({{> typed_tx_params inputs=inputs}}): Promise<Transaction>;
     {{/this.constant}}
 {{/each}}
     address: string;

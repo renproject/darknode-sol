@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 
 import "../helper/testUtils";
 
-import { StandardTokenContract } from "../bindings/standard_token";
+import { ERC20Contract } from "../bindings/erc20";
 
 import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "../bindings/compatible_erc20_test";
 
@@ -31,7 +31,7 @@ contract("CompliantERC20", (accounts) => {
 
     for (const testCase of testCases) {
         context(testCase.desc, async () => {
-            let token: StandardTokenContract;
+            let token: ERC20Contract;
             const FEE = VALUE.times(new BigNumber(testCase.fees)).div(new BigNumber(1000));
 
             before(async () => {
@@ -44,8 +44,8 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Approve and deposit
-                await token.approve(mock.address, VALUE.toFixed());
-                await mock.deposit(token.address, VALUE.toFixed());
+                await token.approve(mock.address, VALUE.toFixed(), { from: accounts[0] });
+                await mock.deposit(token.address, VALUE.toFixed(), { from: accounts[0] });
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0]))
@@ -63,7 +63,7 @@ contract("CompliantERC20", (accounts) => {
                 const NEW_FEE = NEW_VALUE.times(new BigNumber(testCase.fees)).div(new BigNumber(1000));
 
                 // Withdraw
-                await mock.withdraw(token.address, NEW_VALUE.toFixed());
+                await mock.withdraw(token.address, NEW_VALUE.toFixed(), { from: accounts[0] });
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0]))
@@ -78,8 +78,8 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Approve and deposit
-                await token.approve(mock.address, 0);
-                await mock.naiveDeposit(token.address, VALUE.toFixed())
+                await token.approve(mock.address, 0, { from: accounts[0] });
+                await mock.naiveDeposit(token.address, VALUE.toFixed(), { from: accounts[0] })
                     .should.be.rejectedWith(null, /revert/);
 
                 // Compare balances after depositing
@@ -93,8 +93,8 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Approve and deposit
-                await token.approve(mock.address, 0);
-                await mock.deposit(token.address, VALUE.toFixed())
+                await token.approve(mock.address, 0, { from: accounts[0] });
+                await mock.deposit(token.address, VALUE.toFixed(), { from: accounts[0] })
                     .should.be.rejectedWith(null, /revert/);
 
                 // Compare balances after depositing
@@ -108,7 +108,7 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Withdraw
-                await mock.withdraw(token.address, VALUE.times(2).toFixed())
+                await mock.withdraw(token.address, VALUE.times(2).toFixed(), { from: accounts[0] })
                     .should.be.rejectedWith(null, /revert/);
 
                 // Compare balances after depositing
@@ -118,7 +118,7 @@ contract("CompliantERC20", (accounts) => {
 
             it("throws for invalid approve", async () => {
                 // Transfer to the contract
-                await token.transfer(mock.address, VALUE.toFixed());
+                await token.transfer(mock.address, VALUE.toFixed(), { from: accounts[0] });
 
                 // Subtract fees
                 const NEW_VALUE = VALUE.minus(FEE);
@@ -129,12 +129,17 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Approve twice without resetting allowance
-                await mock.approve(token.address, NEW_VALUE.toFixed());
-                await mock.approve(token.address, NEW_VALUE.toFixed())
+                await mock.approve(token.address, NEW_VALUE.toFixed(), { from: accounts[0] });
+                await mock.approve(token.address, NEW_VALUE.toFixed(), { from: accounts[0] })
                     .should.be.rejectedWith(null, /revert/);
 
                 // Can transfer from the contract
-                await token.transferFrom(mock.address, accounts[0], NEW_VALUE.minus(NEW_FEE).toFixed());
+                await token.transferFrom(
+                    mock.address,
+                    accounts[0],
+                    NEW_VALUE.minus(NEW_FEE).toFixed(),
+                    { from: accounts[0] },
+                );
 
                 // Subtract fees second time
                 const NEW_NEW_VALUE = NEW_VALUE.minus(NEW_FEE);
@@ -153,13 +158,13 @@ contract("CompliantERC20", (accounts) => {
                 const after = new BigNumber((await token.balanceOf(mock.address)));
 
                 // Approve and deposit
-                await token.approve(mock.address, VALUE.toFixed());
+                await token.approve(mock.address, VALUE.toFixed(), { from: accounts[0] });
                 if (testCase.fees) {
-                    await mock.naiveDeposit(token.address, VALUE.toFixed())
+                    await mock.naiveDeposit(token.address, VALUE.toFixed(), { from: accounts[0] })
                         .should.be.rejectedWith(null, "incorrect balance in deposit");
-                    await token.approve(mock.address, 0);
+                    await token.approve(mock.address, 0, { from: accounts[0] });
                 } else {
-                    await mock.naiveDeposit(token.address, VALUE.toFixed());
+                    await mock.naiveDeposit(token.address, VALUE.toFixed(), { from: accounts[0] });
 
                     // Compare balances after depositing
                     (await token.balanceOf(accounts[0]))

@@ -1,10 +1,10 @@
-const Web3 = require("web3");
-
 const config = require("./config");
 const deployRepublicProtocolContracts = require("./deploy");
 
+const fixWeb3 = require("./fixWeb3");
+
 module.exports = async function (deployer, network, accounts) {
-    ((global)).web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    fixWeb3(web3, artifacts);
 
     const {
         AppProject,
@@ -18,4 +18,6 @@ module.exports = async function (deployer, network, accounts) {
         ...config,
         CONTRACT_OWNER: accounts[8],
     });
+
+    // global.web3 = previousWeb3;
 }

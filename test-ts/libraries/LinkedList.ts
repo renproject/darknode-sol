@@ -4,7 +4,7 @@ import { LinkedListTestArtifact, LinkedListTestContract } from "../bindings/link
 
 const LinkedListTest = artifacts.require("LinkedListTest") as LinkedListTestArtifact;
 
-contract("LinkedList", () => {
+contract("LinkedList", (accounts) => {
 
     let linkedList: LinkedListTestContract;
 
@@ -16,33 +16,33 @@ contract("LinkedList", () => {
     });
 
     it("can append", async () => {
-        await linkedList.append(NODE1);
+        await linkedList.append(NODE1, { from: accounts[0] });
         (await linkedList.isInList(NODE1)).should.equal(true);
     });
 
     it("can prepend", async () => {
-        await linkedList.prepend(NODE2);
+        await linkedList.prepend(NODE2, { from: accounts[0] });
         (await linkedList.previous(NODE1))
             .should.address.equal(NODE2);
     });
 
     it("can swap", async () => {
-        await linkedList.swap(NODE1, NODE2);
+        await linkedList.swap(NODE1, NODE2, { from: accounts[0] });
         (await linkedList.previous(NODE2)).should.address.equal(NODE1);
     });
 
     it("can insertAfter", async () => {
-        await linkedList.insertAfter(NODE2, NODE4);
+        await linkedList.insertAfter(NODE2, NODE4, { from: accounts[0] });
         (await linkedList.next(NODE2)).should.address.equal(NODE4);
     });
 
     it("can insertBefore", async () => {
-        await linkedList.insertBefore(NODE4, NODE3);
+        await linkedList.insertBefore(NODE4, NODE3, { from: accounts[0] });
         (await linkedList.previous(NODE4)).should.address.equal(NODE3);
     });
 
     it("can remove", async () => {
-        await linkedList.remove(NODE4);
+        await linkedList.remove(NODE4, { from: accounts[0] });
         (await linkedList.isInList(NODE4)).should.equal(false);
     });
 
@@ -63,48 +63,56 @@ contract("LinkedList", () => {
     });
 
     it("handle removing NULL", async () => {
-        await linkedList.insertBefore(NODE1, NULL).should.not.be.rejected;
-        await linkedList.remove(NULL).should.not.be.rejected;
+        await linkedList.insertBefore(NODE1, NULL, { from: accounts[0] }).should.not.be.rejected;
+        await linkedList.remove(NULL, { from: accounts[0] }).should.not.be.rejected;
     });
 
     it("should not add the same value more than once", async () => {
-        await linkedList.append(NODE1).should.be.rejectedWith(null, /already in list/);
+        await linkedList.append(NODE1, { from: accounts[0] }).should.be.rejectedWith(null, /already in list/);
     });
 
     it("should not remove a node not in the list", async () => {
-        await linkedList.remove(NOT_NODE1).should.be.rejectedWith(null, /not in list/);
+        await linkedList.remove(NOT_NODE1, { from: accounts[0] }).should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not insert after a node not in the list", async () => {
-        await linkedList.insertAfter(NOT_NODE1, NOT_NODE2).should.be.rejectedWith(null, /not in list/);
+        await linkedList.insertAfter(NOT_NODE1, NOT_NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not insert before a node not in the list", async () => {
-        await linkedList.insertBefore(NOT_NODE1, NOT_NODE2).should.be.rejectedWith(null, /not in list/);
+        await linkedList.insertBefore(NOT_NODE1, NOT_NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not insert a node already in the list", async () => {
-        await linkedList.insertAfter(NODE2, NODE3).should.be.rejectedWith(null, /already in list/);
+        await linkedList.insertAfter(NODE2, NODE3, { from: accounts[0] })
+            .should.be.rejectedWith(null, /already in list/);
     });
 
     it("should not insert a node already in the list", async () => {
-        await linkedList.insertBefore(NODE3, NODE2).should.be.rejectedWith(null, /already in list/);
+        await linkedList.insertBefore(NODE3, NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /already in list/);
     });
 
     it("should not prepend a value that already exists", async () => {
-        await linkedList.prepend(NODE2).should.be.rejectedWith(null, /already in list/);
+        await linkedList.prepend(NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /already in list/);
     });
 
     it("should not swap a node not in the list, and a node in the list", async () => {
-        await linkedList.swap(NOT_NODE1, NODE2).should.be.rejectedWith(null, /not in list/);
+        await linkedList.swap(NOT_NODE1, NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not swap a node in the list, and a node not in the list", async () => {
-        await linkedList.swap(NODE2, NOT_NODE1).should.be.rejectedWith(null, /not in list/);
+        await linkedList.swap(NODE2, NOT_NODE1, { from: accounts[0] })
+            .should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not swap two nodes that are not in the list", async () => {
-        await linkedList.swap(NOT_NODE1, NOT_NODE2).should.be.rejectedWith(null, /not in list/);
+        await linkedList.swap(NOT_NODE1, NOT_NODE2, { from: accounts[0] })
+            .should.be.rejectedWith(null, /not in list/);
     });
 
     it("should not get previous node of the node if it is not in the list", async () => {

@@ -8,7 +8,7 @@
     "merge": "sol-merger \"./contracts/**/*.sol\"",
     "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33mnpm run clean\\033[0m'.\n\"",
     "test-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && NODE_ENV=test truffle test --network local); npm run clean",
-    "coverage-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && solidity-coverage); npm run clean",
+    "coverage-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && NODE_ENV=test solidity-coverage); npm run clean",
     "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null"
   },
   "dependencies": {
@@ -39,7 +39,7 @@
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "underscore": "^1.9.1",
-    "web3": "0.20.7",
+    "web3": "^1.0.0-beta.35",
     "zos": "^2.0.0"
   }
 }

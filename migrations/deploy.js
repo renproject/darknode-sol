@@ -19,6 +19,11 @@ async function deployRepublicProtocolContracts(artifacts, app, config) {
 
     const republicToken = await artifacts.require("RepublicToken").new();
 
+    // Transfer RepublicToken's Owner and Pauser roles to CONTRACT_OWNER
+    await republicToken.transferOwnership(config.CONTRACT_OWNER);
+    await republicToken.addPauser(config.CONTRACT_OWNER);
+    await republicToken.renouncePauser();
+
     const darknodeRegistry = await deployer.deploy(
         "DarknodeRegistry",
         config.VERSION,

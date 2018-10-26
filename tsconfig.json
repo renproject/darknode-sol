@@ -1,5 +1,12 @@
 {
+    "exclude": [
+        "./test-ts2"
+    ],
     "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "*": ["types/*"]
+        },
         "typeRoots": [
             "./test/typings"
         ],

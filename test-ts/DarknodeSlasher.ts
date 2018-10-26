@@ -1,16 +1,16 @@
 import BigNumber from "bignumber.js";
 
-import * as testUtils from "./helper/testUtils";
-import { MINIMUM_BOND } from "./helper/testUtils";
+import * as testUtils from "../test-ts/helper/testUtils";
+import { MINIMUM_BOND } from "../test-ts/helper/testUtils";
 
-import { ApprovingBrokerArtifact } from "./bindings/approving_broker";
-import { BrokerVerifierContract } from "./bindings/broker_verifier";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./bindings/darknode_slasher";
-import { OrderbookArtifact, OrderbookContract } from "./bindings/orderbook";
-import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
-import { SettlementRegistryArtifact, SettlementRegistryContract } from "./bindings/settlement_registry";
-import { SettlementUtilsTestArtifact, SettlementUtilsTestContract } from "./bindings/settlement_utils_test";
+import { ApprovingBrokerArtifact } from "../test-ts/bindings/approving_broker";
+import { BrokerVerifierContract } from "../test-ts/bindings/broker_verifier";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "../test-ts/bindings/darknode_registry";
+import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "../test-ts/bindings/darknode_slasher";
+import { OrderbookArtifact, OrderbookContract } from "../test-ts/bindings/orderbook";
+import { RepublicTokenArtifact, RepublicTokenContract } from "../test-ts/bindings/republic_token";
+import { SettlementRegistryArtifact, SettlementRegistryContract } from "../test-ts/bindings/settlement_registry";
+import { SettlementUtilsTestArtifact, SettlementUtilsTestContract } from "../test-ts/bindings/settlement_utils_test";
 
 const SettlementUtilsTest = artifacts.require("SettlementUtilsTest") as SettlementUtilsTestArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
