@@ -12,7 +12,6 @@
     "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null"
   },
   "dependencies": {
-    "openzeppelin-solidity": "1.11.0",
     "openzeppelin-eth": "^2.0.2",
     "zos-lib": "^2.0.0"
   },

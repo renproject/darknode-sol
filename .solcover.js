@@ -1,5 +1,5 @@
 module.exports = {
-    copyPackages: ["openzeppelin-solidity"], // needed to import from node_modules
+    copyPackages: ["openzeppelin-eth", "zos-lib"], // needed to import from node_modules
     testrpcOptions: "-d --accounts 10 --port 8555",
     skipFiles: [
         // REN token
