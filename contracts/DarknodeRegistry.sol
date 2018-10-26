@@ -58,8 +58,8 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// Republic ERC20 token contract used to transfer bonds.
     RepublicToken public ren;
 
-    mapping(address => Darknode) private darknodeRegistry;
-    LinkedList.List private darknodes;
+    mapping(address => Darknode) private _darknodeRegistry;
+    LinkedList.List private _darknodes;
 
     uint256 public numDarknodes;
     uint256 public numDarknodesNextEpoch;
@@ -113,7 +113,7 @@ contract DarknodeRegistry is Initializable, Ownable {
 
     /// @notice Only allow the owner that registered the darknode to pass.
     modifier onlyDarknodeOwner(address _darknodeID) {
-        require(_darknodeOwner(_darknodeID) == msg.sender, "must be darknode owner");
+        require(_darknodeRegistry[_darknodeID].owner == msg.sender, "must be darknode owner");
         _;
     }
 
@@ -203,14 +203,15 @@ contract DarknodeRegistry is Initializable, Ownable {
         require(ren.transferFrom(msg.sender,this, bond), "bond transfer failed");
 
         // Flag this darknode for registration
-        _appendDarknode(
-            _darknodeID,
-            msg.sender,
-            bond,
-            _publicKey,
-            currentEpoch.blocknumber.add(minimumEpochInterval),
-            0
-        );
+        Darknode memory darknode = Darknode({
+            owner: msg.sender,
+            bond: bond,
+            publicKey: _publicKey,
+            registeredAt: currentEpoch.blocknumber.add(minimumEpochInterval),
+            deregisteredAt: 0
+        });
+        _darknodeRegistry[_darknodeID] = darknode;
+        LinkedList.append(_darknodes, _darknodeID);
 
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
@@ -225,7 +226,7 @@ contract DarknodeRegistry is Initializable, Ownable {
     ///        of this method store.darknodeRegisteredAt(_darknodeID) must be
     //         the owner of this darknode.
     function deregister(address _darknodeID) external onlyDeregisterable(_darknodeID) onlyDarknodeOwner(_darknodeID) {
-        deregisterDarknode(_darknodeID);
+        _deregisterDarknode(_darknodeID);
     }
 
     /// @notice Progress the epoch if it is possible to do so. This captures
@@ -317,21 +318,21 @@ contract DarknodeRegistry is Initializable, Ownable {
         external
         onlySlasher
     {
-        uint256 penalty = _darknodeBond(_prover) / 2;
+        uint256 penalty = _darknodeRegistry[_prover].bond / 2;
         uint256 reward = penalty / 4;
 
         // Slash the bond of the failed prover in half
-        _updateDarknodeBond(_prover, penalty);
+        _darknodeRegistry[_prover].bond = _darknodeRegistry[_prover].bond.sub(penalty);
 
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_prover)) {
-            deregisterDarknode(_prover);
+            _deregisterDarknode(_prover);
         }
 
         // Reward the challengers with less than the penalty so that it is not
         // worth challenging yourself
-        require(ren.transfer(_darknodeOwner(_challenger1), reward), "reward transfer failed");
-        require(ren.transfer(_darknodeOwner(_challenger2), reward), "reward transfer failed");
+        require(ren.transfer(_darknodeRegistry[_challenger1].owner, reward), "reward transfer failed");
+        require(ren.transfer(_darknodeRegistry[_challenger2].owner, reward), "reward transfer failed");
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
@@ -341,16 +342,17 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// @param _darknodeID The darknode ID that will be refunded. The caller
     ///        of this method must be the owner of this darknode.
     function refund(address _darknodeID) external onlyRefundable(_darknodeID) {
-        address darknodeOwner = _darknodeOwner(_darknodeID);
+        address darknodeOwner = _darknodeRegistry[_darknodeID].owner;
 
         // Remember the bond amount
-        uint256 amount = _darknodeBond(_darknodeID);
+        uint256 amount = _darknodeRegistry[_darknodeID].bond;
 
         // Erase the darknode from the registry
-        _removeDarknode(_darknodeID);
+        delete _darknodeRegistry[_darknodeID];
+        LinkedList.remove(_darknodes, _darknodeID);
 
         // Refund the owner by transferring REN
-        require(ren.transfer(owner(), amount), "bond transfer failed");
+        require(ren.transfer(darknodeOwner, amount), "bond transfer failed");
 
         // Emit an event.
         emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
@@ -359,19 +361,19 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// @notice Retrieves the address of the account that registered a darknode.
     /// @param _darknodeID The ID of the darknode to retrieve the owner for.
     function getDarknodeOwner(address _darknodeID) external view returns (address) {
-        return _darknodeOwner(_darknodeID);
+        return _darknodeRegistry[_darknodeID].owner;
     }
 
     /// @notice Retrieves the bond amount of a darknode in 10^-18 REN.
     /// @param _darknodeID The ID of the darknode to retrieve the bond for.
     function getDarknodeBond(address _darknodeID) external view returns (uint256) {
-        return _darknodeBond(_darknodeID);
+        return _darknodeRegistry[_darknodeID].bond;
     }
 
     /// @notice Retrieves the encryption public key of the darknode.
     /// @param _darknodeID The ID of the darknode to retrieve the public key for.
     function getDarknodePublicKey(address _darknodeID) external view returns (bytes) {
-        return _darknodePublicKey(_darknodeID);
+        return _darknodeRegistry[_darknodeID].publicKey;
     }
 
     /// @notice Retrieves a list of darknodes which are registered for the
@@ -389,7 +391,7 @@ contract DarknodeRegistry is Initializable, Ownable {
         if (count == 0) {
             count = numDarknodes;
         }
-        return getDarknodesFromEpochs(_start, count, false);
+        return _getDarknodesFromEpochs(_start, count, false);
     }
 
     /// @notice Retrieves a list of darknodes which were registered for the
@@ -399,27 +401,27 @@ contract DarknodeRegistry is Initializable, Ownable {
         if (count == 0) {
             count = numDarknodesPreviousEpoch;
         }
-        return getDarknodesFromEpochs(_start, count, true);
+        return _getDarknodesFromEpochs(_start, count, true);
     }
 
     /// @notice Returns whether a darknode is scheduled to become registered
     /// at next epoch.
     /// @param _darknodeID The ID of the darknode to return
     function isPendingRegistration(address _darknodeID) external view returns (bool) {
-        uint256 registeredAt = _darknodeRegisteredAt(_darknodeID);
+        uint256 registeredAt = _darknodeRegistry[_darknodeID].registeredAt;
         return registeredAt != 0 && registeredAt > currentEpoch.blocknumber;
     }
 
     /// @notice Returns if a darknode is in the pending deregistered state. In
     /// this state a darknode is still considered registered.
     function isPendingDeregistration(address _darknodeID) external view returns (bool) {
-        uint256 deregisteredAt = _darknodeDeregisteredAt(_darknodeID);
+        uint256 deregisteredAt = _darknodeRegistry[_darknodeID].deregisteredAt;
         return deregisteredAt != 0 && deregisteredAt > currentEpoch.blocknumber;
     }
 
     /// @notice Returns if a darknode is in the deregistered state.
     function isDeregistered(address _darknodeID) public view returns (bool) {
-        uint256 deregisteredAt = _darknodeDeregisteredAt(_darknodeID);
+        uint256 deregisteredAt = _darknodeRegistry[_darknodeID].deregisteredAt;
         return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocknumber;
     }
 
@@ -427,7 +429,7 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// darknodes is in the registered state and has not attempted to
     /// deregister yet.
     function isDeregisterable(address _darknodeID) public view returns (bool) {
-        uint256 deregisteredAt = _darknodeDeregisteredAt(_darknodeID);
+        uint256 deregisteredAt = _darknodeRegistry[_darknodeID].deregisteredAt;
         // The Darknode is currently in the registered state and has not been
         // transitioned to the pending deregistration, or deregistered, state
         return isRegistered(_darknodeID) && deregisteredAt == 0;
@@ -437,34 +439,34 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// for darknodes that have never been registered, or darknodes that have
     /// been deregistered and refunded.
     function isRefunded(address _darknodeID) public view returns (bool) {
-        uint256 registeredAt = _darknodeRegisteredAt(_darknodeID);
-        uint256 deregisteredAt = _darknodeDeregisteredAt(_darknodeID);
+        uint256 registeredAt = _darknodeRegistry[_darknodeID].registeredAt;
+        uint256 deregisteredAt = _darknodeRegistry[_darknodeID].deregisteredAt;
         return registeredAt == 0 && deregisteredAt == 0;
     }
 
     /// @notice Returns if a darknode is refundable. This is true for darknodes
     /// that have been in the deregistered state for one full epoch.
     function isRefundable(address _darknodeID) public view returns (bool) {
-        return isDeregistered(_darknodeID) && _darknodeDeregisteredAt(_darknodeID) <= previousEpoch.blocknumber;
+        return isDeregistered(_darknodeID) && _darknodeRegistry[_darknodeID].deregisteredAt <= previousEpoch.blocknumber;
     }
 
     /// @notice Returns if a darknode is in the registered state.
     function isRegistered(address _darknodeID) public view returns (bool) {
-        return isRegisteredInEpoch(_darknodeID, currentEpoch);
+        return _isRegisteredInEpoch(_darknodeID, currentEpoch);
     }
 
     /// @notice Returns if a darknode was in the registered state last epoch.
     function isRegisteredInPreviousEpoch(address _darknodeID) public view returns (bool) {
-        return isRegisteredInEpoch(_darknodeID, previousEpoch);
+        return _isRegisteredInEpoch(_darknodeID, previousEpoch);
     }
 
     /// @notice Returns if a darknode was in the registered state for a given
     /// epoch.
     /// @param _darknodeID The ID of the darknode
     /// @param _epoch One of currentEpoch, previousEpoch
-    function isRegisteredInEpoch(address _darknodeID, Epoch _epoch) private view returns (bool) {
-        uint256 registeredAt = _darknodeRegisteredAt(_darknodeID);
-        uint256 deregisteredAt = _darknodeDeregisteredAt(_darknodeID);
+    function _isRegisteredInEpoch(address _darknodeID, Epoch _epoch) private view returns (bool) {
+        uint256 registeredAt = _darknodeRegistry[_darknodeID].registeredAt;
+        uint256 deregisteredAt = _darknodeRegistry[_darknodeID].deregisteredAt;
         bool registered = registeredAt != 0 && registeredAt <= _epoch.blocknumber;
         bool notDeregistered = deregisteredAt == 0 || deregisteredAt > _epoch.blocknumber;
         // The Darknode has been registered and has not yet been deregistered,
@@ -477,7 +479,7 @@ contract DarknodeRegistry is Initializable, Ownable {
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
     ///        the current epoch.
-    function getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[]) {
+    function _getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[]) {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
@@ -489,7 +491,7 @@ contract DarknodeRegistry is Initializable, Ownable {
         uint256 n = 0;
         address next = _start;
         if (next == 0x0) {
-            next = _begin();
+            next = LinkedList.begin(_darknodes);
         }
 
         // Iterate until all registered Darknodes have been collected
@@ -505,110 +507,23 @@ contract DarknodeRegistry is Initializable, Ownable {
                 includeNext = isRegistered(next);
             }
             if (!includeNext) {
-                next = _next(next);
+                next = LinkedList.next(_darknodes, next);
                 continue;
             }
             nodes[n] = next;
-            next = _next(next);
+            next = LinkedList.next(_darknodes, next);
             n += 1;
         }
         return nodes;
     }
 
     /// Private function called by `deregister` and `slash`
-    function deregisterDarknode(address _darknodeID) private {
+    function _deregisterDarknode(address _darknodeID) private {
         // Flag the darknode for deregistration
-        _updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber.add(minimumEpochInterval));
+        _darknodeRegistry[_darknodeID].deregisteredAt = currentEpoch.blocknumber.add(minimumEpochInterval);
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
         // Emit an event
         emit LogDarknodeDeregistered(_darknodeID);
-    }
-
-    /// @notice Instantiates a darknode and appends it to the darknodes
-    /// linked-list.
-    ///
-    /// @param _darknodeID The darknode's ID.
-    /// @param _darknodeOwner The darknode's owner's address
-    /// @param _bond The darknode's bond value
-    /// @param _publicKey The darknode's public key
-    /// @param _registeredAt The time stamp when the darknode is registered.
-    /// @param _deregisteredAt The time stamp when the darknode is deregistered.
-    function _appendDarknode(
-        address _darknodeID,
-        address _darknodeOwner,
-        uint256 _bond,
-        bytes _publicKey,
-        uint256 _registeredAt,
-        uint256 _deregisteredAt
-    ) internal {
-        Darknode memory darknode = Darknode({
-            owner: _darknodeOwner,
-            bond: _bond,
-            publicKey: _publicKey,
-            registeredAt: _registeredAt,
-            deregisteredAt: _deregisteredAt
-            });
-        darknodeRegistry[_darknodeID] = darknode;
-        LinkedList.append(darknodes, _darknodeID);
-    }
-
-    /// @notice Returns the address of the first darknode in the store
-    function _begin() internal view returns(address) {
-        return LinkedList.begin(darknodes);
-    }
-
-    /// @notice Returns the address of the next darknode in the store after the
-    /// given address.
-    function _next(address _darknodeID) internal view returns(address) {
-        return LinkedList.next(darknodes, _darknodeID);
-    }
-
-    /// @notice Removes a darknode from the store and transfers its bond to the
-    /// owner of this contract.
-    function _removeDarknode(address _darknodeID) internal {
-        uint256 bond = darknodeRegistry[_darknodeID].bond;
-        delete darknodeRegistry[_darknodeID];
-        LinkedList.remove(darknodes, _darknodeID);
-        require(ren.transfer(owner(), bond), "bond transfer failed");
-    }
-
-    /// @notice Updates the bond of a darknode. The new bond must be smaller
-    /// than the previous bond of the darknode.
-    function _updateDarknodeBond(address _darknodeID, uint256 _decreasedBond) internal {
-        uint256 previousBond = darknodeRegistry[_darknodeID].bond;
-        require(_decreasedBond < previousBond, "bond not decreased");
-        darknodeRegistry[_darknodeID].bond = _decreasedBond;
-        require(ren.transfer(owner(), previousBond.sub(_decreasedBond)), "bond transfer failed");
-    }
-
-    /// @notice Updates the deregistration timestamp of a darknode.
-    function _updateDarknodeDeregisteredAt(address _darknodeID, uint256 _deregisteredAt) internal {
-        darknodeRegistry[_darknodeID].deregisteredAt = _deregisteredAt;
-    }
-
-    /// @notice Returns the owner of a given darknode.
-    function _darknodeOwner(address _darknodeID) internal view returns (address) {
-        return darknodeRegistry[_darknodeID].owner;
-    }
-
-    /// @notice Returns the bond of a given darknode.
-    function _darknodeBond(address _darknodeID) internal view returns (uint256) {
-        return darknodeRegistry[_darknodeID].bond;
-    }
-
-    /// @notice Returns the registration time of a given darknode.
-    function _darknodeRegisteredAt(address _darknodeID) internal view returns (uint256) {
-        return darknodeRegistry[_darknodeID].registeredAt;
-    }
-
-    /// @notice Returns the deregistration time of a given darknode.
-    function _darknodeDeregisteredAt(address _darknodeID) internal view returns (uint256) {
-        return darknodeRegistry[_darknodeID].deregisteredAt;
-    }
-
-    /// @notice Returns the encryption public key of a given darknode.
-    function _darknodePublicKey(address _darknodeID) internal view returns (bytes) {
-        return darknodeRegistry[_darknodeID].publicKey;
     }
 }
