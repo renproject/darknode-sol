@@ -23,6 +23,7 @@ async function deployRepublicProtocolContracts(artifacts, app, config) {
     await republicToken.transferOwnership(config.CONTRACT_OWNER);
     await republicToken.addPauser(config.CONTRACT_OWNER);
     await republicToken.renouncePauser();
+    await republicToken.transfer(config.CONTRACT_OWNER, await republicToken.totalSupply());
 
     const darknodeRegistry = await deployer.deploy(
         "DarknodeRegistry",
@@ -74,6 +75,7 @@ async function deployRepublicProtocolContracts(artifacts, app, config) {
         orderbook,
         darknodeRewardVault,
         darknodeSlasher,
+        deployer,
     };
 }
 

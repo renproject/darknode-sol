@@ -69,23 +69,47 @@ export const randomID = () => {
 export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
 export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
 
-// export const openOrder = async (
-//     orderbook: OrderbookContract,
-//     settlementID: number,
-//     account: string,
-//     orderID?: string,
-// ) => {
-//     if (!orderID) {
-//         orderID = randomID();
-//     }
+export enum Parity {
+    BUY = 0,
+    SELL = 1,
+}
 
-//     // Use random 65 bytes so that the gas aren't skewed by not having a
-//     // signature
-//     const signature = randomBytes(65);
-//     await orderbook.openOrder(settlementID, signature, orderID, 0, 0 { from: account });
+export const openBuyOrder = (
+    orderbook: OrderbookContract,
+    settlementID: number,
+    account: string,
+    orderID?: string,
+) => openOrder(orderbook, settlementID, account, Parity.BUY, orderID);
 
-//     return orderID;
-// };
+export const openSellOrder = (
+    orderbook: OrderbookContract,
+    settlementID: number,
+    account: string,
+    orderID?: string,
+) => openOrder(orderbook, settlementID, account, Parity.SELL, orderID);
+
+export const openOrder = async (
+    orderbook: OrderbookContract,
+    settlementID: number,
+    account: string,
+    parity: Parity,
+    orderID?: string,
+) => {
+    if (!orderID) {
+        orderID = randomID();
+    }
+
+    // Use random 65 bytes so that the gas aren't skewed by not having a
+    // signature
+    const signature = randomBytes(65);
+    if (parity === Parity.BUY) {
+        await orderbook.openBuyOrder(settlementID, signature, orderID, 0, 0, { from: account });
+    } else {
+        await orderbook.openSellOrder(settlementID, signature, orderID, 0, 0, { from: account });
+    }
+
+    return orderID;
+};
 
 export const cancelOrder = async (orderbook: OrderbookContract, account: string, orderID: string) => {
     await orderbook.cancelOrder(orderID, { from: account });

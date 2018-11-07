@@ -5,8 +5,6 @@ import {
     NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
-import * as Web3 from "web3";
-
 import { TestHelper } from "zos";
 
 import * as deployRepublicProtocolContracts from "../migrations/deploy";
@@ -56,8 +54,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const config = { ...defaultConfig, CONTRACT_OWNER: contractOwner };
         ({ darknodeRegistry, republicToken } = await deployRepublicProtocolContracts(artifacts, this.app, config));
 
-        for (let i = 1; i < ACCOUNT_LOOP_LIMIT; i++) {
-            await republicToken.transfer(accounts[i], MINIMUM_BOND.toFixed(), { from: accounts[0] });
+        for (let i = 0; i < ACCOUNT_LOOP_LIMIT; i++) {
+            await republicToken.transfer(accounts[i], MINIMUM_BOND.toFixed(), { from: contractOwner });
         }
 
         await darknodeRegistry.epoch({ from: contractOwner });
@@ -489,22 +487,22 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("should throw if refund fails", async () => {
         // [SETUP]
-        await republicToken.approve(darknodeRegistry.address, MINIMUM_BOND.toFixed(), { from: accounts[0] });
-        await darknodeRegistry.register(ID("2"), PUBK("2"), { from: accounts[0] });
+        await republicToken.approve(darknodeRegistry.address, MINIMUM_BOND.toFixed(), { from: accounts[2] });
+        await darknodeRegistry.register(ID("2"), PUBK("2"), { from: accounts[2] });
         await waitForEpoch(darknodeRegistry, { from: accounts[0] });
-        await darknodeRegistry.deregister(ID("2"), { from: accounts[0] });
+        await darknodeRegistry.deregister(ID("2"), { from: accounts[2] });
         await waitForEpoch(darknodeRegistry, { from: accounts[0] });
         await waitForEpoch(darknodeRegistry, { from: accounts[0] });
         await waitForEpoch(darknodeRegistry, { from: accounts[0] });
 
         // [CHECK] Refund fails if transfer fails
         await republicToken.pause({ from: contractOwner });
-        await darknodeRegistry.refund(ID("2"), { from: accounts[0] })
+        await darknodeRegistry.refund(ID("2"), { from: accounts[2] })
             .should.be.rejectedWith(null, /revert/); // paused contract
         await republicToken.unpause({ from: contractOwner });
 
         // [RESET]
-        await darknodeRegistry.refund(ID("2"), { from: accounts[0] });
+        await darknodeRegistry.refund(ID("2"), { from: accounts[2] });
     });
 
     it("should not refund for an address which is never registered", async () => {
@@ -647,7 +645,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const MAX_DARKNODES = 6000;
 
         // Fund the darknode operator (6000 dark nodes cost a lot to operate!)
-        for (let i = 1; i < ACCOUNT_LOOP_LIMIT; i++) {
+        for (let i = 0; i < ACCOUNT_LOOP_LIMIT; i++) {
             const balance = await web3.eth.getBalance(accounts[i]);
             web3.eth.sendTransaction(
                 { to: accounts[0], from: accounts[i], value: balance, gasPrice: 0 },
