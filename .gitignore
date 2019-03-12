@@ -13,6 +13,7 @@ coverage.json
 /test
 local_*
 test-ts/bindings/*.ts
+bindings.go
 
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
