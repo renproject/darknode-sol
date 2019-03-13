@@ -19,12 +19,14 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     it("can be paid DAI from a payee", async () => {
+        const previousBalance = new BN(await dnp.contractBalance());
+
         // Approve the contract to use DAI
-        const deposit1 = new BN("100000000000000000");
-        await dai.approve(dnp.address, deposit1);
-        await dnp.deposit(deposit1);
-        // We should expect the DAI balance to be equal to what we deposited
-        (await dnp.contractBalance()).should.bignumber.equal(deposit1);
+        const amount = new BN("100000000000000000");
+        await dai.approve(dnp.address, amount);
+        await dnp.deposit(amount);
+        // We should expect the DAI balance to have increased by what we deposited
+        (await dnp.contractBalance()).should.bignumber.equal(previousBalance.add(amount));
     });
 
     /*
