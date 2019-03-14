@@ -26,6 +26,9 @@ contract DarknodePayment {
     // Mapping from darknodeAddress -> accountBalance
     mapping(address => uint256) public darknodeBalances;
 
+    // The hash of the current epoch
+    uint256 public currentEpochHash;
+
     // The balance of the last epoch locked up for darknodes to withdraw
     uint256 public previousEpochContractBalance;
     // The amount that darknodes have added to their account from last epoch
@@ -53,16 +56,10 @@ contract DarknodePayment {
         _;
     }
 
-    /// @notice Only allow darknode registry to call
-    modifier onlyDarknodeRegistry() {
-        require(address(darknodeRegistry) == msg.sender, "not darknode registry");
-        _;
-    }
-
     /// @notice Only allow darknodes which haven't already ticked
     modifier notYetTicked() {
-        (uint256 currentEpochHash, ) = darknodeRegistry.currentEpoch();
-        require(!darknodeTicked[currentEpochHash][msg.sender], "already ticked");
+        (uint256 dnrCurrentEpochHash, ) = darknodeRegistry.currentEpoch();
+        require(!darknodeTicked[dnrCurrentEpochHash][msg.sender], "already ticked");
         _;
     }
 
@@ -93,15 +90,6 @@ contract DarknodePayment {
         emit LogPaymentReceived(payer, receivedValue);
     }
 
-    /// @notice Sets the previous epoch balance as the current balance and
-    /// resets the amount that has been allocated to zero. This function must only be
-    /// called as a part of the darknodeRegistry's epoch() function at most once per day.
-    function epoch() external onlyDarknodeRegistry {
-        uint256 balance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-        previousEpochContractBalance = balance;
-        previousEpochAllocatedAmount = 0;
-    }
-
     /// @notice The current balance of the contract available as reward for the current epoch.
     function balance() external view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
@@ -124,7 +112,7 @@ contract DarknodePayment {
         address darknode = msg.sender;
 
         // Tick for the current epoch
-        (uint256 currentEpoch, ) = darknodeRegistry.currentEpoch();
+        uint256 currentEpoch = privateFetchAndUpdateCurrentEpochHash();
         darknodeTicked[currentEpoch][darknode] = true;
         totalDarknodeTicks[currentEpoch]++;
         emit LogDarknodeTick(darknode, currentEpoch, totalDarknodeTicks[currentEpoch]);
@@ -141,5 +129,20 @@ contract DarknodePayment {
             darknodeBalances[darknode] += reward;
             previousEpochAllocatedAmount += reward;
         }
+    }
+
+    function privateFetchAndUpdateCurrentEpochHash() private returns (uint256) {
+        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
+        // If the epoch has changed
+        if (currentEpochHash != dnrCurrentEpoch) {
+            // Lock up the current balance for darknode reward allocation
+            uint256 contractBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
+            previousEpochContractBalance = contractBalance;
+            previousEpochAllocatedAmount = 0;
+
+            // Update the epoch
+            currentEpochHash = dnrCurrentEpoch;
+        }
+        return dnrCurrentEpoch;
     }
 }
