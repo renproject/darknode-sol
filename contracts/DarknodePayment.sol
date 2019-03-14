@@ -112,7 +112,7 @@ contract DarknodePayment {
         address darknode = msg.sender;
 
         // Tick for the current epoch
-        uint256 currentEpoch = privateFetchAndUpdateCurrentEpochHash();
+        uint256 currentEpoch = fetchAndUpdateCurrentEpochHash();
         darknodeTicked[currentEpoch][darknode] = true;
         totalDarknodeTicks[currentEpoch]++;
         emit LogDarknodeTick(darknode, currentEpoch, totalDarknodeTicks[currentEpoch]);
@@ -131,7 +131,7 @@ contract DarknodePayment {
         }
     }
 
-    function privateFetchAndUpdateCurrentEpochHash() private returns (uint256) {
+    function fetchAndUpdateCurrentEpochHash() public returns (uint256) {
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         // If the epoch has changed
         if (currentEpochHash != dnrCurrentEpoch) {
