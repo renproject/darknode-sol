@@ -18,7 +18,7 @@ contract DarknodePayment is Ownable {
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
     // Mapping from epoch -> address -> hasTicked
-    mapping(uint256 => mapping(address => bool)) public darknodeTicks;
+    mapping(uint256 => mapping(address => bool)) public darknodeTicked;
 
     // Mapping from epoch -> totalNumberOfTicks
     mapping(uint256 => uint256) public totalDarknodeTicks;
@@ -44,8 +44,8 @@ contract DarknodePayment is Ownable {
 
     /// @notice Only allow darknodes which haven't already ticked
     modifier notYetTicked() {
-        (uint256 epoch, ) = darknodeRegistry.currentEpoch();
-        require(!darknodeTicks[epoch][msg.sender], "already ticked");
+        (uint256 currentEpochHash, ) = darknodeRegistry.currentEpoch();
+        require(!darknodeTicked[currentEpochHash][msg.sender], "already ticked");
         _;
     }
 
@@ -83,7 +83,7 @@ contract DarknodePayment is Ownable {
     }
 
     function privateSetTick(uint256 _epoch, address _darknode) private {
-        darknodeTicks[_epoch][_darknode] = true;
+        darknodeTicked[_epoch][_darknode] = true;
         totalDarknodeTicks[_epoch]++;
 
         emit LogDarknodeTick(_darknode, _epoch, totalDarknodeTicks[_epoch]);
