@@ -54,6 +54,10 @@ contract.only("DarknodePayment", (accounts: string[]) => {
         (await dnp.balance()).should.bignumber.equal(previousBalance.add(amount));
     });
 
+    it("cannot withdraw if there is no balance", async () => {
+        await dnp.withdraw().should.be.rejectedWith(null, /nothing to withdraw/);
+    })
+
     /*
 
         // Get ERC20Basic balance for tokens
