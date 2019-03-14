@@ -83,11 +83,8 @@ contract DarknodePayment {
     /// @param _value The amount of DAI deposit in the token's smallest unit.
     function deposit(uint256 _value) external payable {
         require(msg.value == 0, "unexpected ether transfer");
-
-        address payer = msg.sender;
-        uint256 receivedValue = CompatibleERC20(daiContractAddress).safeTransferFromWithFees(payer, this, _value);
-
-        emit LogPaymentReceived(payer, receivedValue);
+        uint256 receivedValue = CompatibleERC20(daiContractAddress).safeTransferFromWithFees(msg.sender, this, _value);
+        emit LogPaymentReceived(msg.sender, receivedValue);
     }
 
     /// @notice The current balance of the contract available as reward for the current epoch.
