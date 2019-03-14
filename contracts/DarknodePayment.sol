@@ -102,11 +102,13 @@ contract DarknodePayment is Ownable {
         previousEpochAllocatedAmount = 0;
     }
 
+    /// @notice The current balance of the contract available as reward for the current epoch.
     function balance() external view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
         return currentBalance - (previousEpochContractBalance - previousEpochAllocatedAmount);
     }
 
+    /// @notice Transfers to the calling darknode the amount of DAI allocated to it as reward.
     function withdraw() external onlyDarknode {
         uint256 amount = darknodeBalances[msg.sender];
         require(amount > 0, "nothing to withdraw");
