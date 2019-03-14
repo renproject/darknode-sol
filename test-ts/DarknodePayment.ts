@@ -41,6 +41,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
+    afterEach(async () => {
+        // Call an epoch to reset tick status
+        await waitForEpoch(dnr);
+    });
+
     it("can be paid DAI from a payee", async () => {
         const previousBalance = new BN(await dnp.balance());
 
