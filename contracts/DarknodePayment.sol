@@ -36,6 +36,11 @@ contract DarknodePayment is Ownable {
     /// @param _value The amount of DAI paid to the contract
     event LogPaymentReceived(address _payer, uint256 _value);
 
+    /// @notice Emitted when a darknode calls withdraw
+    /// @param _payee The address of the darknode which withdrew
+    /// @param _value The amount of DAI withdrawn
+    event LogDarknodeWithdrew(address _payee, uint256 _value);
+
     /// @notice Emitted when darknode calls the tick function
     /// @param _darknode The address of the darknode which ticked
     /// @param _epoch The current epoch hash
@@ -100,6 +105,15 @@ contract DarknodePayment is Ownable {
     function balance() external view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
         return currentBalance - (previousEpochContractBalance - previousEpochAllocatedAmount);
+    }
+
+    function withdraw() external onlyDarknode {
+        uint256 amount = darknodeBalances[msg.sender];
+        require(amount > 0, "nothing to withdraw");
+
+        darknodeBalances[msg.sender] = 0;
+        CompatibleERC20(daiContractAddress).safeTransfer(msg.sender, amount);
+        emit LogDarknodeWithdrew(msg.sender, amount);
     }
 
     /// @notice Sets the darknode as active in order to be paid a portion of fees
