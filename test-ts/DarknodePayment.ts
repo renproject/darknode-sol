@@ -61,4 +61,15 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.withdraw().should.be.rejectedWith(null, /nothing to withdraw/);
     })
 
+    it("cannot call tick twice in the same epoch", async () => {
+        await dnp.tick();
+        await dnp.tick().should.be.rejectedWith(null, /already ticked/);
+    })
+
+    it("can tick again after an epoch has passed", async () => {
+        await dnp.tick();
+        await waitForEpoch(dnr);
+        await dnp.tick().should.not.be.rejectedWith(null, /already ticked/);
+    })
+
 });
