@@ -23,7 +23,13 @@ contract DarknodePayment is Ownable {
     // Mapping from epoch -> totalNumberOfTicks
     mapping(uint256 => uint256) public totalDarknodeTicks;
 
-    uint256 public contractBalance;
+    // Mapping from darknodeAddress -> accountBalance
+    mapping(address => uint256) public darknodeBalances;
+
+    // The balance of the last epoch locked up for darknodes to withdraw
+    uint256 public previousEpochContractBalance;
+    // The amount that darknodes have added to their account from last epoch
+    uint256 public previousEpochAllocatedAmount;
 
     /// @notice Emitted when a payment was made to the contract
     /// @param _payer The address of who made the payment
@@ -39,6 +45,12 @@ contract DarknodePayment is Ownable {
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode() {
         require(darknodeRegistry.isRegistered(msg.sender), "not a registered darknode");
+        _;
+    }
+
+    /// @notice Only allow darknode registry to call
+    modifier onlyDarknodeRegistry() {
+        require(address(darknodeRegistry) == msg.sender, "not darknode registry");
         _;
     }
 
@@ -68,30 +80,50 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _value The amount of DAI deposit in the token's smallest unit.
     function deposit(uint256 _value) external payable {
-        address trader = msg.sender;
-
-        uint256 receivedValue = _value;
         require(msg.value == 0, "unexpected ether transfer");
-        receivedValue = CompatibleERC20(daiContractAddress).safeTransferFromWithFees(trader, this, _value);
-        privateIncrementBalance(receivedValue);
+
+        address payer = msg.sender;
+        uint256 receivedValue = CompatibleERC20(daiContractAddress).safeTransferFromWithFees(payer, this, _value);
+
+        emit LogPaymentReceived(payer, receivedValue);
+    }
+
+    /// @notice Sets the previous epoch balance as the current balance and
+    /// resets the amount that has been allocated to zero. This function must only be
+    /// called as a part of the darknodeRegistry's epoch() function at most once per day.
+    function epoch() external onlyDarknodeRegistry {
+        uint256 balance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
+        previousEpochContractBalance = balance;
+        previousEpochAllocatedAmount = 0;
+    }
+
+    function balance() external view returns (uint256) {
+        uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
+        return currentBalance - (previousEpochContractBalance - previousEpochAllocatedAmount);
     }
 
     /// @notice Sets the darknode as active in order to be paid a portion of fees
+    /// and allocates the rewards for the previous epoch to the calling darknode
     function tick() external onlyDarknode notYetTicked {
-        (uint256 epoch, ) = darknodeRegistry.currentEpoch();
-        privateSetTick(epoch, msg.sender);
-    }
+        address darknode = msg.sender;
 
-    function privateSetTick(uint256 _epoch, address _darknode) private {
-        darknodeTicked[_epoch][_darknode] = true;
-        totalDarknodeTicks[_epoch]++;
+        // Tick for the current epoch
+        (uint256 currentEpoch, ) = darknodeRegistry.currentEpoch();
+        darknodeTicked[currentEpoch][darknode] = true;
+        totalDarknodeTicks[currentEpoch]++;
+        emit LogDarknodeTick(darknode, currentEpoch, totalDarknodeTicks[currentEpoch]);
 
-        emit LogDarknodeTick(_darknode, _epoch, totalDarknodeTicks[_epoch]);
-    }
+        // Claim rewards allocated for last epoch
+        (uint256 previousEpochHash, uint256 previousEpochBlockNumber) = darknodeRegistry.previousEpoch();
+        // Allocate rewards only if _darknode was active last epoch
+        if (previousEpochBlockNumber != 0 && darknodeTicked[previousEpochHash][darknode]) {
+            // Set them as inactive for last epoch to avoid potential double reclaims
+            // FIXME: Is this statement actually necessary since tick() can only be called once per epoch anyway?
+            darknodeTicked[previousEpochHash][darknode] = false;
 
-    function privateIncrementBalance(uint256 _value) private {
-        contractBalance = contractBalance.add(_value);
-
-        emit LogPaymentReceived(msg.sender, _value);
+            uint256 reward = (previousEpochContractBalance / totalDarknodeTicks[previousEpochHash]);
+            darknodeBalances[darknode] += reward;
+            previousEpochAllocatedAmount += reward;
+        }
     }
 }
