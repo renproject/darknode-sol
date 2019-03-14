@@ -4,11 +4,11 @@ import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/dar
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 
-const ERC20 = artifacts.require("RepublicToken") as ERC20Artifact;
+const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
-contract("DarknodePayment", (accounts: string[]) => {
+contract.only("DarknodePayment", (accounts: string[]) => {
 
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
@@ -18,9 +18,9 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     before(async () => {
         // Use a new DAI only for these tests
-        dai = await ERC20.new();
+        dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
-        dnp = await DarknodePayment.new("TESTING", dai.address, dnr.address);
+        dnp = await DarknodePayment.deployed();
     });
 
     it("can be paid DAI from a payee", async () => {
