@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 
 import {
-    ID, MINIMUM_BOND, PUBK, waitForEpoch,
+    MINIMUM_BOND, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
 
@@ -21,8 +21,6 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
     let ren: RepublicTokenContract;
-
-    const broker = accounts[9];
 
     before(async () => {
         ren = await RepublicToken.deployed();
