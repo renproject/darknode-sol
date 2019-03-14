@@ -1,9 +1,16 @@
 import { BN } from "bn.js";
 
+import {
+    ID, MINIMUM_BOND, PUBK, waitForEpoch,
+} from "./helper/testUtils";
+
+
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
+import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
+const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
@@ -13,14 +20,27 @@ contract.only("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
+    let ren: RepublicTokenContract;
 
     const broker = accounts[9];
 
     before(async () => {
-        // Use a new DAI only for these tests
+        ren = await RepublicToken.deployed();
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
+
+        // [ACTION] Register
+        for (let i = 0; i < accounts.length; i++) {
+            await ren.transfer(accounts[i], MINIMUM_BOND);
+            await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
+            // Register the darknodes under the account address
+            await dnr.register(accounts[i], PUBK(i), { from: accounts[i] });
+        }
+
+        // Wait for epochs
+        await waitForEpoch(dnr);
+        await waitForEpoch(dnr);
     });
 
     it("can be paid DAI from a payee", async () => {
