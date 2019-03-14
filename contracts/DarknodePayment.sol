@@ -29,10 +29,12 @@ contract DarknodePayment {
     // The hash of the current epoch
     uint256 public currentEpochHash;
 
-    // The balance of the last epoch locked up for darknodes to withdraw
-    uint256 public previousEpochContractBalance;
-    // The amount that darknodes have added to their account from last epoch
-    uint256 public previousEpochAllocatedAmount;
+    // The rewards from last epoch locked up for darknodes to claim
+    uint256 public previousEpochRewardPool;
+    // The amount that each darknode was rewarded last epoch
+    uint256 public previousEpochRewardShare;
+    // The amount that has been claimed by darknodes but not yet withdrawn
+    uint256 public rewardsClaimed;
 
     /// @notice Emitted when a payment was made to the contract
     /// @param _payer The address of who made the payment
@@ -88,17 +90,24 @@ contract DarknodePayment {
     }
 
     /// @notice The current balance of the contract available as reward for the current epoch.
-    function balance() external view returns (uint256) {
+    function currentEpochRewardPool() public view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-        return currentBalance - (previousEpochContractBalance - previousEpochAllocatedAmount);
+        (uint256 previousEpochHash, ) = darknodeRegistry.previousEpoch();
+        // Don't lock up any reward if no darknodes ticked last epoch
+        if (totalDarknodeTicks[previousEpochHash] == 0) {
+            return currentBalance - rewardsClaimed;
+        }
+        // Lock up the reward for darknodes to claim
+        return currentBalance - previousEpochRewardPool - rewardsClaimed;
     }
 
     /// @notice Transfers to the calling darknode the amount of DAI allocated to it as reward.
-    function withdraw() external onlyDarknode {
+    function withdraw() external {
         uint256 amount = darknodeBalances[msg.sender];
         require(amount > 0, "nothing to withdraw");
 
         darknodeBalances[msg.sender] = 0;
+        rewardsClaimed -= amount;
         CompatibleERC20(daiContractAddress).safeTransfer(msg.sender, amount);
         emit LogDarknodeWithdrew(msg.sender, amount);
     }
@@ -122,9 +131,9 @@ contract DarknodePayment {
             // FIXME: Is this statement actually necessary since tick() can only be called once per epoch anyway?
             darknodeTicked[previousEpochHash][darknode] = false;
 
-            uint256 reward = (previousEpochContractBalance / totalDarknodeTicks[previousEpochHash]);
-            darknodeBalances[darknode] += reward;
-            previousEpochAllocatedAmount += reward;
+            darknodeBalances[darknode] += previousEpochRewardShare;
+            rewardsClaimed += previousEpochRewardShare;
+            previousEpochRewardPool -= previousEpochRewardShare;
         }
     }
 
@@ -132,14 +141,19 @@ contract DarknodePayment {
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         // If the epoch has changed
         if (currentEpochHash != dnrCurrentEpoch) {
+            (uint256 dnrPreviousEpochHash, ) = darknodeRegistry.previousEpoch();
             // Lock up the current balance for darknode reward allocation
-            uint256 contractBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-            previousEpochContractBalance = contractBalance;
-            previousEpochAllocatedAmount = 0;
+            previousEpochRewardPool = currentEpochRewardPool();
+            if (totalDarknodeTicks[dnrPreviousEpochHash] > 0) {
+                previousEpochRewardShare = previousEpochRewardPool / totalDarknodeTicks[dnrPreviousEpochHash];
+            } else {
+                previousEpochRewardShare = 0;
+            }
 
             // Update the epoch
             currentEpochHash = dnrCurrentEpoch;
         }
         return dnrCurrentEpoch;
     }
+
 }
