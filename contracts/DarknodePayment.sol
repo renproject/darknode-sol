@@ -7,7 +7,7 @@ import "./CompatibleERC20.sol";
 import "./DarknodeRegistry.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
-contract DarknodePayment is Ownable {
+contract DarknodePayment {
     using SafeMath for uint256;
     using CompatibleERC20Functions for CompatibleERC20;
 
