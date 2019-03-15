@@ -49,6 +49,19 @@ contract("DarknodePayment", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
+    it("cannot deposit with ETH attached", async () => {
+        const amount = new BN("100000000000000000");
+        await dnp.deposit(amount, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
+    })
+
+    it("cannot tick if not registered", async () => {
+        await dnp.tick().should.be.rejectedWith(null, /not a registered darknode/);
+    })
+
+    it("cannot withdraw if there is no balance", async () => {
+        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+    })
+
     it("can be paid DAI from a payee", async () => {
         const previousBalance = new BN(await dnp.currentEpochRewardPool());
         previousBalance.should.bignumber.equal(new BN(0));
@@ -61,10 +74,6 @@ contract("DarknodePayment", (accounts: string[]) => {
         // We should expect the DAI balance to have increased by what we deposited
         (await dnp.currentEpochRewardPool()).should.bignumber.equal(newRewardPool);
     });
-
-    it("cannot withdraw if there is no balance", async () => {
-        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
-    })
 
     it("can withdraw DAI out of contract", async () => {
         const oldDAIBalance = new BN(await dai.balanceOf(darknode1));
