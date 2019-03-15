@@ -132,6 +132,10 @@ contract DarknodePayment {
         }
     }
 
+    /// @notice Returns the current epoch according to the DarknodeRegistry contract.
+    /// If the epoch has changed, it will update the previousEpochRewardPool and previousEpochRewardShare.
+    /// This function is called by tick(). To avoid darknodes from having to pay the cost for the
+    /// change in epoch, this function should ideally be called as a part of DarknodeRegistry.epoch().
     function fetchAndUpdateCurrentEpochHash() public returns (uint256) {
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         // If the epoch has changed
