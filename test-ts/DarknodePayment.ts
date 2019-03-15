@@ -15,7 +15,7 @@ const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
-contract.only("DarknodePayment", (accounts: string[]) => {
+contract("DarknodePayment", (accounts: string[]) => {
 
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
