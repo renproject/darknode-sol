@@ -90,13 +90,8 @@ contract DarknodePayment {
     }
 
     /// @notice The current balance of the contract available as reward for the current epoch.
-    function currentEpochRewardPool() public view returns (uint256) {
+    function currentEpochRewardPool() external view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-        (uint256 previousEpochHash, ) = darknodeRegistry.previousEpoch();
-        // Don't lock up any reward if no darknodes ticked last epoch
-        if (totalDarknodeTicks[previousEpochHash] == 0) {
-            return currentBalance - rewardsClaimed;
-        }
         // Lock up the reward for darknodes to claim
         return currentBalance - previousEpochRewardPool - rewardsClaimed;
     }
@@ -142,12 +137,14 @@ contract DarknodePayment {
         // If the epoch has changed
         if (currentEpochHash != dnrCurrentEpoch) {
             (uint256 dnrPreviousEpochHash, ) = darknodeRegistry.previousEpoch();
-            // Lock up the current balance for darknode reward allocation
-            previousEpochRewardPool = currentEpochRewardPool();
-            if (totalDarknodeTicks[dnrPreviousEpochHash] > 0) {
-                previousEpochRewardShare = previousEpochRewardPool / totalDarknodeTicks[dnrPreviousEpochHash];
-            } else {
+            if (totalDarknodeTicks[dnrPreviousEpochHash] == 0) {
+                previousEpochRewardPool = 0;
                 previousEpochRewardShare = 0;
+            } else {
+                // Lock up the current balance for darknode reward allocation
+                uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
+                previousEpochRewardPool = currentBalance - rewardsClaimed;
+                previousEpochRewardShare = previousEpochRewardPool / totalDarknodeTicks[dnrPreviousEpochHash];
             }
 
             // Update the epoch
