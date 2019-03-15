@@ -85,14 +85,14 @@ contract("DarknodePayment", (accounts: string[]) => {
         (new BN(await dnp.darknodeBalances(darknode1))).should.bignumber.equal(new BN(0));
 
         // Tick twice to allocate rewards
-        await dnp.tick({ from: darknode1 });
+        await tick();
         await waitForEpoch(dnr);
         await dnp.fetchAndUpdateCurrentEpochHash();
 
         // There should be nothing in the reward pool
         (new BN(await dnp.currentEpochRewardPool())).should.bignumber.equal(new BN(0));
 
-        await dnp.tick({ from: darknode1 });
+        await tick();
 
         // Our claimed amount should be positive
         const earnedDAIRewards = new BN(await dnp.darknodeBalances(darknode1));
@@ -110,14 +110,18 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("cannot call tick twice in the same epoch", async () => {
-        await dnp.tick({ from: darknode1 });
-        await dnp.tick({ from: darknode1 }).should.be.rejectedWith(null, /already ticked/);
+        await tick();
+        await tick().should.be.rejectedWith(null, /already ticked/);
     })
 
     it("can tick again after an epoch has passed", async () => {
-        await dnp.tick({ from: darknode1 });
+        await tick();
         await waitForEpoch(dnr);
-        await dnp.tick({ from: darknode1 }).should.not.be.rejectedWith(null, /already ticked/);
+        await tick().should.not.be.rejectedWith(null, /already ticked/);
     })
+
+    const tick = async () => {
+        return dnp.fetchAndUpdateCurrentEpochHash().then(() => dnp.tick({ from: darknode1 }));
+    }
 
 });
