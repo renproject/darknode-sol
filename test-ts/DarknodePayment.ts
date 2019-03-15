@@ -66,26 +66,29 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
     })
 
-    it("cannot call tick twice in the same epoch", async () => {
-        await dnp.tick({ from: darknode1 });
-        await dnp.tick({ from: darknode1 }).should.be.rejectedWith(null, /already ticked/);
-    })
-
-    it("can tick again after an epoch has passed", async () => {
-        await dnp.tick({ from: darknode1 });
-        await waitForEpoch(dnr);
-        await dnp.tick({ from: darknode1 }).should.not.be.rejectedWith(null, /already ticked/);
-    })
-
     it("can withdraw DAI out of contract", async () => {
         const oldDAIBalance = new BN(await dai.balanceOf(darknode1));
+
+        // There should be a positive amount in the reward pool
+        (new BN(await dnp.currentEpochRewardPool()).gt(new BN(0))).should.be.true;
+
+        // We should have zero claimed balance before ticking
+        (new BN(await dnp.darknodeBalances(darknode1))).should.bignumber.equal(new BN(0));
 
         // Tick twice to allocate rewards
         await dnp.tick({ from: darknode1 });
         await waitForEpoch(dnr);
+        await dnp.fetchAndUpdateCurrentEpochHash();
+
+        // There should be nothing in the reward pool
+        (new BN(await dnp.currentEpochRewardPool())).should.bignumber.equal(new BN(0));
+
         await dnp.tick({ from: darknode1 });
 
+        // Our claimed amount should be positive
         const earnedDAIRewards = new BN(await dnp.darknodeBalances(darknode1));
+        earnedDAIRewards.gt(new BN(0)).should.be.true;
+
         await dnp.withdraw({ from: darknode1 });
 
         // Our balances should have increased
@@ -95,6 +98,17 @@ contract("DarknodePayment", (accounts: string[]) => {
         // We should have nothing left to withdraw
         const postWithdrawRewards = new BN(await dnp.darknodeBalances(darknode1));
         postWithdrawRewards.should.bignumber.equal(new BN(0));
+    })
+
+    it("cannot call tick twice in the same epoch", async () => {
+        await dnp.tick({ from: darknode1 });
+        await dnp.tick({ from: darknode1 }).should.be.rejectedWith(null, /already ticked/);
+    })
+
+    it("can tick again after an epoch has passed", async () => {
+        await dnp.tick({ from: darknode1 });
+        await waitForEpoch(dnr);
+        await dnp.tick({ from: darknode1 }).should.not.be.rejectedWith(null, /already ticked/);
     })
 
 });
