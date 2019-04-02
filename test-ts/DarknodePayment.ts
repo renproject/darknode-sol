@@ -46,9 +46,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnr.register(accounts[i], PUBK(i), { from: accounts[i] });
         }
 
-        // Wait for two cycles/epochs for darknodes to be registered
-        await waitForCycle()
-        await waitForCycle()
+        // Wait for two epochs for darknodes to be registered
+        await waitForCycle(2 * day)
     });
 
     afterEach(async () => {
@@ -172,9 +171,9 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.currentCycleRewardPool()).should.bignumber.equal(previousBalance.add(amountBN));
     }
 
-    const waitForCycle = async () => {
-        const numEpochs = Math.floor(CYCLE_DURATION / (1 * day));
-        await increaseTime(CYCLE_DURATION);
+    const waitForCycle = async (seconds=CYCLE_DURATION) => {
+        const numEpochs = Math.floor(seconds / (1 * day));
+        await increaseTime(seconds);
         for (let i = 0; i < numEpochs; i++) {
             await waitForEpoch(dnr);
         }
