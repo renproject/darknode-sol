@@ -127,6 +127,24 @@ contract("DarknodePayment", (accounts: string[]) => {
         await multiWithdraw(startDarknode, numDarknodes);
     });
 
+    it("cannot withdraw more than once in a cycle", async () => {
+        const rewards = new BN("300000000000000000");
+        await deposit(rewards);
+        await tick(darknode1);
+        // Change the epoch
+        await waitForCycle();
+
+        // Claim rewards for past cycle
+        await tick(darknode1);
+
+        // First withdraw should pass
+        await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
+
+        // Rest should fail
+        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+    });
+
     const tick = async (address) => {
         return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.tick({ from: address }));
     }
