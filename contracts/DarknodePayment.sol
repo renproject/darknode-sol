@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./CompatibleERC20.sol";
 import "./DarknodeRegistry.sol";
+import "./DarknodeBlacklist.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
 contract DarknodePayment {
@@ -15,6 +16,8 @@ contract DarknodePayment {
     address public daiContractAddress; // Passed in as a constructor parameter.
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
+
+    DarknodeBlacklist public darknodeBlacklist; // Passed in as a constructor parameter.
 
     // Mapping from cycle -> address -> hasTicked
     mapping(uint256 => mapping(address => bool)) public darknodeTicked;
@@ -81,6 +84,12 @@ contract DarknodePayment {
         _;
     }
 
+    /// @notice Only allow darknodes which haven't been blacklisted
+    modifier notBlacklisted() {
+        require(!darknodeBlacklist.isBlacklisted(msg.sender), "darknode is blacklisted");
+        _;
+    }
+
     /// @notice The contract constructor.
     /// Starts the current cycle using the time of deploy and the current
     /// epoch according to the darknode registry
@@ -93,11 +102,13 @@ contract DarknodePayment {
         string _VERSION,
         address _daiAddress,
         DarknodeRegistry _darknodeRegistry,
+        DarknodeBlacklist _darknodeBlacklist,
         uint256 _cycleDuration
     ) public {
         VERSION = _VERSION;
         daiContractAddress = _daiAddress;
         darknodeRegistry = _darknodeRegistry;
+        darknodeBlacklist = _darknodeBlacklist;
         cycleDuration = _cycleDuration * 1 days;
 
         // Start the current cycle
@@ -136,7 +147,7 @@ contract DarknodePayment {
 
     /// @notice Sets the darknode as active in order to be paid a portion of fees
     /// and allocates the rewards for the previous cycle to the calling darknode
-    function tick() external onlyDarknode notYetTicked {
+    function tick() external onlyDarknode notYetTicked notBlacklisted {
         address darknode = msg.sender;
 
         // Tick for the current cycle
