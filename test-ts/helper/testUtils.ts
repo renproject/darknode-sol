@@ -44,6 +44,20 @@ export const randomAddress = (): string => {
     return web3.utils.toChecksumAddress(randomBytes(20));
 };
 
+export const increaseTime = async (seconds: number) => {
+    await new Promise((resolve, reject) => {
+        web3.currentProvider.send(
+            { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 },
+            (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(value);
+            }
+        );
+    });
+};
+
 export async function waitForEpoch(dnr: DarknodeRegistryContract) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
     while (true) {

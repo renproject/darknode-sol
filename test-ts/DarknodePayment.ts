@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch,
+    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime,
 } from "./helper/testUtils";
 
 
@@ -14,6 +14,11 @@ const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifac
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+
+const hour = 60 * 60;
+const day = 24 * hour;
+
+const CYCLE_DURATION = 1 * day;
 
 contract("DarknodePayment", (accounts: string[]) => {
 
@@ -39,14 +44,14 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnr.register(accounts[i], PUBK(i), { from: accounts[i] });
         }
 
-        // Wait for epochs
-        await waitForEpoch(dnr);
-        await waitForEpoch(dnr);
+        // Wait for two cycles/epochs for darknodes to be registered
+        await waitForCycle()
+        await waitForCycle()
     });
 
     afterEach(async () => {
-        // Call an epoch to reset tick status
-        await waitForEpoch(dnr);
+        // Call a new cycle to reset tick status
+        await waitForCycle();
     });
 
     it("cannot deposit with ETH attached", async () => {
@@ -63,39 +68,38 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("can be paid DAI from a payee", async () => {
-        const previousBalance = new BN(await dnp.currentEpochRewardPool());
+        const previousBalance = new BN(await dnp.currentCycleRewardPool());
         previousBalance.should.bignumber.equal(new BN(0));
         await deposit("100000000000000000");
     });
 
     it("can withdraw DAI out of contract", async () => {
         // There should be a positive amount in the reward pool
-        (new BN(await dnp.currentEpochRewardPool()).gt(new BN(0))).should.be.true;
+        (new BN(await dnp.currentCycleRewardPool()).gt(new BN(0))).should.be.true;
 
         // We should have zero claimed balance before ticking
         (new BN(await dnp.darknodeBalances(darknode1))).should.bignumber.equal(new BN(0));
 
         // Tick twice to allocate rewards
         await tick(darknode1);
-        await waitForEpoch(dnr);
-        await dnp.fetchAndUpdateCurrentEpochHash();
+        await waitForCycle();
 
-        // There should be nothing in the reward pool
-        (new BN(await dnp.currentEpochRewardPool())).should.bignumber.equal(new BN(0));
+        // There should be nothing left in the reward pool
+        (new BN(await dnp.currentCycleRewardPool())).should.bignumber.equal(new BN(0));
 
         await tick(darknode1);
 
         await withdraw(darknode1);
     })
 
-    it("cannot call tick twice in the same epoch", async () => {
+    it("cannot call tick twice in the same cycle", async () => {
         await tick(darknode1);
         await tick(darknode1).should.be.rejectedWith(null, /already ticked/);
     })
 
-    it("can tick again after an epoch has passed", async () => {
+    it("can tick again after a cycle has passed", async () => {
         await tick(darknode1);
-        await waitForEpoch(dnr);
+        await waitForCycle();
         await tick(darknode1).should.not.be.rejectedWith(null, /already ticked/);
     })
 
@@ -109,7 +113,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         await multiTick(startDarknode, numDarknodes);
         // Change the epoch
-        await waitForEpoch(dnr);
+        await waitForCycle();
 
         // Claim rewards for past epoch
         await multiTick(startDarknode, numDarknodes);
@@ -123,7 +127,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     const tick = async (address) => {
-        return dnp.fetchAndUpdateCurrentEpochHash().then(() => dnp.tick({ from: address }));
+        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.tick({ from: address }));
     }
 
     const multiTick = async (start=1, numberOfDarknodes=1) => {
@@ -158,12 +162,21 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const deposit = async (amount) => {
         const amountBN = new BN(amount);
-        const previousBalance = new BN(await dnp.currentEpochRewardPool());
+        const previousBalance = new BN(await dnp.currentCycleRewardPool());
         // Approve the contract to use DAI
         await dai.approve(dnp.address, amountBN);
         await dnp.deposit(amountBN);
         // We should expect the DAI balance to have increased by what we deposited
-        (await dnp.currentEpochRewardPool()).should.bignumber.equal(previousBalance.add(amountBN));
+        (await dnp.currentCycleRewardPool()).should.bignumber.equal(previousBalance.add(amountBN));
+    }
+
+    const waitForCycle = async () => {
+        const numEpochs = Math.floor(CYCLE_DURATION / (1 * day));
+        await increaseTime(CYCLE_DURATION);
+        for (let i = 0; i < numEpochs; i++) {
+            await waitForEpoch(dnr);
+        }
+        await dnp.fetchAndUpdateCurrentCycle();
     }
 
 });
