@@ -10,6 +10,8 @@ import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/d
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
+import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
+
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
@@ -18,7 +20,7 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegist
 const hour = 60 * 60;
 const day = 24 * hour;
 
-const CYCLE_DURATION = 1 * day;
+const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
 contract("DarknodePayment", (accounts: string[]) => {
 

@@ -68,7 +68,7 @@ module.exports = async function (deployer, network) {
             VERSION_STRING,
             DAIToken.address,
             DarknodeRegistry.address,
-            1,
+            config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(async () => {
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
