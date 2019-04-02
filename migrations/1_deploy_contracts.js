@@ -1,5 +1,6 @@
 const DAIToken = artifacts.require("DAIToken");
 const RepublicToken = artifacts.require("RepublicToken");
+const DarknodeBlacklist = artifacts.require("DarknodeBlacklist");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -64,10 +65,16 @@ module.exports = async function (deployer, network) {
             Orderbook.address,
         ))
         .then(() => deployer.deploy(
+            DarknodeBlacklist,
+            VERSION_STRING,
+            DarknodeRegistry.address,
+        ))
+        .then(() => deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
             DAIToken.address,
             DarknodeRegistry.address,
+            DarknodeBlacklist.address,
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(async () => {

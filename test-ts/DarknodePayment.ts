@@ -7,6 +7,7 @@ import {
 
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeBlacklistArtifact, DarknodeBlacklistContract } from "./bindings/darknode_blacklist";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
@@ -15,6 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
+const DarknodeBlacklist = artifacts.require("DarknodeBlacklist") as DarknodeBlacklistArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 const hour = 60 * 60;
@@ -27,15 +29,18 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
+    let dnb: DarknodeBlacklistContract;
     let ren: RepublicTokenContract;
 
     const darknode1 = accounts[1];
+    const darknode2 = accounts[2];
 
     before(async () => {
         ren = await RepublicToken.deployed();
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
+        dnb = await DarknodeBlacklist.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -143,6 +148,19 @@ contract("DarknodePayment", (accounts: string[]) => {
         // Rest should fail
         await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
         await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+    });
+
+    it("cannot tick if it is blacklisted", async () => {
+        // Should succeed if not blacklisted
+        await tick(darknode2);
+
+        await dnb.blacklist(darknode2);
+
+        // Change the epoch
+        await waitForCycle();
+
+        // Tick should fail
+        await tick(darknode2).should.be.rejectedWith(null, /darknode is blacklisted/);
     });
 
     const tick = async (address) => {
