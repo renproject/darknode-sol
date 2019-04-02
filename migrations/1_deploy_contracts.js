@@ -68,6 +68,7 @@ module.exports = async function (deployer, network) {
             VERSION_STRING,
             DAIToken.address,
             DarknodeRegistry.address,
+            1,
         ))
         .then(async () => {
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);

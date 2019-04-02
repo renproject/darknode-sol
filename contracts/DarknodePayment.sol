@@ -17,22 +17,32 @@ contract DarknodePayment {
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
-    // Mapping from epoch -> address -> hasTicked
+    // Mapping from cycle -> address -> hasTicked
     mapping(uint256 => mapping(address => bool)) public darknodeTicked;
 
-    // Mapping from epoch -> totalNumberOfTicks
+    // Mapping from cycle -> totalNumberOfTicks
     mapping(uint256 => uint256) public totalDarknodeTicks;
 
     // Mapping from darknodeAddress -> accountBalance
     mapping(address => uint256) public darknodeBalances;
 
-    // The hash of the current epoch
-    uint256 public currentEpochHash;
+    // The current cycle epoch hash
+    uint256 public currentCycle;
 
-    // The rewards from last epoch locked up for darknodes to claim
-    uint256 public previousEpochRewardPool;
-    // The amount that each darknode was rewarded last epoch
-    uint256 public previousEpochRewardShare;
+    // Timestamps of current and next cycle
+    uint256 public currentCycleStartTime;
+    uint256 public nextCycleStartTime;
+
+    // The previous cycle epoch hash
+    uint256 public previousCycle;
+
+    // The length of a cycle in seconds
+    uint256 public cycleDuration;
+
+    // The rewards from last cycle locked up for darknodes to claim
+    uint256 public previousCycleRewardPool;
+    // The amount that each darknode was rewarded last cycle
+    uint256 public previousCycleRewardShare;
     // The amount that has been claimed by darknodes but not yet withdrawn
     uint256 public rewardsClaimed;
 
@@ -48,9 +58,16 @@ contract DarknodePayment {
 
     /// @notice Emitted when darknode calls the tick function
     /// @param _darknode The address of the darknode which ticked
-    /// @param _epoch The current epoch hash
-    /// @param _totalTicks The total number of ticks for this epoch
-    event LogDarknodeTick(address _darknode, uint256 _epoch, uint256 _totalTicks);
+    /// @param _cycle The current cycle
+    /// @param _totalTicks The total number of ticks for this cycle
+    event LogDarknodeTick(address _darknode, uint256 _cycle, uint256 _totalTicks);
+
+    /// @notice Emitted when a new cycle happens
+    /// @param _newCycle The new, current cycle
+    /// @param _lastCycle The previous cycle
+    /// @param _lastCycleRewardPool The total reward pool last cycle
+    /// @param _lastCycleTicks The total number of ticks for the last cycle
+    event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _lastCycleRewardPool, uint256 _lastCycleTicks);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode() {
@@ -60,24 +77,35 @@ contract DarknodePayment {
 
     /// @notice Only allow darknodes which haven't already ticked
     modifier notYetTicked() {
-        (uint256 dnrCurrentEpochHash, ) = darknodeRegistry.currentEpoch();
-        require(!darknodeTicked[dnrCurrentEpochHash][msg.sender], "already ticked");
+        uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
+        require(!darknodeTicked[fetchedCurrentCycle][msg.sender], "already ticked");
         _;
     }
 
     /// @notice The contract constructor.
+    /// Starts the current cycle using the time of deploy and the current
+    /// epoch according to the darknode registry
     ///
     /// @param _VERSION A string defining the contract version.
     /// @param _daiAddress The address of the DAI token contract.
     /// @param _darknodeRegistry The address of the Darknode Registry contract
+    /// @param _cycleDuration The time between each cycle in days
     constructor(
         string _VERSION,
         address _daiAddress,
-        DarknodeRegistry _darknodeRegistry
+        DarknodeRegistry _darknodeRegistry,
+        uint256 _cycleDuration
     ) public {
         VERSION = _VERSION;
         daiContractAddress = _daiAddress;
         darknodeRegistry = _darknodeRegistry;
+        cycleDuration = _cycleDuration * 1 days;
+
+        // Start the current cycle
+        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
+        currentCycle = dnrCurrentEpoch;
+        currentCycleStartTime = now;
+        nextCycleStartTime = currentCycleStartTime + cycleDuration;
     }
 
     /// @notice Deposits DAI into the contract to be paid to the Darknodes
@@ -89,11 +117,11 @@ contract DarknodePayment {
         emit LogPaymentReceived(msg.sender, receivedValue);
     }
 
-    /// @notice The current balance of the contract available as reward for the current epoch.
-    function currentEpochRewardPool() external view returns (uint256) {
+    /// @notice The current balance of the contract available as reward for the current cycle
+    function currentCycleRewardPool() external view returns (uint256) {
         uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
         // Lock up the reward for darknodes to claim
-        return currentBalance - previousEpochRewardPool - rewardsClaimed;
+        return currentBalance - previousCycleRewardPool - rewardsClaimed;
     }
 
     /// @notice Transfers to the calling darknode the amount of DAI allocated to it as reward.
@@ -108,53 +136,54 @@ contract DarknodePayment {
     }
 
     /// @notice Sets the darknode as active in order to be paid a portion of fees
-    /// and allocates the rewards for the previous epoch to the calling darknode
+    /// and allocates the rewards for the previous cycle to the calling darknode
     function tick() external onlyDarknode notYetTicked {
         address darknode = msg.sender;
 
-        // Tick for the current epoch
-        uint256 currentEpoch = fetchAndUpdateCurrentEpochHash();
-        darknodeTicked[currentEpoch][darknode] = true;
-        totalDarknodeTicks[currentEpoch]++;
-        emit LogDarknodeTick(darknode, currentEpoch, totalDarknodeTicks[currentEpoch]);
+        // Tick for the current cycle
+        uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
+        darknodeTicked[fetchedCurrentCycle][darknode] = true;
+        totalDarknodeTicks[fetchedCurrentCycle]++;
+        emit LogDarknodeTick(darknode, fetchedCurrentCycle, totalDarknodeTicks[fetchedCurrentCycle]);
 
-        // Claim rewards allocated for last epoch
-        (uint256 previousEpochHash, uint256 previousEpochBlockNumber) = darknodeRegistry.previousEpoch();
-        // Allocate rewards only if _darknode was active last epoch
-        if (previousEpochBlockNumber != 0 && darknodeTicked[previousEpochHash][darknode]) {
-            // Set them as inactive for last epoch to avoid potential double reclaims
-            // FIXME: Is this statement actually necessary since tick() can only be called once per epoch anyway?
-            darknodeTicked[previousEpochHash][darknode] = false;
-
-            darknodeBalances[darknode] += previousEpochRewardShare;
-            rewardsClaimed += previousEpochRewardShare;
-            previousEpochRewardPool -= previousEpochRewardShare;
+        // Claim rewards allocated for last cycle
+        // Allocate rewards only if _darknode was active last cycle
+        if (previousCycle != 0 && darknodeTicked[previousCycle][darknode]) {
+            darknodeBalances[darknode] += previousCycleRewardShare;
+            rewardsClaimed += previousCycleRewardShare;
+            previousCycleRewardPool -= previousCycleRewardShare;
         }
     }
 
-    /// @notice Returns the current epoch according to the DarknodeRegistry contract.
-    /// If the epoch has changed, it will update the previousEpochRewardPool and previousEpochRewardShare.
+    /// @notice Returns the current cycle according to if sufficient time has passed.
+    /// If the cycle has changed, it will update the previousCycleRewardPool and previousCycleRewardShare.
     /// This function is called by tick(). To avoid darknodes from having to pay the cost for the
-    /// change in epoch, this function should ideally be called as a part of DarknodeRegistry.epoch().
-    function fetchAndUpdateCurrentEpochHash() public returns (uint256) {
-        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
-        // If the epoch has changed
-        if (currentEpochHash != dnrCurrentEpoch) {
-            (uint256 dnrPreviousEpochHash, ) = darknodeRegistry.previousEpoch();
-            if (totalDarknodeTicks[dnrPreviousEpochHash] == 0) {
-                previousEpochRewardPool = 0;
-                previousEpochRewardShare = 0;
+    /// change in cycle, this function should ideally be called as a part of DarknodeRegistry.epoch().
+    function fetchAndUpdateCurrentCycle() public returns (uint256) {
+        // If the cycle has changed
+        if (now >= nextCycleStartTime) {
+            (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
+            require(dnrCurrentEpoch != currentCycle, "cycle should have changed");
+
+            if (totalDarknodeTicks[currentCycle] == 0) {
+                previousCycleRewardPool = 0;
+                previousCycleRewardShare = 0;
             } else {
                 // Lock up the current balance for darknode reward allocation
                 uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-                previousEpochRewardPool = currentBalance - rewardsClaimed;
-                previousEpochRewardShare = previousEpochRewardPool / totalDarknodeTicks[dnrPreviousEpochHash];
+                previousCycleRewardPool = currentBalance - rewardsClaimed;
+                previousCycleRewardShare = previousCycleRewardPool / totalDarknodeTicks[currentCycle];
             }
 
-            // Update the epoch
-            currentEpochHash = dnrCurrentEpoch;
+            // Update the cycle
+            previousCycle = currentCycle;
+            currentCycle = dnrCurrentEpoch;
+            currentCycleStartTime = nextCycleStartTime;
+            nextCycleStartTime += cycleDuration;
+
+            emit LogNewCycle(currentCycle, previousCycle, previousCycleRewardPool, totalDarknodeTicks[previousCycle]);
         }
-        return dnrCurrentEpoch;
+        return currentCycle;
     }
 
 }
