@@ -1,13 +1,14 @@
 pragma solidity ^0.4.25;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./CompatibleERC20.sol";
 import "./DarknodeRegistry.sol";
-import "./DarknodeBlacklist.sol";
+import "./DarknodeJudge.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
-contract DarknodePayment {
+contract DarknodePayment is Ownable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for CompatibleERC20;
 
@@ -17,13 +18,10 @@ contract DarknodePayment {
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
-    DarknodeBlacklist public darknodeBlacklist; // Passed in as a constructor parameter.
+    DarknodeJudge public darknodeJudge; // Passed in as a constructor parameter.
 
-    // Mapping from cycle -> address -> hasTicked
-    mapping(uint256 => mapping(address => bool)) public darknodeTicked;
-
-    // Mapping from cycle -> totalNumberOfTicks
-    mapping(uint256 => uint256) public totalDarknodeTicks;
+    // Mapping from cycle -> address -> hasClaimedRewards
+    mapping(uint256 => mapping(address => bool)) public rewardClaimed;
 
     // Mapping from darknodeAddress -> accountBalance
     mapping(address => uint256) public darknodeBalances;
@@ -45,8 +43,9 @@ contract DarknodePayment {
     uint256 public previousCycleRewardPool;
     // The amount that each darknode was rewarded last cycle
     uint256 public previousCycleRewardShare;
+
     // The amount that has been claimed by darknodes but not yet withdrawn
-    uint256 public rewardsClaimed;
+    uint256 private rewardsClaimed;
 
     /// @notice Emitted when a payment was made to the contract
     /// @param _payer The address of who made the payment
@@ -58,18 +57,12 @@ contract DarknodePayment {
     /// @param _value The amount of DAI withdrawn
     event LogDarknodeWithdrew(address _payee, uint256 _value);
 
-    /// @notice Emitted when darknode calls the tick function
-    /// @param _darknode The address of the darknode which ticked
-    /// @param _cycle The current cycle
-    /// @param _totalTicks The total number of ticks for this cycle
-    event LogDarknodeTick(address _darknode, uint256 _cycle, uint256 _totalTicks);
-
     /// @notice Emitted when a new cycle happens
     /// @param _newCycle The new, current cycle
     /// @param _lastCycle The previous cycle
     /// @param _lastCycleRewardPool The total reward pool last cycle
-    /// @param _lastCycleTicks The total number of ticks for the last cycle
-    event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _lastCycleRewardPool, uint256 _lastCycleTicks);
+    /// @param _lastCycleTicks The total share allocated to each darknode for the last cycle
+    event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _lastCycleRewardPool, uint256 _lastCycleRewardShare);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode() {
@@ -77,16 +70,9 @@ contract DarknodePayment {
         _;
     }
 
-    /// @notice Only allow darknodes which haven't already ticked
-    modifier notYetTicked() {
-        uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
-        require(!darknodeTicked[fetchedCurrentCycle][msg.sender], "already ticked");
-        _;
-    }
-
-    /// @notice Only allow darknodes which haven't been blacklisted
+    /// @notice Only allow darknodes which haven't been Judgeed
     modifier notBlacklisted() {
-        require(!darknodeBlacklist.isBlacklisted(msg.sender), "darknode is blacklisted");
+        require(!darknodeJudge.isBlacklisted(msg.sender), "darknode is blacklisted");
         _;
     }
 
@@ -102,13 +88,13 @@ contract DarknodePayment {
         string _VERSION,
         address _daiAddress,
         DarknodeRegistry _darknodeRegistry,
-        DarknodeBlacklist _darknodeBlacklist,
+        DarknodeJudge _darknodeJudge,
         uint256 _cycleDuration
     ) public {
         VERSION = _VERSION;
         daiContractAddress = _daiAddress;
         darknodeRegistry = _darknodeRegistry;
-        darknodeBlacklist = _darknodeBlacklist;
+        darknodeJudge = _darknodeJudge;
         cycleDuration = _cycleDuration * 1 days;
 
         // Start the current cycle
@@ -135,7 +121,7 @@ contract DarknodePayment {
     }
 
     /// @notice Transfers to the calling darknode the amount of DAI allocated to it as reward.
-    function withdraw() external {
+    function withdraw() external onlyDarknode {
         uint256 amount = darknodeBalances[msg.sender];
         require(amount > 0, "nothing to withdraw");
 
@@ -147,21 +133,24 @@ contract DarknodePayment {
 
     /// @notice Sets the darknode as active in order to be paid a portion of fees
     /// and allocates the rewards for the previous cycle to the calling darknode
-    function tick() external onlyDarknode notYetTicked notBlacklisted {
+    function tick() external onlyDarknode notBlacklisted {
         address darknode = msg.sender;
-
-        // Tick for the current cycle
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
-        darknodeTicked[fetchedCurrentCycle][darknode] = true;
-        totalDarknodeTicks[fetchedCurrentCycle]++;
-        emit LogDarknodeTick(darknode, fetchedCurrentCycle, totalDarknodeTicks[fetchedCurrentCycle]);
 
-        // Claim rewards allocated for last cycle
-        // Allocate rewards only if _darknode was active last cycle
-        if (previousCycle != 0 && darknodeTicked[previousCycle][darknode]) {
-            darknodeBalances[darknode] += previousCycleRewardShare;
-            rewardsClaimed += previousCycleRewardShare;
-            previousCycleRewardPool -= previousCycleRewardShare;
+        if (darknodeJudge.darknodeWhitelist(darknode) == fetchedCurrentCycle) {
+            // Can't claim rewards until next cycle
+            return;            
+        }
+
+        // The darknode hasn't been whitelisted before
+        if (darknodeJudge.darknodeWhitelist(darknode) == 0) {
+            darknodeJudge.whitelist(darknode, fetchedCurrentCycle);
+            return;
+        }
+
+        // Claim share of rewards allocated for last cycle
+        if (previousCycle != 0) {
+            privateClaimDarknodeReward(darknode);
         }
     }
 
@@ -172,28 +161,59 @@ contract DarknodePayment {
     function fetchAndUpdateCurrentCycle() public returns (uint256) {
         // If the cycle has changed
         if (now >= nextCycleStartTime) {
-            (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
-            require(dnrCurrentEpoch != currentCycle, "cycle should have changed");
-
-            if (totalDarknodeTicks[currentCycle] == 0) {
-                previousCycleRewardPool = 0;
-                previousCycleRewardShare = 0;
-            } else {
-                // Lock up the current balance for darknode reward allocation
-                uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
-                previousCycleRewardPool = currentBalance - rewardsClaimed;
-                previousCycleRewardShare = previousCycleRewardPool / totalDarknodeTicks[currentCycle];
-            }
-
-            // Update the cycle
-            previousCycle = currentCycle;
-            currentCycle = dnrCurrentEpoch;
-            currentCycleStartTime = nextCycleStartTime;
-            nextCycleStartTime += cycleDuration;
-
-            emit LogNewCycle(currentCycle, previousCycle, previousCycleRewardPool, totalDarknodeTicks[previousCycle]);
+            privateUpdateCycle();
         }
         return currentCycle;
+    }
+
+
+    /// @notice Blacklists a darknode from participating in future rewards.
+    /// Remaining rewards are allocated to the darknode before the black list occurs.
+    /// Only the owner of the DarknodePayment contract can call this function.
+    ///
+    /// @param _addr The address of the darknode to blacklist
+    function blacklist(address _addr) external onlyOwner {
+        // Allocate their remaining rewards before blacklisting them
+        if (!rewardClaimed[previousCycle][_addr]) {
+            privateClaimDarknodeReward(_addr);
+        }
+        darknodeJudge.blacklist(_addr);
+    }
+
+    /// @notice Changes the current cycle
+    function privateUpdateCycle() private {
+        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
+        require(dnrCurrentEpoch != currentCycle, "cycle should have changed");
+
+        if (darknodeJudge.whitelistTotal() == 0) {
+            previousCycleRewardPool = 0;
+            previousCycleRewardShare = 0;
+        } else {
+            // Lock up the current balance for darknode reward allocation
+            uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
+            previousCycleRewardPool = currentBalance - rewardsClaimed;
+            previousCycleRewardShare = previousCycleRewardPool / darknodeJudge.whitelistTotal();
+        }
+
+        // Update the cycle
+        previousCycle = currentCycle;
+        currentCycle = dnrCurrentEpoch;
+        currentCycleStartTime = nextCycleStartTime;
+        nextCycleStartTime += cycleDuration;
+
+        // Update pending whitelist/blacklist numbers
+        darknodeJudge.update();
+
+        emit LogNewCycle(currentCycle, previousCycle, previousCycleRewardPool, previousCycleRewardShare);
+    }
+
+    function privateClaimDarknodeReward(address _addr) private {
+        require(!rewardClaimed[previousCycle][_addr], "reward already claimed");
+        rewardClaimed[previousCycle][_addr] = true;
+
+        darknodeBalances[_addr] += previousCycleRewardShare;
+        rewardsClaimed += previousCycleRewardShare;
+        previousCycleRewardPool -= previousCycleRewardShare;
     }
 
 }
