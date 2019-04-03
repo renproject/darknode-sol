@@ -34,6 +34,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const darknode1 = accounts[1];
     const darknode2 = accounts[2];
+    const darknode3 = accounts[3];
 
     before(async () => {
         ren = await RepublicToken.deployed();

@@ -76,7 +76,7 @@ contract DarknodePayment is Ownable {
         _;
     }
 
-    /// @notice Only allow darknodes which haven't been Judgeed
+    /// @notice Only allow darknodes which haven't been blacklisted
     modifier notBlacklisted() {
         require(!darknodeJudge.isBlacklisted(msg.sender), "darknode is blacklisted");
         _;
@@ -151,7 +151,7 @@ contract DarknodePayment is Ownable {
 
         // The darknode hasn't been whitelisted before
         if (darknodeJudge.darknodeWhitelist(darknode) == 0) {
-            darknodeJudge.whitelist(darknode, fetchedCurrentCycle);
+            privateWhitelistDarknode(darknode);
             return;
         }
 
@@ -185,6 +185,10 @@ contract DarknodePayment is Ownable {
             privateClaimDarknodeReward(_addr);
         }
         darknodeJudge.blacklist(_addr);
+    }
+
+    function whitelist(address _darknode) external onlyOwner {
+        privateWhitelistDarknode(_darknode);
     }
 
     /// @notice Changes the current cycle
@@ -224,6 +228,11 @@ contract DarknodePayment is Ownable {
         previousCycleRewardPool -= previousCycleRewardShare;
 
         emit LogDarknodeClaim(_addr, previousCycleRewardShare, darknodeBalances[_addr]);
+    }
+
+    function privateWhitelistDarknode(address _darknode) private {
+        uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
+        darknodeJudge.whitelist(_darknode, fetchedCurrentCycle);
     }
 
 }

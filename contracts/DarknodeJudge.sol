@@ -47,8 +47,9 @@ contract DarknodeJudge is Ownable {
     event LogDarknodeWhitelisted(address _darknode, uint256 _cycle, uint256 _time);
 
     /// @notice Emitted when a darknode is updated
-    /// @param _total The total number of whitelisted darknodes
-    event LogDarknodeWhitelistUpdated(uint256 _total);
+    /// @param _oldTotal The previous total number of whitelisted darknodes
+    /// @param _newTotal The new total number of whitelisted darknodes
+    event LogDarknodeWhitelistUpdated(uint256 _oldTotal, uint256 _newTotal);
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _addr) {
@@ -97,8 +98,8 @@ contract DarknodeJudge is Ownable {
     /// @param _addr The darknode to be whitelisted
     /// @param _cycle The cycle in which the darknode was whitelisted
     function whitelist(address _addr, uint256 _cycle) external onlyDarknodePayment onlyDarknode(_addr) {
-        require(!isBlacklisted[_addr], "darknode blacklisted");
-        require(!isWhitelisted(_addr), "darknode already whitelisted");
+        require(!isBlacklisted[_addr], "darknode is blacklisted");
+        require(!isWhitelisted(_addr), "already whitelisted");
 
         darknodeWhitelist[_addr] = _cycle;
         pendingWhitelist += 1;
@@ -107,12 +108,15 @@ contract DarknodeJudge is Ownable {
 
     /// @notice Updates the total number of whitelisted darknodes
     function update() external onlyDarknodePayment {
+        uint256 oldTotal = whitelistTotal;
         whitelistTotal += (pendingWhitelist - pendingBlacklist);
 
         pendingWhitelist = 0;
         pendingBlacklist = 0;
 
-        emit LogDarknodeWhitelistUpdated(whitelistTotal);
+        if (oldTotal != whitelistTotal) {
+            emit LogDarknodeWhitelistUpdated(oldTotal, whitelistTotal);
+        }
     }
 
     /// @notice Removes a blacklisted darknode from the blacklist
