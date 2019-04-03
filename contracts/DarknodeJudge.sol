@@ -42,7 +42,7 @@ contract DarknodeJudge is Ownable {
 
     /// @notice Emitted when a darknode is whitelisted to receive rewards
     /// @param _darknode The address of the darknode which was whitelisted
-    /// @param _darknode The cycle in which the darknode was whitelisted
+    /// @param _cycle The cycle in which the darknode was whitelisted
     /// @param _time The time at which the darknode was whitelisted
     event LogDarknodeWhitelisted(address _darknode, uint256 _cycle, uint256 _time);
 
