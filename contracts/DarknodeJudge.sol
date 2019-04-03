@@ -58,7 +58,7 @@ contract DarknodeJudge is Ownable {
 
     /// @notice Only allow the Darknode Payment contract.
     modifier onlyDarknodePayment() {
-        require(darknodePayment == msg.sender, "must be darknode payment");
+        require(darknodePayment == msg.sender, "not DarknodePayment contract");
         _;
     }
 
