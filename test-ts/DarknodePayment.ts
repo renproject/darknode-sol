@@ -29,7 +29,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let dnb: DarknodeJudgeContract;
+    let dnj: DarknodeJudgeContract;
     let ren: RepublicTokenContract;
 
     const darknode1 = accounts[1];
@@ -40,7 +40,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
-        dnb = await DarknodeJudge.deployed();
+        dnj = await DarknodeJudge.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -114,7 +114,6 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("should evenly split reward pool between ticked darknodes", async () => {
-        const previouslyWhitelistedDarknodes = 1;
         const numDarknodes = 3;
 
         // Start from number 2 to avoid previous balances
@@ -137,7 +136,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await multiTick(startDarknode, numDarknodes);
 
         for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-            (new BN(await dnp.darknodeBalances(accounts[i]))).should.bignumber.equal(rewards.div(new BN(numDarknodes + previouslyWhitelistedDarknodes)));
+            (new BN(await dnp.darknodeBalances(accounts[i]))).should.bignumber.equal(rewards.div(new BN(await dnj.whitelistTotal())));
         }
 
         // Withdraw for each darknode
