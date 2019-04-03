@@ -57,6 +57,12 @@ contract DarknodePayment is Ownable {
     /// @param _value The amount of DAI withdrawn
     event LogDarknodeWithdrew(address _payee, uint256 _value);
 
+    /// @notice Emitted when a darknode claims their share of reward
+    /// @param _darknode The darknode which claimed
+    /// @param _share The share that was claimed
+    /// @param _balance The balance of that darknode
+    event LogDarknodeClaim(address _darknode, uint256 _share, uint256 _balance);
+
     /// @notice Emitted when a new cycle happens
     /// @param _newCycle The new, current cycle
     /// @param _lastCycle The previous cycle
@@ -210,11 +216,14 @@ contract DarknodePayment is Ownable {
 
     function privateClaimDarknodeReward(address _addr) private {
         require(!rewardClaimed[previousCycle][_addr], "reward already claimed");
+        require(previousCycleRewardPool >= previousCycleRewardShare, "insufficient contract balance");
         rewardClaimed[previousCycle][_addr] = true;
 
         darknodeBalances[_addr] += previousCycleRewardShare;
         rewardsClaimed += previousCycleRewardShare;
         previousCycleRewardPool -= previousCycleRewardShare;
+
+        emit LogDarknodeClaim(_addr, previousCycleRewardShare, darknodeBalances[_addr]);
     }
 
 }

@@ -46,6 +46,10 @@ contract DarknodeJudge is Ownable {
     /// @param _time The time at which the darknode was whitelisted
     event LogDarknodeWhitelisted(address _darknode, uint256 _cycle, uint256 _time);
 
+    /// @notice Emitted when a darknode is updated
+    /// @param _total The total number of whitelisted darknodes
+    event LogDarknodeWhitelistUpdated(uint256 _total);
+
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _addr) {
         require(darknodeRegistry.isRegistered(_addr), "not a registered darknode");
@@ -102,14 +106,13 @@ contract DarknodeJudge is Ownable {
     }
 
     /// @notice Updates the total number of whitelisted darknodes
-    ///
-    /// @param _addr The darknode to be whitelisted
-    /// @param _cycle The cycle in which the darknode was whitelisted
     function update() external onlyDarknodePayment {
         whitelistTotal += (pendingWhitelist - pendingBlacklist);
 
         pendingWhitelist = 0;
         pendingBlacklist = 0;
+
+        emit LogDarknodeWhitelistUpdated(whitelistTotal);
     }
 
     /// @notice Removes a blacklisted darknode from the blacklist
@@ -124,14 +127,17 @@ contract DarknodeJudge is Ownable {
 
     /// @notice Allow the contract owner to update the DarknodePayment contract
     /// address.
-    /// @param _address The new DarknodePayment contract address.
+    /// @param _addr The new DarknodePayment contract address.
     function updateDarknodePayment(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
         darknodePayment = _addr;
     }
 
+    /// @notice Checks to see if a darknode is whitelisted
+    /// @param _addr The address of the darknode
+    /// @return true if the darknode is whitelisted
     function isWhitelisted(address _addr) public view returns (bool) {
-        return darknodeWhitelist[_addr] == 0;
+        return darknodeWhitelist[_addr] != 0;
     }
 
 }
