@@ -61,7 +61,7 @@ contract DarknodePayment is Ownable {
     /// @param _newCycle The new, current cycle
     /// @param _lastCycle The previous cycle
     /// @param _lastCycleRewardPool The total reward pool last cycle
-    /// @param _lastCycleTicks The total share allocated to each darknode for the last cycle
+    /// @param _lastCycleRewardShare The total share allocated to each darknode for the last cycle
     event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _lastCycleRewardPool, uint256 _lastCycleRewardShare);
 
     /// @notice Only allow registered dark nodes.
@@ -131,9 +131,10 @@ contract DarknodePayment is Ownable {
         emit LogDarknodeWithdrew(msg.sender, amount);
     }
 
-    /// @notice Sets the darknode as active in order to be paid a portion of fees
-    /// and allocates the rewards for the previous cycle to the calling darknode
-    function tick() external onlyDarknode notBlacklisted {
+    /// @notice Claims the rewards allocated to the darknode last cycle and increments
+    /// the darknode balances. Whitelists the darknode if it hasn't already been
+    /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
+    function claim() external onlyDarknode notBlacklisted {
         address darknode = msg.sender;
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
 
@@ -156,7 +157,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Returns the current cycle according to if sufficient time has passed.
     /// If the cycle has changed, it will update the previousCycleRewardPool and previousCycleRewardShare.
-    /// This function is called by tick(). To avoid darknodes from having to pay the cost for the
+    /// This function is called by claim(). To avoid darknodes from having to pay the cost for the
     /// change in cycle, this function should ideally be called as a part of DarknodeRegistry.epoch().
     function fetchAndUpdateCurrentCycle() public returns (uint256) {
         // If the cycle has changed
