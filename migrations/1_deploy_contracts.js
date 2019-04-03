@@ -1,6 +1,6 @@
 const DAIToken = artifacts.require("DAIToken");
 const RepublicToken = artifacts.require("RepublicToken");
-const DarknodeBlacklist = artifacts.require("DarknodeBlacklist");
+const DarknodeJudge = artifacts.require("DarknodeJudge");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -65,7 +65,7 @@ module.exports = async function (deployer, network) {
             Orderbook.address,
         ))
         .then(() => deployer.deploy(
-            DarknodeBlacklist,
+            DarknodeJudge,
             VERSION_STRING,
             DarknodeRegistry.address,
         ))
@@ -74,10 +74,15 @@ module.exports = async function (deployer, network) {
             VERSION_STRING,
             DAIToken.address,
             DarknodeRegistry.address,
-            DarknodeBlacklist.address,
+            DarknodeJudge.address,
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(async () => {
+            // Update DarknodePayment address
+            const darknodeJudge = await DarknodeJudge.at(DarknodeJudge.address);
+            await darknodeJudge.updateDarknodePayment(DarknodePayment.address);
+
+            // Update slasher address
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
             await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
         });

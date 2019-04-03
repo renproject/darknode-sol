@@ -7,7 +7,7 @@ import {
 
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeBlacklistArtifact, DarknodeBlacklistContract } from "./bindings/darknode_blacklist";
+import { DarknodeJudgeArtifact, DarknodeJudgeContract } from "./bindings/darknode_judge";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
@@ -16,7 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
-const DarknodeBlacklist = artifacts.require("DarknodeBlacklist") as DarknodeBlacklistArtifact;
+const DarknodeJudge = artifacts.require("DarknodeJudge") as DarknodeJudgeArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 const hour = 60 * 60;
@@ -29,7 +29,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let dnb: DarknodeBlacklistContract;
+    let dnb: DarknodeJudgeContract;
     let ren: RepublicTokenContract;
 
     const darknode1 = accounts[1];
@@ -40,7 +40,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
-        dnb = await DarknodeBlacklist.deployed();
+        dnb = await DarknodeJudge.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -66,7 +66,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("cannot tick if not registered", async () => {
-        await dnp.tick().should.be.rejectedWith(null, /not a registered darknode/);
+        await dnp.claim().should.be.rejectedWith(null, /not a registered darknode/);
     })
 
     it("cannot withdraw if there is no balance", async () => {
@@ -86,7 +86,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         // We should have zero claimed balance before ticking
         (new BN(await dnp.darknodeBalances(darknode1))).should.bignumber.equal(new BN(0));
 
-        // Tick twice to allocate rewards
+        // Tick once to whitelist
+        await tick(darknode1);
+        await waitForCycle();
+
+        // Tick a second time to participate in rewards
         await tick(darknode1);
         await waitForCycle();
 
@@ -100,23 +104,31 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("cannot call tick twice in the same cycle", async () => {
         await tick(darknode1);
-        await tick(darknode1).should.be.rejectedWith(null, /already ticked/);
+        await tick(darknode1).should.be.rejectedWith(null, /reward already claimed/);
     })
 
     it("can tick again after a cycle has passed", async () => {
         await tick(darknode1);
         await waitForCycle();
-        await tick(darknode1).should.not.be.rejectedWith(null, /already ticked/);
+        await tick(darknode1).should.not.be.rejectedWith(null, /reward already claimed/);
     })
 
     it("should evenly split reward pool between ticked darknodes", async () => {
-        const rewards = new BN("300000000000000000");
+        const previouslyWhitelistedDarknodes = 1;
         const numDarknodes = 3;
 
         // Start from number 2 to avoid previous balances
         const startDarknode = 2;
+
+        // Whitelist
+        await multiTick(startDarknode, numDarknodes);
+        // Change the epoch
+        await waitForCycle();
+
+        const rewards = new BN("300000000000000000");
         await deposit(rewards);
 
+        // Participate in rewards
         await multiTick(startDarknode, numDarknodes);
         // Change the epoch
         await waitForCycle();
@@ -125,7 +137,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await multiTick(startDarknode, numDarknodes);
 
         for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-            (new BN(await dnp.darknodeBalances(accounts[i]))).should.bignumber.equal(rewards.div(new BN(numDarknodes)));
+            (new BN(await dnp.darknodeBalances(accounts[i]))).should.bignumber.equal(rewards.div(new BN(numDarknodes + previouslyWhitelistedDarknodes)));
         }
 
         // Withdraw for each darknode
@@ -154,7 +166,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         // Should succeed if not blacklisted
         await tick(darknode2);
 
-        await dnb.blacklist(darknode2);
+        await dnp.blacklist(darknode2);
 
         // Change the epoch
         await waitForCycle();
@@ -164,7 +176,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     const tick = async (address) => {
-        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.tick({ from: address }));
+        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim({ from: address }));
     }
 
     const multiTick = async (start=1, numberOfDarknodes=1) => {
