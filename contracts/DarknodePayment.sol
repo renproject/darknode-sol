@@ -18,7 +18,11 @@ contract DarknodePayment is Ownable {
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
+    // Tracks which Darknodes are blacklisted and which ones are whitelisted
     DarknodeJudge public darknodeJudge; // Passed in as a constructor parameter.
+
+    // The address which can call blacklist(), whitelist()
+    address public darknodeJury;
 
     // Mapping from cycle -> address -> hasClaimedRewards
     mapping(uint256 => mapping(address => bool)) public rewardClaimed;
@@ -82,6 +86,12 @@ contract DarknodePayment is Ownable {
         _;
     }
 
+    /// @notice Only allow the Darknode Payment contract.
+    modifier onlyJury() {
+        require(darknodeJury == msg.sender, "not the jury");
+        _;
+    }
+
     /// @notice The contract constructor.
     /// Starts the current cycle using the time of deploy and the current
     /// epoch according to the darknode registry
@@ -102,6 +112,8 @@ contract DarknodePayment is Ownable {
         darknodeRegistry = _darknodeRegistry;
         darknodeJudge = _darknodeJudge;
         cycleDuration = _cycleDuration * 1 days;
+        // Default to the owner
+        darknodeJury = msg.sender;
 
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
@@ -186,16 +198,20 @@ contract DarknodePayment is Ownable {
     /// Remaining rewards are allocated to the darknode before the black list occurs.
     /// Only the owner of the DarknodePayment contract can call this function.
     ///
-    /// @param _addr The address of the darknode to blacklist
-    function blacklist(address _addr) external onlyOwner {
+    /// @param _darknode The address of the darknode to blacklist
+    function blacklist(address _darknode) external onlyJury {
         // Allocate their remaining rewards before blacklisting them
-        if (!rewardClaimed[previousCycle][_addr]) {
-            privateClaimDarknodeReward(_addr);
+        if (!rewardClaimed[previousCycle][_darknode]) {
+            privateClaimDarknodeReward(_darknode);
         }
-        darknodeJudge.blacklist(_addr);
+        darknodeJudge.blacklist(_darknode);
     }
 
-    function whitelist(address _darknode) external onlyOwner {
+    function unBlacklist(address _darknode) external onlyJury {
+        darknodeJudge.unBlacklist(_darknode);
+    }
+
+    function whitelist(address _darknode) external onlyJury {
         privateWhitelistDarknode(_darknode);
     }
 
@@ -240,6 +256,14 @@ contract DarknodePayment is Ownable {
     function privateWhitelistDarknode(address _darknode) private {
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
         darknodeJudge.whitelist(_darknode, fetchedCurrentCycle);
+    }
+
+    /// @notice Allow the contract owner to update the darknodeJury address
+    /// address.
+    /// @param _addr The new darknodeJury contract address.
+    function updateDarknodeJury(address _addr) external onlyOwner {
+        require(_addr != 0x0, "invalid contract address");
+        darknodeJury = _addr;
     }
 
 }
