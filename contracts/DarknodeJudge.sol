@@ -79,31 +79,31 @@ contract DarknodeJudge is Ownable {
 
     /// @notice Blacklists a darknode from receiving rewards
     ///
-    /// @param _addr The darknode to be blacklisted
-    function blacklist(address _addr) external onlyDarknodePayment onlyDarknode(_addr) {
-        require(!isBlacklisted[_addr], "already blacklisted");
+    /// @param _darknode The darknode to be blacklisted
+    function blacklist(address _darknode) external onlyDarknodePayment onlyDarknode(_darknode) {
+        require(!isBlacklisted[_darknode], "already blacklisted");
 
-        if (isWhitelisted(_addr)) {
+        if (isWhitelisted(_darknode)) {
             pendingBlacklist += 1;
-            darknodeWhitelist[_addr] = 0;
+            darknodeWhitelist[_darknode] = 0;
         }
         
-        isBlacklisted[_addr] = true;
+        isBlacklisted[_darknode] = true;
 
-        emit LogDarknodeBlacklisted(_addr, now);
+        emit LogDarknodeBlacklisted(_darknode, now);
     }
 
     /// @notice Whitelist a darknode to receive rewards
     ///
-    /// @param _addr The darknode to be whitelisted
+    /// @param _darknode The darknode to be whitelisted
     /// @param _cycle The cycle in which the darknode was whitelisted
-    function whitelist(address _addr, uint256 _cycle) external onlyDarknodePayment onlyDarknode(_addr) {
-        require(!isBlacklisted[_addr], "darknode is blacklisted");
-        require(!isWhitelisted(_addr), "already whitelisted");
+    function whitelist(address _darknode, uint256 _cycle) external onlyDarknodePayment onlyDarknode(_darknode) {
+        require(!isBlacklisted[_darknode], "darknode is blacklisted");
+        require(!isWhitelisted(_darknode), "already whitelisted");
 
-        darknodeWhitelist[_addr] = _cycle;
+        darknodeWhitelist[_darknode] = _cycle;
         pendingWhitelist += 1;
-        emit LogDarknodeWhitelisted(_addr, _cycle, now);
+        emit LogDarknodeWhitelisted(_darknode, _cycle, now);
     }
 
     /// @notice Updates the total number of whitelisted darknodes

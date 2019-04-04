@@ -32,6 +32,7 @@ contract("DarknodeJudge", (accounts: string[]) => {
     let dnj: DarknodeJudgeContract;
     let ren: RepublicTokenContract;
 
+    const owner = accounts[0];
     const darknode1 = accounts[1];
     const darknode2 = accounts[2];
     const darknode3 = accounts[3];
@@ -62,36 +63,70 @@ contract("DarknodeJudge", (accounts: string[]) => {
         await waitForCycle();
     });
 
+    it("cannot blacklist invalid addresses", async () => {
+        const invalidAddress = "0x0"
+        await dnj.isBlacklisted(invalidAddress).should.eventually.be.false;
+        await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /not a registered darknode/);
+        await dnj.isBlacklisted(owner).should.eventually.be.false;
+        await dnp.blacklist(owner).should.be.rejectedWith(null, /not a registered darknode/);
+    })
+
+    it("cannot transfer contract ownership to an invalid addresses", async () => {
+        const invalidAddress = "0x0"
+        await dnj.updateDarknodePayment(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
+    })
+
+    it("it should reject white/blacklist attempts from non-DNP contract", async () => {
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnj.blacklist(darknode1).should.be.rejectedWith(null, /not DarknodePayment contract/);
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnj.isWhitelisted(darknode1).should.eventually.be.false;
+        await dnj.whitelist(darknode1, new BN(1)).should.be.rejectedWith(null, /not DarknodePayment contract/);
+        await dnj.isWhitelisted(darknode1).should.eventually.be.false;
+    })
+
     it("can blacklist darknodes", async () => {
-        dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
         await dnp.blacklist(darknode1);
-        dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
     })
 
     it("cannot blacklist already blacklisted darknodes", async () => {
-        dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
         await dnp.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
     })
 
     it("cannot whitelist blacklisted darknodes", async () => {
-        dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
         await dnp.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
         await dnp.whitelist(darknode1).should.be.rejectedWith(null, /darknode is blacklisted/);
+    })
+
+    it("can unblacklist blacklisted darknodes", async () => {
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await dnj.unBlacklist(darknode1).should.not.be.rejectedWith(null, /not in blacklist/);
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+    })
+
+    it("cannot unblacklist non-blacklisted darknodes", async () => {
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnj.unBlacklist(darknode1).should.be.rejectedWith(null, /not in blacklist/);
     })
 
     it("can whitelist darknodes", async () => {
         await waitForCycle();
         new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(0));
-        dnj.isWhitelisted(darknode2).should.eventually.be.false;
+        await dnj.isWhitelisted(darknode2).should.eventually.be.false;
         await dnp.whitelist(darknode2);
-        dnj.isWhitelisted(darknode2).should.eventually.be.true;
+        await dnj.isWhitelisted(darknode2).should.eventually.be.true;
         await waitForCycle();
         new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(1));
     })
 
     it("cannot whitelist already whitelisted darknodes", async () => {
         new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(1));
-        dnj.isWhitelisted(darknode2).should.eventually.be.true;
+        await dnj.isWhitelisted(darknode2).should.eventually.be.true;
         await dnp.whitelist(darknode2).should.be.rejectedWith(null, /already whitelisted/);
     })
 
