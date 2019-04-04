@@ -126,14 +126,23 @@ contract DarknodePayment is Ownable {
         return currentBalance - previousCycleRewardPool - rewardsClaimed;
     }
 
-    /// @notice Transfers to the calling darknode the amount of DAI allocated to it as reward.
-    function withdraw() external onlyDarknode {
-        uint256 amount = darknodeBalances[msg.sender];
+    /// @notice Withdraw fees earned by a Darknode. The fees will be sent to
+    /// the owner of the Darknode.
+    ///
+    /// @param _darknode The address of the Darknode whose fees are being
+    ///        withdrawn. The owner of this Darknode will receive the fees.
+
+    function withdraw(address _darknode) external {
+        uint256 amount = darknodeBalances[_darknode];
         require(amount > 0, "nothing to withdraw");
 
-        darknodeBalances[msg.sender] = 0;
+        address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
+        require(darknodeOwner != 0x0, "invalid darknode owner");
+
+        darknodeBalances[_darknode] = 0;
         rewardsClaimed -= amount;
-        CompatibleERC20(daiContractAddress).safeTransfer(msg.sender, amount);
+
+        CompatibleERC20(daiContractAddress).safeTransfer(darknodeOwner, amount);
         emit LogDarknodeWithdrew(msg.sender, amount);
     }
 
