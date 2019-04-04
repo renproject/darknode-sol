@@ -77,6 +77,13 @@ contract DarknodeJudge is Ownable {
         darknodeRegistry = _darknodeRegistry;
     }
 
+    /// @notice Checks to see if a darknode is whitelisted
+    /// @param _addr The address of the darknode
+    /// @return true if the darknode is whitelisted
+    function isWhitelisted(address _addr) public view returns (bool) {
+        return darknodeWhitelist[_addr] != 0;
+    }
+
     /// @notice Blacklists a darknode from receiving rewards
     ///
     /// @param _darknode The darknode to be blacklisted
@@ -91,6 +98,16 @@ contract DarknodeJudge is Ownable {
         isBlacklisted[_darknode] = true;
 
         emit LogDarknodeBlacklisted(_darknode, now);
+    }
+
+    /// @notice Removes a blacklisted darknode from the blacklist
+    ///
+    /// @param _addr The darknode to be unblacklisted
+    function unBlacklist(address _addr) external onlyDarknodePayment onlyDarknode(_addr) {
+        require(isBlacklisted[_addr], "not in blacklist");
+
+        isBlacklisted[_addr] = false;
+        emit LogDarknodeUnBlacklisted(_addr, now);
     }
 
     /// @notice Whitelist a darknode to receive rewards
@@ -119,29 +136,12 @@ contract DarknodeJudge is Ownable {
         }
     }
 
-    /// @notice Removes a blacklisted darknode from the blacklist
-    ///
-    /// @param _addr The darknode to be unblacklisted
-    function unBlacklist(address _addr) external onlyDarknode(_addr) onlyOwner {
-        require(isBlacklisted[_addr], "not in blacklist");
-
-        isBlacklisted[_addr] = false;
-        emit LogDarknodeUnBlacklisted(_addr, now);
-    }
-
     /// @notice Allow the contract owner to update the DarknodePayment contract
     /// address.
     /// @param _addr The new DarknodePayment contract address.
     function updateDarknodePayment(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
         darknodePayment = _addr;
-    }
-
-    /// @notice Checks to see if a darknode is whitelisted
-    /// @param _addr The address of the darknode
-    /// @return true if the darknode is whitelisted
-    function isWhitelisted(address _addr) public view returns (bool) {
-        return darknodeWhitelist[_addr] != 0;
     }
 
 }
