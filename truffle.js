@@ -7,7 +7,7 @@ module.exports = {
     },
   },
   mocha: {
-    // // Use with `truffle develop`, not with `npm run coverage`
+    // // Use with `npm run test`, not with `npm run coverage`
     // reporter: 'eth-gas-reporter',
     // reporterOptions: {
     //   currency: 'USD',
