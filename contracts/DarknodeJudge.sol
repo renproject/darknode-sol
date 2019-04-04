@@ -14,7 +14,7 @@ contract DarknodeJudge is Ownable {
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
-    address public darknodePayment; // Contract that can call update
+    address public darknodePayment; // Contract that can call blacklist, unblacklist, whitelist, update
 
     // The current total of whitelisted darknodes
     uint256 public whitelistTotal;
