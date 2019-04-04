@@ -216,6 +216,12 @@ contract("DarknodePayment", (accounts: string[]) => {
         newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
     });
 
+    it("should error when epoch hasn't changed but time has passed", async () => {
+        await dnp.fetchAndUpdateCurrentCycle();
+        await increaseTime(CYCLE_DURATION);
+        await dnp.fetchAndUpdateCurrentCycle().should.be.rejectedWith(null, /cycle should have changed/);
+    })
+
     const tick = async (address) => {
         return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim({ from: address }));
     }
