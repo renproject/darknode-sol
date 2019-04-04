@@ -143,22 +143,21 @@ contract DarknodePayment is Ownable {
     function claim() external onlyDarknode notBlacklisted {
         address darknode = msg.sender;
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
+        uint256 whitelistedCycle = darknodeJudge.darknodeWhitelist(darknode);
 
-        if (darknodeJudge.darknodeWhitelist(darknode) == fetchedCurrentCycle) {
+        if (whitelistedCycle == fetchedCurrentCycle) {
             // Can't claim rewards until next cycle
             return;            
         }
 
         // The darknode hasn't been whitelisted before
-        if (darknodeJudge.darknodeWhitelist(darknode) == 0) {
+        if (whitelistedCycle == 0) {
             privateWhitelistDarknode(darknode);
             return;
         }
 
         // Claim share of rewards allocated for last cycle
-        if (previousCycle != 0) {
-            privateClaimDarknodeReward(darknode);
-        }
+        privateClaimDarknodeReward(darknode);
     }
 
     /// @notice Returns the current cycle according to if sufficient time has passed.
@@ -220,7 +219,6 @@ contract DarknodePayment is Ownable {
 
     function privateClaimDarknodeReward(address _addr) private {
         require(!rewardClaimed[previousCycle][_addr], "reward already claimed");
-        require(previousCycleRewardPool >= previousCycleRewardShare, "insufficient contract balance");
         rewardClaimed[previousCycle][_addr] = true;
 
         darknodeBalances[_addr] += previousCycleRewardShare;
