@@ -59,6 +59,8 @@ contract("DarknodePayment", (accounts: string[]) => {
     afterEach(async () => {
         // Call a new cycle to reset tick status
         await waitForCycle();
+        // Call a new cycle to reset tick status
+        await waitForCycle();
     });
 
     it("cannot deposit with ETH attached", async () => {
@@ -77,10 +79,8 @@ contract("DarknodePayment", (accounts: string[]) => {
     it("can be paid DAI from a payee", async () => {
         const previousBalance = new BN(await dnp.currentCycleRewardPool());
         previousBalance.should.bignumber.equal(new BN(0));
-        await deposit("100000000000000000");
-    });
-
-    it("can withdraw DAI out of contract", async () => {
+        const amount = new BN("100000000000000000");
+        await deposit(amount);
         // There should be a positive amount in the reward pool
         (new BN(await dnp.currentCycleRewardPool()).gt(new BN(0))).should.be.true;
 
@@ -89,17 +89,26 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         // Tick once to whitelist
         await tick(darknode1);
+        // Attempts to whitelist again during the same cycle should do nothing
+        await tick(darknode1);
         await waitForCycle();
 
         // Tick a second time to participate in rewards
         await tick(darknode1);
         await waitForCycle();
 
+        // Tick a third time to claim rewards
+        await tick(darknode1);
+        await waitForCycle();
         // There should be nothing left in the reward pool
         (new BN(await dnp.currentCycleRewardPool())).should.bignumber.equal(new BN(0));
+        const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1));
+        darknode1Balance.should.bignumber.equal(amount);
+    });
 
-        await tick(darknode1);
-
+    it("darknodes can withdraw DAI out of contract", async () => {
+        const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1));
+        darknode1Balance.gt(new BN(0)).should.be.true;
         await withdraw(darknode1);
     })
 
@@ -142,17 +151,23 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         // Withdraw for each darknode
         await multiWithdraw(startDarknode, numDarknodes);
+
+        // claim rewards for darknode1
+        await tick(darknode1);
     });
 
     it("cannot withdraw more than once in a cycle", async () => {
+        const numDarknodes = 4;
+        new BN(await dnj.whitelistTotal()).should.bignumber.equal(numDarknodes);
+
         const rewards = new BN("300000000000000000");
         await deposit(rewards);
-        await tick(darknode1);
+        await multiTick(1, numDarknodes);
         // Change the epoch
         await waitForCycle();
 
         // Claim rewards for past cycle
-        await tick(darknode1);
+        await multiTick(1, numDarknodes);
 
         // First withdraw should pass
         await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
@@ -173,6 +188,32 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         // Tick should fail
         await tick(darknode2).should.be.rejectedWith(null, /darknode is blacklisted/);
+    });
+
+    it("can still claim previous cycle rewards when blacklisted", async () => {
+        // Change the epoch
+        await waitForCycle();
+        // Change the epoch
+        await waitForCycle();
+        // Add rewards into the next cycle's pool
+        (await dnj.isWhitelisted(darknode3)).should.be.true;
+        const previousBalances = (new BN(await dnp.darknodeBalances(darknode3)));
+
+        const rewards = new BN("300000000000000000");
+        await deposit(rewards);
+        // Change the epoch
+        await waitForCycle();
+
+        // Claim the rewards for the pool
+        await tick(darknode3);
+
+        const rewardSplit = new BN(await dnj.whitelistTotal());
+
+        // Claim rewards for past cycle
+        await dnp.blacklist(darknode3);
+
+        const newBalances = (new BN(await dnp.darknodeBalances(darknode3)));
+        newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
     });
 
     const tick = async (address) => {
