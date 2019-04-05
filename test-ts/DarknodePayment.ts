@@ -73,7 +73,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("cannot withdraw if there is no balance", async () => {
-        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
     })
 
     it("can be paid DAI from a payee", async () => {
@@ -106,7 +106,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         darknode1Balance.should.bignumber.equal(amount);
     });
 
-    it("darknodes can withdraw DAI out of contract", async () => {
+    it("can pay out DAI when darknodes withdraw", async () => {
         const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1));
         darknode1Balance.gt(new BN(0)).should.be.true;
         await withdraw(darknode1);
@@ -156,6 +156,12 @@ contract("DarknodePayment", (accounts: string[]) => {
         await tick(darknode1);
     });
 
+    it("cannot withdraw if a darknode owner is invalid", async () => {
+        await dnp.withdraw("0x0").should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+        // accounts[0] is not a registered darknode
+        await dnp.withdraw(accounts[0]).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+    })
+
     it("cannot withdraw more than once in a cycle", async () => {
         const numDarknodes = 4;
         new BN(await dnj.whitelistTotal()).should.bignumber.equal(numDarknodes);
@@ -173,8 +179,8 @@ contract("DarknodePayment", (accounts: string[]) => {
         await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
 
         // Rest should fail
-        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
-        await dnp.withdraw({ from: darknode1 }).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
     });
 
     it("cannot tick if it is blacklisted", async () => {
@@ -222,6 +228,23 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.fetchAndUpdateCurrentCycle().should.be.rejectedWith(null, /cycle should have changed/);
     })
 
+    it("should revert if unauthorized to call blacklist or whitelist", async () => {
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not the jury/);
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+    })
+
+    it("can update the jury address", async () => {
+        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await dnp.updateDarknodeJury(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
+        await dnp.blacklist(darknode1, { from: accounts[2] }).should.not.be.rejectedWith(null, /not the jury/);
+        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
+    })
+
+    it("cannot update the jury address to an invalid address", async () => {
+        await dnp.updateDarknodeJury("0x0").should.be.rejectedWith(null, /invalid contract address/);
+    })
+
     const tick = async (address) => {
         return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim({ from: address }));
     }
@@ -239,7 +262,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         const oldDAIBalance = new BN(await dai.balanceOf(address));
 
-        await dnp.withdraw({ from: address });
+        await dnp.withdraw(address);
 
         // Our balances should have increased
         const newDAIBalance = new BN(await dai.balanceOf(address));

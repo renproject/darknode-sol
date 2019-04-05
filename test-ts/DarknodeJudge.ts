@@ -76,7 +76,7 @@ contract("DarknodeJudge", (accounts: string[]) => {
         await dnj.updateDarknodePayment(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
     })
 
-    it("it should reject white/blacklist attempts from non-DNP contract", async () => {
+    it("should reject white/blacklist attempts from non-DNP contract", async () => {
         await dnj.isBlacklisted(darknode1).should.eventually.be.false;
         await dnj.blacklist(darknode1).should.be.rejectedWith(null, /not DarknodePayment contract/);
         await dnj.isBlacklisted(darknode1).should.eventually.be.false;
@@ -105,13 +105,13 @@ contract("DarknodeJudge", (accounts: string[]) => {
 
     it("can unblacklist blacklisted darknodes", async () => {
         await dnj.isBlacklisted(darknode1).should.eventually.be.true;
-        await dnj.unBlacklist(darknode1).should.not.be.rejectedWith(null, /not in blacklist/);
+        await dnp.unBlacklist(darknode1).should.not.be.rejectedWith(null, /not in blacklist/);
         await dnj.isBlacklisted(darknode1).should.eventually.be.false;
     })
 
     it("cannot unblacklist non-blacklisted darknodes", async () => {
         await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnj.unBlacklist(darknode1).should.be.rejectedWith(null, /not in blacklist/);
+        await dnp.unBlacklist(darknode1).should.be.rejectedWith(null, /not in blacklist/);
     })
 
     it("can whitelist darknodes", async () => {
