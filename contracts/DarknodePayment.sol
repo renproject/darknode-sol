@@ -145,11 +145,11 @@ contract DarknodePayment is Ownable {
     ///        withdrawn. The owner of this Darknode will receive the fees.
 
     function withdraw(address _darknode) external {
-        uint256 amount = darknodeBalances[_darknode];
-        require(amount > 0, "nothing to withdraw");
-
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
         require(darknodeOwner != 0x0, "invalid darknode owner");
+
+        uint256 amount = darknodeBalances[_darknode];
+        require(amount > 0, "nothing to withdraw");
 
         darknodeBalances[_darknode] = 0;
         rewardsClaimed -= amount;
