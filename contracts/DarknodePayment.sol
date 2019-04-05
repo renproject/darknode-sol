@@ -75,14 +75,14 @@ contract DarknodePayment is Ownable {
     event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _lastCycleRewardPool, uint256 _lastCycleRewardShare);
 
     /// @notice Only allow registered dark nodes.
-    modifier onlyDarknode() {
-        require(darknodeRegistry.isRegistered(msg.sender), "not a registered darknode");
+    modifier onlyDarknode(address _darknode) {
+        require(darknodeRegistry.isRegistered(_darknode), "not a registered darknode");
         _;
     }
 
     /// @notice Only allow darknodes which haven't been blacklisted
-    modifier notBlacklisted() {
-        require(!darknodeJudge.isBlacklisted(msg.sender), "darknode is blacklisted");
+    modifier notBlacklisted(address _darknode) {
+        require(!darknodeJudge.isBlacklisted(_darknode), "darknode is blacklisted");
         _;
     }
 
@@ -161,10 +161,9 @@ contract DarknodePayment is Ownable {
     /// @notice Claims the rewards allocated to the darknode last cycle and increments
     /// the darknode balances. Whitelists the darknode if it hasn't already been
     /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
-    function claim() external onlyDarknode notBlacklisted {
-        address darknode = msg.sender;
+    function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
-        uint256 whitelistedCycle = darknodeJudge.darknodeWhitelist(darknode);
+        uint256 whitelistedCycle = darknodeJudge.darknodeWhitelist(_darknode);
 
         if (whitelistedCycle == fetchedCurrentCycle) {
             // Can't claim rewards until next cycle
@@ -173,12 +172,12 @@ contract DarknodePayment is Ownable {
 
         // The darknode hasn't been whitelisted before
         if (whitelistedCycle == 0) {
-            privateWhitelistDarknode(darknode);
+            privateWhitelistDarknode(_darknode);
             return;
         }
 
         // Claim share of rewards allocated for last cycle
-        privateClaimDarknodeReward(darknode);
+        privateClaimDarknodeReward(_darknode);
     }
 
     /// @notice Returns the current cycle according to if sufficient time has passed.

@@ -69,7 +69,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("cannot tick if not registered", async () => {
-        await dnp.claim().should.be.rejectedWith(null, /not a registered darknode/);
+        await dnp.claim(accounts[0]).should.be.rejectedWith(null, /not a registered darknode/);
     })
 
     it("cannot withdraw if there is no balance", async () => {
@@ -246,7 +246,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     const tick = async (address) => {
-        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim({ from: address }));
+        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim(address));
     }
 
     const multiTick = async (start=1, numberOfDarknodes=1) => {
