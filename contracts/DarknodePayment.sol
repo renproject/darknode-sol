@@ -195,8 +195,8 @@ contract DarknodePayment is Ownable {
 
 
     /// @notice Blacklists a darknode from participating in future rewards.
-    /// Remaining rewards are allocated to the darknode before the black list occurs.
-    /// Only the owner of the DarknodePayment contract can call this function.
+    /// Remaining rewards are allocated to the darknode before the blacklist occurs.
+    /// Only the darknodeJury can call this function.
     ///
     /// @param _darknode The address of the darknode to blacklist
     function blacklist(address _darknode) external onlyJury {
@@ -207,10 +207,18 @@ contract DarknodePayment is Ownable {
         darknodeJudge.blacklist(_darknode);
     }
 
+    /// @notice Removes a darknode from the blacklist.
+    /// Only the darknodeJury can call this function.
+    ///
+    /// @param _darknode The address of the darknode to unblacklist
     function unBlacklist(address _darknode) external onlyJury {
         darknodeJudge.unBlacklist(_darknode);
     }
 
+    /// @notice Manually whitelists a darknode for rewards.
+    /// Only the darknodeJury can call this function.
+    ///
+    /// @param _darknode The address of the darknode to whitelist
     function whitelist(address _darknode) external onlyJury {
         privateWhitelistDarknode(_darknode);
     }
