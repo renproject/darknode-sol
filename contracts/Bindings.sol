@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "./DarknodeJudge.sol";
+import "./DarknodePayroll.sol";
 import "./DarknodePayment.sol";
 import "./DarknodeRegistry.sol";
 import "./DarknodeRewardVault.sol";

@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./CompatibleERC20.sol";
 import "./DarknodeRegistry.sol";
-import "./DarknodeJudge.sol";
+import "./DarknodePayroll.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
 contract DarknodePayment is Ownable {
@@ -19,7 +19,7 @@ contract DarknodePayment is Ownable {
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
     // Tracks which Darknodes are blacklisted and which ones are whitelisted
-    DarknodeJudge public darknodeJudge; // Passed in as a constructor parameter.
+    DarknodePayroll public darknodePayroll; // Passed in as a constructor parameter.
 
     // The address which can call blacklist(), whitelist()
     address public darknodeJury;
@@ -82,7 +82,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Only allow darknodes which haven't been blacklisted
     modifier notBlacklisted(address _darknode) {
-        require(!darknodeJudge.isBlacklisted(_darknode), "darknode is blacklisted");
+        require(!darknodePayroll.isBlacklisted(_darknode), "darknode is blacklisted");
         _;
     }
 
@@ -104,13 +104,13 @@ contract DarknodePayment is Ownable {
         string _VERSION,
         address _daiAddress,
         DarknodeRegistry _darknodeRegistry,
-        DarknodeJudge _darknodeJudge,
+        DarknodePayroll _darknodePayroll,
         uint256 _cycleDuration
     ) public {
         VERSION = _VERSION;
         daiContractAddress = _daiAddress;
         darknodeRegistry = _darknodeRegistry;
-        darknodeJudge = _darknodeJudge;
+        darknodePayroll = _darknodePayroll;
         cycleDuration = _cycleDuration * 1 days;
         // Default to the owner
         darknodeJury = msg.sender;
@@ -163,7 +163,7 @@ contract DarknodePayment is Ownable {
     /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
     function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
-        uint256 whitelistedCycle = darknodeJudge.darknodeWhitelist(_darknode);
+        uint256 whitelistedCycle = darknodePayroll.darknodeWhitelist(_darknode);
 
         if (whitelistedCycle == fetchedCurrentCycle) {
             // Can't claim rewards until next cycle
@@ -203,7 +203,7 @@ contract DarknodePayment is Ownable {
         if (!rewardClaimed[previousCycle][_darknode]) {
             privateClaimDarknodeReward(_darknode);
         }
-        darknodeJudge.blacklist(_darknode);
+        darknodePayroll.blacklist(_darknode);
     }
 
     /// @notice Removes a darknode from the blacklist.
@@ -211,7 +211,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _darknode The address of the darknode to unblacklist
     function unBlacklist(address _darknode) external onlyJury {
-        darknodeJudge.unBlacklist(_darknode);
+        darknodePayroll.unBlacklist(_darknode);
     }
 
     /// @notice Manually whitelists a darknode for rewards.
@@ -227,14 +227,14 @@ contract DarknodePayment is Ownable {
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         require(dnrCurrentEpoch != currentCycle, "cycle should have changed");
 
-        if (darknodeJudge.whitelistTotal() == 0) {
+        if (darknodePayroll.whitelistTotal() == 0) {
             previousCycleRewardPool = 0;
             previousCycleRewardShare = 0;
         } else {
             // Lock up the current balance for darknode reward allocation
             uint256 currentBalance = CompatibleERC20(daiContractAddress).balanceOf(address(this));
             previousCycleRewardPool = currentBalance - rewardsClaimed;
-            previousCycleRewardShare = previousCycleRewardPool / darknodeJudge.whitelistTotal();
+            previousCycleRewardShare = previousCycleRewardPool / darknodePayroll.whitelistTotal();
         }
 
         // Update the cycle
@@ -244,7 +244,7 @@ contract DarknodePayment is Ownable {
         nextCycleStartTime += cycleDuration;
 
         // Update pending whitelist/blacklist numbers
-        darknodeJudge.update();
+        darknodePayroll.update();
 
         emit LogNewCycle(currentCycle, previousCycle, previousCycleRewardPool, previousCycleRewardShare);
     }
@@ -262,7 +262,7 @@ contract DarknodePayment is Ownable {
 
     function privateWhitelistDarknode(address _darknode) private {
         uint256 fetchedCurrentCycle = fetchAndUpdateCurrentCycle();
-        darknodeJudge.whitelist(_darknode, fetchedCurrentCycle);
+        darknodePayroll.whitelist(_darknode, fetchedCurrentCycle);
     }
 
     /// @notice Allow the contract owner to update the darknodeJury address

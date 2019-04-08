@@ -7,7 +7,7 @@ import {
 
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeJudgeArtifact, DarknodeJudgeContract } from "./bindings/darknode_judge";
+import { DarknodePayrollArtifact, DarknodePayrollContract } from "./bindings/darknode_payroll";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
@@ -16,7 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
-const DarknodeJudge = artifacts.require("DarknodeJudge") as DarknodeJudgeArtifact;
+const DarknodePayroll = artifacts.require("DarknodePayroll") as DarknodePayrollArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 const hour = 60 * 60;
@@ -24,12 +24,12 @@ const day = 24 * hour;
 
 const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
-contract("DarknodeJudge", (accounts: string[]) => {
+contract.only("DarknodePayroll", (accounts: string[]) => {
 
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let dnj: DarknodeJudgeContract;
+    let dnj: DarknodePayrollContract;
     let ren: RepublicTokenContract;
 
     const owner = accounts[0];
@@ -42,7 +42,7 @@ contract("DarknodeJudge", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
-        dnj = await DarknodeJudge.deployed();
+        dnj = await DarknodePayroll.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]

@@ -5,9 +5,9 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
 
-/// @notice DarknodeJudge is responsible for whitelisting darknodes for rewards
+/// @notice DarknodePayroll is responsible for whitelisting darknodes for rewards
 /// and blacklisting darknodes who misbehave
-contract DarknodeJudge is Ownable {
+contract DarknodePayroll is Ownable {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
