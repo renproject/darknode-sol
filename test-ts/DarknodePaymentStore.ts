@@ -7,7 +7,7 @@ import {
 
 import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bindings/darknode_payment_store";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodePayrollArtifact, DarknodePayrollContract } from "./bindings/darknode_payroll";
+import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
 
@@ -16,7 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
-const DarknodePayroll = artifacts.require("DarknodePayroll") as DarknodePayrollArtifact;
+const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 const hour = 60 * 60;
@@ -29,7 +29,7 @@ contract("DarknodePaymentStore", (accounts: string[]) => {
     let dnp: DarknodePaymentStoreContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let payroll: DarknodePayrollContract;
+    let payroll: DarknodePaymentContract;
     let ren: RepublicTokenContract;
 
     const darknode1 = accounts[1];
@@ -41,7 +41,7 @@ contract("DarknodePaymentStore", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePaymentStore.deployed();
-        payroll = await DarknodePayroll.deployed();
+        payroll = await DarknodePayment.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]

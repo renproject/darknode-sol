@@ -1,7 +1,7 @@
 const DAIToken = artifacts.require("DAIToken");
 const RepublicToken = artifacts.require("RepublicToken");
-const DarknodePayroll = artifacts.require("DarknodePayroll");
 const DarknodePayment = artifacts.require("DarknodePayment");
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
@@ -65,21 +65,21 @@ module.exports = async function (deployer, network) {
             Orderbook.address,
         ))
         .then(() => deployer.deploy(
-            DarknodePayroll,
+            DarknodePayment,
             VERSION_STRING,
             DarknodeRegistry.address,
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(() => deployer.deploy(
-            DarknodePayment,
+            DarknodePaymentStore,
             VERSION_STRING,
-            DarknodePayroll.address,
+            DarknodePayment.address,
         ))
         .then(async () => {
-            // Update DarknodePayment address
-            const darknodePayroll = await DarknodePayroll.at(DarknodePayroll.address);
-            await darknodePayroll.updateDarknodePayment(DarknodePayment.address);
-            await darknodePayroll.registerToken(DAIToken.address);
+            // Update DarknodePaymentStore address
+            const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+            await darknodePayment.updateDarknodePaymentStore(DarknodePaymentStore.address);
+            await darknodePayment.registerToken(DAIToken.address);
 
             // Update slasher address
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);

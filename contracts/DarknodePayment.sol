@@ -6,9 +6,9 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./DarknodeRegistry.sol";
 import "./CompatibleERC20.sol";
 
-/// @notice DarknodePayroll is responsible for whitelisting darknodes for rewards
+/// @notice DarknodePayment is responsible for whitelisting darknodes for rewards
 /// and blacklisting darknodes who misbehave
-contract DarknodePayroll is Ownable {
+contract DarknodePayment is Ownable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for CompatibleERC20;
 
@@ -77,7 +77,7 @@ contract DarknodePayroll is Ownable {
     /// @param _cycle The cycle that the darknode claimed for
     event LogDarknodeClaim(address _darknode, uint256 _cycle);
 
-    /// @notice Emitted when someone pays the DarknodePayroll contract
+    /// @notice Emitted when someone pays the DarknodePayment contract
     /// @param _payer The darknode which claimed
     /// @param _amount The cycle that the darknode claimed for
     /// @param _token The address of the token that was transferred

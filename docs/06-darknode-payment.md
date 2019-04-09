@@ -1,13 +1,13 @@
 # Paying the Darknodes
 
-There are two contracts used for paying off the darknodes. `DarknodePaymentStore` and `DarknodePayroll`.
+There are two contracts used for paying off the darknodes. `DarknodePaymentStore` and `DarknodePayment`.
 
 
-## DarknodePayroll
+## DarknodePayment
 
-The `DarknodePayroll` contract holds the funds that will be distributed to the darknodes as well as stores the balances of the darknodes and which darknodes have been black or whitelisted. It also keeps track of the current payment cycle and the reward pool and reward share for the previous cycle.
+The `DarknodePayment` contract holds the funds that will be distributed to the darknodes as well as stores the balances of the darknodes and which darknodes have been black or whitelisted. It also keeps track of the current payment cycle and the reward pool and reward share for the previous cycle.
 
-Darknodes won't usually have to interact with the `DarknodePayroll` contract. The main function for interaction is `changeCycle()` which can be called after the minimum cycle time has passed. `changeCycle()` changes the current cycle, updates the black and whitelist numbers, and most importantly snapshots the current token balances to be distributed to the darknodes.
+Darknodes won't usually have to interact with the `DarknodePayment` contract. The main function for interaction is `changeCycle()` which can be called after the minimum cycle time has passed. `changeCycle()` changes the current cycle, updates the black and whitelist numbers, and most importantly snapshots the current token balances to be distributed to the darknodes.
 
 There is an incentive for people to call the `changeCycle()` function since darknodes need to be whitelisted for a least one full cycle before they can participate in rewards. So although calling `changeCycle()` isn't a requirement, there is still an incentive to do so.
 
@@ -17,7 +17,7 @@ Rewards are divided based on the number of whitelisted darknodes during a cycle.
 
 ## Performance
 
-Currently, all functions in the `DarknodePayroll()` contract are O(1) except `claim()` and `changeCycle()` which involves iterating through a list of registered tokens.
+Currently, all functions in the `DarknodePayment()` contract are O(1) except `claim()` and `changeCycle()` which involves iterating through a list of registered tokens.
 
 ## Permissions
 
@@ -31,15 +31,15 @@ The `registerToken()`, `updateDarknodePaymentStore()`, `updateDarknodeJudge()`, 
 
 ## DarknodePaymentStore
 
-The two functions exposed by `DarknodePaymentStore` are the `withdraw()` and `claim()` functions. The `claim()` has two main roles, whitelisting the darknode, and claiming rewards for previous cycles. If the darknode that gets passed to `claim()` has not been whitelisted, the `DarknodePaymentStore` contract will call `DarknodePayroll.whitelist()`. Otherwise, it will call `DarknodePayroll.claim()` to claim for the darknode the rewards for the previous cycle.
+The two functions exposed by `DarknodePaymentStore` are the `withdraw()` and `claim()` functions. The `claim()` has two main roles, whitelisting the darknode, and claiming rewards for previous cycles. If the darknode that gets passed to `claim()` has not been whitelisted, the `DarknodePaymentStore` contract will call `DarknodePayment.whitelist()`. Otherwise, it will call `DarknodePayment.claim()` to claim for the darknode the rewards for the previous cycle.
 
-The `withdraw()` function simply calls `DarknodePayroll.transfer()`.
+The `withdraw()` function simply calls `DarknodePayment.transfer()`.
 
 
 # Questions/Considerations
 
 ## Do we want the concept of cycle, and related variables such as `previousCycleRewardPool` and `previousCycleRewardShare` to be inside the `DarknodePaymentStore` contract?
 
-Should it be deemed necessary, we want the `DarknodePaymentStore` contract to be able to be scrapped completely without losing any important information. There may be a time when we decide that the darknodes should not be paid according to who is whitelisted, nor should they be paid equally (irrespective of who actually completes the computation). We may even decide that we don't want to have the concept of cycle anymore. Although it would be important to preserve the balances of darknodes, as well as the deposited funds, it may not be necessary to preserve the concept of "cycle" inside the `DarknodePayroll` contract.
+Should it be deemed necessary, we want the `DarknodePaymentStore` contract to be able to be scrapped completely without losing any important information. There may be a time when we decide that the darknodes should not be paid according to who is whitelisted, nor should they be paid equally (irrespective of who actually completes the computation). We may even decide that we don't want to have the concept of cycle anymore. Although it would be important to preserve the balances of darknodes, as well as the deposited funds, it may not be necessary to preserve the concept of "cycle" inside the `DarknodePayment` contract.
 
-So what kind of information should we preserve in the `DarknodePaymentStore` contract (more transient) and what should we preserve in the `DarknodePayroll` contract (more permanent)?
+So what kind of information should we preserve in the `DarknodePaymentStore` contract (more transient) and what should we preserve in the `DarknodePayment` contract (more permanent)?
