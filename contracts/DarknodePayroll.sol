@@ -19,6 +19,11 @@ contract DarknodePayroll is Ownable {
     address public darknodePayment; // Contract that can call whitelist, claim
     address public darknodeJudge; // Contract that can call blacklist
 
+    // temporary values
+    address public pendingDarknodePayment;
+    address public pendingDarknodeJudge;
+    uint256 public pendingCycleDuration;
+
     // The current total of whitelisted darknodes
     uint256 public whitelistTotal;
 
@@ -95,6 +100,21 @@ contract DarknodePayroll is Ownable {
     /// @param _cycleTimeout The earliest a new cycle can be called
     event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _cycleTimeout);
 
+    /// @notice Emitted when the cycle duration changes
+    /// @param _newDuration The new duration
+    /// @param _oldDuration The old duration
+    event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
+
+    /// @notice Emitted when the DarknodePayment contract changes
+    /// @param _newDarknodePayment The new DarknodePayment
+    /// @param _oldDarknodePayment The old DarknodePayment
+    event LogDarknodePaymentChanged(address _newDarknodePayment, address _oldDarknodePayment);
+
+    /// @notice Emitted when the DarknodeJudge contract changes
+    /// @param _newDarknodeJudge The new DarknodeJudge
+    /// @param _oldDarknodeJudge The old DarknodeJudge
+    event LogDarknodeJudgeChanged(address _newDarknodeJudge, address _oldDarknodeJudge);
+
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _addr) {
         require(darknodeRegistry.isRegistered(_addr), "not a registered darknode");
@@ -128,8 +148,10 @@ contract DarknodePayroll is Ownable {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         cycleDuration = _cycleDuration * 1 days;
+        pendingCycleDuration = cycleDuration;
         // Default the judge to owner
         darknodeJudge = msg.sender;
+        pendingDarknodeJudge = darknodeJudge;
 
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
@@ -166,6 +188,19 @@ contract DarknodePayroll is Ownable {
         }
 
         // Update the cycle
+        if (pendingCycleDuration != cycleDuration) {
+            emit LogCycleDurationChanged(pendingCycleDuration, cycleDuration);
+            cycleDuration = pendingCycleDuration;
+        }
+        if (pendingDarknodeJudge != darknodeJudge) {
+            emit LogDarknodeJudgeChanged(pendingDarknodeJudge, darknodeJudge);
+            darknodeJudge = pendingDarknodeJudge;
+        }
+        if (pendingDarknodePayment != darknodePayment) {
+            emit LogDarknodePaymentChanged(pendingDarknodePayment, darknodePayment);
+            darknodePayment = pendingDarknodePayment;
+        }
+
         previousCycle = currentCycle;
         currentCycle = dnrCurrentEpoch;
         cycleTimeout = startTime + cycleDuration;
@@ -263,7 +298,7 @@ contract DarknodePayroll is Ownable {
     /// @param _addr The new DarknodePayment contract address.
     function updateDarknodePayment(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
-        darknodePayment = _addr;
+        pendingDarknodePayment = _addr;
     }
 
     /// @notice Updates the DarknodeJudge contract address.
@@ -271,14 +306,14 @@ contract DarknodePayroll is Ownable {
     /// @param _addr The new DarknodeJudge contract address.
     function updateDarknodeJudge(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
-        darknodeJudge = _addr;
+        pendingDarknodeJudge = _addr;
     }
 
     /// @notice Updates cycle duration
     ///
     /// @param _duration The time before a new cycle can be called, in days
     function updateCycleDuration(uint256 _duration) external onlyOwner {
-        cycleDuration = _duration * 1 days;
+        pendingCycleDuration = _duration * 1 days;
     }
 
     /// @notice Removes a blacklisted darknode from the blacklist

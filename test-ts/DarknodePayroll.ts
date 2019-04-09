@@ -125,11 +125,17 @@ contract("DarknodePayroll", (accounts: string[]) => {
     })
 
     it("cannot whitelist already whitelisted darknodes", async () => {
+        // We want to call whitelist directly so update the DarknodePayment contract to us
+        await payroll.updateDarknodePayment(owner);
+        await waitForCycle();
+
         new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(1));
         await payroll.isWhitelisted(darknode2).should.eventually.be.true;
-        await payroll.updateDarknodePayment(owner);
         await payroll.whitelist(darknode2).should.be.rejectedWith(null, /already whitelisted/);
+
+        // Reset the DarknodePayment contract value back
         await payroll.updateDarknodePayment(dnp.address);
+        await waitForCycle();
     })
 
     const waitForCycle = async (seconds=CYCLE_DURATION) => {
