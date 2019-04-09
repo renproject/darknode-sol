@@ -24,7 +24,7 @@ const day = 24 * hour;
 
 const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
-contract("DarknodePayment", (accounts: string[]) => {
+contract.only("DarknodePayment", (accounts: string[]) => {
 
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
