@@ -128,6 +128,8 @@ contract DarknodePayroll is Ownable {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         cycleDuration = _cycleDuration * 1 days;
+        // Default the judge to owner
+        darknodeJudge = msg.sender;
 
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
