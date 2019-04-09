@@ -12,19 +12,11 @@ contract DarknodePayment is Ownable {
 
     string public VERSION; // Passed in as a constructor parameter.
 
-    DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
-
     // Tracks which Darknodes are blacklisted and which ones are whitelisted
     DarknodePayroll public darknodePayroll; // Passed in as a constructor parameter.
 
     // mapping of darknode -> cycle -> claimed
     mapping(address => mapping(uint256 => bool)) public rewardClaimed;
-
-    /// @notice Only allow registered dark nodes.
-    modifier onlyDarknode(address _darknode) {
-        require(darknodeRegistry.isRegistered(_darknode), "not a registered darknode");
-        _;
-    }
 
     /// @notice Only allow darknodes which haven't been blacklisted
     modifier notBlacklisted(address _darknode) {
@@ -40,11 +32,9 @@ contract DarknodePayment is Ownable {
     /// @param _darknodeRegistry The address of the Darknode Registry contract
     constructor(
         string _VERSION,
-        DarknodeRegistry _darknodeRegistry,
         DarknodePayroll _darknodePayroll
     ) public {
         VERSION = _VERSION;
-        darknodeRegistry = _darknodeRegistry;
         darknodePayroll = _darknodePayroll;
     }
 
@@ -53,15 +43,14 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _darknode The address of the Darknode whose fees are being
     ///        withdrawn. The owner of this Darknode will receive the fees.
-
-    function withdraw(address _darknode, address _token) public {
+    function withdraw(address _darknode, address _token) external {
         darknodePayroll.transfer(_darknode, _token);
     }
 
     /// @notice Claims the rewards allocated to the darknode last cycle and increments
     /// the darknode balances. Whitelists the darknode if it hasn't already been
     /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
-    function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
+    function claim(address _darknode) external notBlacklisted(_darknode) {
         uint256 fetchedCurrentCycle = darknodePayroll.currentCycle();
         uint256 whitelistedCycle = darknodePayroll.darknodeWhitelist(_darknode);
 
@@ -72,7 +61,7 @@ contract DarknodePayment is Ownable {
 
         // The darknode hasn't been whitelisted before
         if (whitelistedCycle == 0) {
-            darknodePayroll.darknodeWhitelist(_darknode);
+            darknodePayroll.whitelist(_darknode);
             return;
         }
 
