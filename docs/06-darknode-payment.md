@@ -17,7 +17,7 @@ Rewards are divided based on the number of whitelisted darknodes during a cycle.
 
 ## Performance
 
-Currently, all functions in the `DarknodePayroll()` contract are O(1) except `claimI()` and `changeCycle()` which involves iterating through a list of darknodes.
+Currently, all functions in the `DarknodePayroll()` contract are O(1) except `claim()` and `changeCycle()` which involves iterating through a list of registered tokens.
 
 ## Permissions
 
