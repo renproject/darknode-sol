@@ -3,7 +3,6 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./DarknodeRegistry.sol";
 import "./DarknodePayroll.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
@@ -25,11 +24,9 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice The contract constructor.
-    /// Starts the current cycle using the time of deploy and the current
-    /// epoch according to the darknode registry
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _darknodeRegistry The address of the Darknode Registry contract
+    /// @param _darknodePayroll The address of the DarknodePayroll contract
     constructor(
         string _VERSION,
         DarknodePayroll _darknodePayroll
