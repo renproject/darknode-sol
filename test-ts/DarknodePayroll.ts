@@ -29,7 +29,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let dnj: DarknodePayrollContract;
+    let payroll: DarknodePayrollContract;
     let ren: RepublicTokenContract;
 
     const owner = accounts[0];
@@ -42,7 +42,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
-        dnj = await DarknodePayroll.deployed();
+        payroll = await DarknodePayroll.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -56,7 +56,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
         // Wait for two epochs for darknodes to be registered
         await waitForCycle(2 * day);
 
-        new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(0));
+        new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(0));
     });
 
     afterEach(async () => {
@@ -65,69 +65,71 @@ contract("DarknodePayroll", (accounts: string[]) => {
 
     it("cannot blacklist invalid addresses", async () => {
         const invalidAddress = "0x0"
-        await dnj.isBlacklisted(invalidAddress).should.eventually.be.false;
-        await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /not a registered darknode/);
-        await dnj.isBlacklisted(owner).should.eventually.be.false;
-        await dnp.blacklist(owner).should.be.rejectedWith(null, /not a registered darknode/);
+        await payroll.isBlacklisted(invalidAddress).should.eventually.be.false;
+        await payroll.blacklist(invalidAddress).should.be.rejectedWith(null, /not a registered darknode/);
+        await payroll.isBlacklisted(owner).should.eventually.be.false;
+        await payroll.blacklist(owner).should.be.rejectedWith(null, /not a registered darknode/);
     })
 
     it("cannot transfer contract ownership to an invalid addresses", async () => {
         const invalidAddress = "0x0"
-        await dnj.updateDarknodePayment(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
+        await payroll.updateDarknodePayment(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
     })
 
     it("should reject white/blacklist attempts from non-DNP contract", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnj.blacklist(darknode1).should.be.rejectedWith(null, /not DarknodePayment contract/);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnj.isWhitelisted(darknode1).should.eventually.be.false;
-        await dnj.whitelist(darknode1, new BN(1)).should.be.rejectedWith(null, /not DarknodePayment contract/);
-        await dnj.isWhitelisted(darknode1).should.eventually.be.false;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodeJudge/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.isWhitelisted(darknode1).should.eventually.be.false;
+        await payroll.whitelist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodePayment/);
+        await payroll.isWhitelisted(darknode1).should.eventually.be.false;
     })
 
     it("can blacklist darknodes", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.blacklist(darknode1);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
     })
 
     it("cannot blacklist already blacklisted darknodes", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
-        await dnp.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
     })
 
     it("cannot whitelist blacklisted darknodes", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
-        await dnp.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
-        await dnp.whitelist(darknode1).should.be.rejectedWith(null, /darknode is blacklisted/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.blacklist(darknode1).should.be.rejectedWith(null, /already blacklisted/);
+        await dnp.claim(darknode1).should.be.rejectedWith(null, /darknode is blacklisted/);
     })
 
     it("can unblacklist blacklisted darknodes", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
-        await dnp.unBlacklist(darknode1).should.not.be.rejectedWith(null, /not in blacklist/);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.unBlacklist(darknode1).should.not.be.rejectedWith(null, /not in blacklist/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
     })
 
     it("cannot unblacklist non-blacklisted darknodes", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.unBlacklist(darknode1).should.be.rejectedWith(null, /not in blacklist/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.unBlacklist(darknode1).should.be.rejectedWith(null, /not in blacklist/);
     })
 
     it("can whitelist darknodes", async () => {
         await waitForCycle();
-        new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(0));
-        await dnj.isWhitelisted(darknode2).should.eventually.be.false;
-        await dnp.whitelist(darknode2);
-        await dnj.isWhitelisted(darknode2).should.eventually.be.true;
+        new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(0));
+        await payroll.isWhitelisted(darknode2).should.eventually.be.false;
+        await dnp.claim(darknode2);
+        await payroll.isWhitelisted(darknode2).should.eventually.be.true;
         await waitForCycle();
-        new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(1));
+        new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(1));
     })
 
     it("cannot whitelist already whitelisted darknodes", async () => {
-        new BN(await dnj.whitelistTotal()).should.bignumber.equal(new BN(1));
-        await dnj.isWhitelisted(darknode2).should.eventually.be.true;
-        await dnp.whitelist(darknode2).should.be.rejectedWith(null, /already whitelisted/);
+        new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(1));
+        await payroll.isWhitelisted(darknode2).should.eventually.be.true;
+        await payroll.updateDarknodePayment(owner);
+        await payroll.whitelist(darknode2).should.be.rejectedWith(null, /already whitelisted/);
+        await payroll.updateDarknodePayment(dnp.address);
     })
 
     const waitForCycle = async (seconds=CYCLE_DURATION) => {
@@ -136,7 +138,9 @@ contract("DarknodePayroll", (accounts: string[]) => {
         for (let i = 0; i < numEpochs; i++) {
             await waitForEpoch(dnr);
         }
-        await dnp.fetchAndUpdateCurrentCycle();
+        if (seconds >= CYCLE_DURATION) {
+            await payroll.changeCycle();
+        }
     }
 
 });
