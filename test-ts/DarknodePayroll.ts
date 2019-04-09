@@ -5,7 +5,7 @@ import {
 } from "./helper/testUtils";
 
 
-import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
+import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bindings/darknode_payment_store";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DarknodePayrollArtifact, DarknodePayrollContract } from "./bindings/darknode_payroll";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
@@ -15,7 +15,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
-const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
 const DarknodePayroll = artifacts.require("DarknodePayroll") as DarknodePayrollArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
@@ -26,7 +26,7 @@ const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
 contract("DarknodePayroll", (accounts: string[]) => {
 
-    let dnp: DarknodePaymentContract;
+    let dnp: DarknodePaymentStoreContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
     let payroll: DarknodePayrollContract;
@@ -41,7 +41,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
         ren = await RepublicToken.deployed();
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
-        dnp = await DarknodePayment.deployed();
+        dnp = await DarknodePaymentStore.deployed();
         payroll = await DarknodePayroll.deployed();
 
         // [ACTION] Register
@@ -73,7 +73,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
 
     it("cannot transfer contract ownership to an invalid addresses", async () => {
         const invalidAddress = "0x0"
-        await payroll.updateDarknodePayment(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
+        await payroll.updateDarknodePaymentStore(invalidAddress).should.be.rejectedWith(null, /invalid contract address/);
     })
 
     it("should reject white/blacklist attempts from non-DNP contract", async () => {
@@ -81,7 +81,7 @@ contract("DarknodePayroll", (accounts: string[]) => {
         await payroll.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodeJudge/);
         await payroll.isBlacklisted(darknode1).should.eventually.be.false;
         await payroll.isWhitelisted(darknode1).should.eventually.be.false;
-        await payroll.whitelist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodePayment/);
+        await payroll.whitelist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodePaymentStore/);
         await payroll.isWhitelisted(darknode1).should.eventually.be.false;
     })
 
@@ -125,16 +125,16 @@ contract("DarknodePayroll", (accounts: string[]) => {
     })
 
     it("cannot whitelist already whitelisted darknodes", async () => {
-        // We want to call whitelist directly so update the DarknodePayment contract to us
-        await payroll.updateDarknodePayment(owner);
+        // We want to call whitelist directly so update the DarknodePaymentStore contract to us
+        await payroll.updateDarknodePaymentStore(owner);
         await waitForCycle();
 
         new BN(await payroll.whitelistTotal()).should.bignumber.equal(new BN(1));
         await payroll.isWhitelisted(darknode2).should.eventually.be.true;
         await payroll.whitelist(darknode2).should.be.rejectedWith(null, /already whitelisted/);
 
-        // Reset the DarknodePayment contract value back
-        await payroll.updateDarknodePayment(dnp.address);
+        // Reset the DarknodePaymentStore contract value back
+        await payroll.updateDarknodePaymentStore(dnp.address);
         await waitForCycle();
     })
 

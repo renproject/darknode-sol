@@ -5,8 +5,8 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodePayroll.sol";
 
-/// @notice DarknodePayment is responsible for paying off darknodes for their computation.
-contract DarknodePayment is Ownable {
+/// @notice DarknodePaymentStore is responsible for paying off darknodes for their computation.
+contract DarknodePaymentStore is Ownable {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.

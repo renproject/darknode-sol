@@ -1,6 +1,6 @@
 # Paying the Darknodes
 
-There are two contracts used for paying off the darknodes. `DarknodePayment` and `DarknodePayroll`.
+There are two contracts used for paying off the darknodes. `DarknodePaymentStore` and `DarknodePayroll`.
 
 
 ## DarknodePayroll
@@ -23,23 +23,23 @@ Currently, all functions in the `DarknodePayroll()` contract are O(1) except `cl
 
 The `blacklist()` function can only be called by `darknodeJudge`. This is an address which has the ability to blacklist, defaults to the owner of the contract. The `darknodeJudge` can be changed using the `updateDarknodeJudge()`.
 
-The `whitelist()` and `claim()` functions can only be called by the `DarknodePayment` contract. The current address of the `DarknodePayment` contract can be updated using the `updateDarknodePayment()` function.
+The `whitelist()` and `claim()` functions can only be called by the `DarknodePaymentStore` contract. The current address of the `DarknodePaymentStore` contract can be updated using the `updateDarknodePaymentStore()` function.
 
-The `registerToken()`, `updateDarknodePayment()`, `updateDarknodeJudge()`, `updateCycleDuration()`, and `unBlacklist()` functions can only be called by the owner of the contract.
+The `registerToken()`, `updateDarknodePaymentStore()`, `updateDarknodeJudge()`, `updateCycleDuration()`, and `unBlacklist()` functions can only be called by the owner of the contract.
 
 
 
-## DarknodePayment
+## DarknodePaymentStore
 
-The two functions exposed by `DarknodePayment` are the `withdraw()` and `claim()` functions. The `claim()` has two main roles, whitelisting the darknode, and claiming rewards for previous cycles. If the darknode that gets passed to `claim()` has not been whitelisted, the `DarknodePayment` contract will call `DarknodePayroll.whitelist()`. Otherwise, it will call `DarknodePayroll.claim()` to claim for the darknode the rewards for the previous cycle.
+The two functions exposed by `DarknodePaymentStore` are the `withdraw()` and `claim()` functions. The `claim()` has two main roles, whitelisting the darknode, and claiming rewards for previous cycles. If the darknode that gets passed to `claim()` has not been whitelisted, the `DarknodePaymentStore` contract will call `DarknodePayroll.whitelist()`. Otherwise, it will call `DarknodePayroll.claim()` to claim for the darknode the rewards for the previous cycle.
 
 The `withdraw()` function simply calls `DarknodePayroll.transfer()`.
 
 
 # Questions/Considerations
 
-## Do we want the concept of cycle, and related variables such as `previousCycleRewardPool` and `previousCycleRewardShare` to be inside the `DarknodePayment` contract?
+## Do we want the concept of cycle, and related variables such as `previousCycleRewardPool` and `previousCycleRewardShare` to be inside the `DarknodePaymentStore` contract?
 
-Should it be deemed necessary, we want the `DarknodePayment` contract to be able to be scrapped completely without losing any important information. There may be a time when we decide that the darknodes should not be paid according to who is whitelisted, nor should they be paid equally (irrespective of who actually completes the computation). We may even decide that we don't want to have the concept of cycle anymore. Although it would be important to preserve the balances of darknodes, as well as the deposited funds, it may not be necessary to preserve the concept of "cycle" inside the `DarknodePayroll` contract.
+Should it be deemed necessary, we want the `DarknodePaymentStore` contract to be able to be scrapped completely without losing any important information. There may be a time when we decide that the darknodes should not be paid according to who is whitelisted, nor should they be paid equally (irrespective of who actually completes the computation). We may even decide that we don't want to have the concept of cycle anymore. Although it would be important to preserve the balances of darknodes, as well as the deposited funds, it may not be necessary to preserve the concept of "cycle" inside the `DarknodePayroll` contract.
 
-So what kind of information should we preserve in the `DarknodePayment` contract (more transient) and what should we preserve in the `DarknodePayroll` contract (more permanent)?
+So what kind of information should we preserve in the `DarknodePaymentStore` contract (more transient) and what should we preserve in the `DarknodePayroll` contract (more permanent)?

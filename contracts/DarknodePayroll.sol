@@ -16,11 +16,11 @@ contract DarknodePayroll is Ownable {
 
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
-    address public darknodePayment; // Contract that can call whitelist, claim
+    address public darknodePaymentStore; // Contract that can call whitelist, claim
     address public darknodeJudge; // Contract that can call blacklist
 
     // temporary values
-    address public pendingDarknodePayment;
+    address public pendingDarknodePaymentStore;
     address public pendingDarknodeJudge;
     uint256 public pendingCycleDuration;
 
@@ -105,10 +105,10 @@ contract DarknodePayroll is Ownable {
     /// @param _oldDuration The old duration
     event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
 
-    /// @notice Emitted when the DarknodePayment contract changes
-    /// @param _newDarknodePayment The new DarknodePayment
-    /// @param _oldDarknodePayment The old DarknodePayment
-    event LogDarknodePaymentChanged(address _newDarknodePayment, address _oldDarknodePayment);
+    /// @notice Emitted when the DarknodePaymentStore contract changes
+    /// @param _newDarknodePaymentStore The new DarknodePaymentStore
+    /// @param _oldDarknodePaymentStore The old DarknodePaymentStore
+    event LogDarknodePaymentStoreChanged(address _newDarknodePaymentStore, address _oldDarknodePaymentStore);
 
     /// @notice Emitted when the DarknodeJudge contract changes
     /// @param _newDarknodeJudge The new DarknodeJudge
@@ -122,8 +122,8 @@ contract DarknodePayroll is Ownable {
     }
 
     /// @notice Only allow the Darknode Payment contract.
-    modifier onlyDarknodePayment() {
-        require(darknodePayment == msg.sender, "not DarknodePayment");
+    modifier onlyDarknodePaymentStore() {
+        require(darknodePaymentStore == msg.sender, "not DarknodePaymentStore");
         _;
     }
 
@@ -196,9 +196,9 @@ contract DarknodePayroll is Ownable {
             emit LogDarknodeJudgeChanged(pendingDarknodeJudge, darknodeJudge);
             darknodeJudge = pendingDarknodeJudge;
         }
-        if (pendingDarknodePayment != darknodePayment) {
-            emit LogDarknodePaymentChanged(pendingDarknodePayment, darknodePayment);
-            darknodePayment = pendingDarknodePayment;
+        if (pendingDarknodePaymentStore != darknodePaymentStore) {
+            emit LogDarknodePaymentStoreChanged(pendingDarknodePaymentStore, darknodePaymentStore);
+            darknodePaymentStore = pendingDarknodePaymentStore;
         }
 
         previousCycle = currentCycle;
@@ -261,7 +261,7 @@ contract DarknodePayroll is Ownable {
     /// @notice whitelist a darknode to receive rewards
     ///
     /// @param _darknode the darknode to be whitelisted
-    function whitelist(address _darknode) external onlyDarknodePayment onlyDarknode(_darknode) {
+    function whitelist(address _darknode) external onlyDarknodePaymentStore onlyDarknode(_darknode) {
         require(!isBlacklisted[_darknode], "darknode is blacklisted");
         require(!isWhitelisted(_darknode), "already whitelisted");
 
@@ -273,7 +273,7 @@ contract DarknodePayroll is Ownable {
     /// @notice Claims the share amount to the darknode
     ///
     /// @param _darknode The address of the darknode
-    function claim(address _darknode) external onlyDarknodePayment onlyDarknode(_darknode) {
+    function claim(address _darknode) external onlyDarknodePaymentStore onlyDarknode(_darknode) {
         uint arrayLength = supportedTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
             address token = supportedTokens[i];
@@ -293,12 +293,12 @@ contract DarknodePayroll is Ownable {
         tokenIsSupported[_token] = true;
     }
 
-    /// @notice Updates the DarknodePayment contract address.
+    /// @notice Updates the DarknodePaymentStore contract address.
     ///
-    /// @param _addr The new DarknodePayment contract address.
-    function updateDarknodePayment(address _addr) external onlyOwner {
+    /// @param _addr The new DarknodePaymentStore contract address.
+    function updateDarknodePaymentStore(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
-        pendingDarknodePayment = _addr;
+        pendingDarknodePaymentStore = _addr;
     }
 
     /// @notice Updates the DarknodeJudge contract address.
