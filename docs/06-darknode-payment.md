@@ -13,6 +13,8 @@ There is an incentive for people to call the `changeCycle()` function since dark
 
 Snapshotting balances involves iterating through the list of `supportedTokens`. Tokens can be registered by calling the `registerToken()` function. This adds the token to the list of tokens which will be snapshotted.
 
+Rewards are divided based on the number of whitelisted darknodes during a cycle. We only update the total number of whitelisted darknodes at the beginning of a cycle, to ensure that darknodes which only whitelist halfway through a cycle will not be allocated a share of the rewards for that cycle.
+
 ## Performance
 
 Currently, all functions in the `DarknodePayroll()` contract are O(1) except `claimI()` and `changeCycle()` which involves iterating through a list of darknodes.
