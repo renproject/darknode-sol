@@ -29,7 +29,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentContract;
     let dai: ERC20Contract;
     let dnr: DarknodeRegistryContract;
-    let dnj: DarknodePayrollContract;
+    let payroll: DarknodePayrollContract;
     let ren: RepublicTokenContract;
 
     const darknode1 = accounts[1];
@@ -41,7 +41,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         dai = await ERC20.deployed();
         dnr = await DarknodeRegistry.deployed();
         dnp = await DarknodePayment.deployed();
-        dnj = await DarknodePayroll.deployed();
+        payroll = await DarknodePayroll.deployed();
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -65,7 +65,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("cannot deposit with ETH attached", async () => {
         const amount = new BN("100000000000000000");
-        await dnp.deposit(amount, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
+        await payroll.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
     })
 
     it("cannot tick if not registered", async () => {
@@ -73,54 +73,54 @@ contract("DarknodePayment", (accounts: string[]) => {
     })
 
     it("cannot withdraw if there is no balance", async () => {
-        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
     })
 
     it("can be paid DAI from a payee", async () => {
-        const previousBalance = new BN(await dnp.currentCycleRewardPool());
+        const previousBalance = new BN(await payroll.previousCycleRewardPool(dai.address));
         previousBalance.should.bignumber.equal(new BN(0));
         const amount = new BN("100000000000000000");
         await deposit(amount);
         // There should be a positive amount in the reward pool
-        (new BN(await dnp.currentCycleRewardPool()).gt(new BN(0))).should.be.true;
+        (new BN(await payroll.currentCycleRewardPool(dai.address)).gt(new BN(0))).should.be.true;
 
         // We should have zero claimed balance before ticking
-        (new BN(await dnp.darknodeBalances(darknode1))).should.bignumber.equal(new BN(0));
+        (new BN(await payroll.darknodeBalances(darknode1, dai.address))).should.bignumber.equal(new BN(0));
 
         // Tick once to whitelist
-        await tick(darknode1);
+        await dnp.claim(darknode1);
         // Attempts to whitelist again during the same cycle should do nothing
-        await tick(darknode1);
+        await dnp.claim(darknode1);
         await waitForCycle();
 
         // Tick a second time to participate in rewards
-        await tick(darknode1);
+        await dnp.claim(darknode1);
         await waitForCycle();
 
         // Tick a third time to claim rewards
-        await tick(darknode1);
+        await dnp.claim(darknode1);
         await waitForCycle();
         // There should be nothing left in the reward pool
-        (new BN(await dnp.currentCycleRewardPool())).should.bignumber.equal(new BN(0));
-        const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1));
+        (new BN(await payroll.currentCycleRewardPool(dai.address))).should.bignumber.equal(new BN(0));
+        const darknode1Balance = new BN(await payroll.darknodeBalances(darknode1, dai.address));
         darknode1Balance.should.bignumber.equal(amount);
     });
 
     it("can pay out DAI when darknodes withdraw", async () => {
-        const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1));
+        const darknode1Balance = new BN(await payroll.darknodeBalances(darknode1, dai.address));
         darknode1Balance.gt(new BN(0)).should.be.true;
         await withdraw(darknode1);
     })
 
     it("cannot call tick twice in the same cycle", async () => {
-        await tick(darknode1);
-        await tick(darknode1).should.be.rejectedWith(null, /reward already claimed/);
+        await dnp.claim(darknode1);
+        await dnp.claim(darknode1).should.be.rejectedWith(null, /reward already claimed/);
     })
 
     it("can tick again after a cycle has passed", async () => {
-        await tick(darknode1);
+        await dnp.claim(darknode1);
         await waitForCycle();
-        await tick(darknode1).should.not.be.rejectedWith(null, /reward already claimed/);
+        await dnp.claim(darknode1).should.not.be.rejectedWith(null, /reward already claimed/);
     })
 
     it("should evenly split reward pool between ticked darknodes", async () => {
@@ -146,7 +146,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await multiTick(startDarknode, numDarknodes);
 
         for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-            (new BN(await dnp.darknodeBalances(accounts[i]))).should.bignumber.equal(rewards.div(new BN(await dnj.whitelistTotal())));
+            (new BN(await payroll.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await payroll.whitelistTotal())));
         }
 
         // Withdraw for each darknode
@@ -157,14 +157,14 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     it("cannot withdraw if a darknode owner is invalid", async () => {
-        await dnp.withdraw("0x0").should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+        await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
         // accounts[0] is not a registered darknode
-        await dnp.withdraw(accounts[0]).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+        await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
     })
 
     it("cannot withdraw more than once in a cycle", async () => {
         const numDarknodes = 4;
-        new BN(await dnj.whitelistTotal()).should.bignumber.equal(numDarknodes);
+        new BN(await payroll.whitelistTotal()).should.bignumber.equal(numDarknodes);
 
         const rewards = new BN("300000000000000000");
         await deposit(rewards);
@@ -179,15 +179,15 @@ contract("DarknodePayment", (accounts: string[]) => {
         await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
 
         // Rest should fail
-        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
-        await dnp.withdraw(darknode1).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
+        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
     });
 
     it("cannot tick if it is blacklisted", async () => {
         // Should succeed if not blacklisted
         await tick(darknode2);
 
-        await dnp.blacklist(darknode2);
+        await payroll.blacklist(darknode2);
 
         // Change the epoch
         await waitForCycle();
@@ -202,8 +202,8 @@ contract("DarknodePayment", (accounts: string[]) => {
         // Change the epoch
         await waitForCycle();
         // Add rewards into the next cycle's pool
-        (await dnj.isWhitelisted(darknode3)).should.be.true;
-        const previousBalances = (new BN(await dnp.darknodeBalances(darknode3)));
+        (await payroll.isWhitelisted(darknode3)).should.be.true;
+        const previousBalances = (new BN(await payroll.darknodeBalances(darknode3, dai.address)));
 
         const rewards = new BN("300000000000000000");
         await deposit(rewards);
@@ -213,40 +213,40 @@ contract("DarknodePayment", (accounts: string[]) => {
         // Claim the rewards for the pool
         await tick(darknode3);
 
-        const rewardSplit = new BN(await dnj.whitelistTotal());
+        const rewardSplit = new BN(await payroll.whitelistTotal());
 
         // Claim rewards for past cycle
-        await dnp.blacklist(darknode3);
+        await payroll.blacklist(darknode3);
 
-        const newBalances = (new BN(await dnp.darknodeBalances(darknode3)));
+        const newBalances = (new BN(await payroll.darknodeBalances(darknode3, dai.address)));
         newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
     });
 
     it("should error when epoch hasn't changed but time has passed", async () => {
-        await dnp.fetchAndUpdateCurrentCycle();
         await increaseTime(CYCLE_DURATION);
-        await dnp.fetchAndUpdateCurrentCycle().should.be.rejectedWith(null, /cycle should have changed/);
+        await payroll.changeCycle().should.be.rejectedWith(null, /no new epoch/);
     })
 
     it("should revert if unauthorized to call blacklist or whitelist", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not the jury/);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not DarknodeJudge/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
     })
 
     it("can update the jury address", async () => {
-        await dnj.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.updateDarknodeJury(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
-        await dnp.blacklist(darknode1, { from: accounts[2] }).should.not.be.rejectedWith(null, /not the jury/);
-        await dnj.isBlacklisted(darknode1).should.eventually.be.true;
+        await payroll.isBlacklisted(darknode1).should.eventually.be.false;
+        await payroll.updateDarknodeJudge(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
+        await waitForCycle();
+        await payroll.blacklist(darknode1, { from: accounts[2] }).should.not.be.rejectedWith(null, /not DarknodeJudge/);
+        await payroll.isBlacklisted(darknode1).should.eventually.be.true;
     })
 
     it("cannot update the jury address to an invalid address", async () => {
-        await dnp.updateDarknodeJury("0x0").should.be.rejectedWith(null, /invalid contract address/);
+        await payroll.updateDarknodeJudge("0x0").should.be.rejectedWith(null, /invalid contract address/);
     })
 
     const tick = async (address) => {
-        return dnp.fetchAndUpdateCurrentCycle().then(() => dnp.claim(address));
+        return dnp.claim(address);
     }
 
     const multiTick = async (start=1, numberOfDarknodes=1) => {
@@ -257,19 +257,19 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const withdraw = async (address) => {
         // Our claimed amount should be positive
-        const earnedDAIRewards = new BN(await dnp.darknodeBalances(address));
+        const earnedDAIRewards = new BN(await payroll.darknodeBalances(address, dai.address));
         earnedDAIRewards.gt(new BN(0)).should.be.true;
 
         const oldDAIBalance = new BN(await dai.balanceOf(address));
 
-        await dnp.withdraw(address);
+        await dnp.withdraw(address, dai.address);
 
         // Our balances should have increased
         const newDAIBalance = new BN(await dai.balanceOf(address));
         newDAIBalance.should.bignumber.equal(oldDAIBalance.add(earnedDAIRewards));
 
         // We should have nothing left to withdraw
-        const postWithdrawRewards = new BN(await dnp.darknodeBalances(address));
+        const postWithdrawRewards = new BN(await payroll.darknodeBalances(address, dai.address));
         postWithdrawRewards.should.bignumber.equal(new BN(0));
     }
 
@@ -281,12 +281,12 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const deposit = async (amount) => {
         const amountBN = new BN(amount);
-        const previousBalance = new BN(await dnp.currentCycleRewardPool());
+        const previousBalance = new BN(await payroll.currentCycleRewardPool(dai.address));
         // Approve the contract to use DAI
-        await dai.approve(dnp.address, amountBN);
-        await dnp.deposit(amountBN);
+        await dai.approve(payroll.address, amountBN);
+        await payroll.deposit(amountBN, dai.address);
         // We should expect the DAI balance to have increased by what we deposited
-        (await dnp.currentCycleRewardPool()).should.bignumber.equal(previousBalance.add(amountBN));
+        (await payroll.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     }
 
     const waitForCycle = async (seconds=CYCLE_DURATION) => {
@@ -295,7 +295,9 @@ contract("DarknodePayment", (accounts: string[]) => {
         for (let i = 0; i < numEpochs; i++) {
             await waitForEpoch(dnr);
         }
-        await dnp.fetchAndUpdateCurrentCycle();
+        if (seconds >= CYCLE_DURATION) {
+            await payroll.changeCycle();
+        }
     }
 
 });

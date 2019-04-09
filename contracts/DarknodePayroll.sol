@@ -218,7 +218,7 @@ contract DarknodePayroll is Ownable {
     ///
     /// @param _darknode The address of the darknode
     /// @param _token Which token to transfer
-    function transfer(address _darknode, address _token) external onlyDarknode(_darknode) {
+    function transfer(address _darknode, address _token) external {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
         require(darknodeOwner != 0x0, "invalid darknode owner");
 
