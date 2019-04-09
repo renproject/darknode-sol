@@ -145,6 +145,13 @@ contract DarknodePayroll is Ownable {
         return darknodeWhitelist[_darknode] != 0;
     }
 
+    /// @notice The current balance of the contract available as reward for the current cycle
+    function currentCycleRewardPool(address _token) external view returns (uint256) {
+        uint256 currentBalance = CompatibleERC20(_token).balanceOf(address(this));
+        // Lock up the reward for darknodes to claim
+        return currentBalance - previousCycleRewardPool[_token] - rewardsClaimed[_token];
+    }
+
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
         uint256 startTime = now;
