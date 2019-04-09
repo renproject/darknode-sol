@@ -68,19 +68,18 @@ module.exports = async function (deployer, network) {
             DarknodePayroll,
             VERSION_STRING,
             DarknodeRegistry.address,
+            config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(() => deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
-            DAIToken.address,
-            DarknodeRegistry.address,
             DarknodePayroll.address,
-            config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(async () => {
             // Update DarknodePayment address
             const darknodePayroll = await DarknodePayroll.at(DarknodePayroll.address);
             await darknodePayroll.updateDarknodePayment(DarknodePayment.address);
+            await darknodePayroll.registerToken(DAIToken.address);
 
             // Update slasher address
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
