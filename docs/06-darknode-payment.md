@@ -13,6 +13,10 @@ There is an incentive for people to call the `changeCycle()` function since dark
 
 Snapshotting balances involves iterating through the list of `supportedTokens`. Tokens can be registered by calling the `registerToken()` function. This adds the token to the list of tokens which will be snapshotted.
 
+## Performance
+
+Currently, all functions in the `DarknodePayroll()` contract are O(1) except `claimI()` and `changeCycle()` which involves iterating through a list of darknodes.
+
 ## Permissions
 
 The `blacklist()` function can only be called by `darknodeJudge`. This is an address which has the ability to blacklist, defaults to the owner of the contract. The `darknodeJudge` can be changed using the `updateDarknodeJudge()`.
@@ -28,3 +32,12 @@ The `registerToken()`, `updateDarknodePayment()`, `updateDarknodeJudge()`, `upda
 The two functions exposed by `DarknodePayment` are the `withdraw()` and `claim()` functions. The `claim()` has two main roles, whitelisting the darknode, and claiming rewards for previous cycles. If the darknode that gets passed to `claim()` has not been whitelisted, the `DarknodePayment` contract will call `DarknodePayroll.whitelist()`. Otherwise, it will call `DarknodePayroll.claim()` to claim for the darknode the rewards for the previous cycle.
 
 The `withdraw()` function simply calls `DarknodePayroll.transfer()`.
+
+
+# Questions/Considerations
+
+## Do we want the concept of cycle, and related variables such as `previousCycleRewardPool` and `previousCycleRewardShare` to be inside the `DarknodePayment` contract?
+
+Should it be deemed necessary, we want the `DarknodePayment` contract to be able to be scrapped completely without losing any important information. There may be a time when we decide that the darknodes should not be paid according to who is whitelisted, nor should they be paid equally (irrespective of who actually completes the computation). We may even decide that we don't want to have the concept of cycle anymore. Although it would be important to preserve the balances of darknodes, as well as the deposited funds, it may not be necessary to preserve the concept of "cycle" inside the `DarknodePayroll` contract.
+
+So what kind of information should we preserve in the `DarknodePayment` contract (more transient) and what should we preserve in the `DarknodePayroll` contract (more permanent)?
