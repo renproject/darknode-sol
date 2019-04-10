@@ -152,11 +152,6 @@ contract DarknodePayment is Ownable {
         return store.availableBalance(_token) - unclaimedRewards[_token];
     }
 
-    function blacklist(address _darknode) external onlyDarknodeJudge onlyDarknode(_darknode) {
-        store.blacklist(_darknode);
-        emit LogDarknodeBlacklisted(_darknode, now);
-    }
-
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
         require(now >= cycleTimeout, "can't cycle yet");
@@ -234,6 +229,11 @@ contract DarknodePayment is Ownable {
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
         emit LogDarknodeClaim(_darknode, previousCycle);
+    }
+
+    function blacklist(address _darknode) external onlyDarknodeJudge onlyDarknode(_darknode) {
+        store.blacklist(_darknode);
+        emit LogDarknodeBlacklisted(_darknode, now);
     }
 
     /// @notice Adds tokens to be payable. Registration is pending until next cycle.
