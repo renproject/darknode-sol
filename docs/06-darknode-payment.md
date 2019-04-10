@@ -24,7 +24,7 @@ There is an incentive for people to call the `changeCycle()` function since dark
 
 The `blacklist()` function can only be called by `darknodeJudge`. This is an address which has the ability to blacklist, defaults to the owner of the contract. The `darknodeJudge` can be changed using the `updateDarknodeJudge()`.
 
-The `transferStoreOwnership()`, `claimStoreOwnership()`, `registerToken()`, `deregisterToken()`, `updateDarknodeJudge()`, `updateCycleDuration()`, and `unBlacklist()` functions can only be called by the owner of the contract.
+The `transferStoreOwnership()`, `claimStoreOwnership()`, `registerToken()`, `deregisterToken()`, `updateDarknodeJudge()`, `updateCycleDuration()` functions can only be called by the owner of the contract.
 
 All other functions are external functions callable by anyone.
 
