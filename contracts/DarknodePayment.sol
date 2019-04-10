@@ -219,7 +219,7 @@ contract DarknodePayment is Ownable {
     /// @notice Claims the rewards allocated to the darknode last cycle and increments
     /// the darknode balances. Whitelists the darknode if it hasn't already been
     /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
-    function claim(address _darknode) external notBlacklisted(_darknode) {
+    function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
         uint256 whitelistedCycle = store.darknodeWhitelist(_darknode);
 
         // The darknode hasn't been whitelisted before
