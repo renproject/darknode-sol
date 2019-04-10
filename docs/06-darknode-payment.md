@@ -7,7 +7,11 @@ There are two contracts used for paying off the darknodes: `DarknodePayment` and
 
 The `DarknodePayment` contract keeps track of the current payment cycle and the reward pool and reward share for the previous cycle.
 
-Darknodes will mainly interact with the `DarknodePayment` contract for whitelisting and claiming rewards. The main function for interaction is `changeCycle()` which can be called after the minimum cycle time has passed. The next time a cycle can be called is stored in the `cycleTimeout` variable.
+Darknodes will mainly interact with the `DarknodePayment` contract for whitelisting and claiming rewards.
+
+To claim rewards, the `claim()` function must be called. The first time it is called, it will whitelist the darknode to allow it to participate in cycle rewards. Future calls to `claim()` will allocate it the rewards for the previous cycle. These funds will be accumulated and can be withdrawn at anytime using the `withdraw()` function which will send all claimed rewards to the owner of the darknode.
+
+The other main function is `changeCycle()` which can be called after the minimum cycle time has passed. The next time a cycle can be called is stored in the `cycleTimeout` variable.
 
 `changeCycle()` performs the following actions:
 
