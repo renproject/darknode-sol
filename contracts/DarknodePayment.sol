@@ -126,7 +126,8 @@ contract DarknodePayment is Ownable {
     /// epoch according to the darknode registry
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _darknodeRegistry The address of the Darknode Registry contract
+    /// @param _darknodeRegistry The address of the DarknodeRegistry contract
+    /// @param _darknodePaymentStore The address of the DarknodePaymentStore contract
     /// @param _cycleDuration The minimum time before a new cycle can occur, in days
     constructor(
         string _VERSION,
