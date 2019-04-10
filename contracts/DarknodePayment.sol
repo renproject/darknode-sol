@@ -45,8 +45,8 @@ contract DarknodePayment is Ownable {
     uint256 public cycleDuration;
     uint256 public cycleTimeout;
 
-    // mapping of cycle -> darknode -> already_claimed
-    mapping(uint256 => mapping(address => bool)) public rewardClaimed;
+    // mapping of darknode -> cycle -> already_claimed
+    mapping(address => mapping(uint256 => bool)) public rewardClaimed;
 
     // Mapping from darknode -> token -> balances
     mapping(address => mapping(address => uint256)) public darknodeBalances;
@@ -294,8 +294,8 @@ contract DarknodePayment is Ownable {
     }
 
     function _claimDarknodeReward(address _darknode) private {
-        require(!rewardClaimed[previousCycle][_darknode], "reward already claimed");
-        rewardClaimed[previousCycle][_darknode] = true;
+        require(!rewardClaimed[_darknode][previousCycle], "reward already claimed");
+        rewardClaimed[_darknode][previousCycle] = true;
         uint arrayLength = supportedTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
             address token = supportedTokens[i];
