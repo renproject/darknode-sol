@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./DarknodeRegistry.sol";
+import "./DarknodePaymentStore.sol";
 import "./CompatibleERC20.sol";
 
 /// @notice DarknodePayment is responsible for whitelisting darknodes for rewards
@@ -14,57 +15,43 @@ contract DarknodePayment is Ownable {
 
     string public VERSION; // Passed in as a constructor parameter.
 
+    /// @notice The special address for Ether.
+    address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
 
-    address public darknodePaymentStore; // Contract that can call whitelist, claim
+    // DarknodePaymentStore is the storage contract for darknode payments.
+    DarknodePaymentStore public store; // Passed in as a constructor parameter.
+
     address public darknodeJudge; // Contract that can call blacklist
 
-    // temporary values
-    address public pendingDarknodePaymentStore;
-    address public pendingDarknodeJudge;
-    uint256 public pendingCycleDuration;
-
-    // The current total of whitelisted darknodes
-    uint256 public whitelistTotal;
-
-    // The pending number of whitelist darknodes
-    uint256 public pendingWhitelist;
-    // The pending number of darknodes to be blacklisted
-    uint256 public pendingBlacklist;
+    // The number of whitelisted darknodes this cycle
+    uint256 public shareSize;
 
     uint256 public currentCycle;
     uint256 public previousCycle;
 
     address[] public supportedTokens;
-    mapping(address => bool) public tokenIsSupported;
+    // The index starts from 1
+    mapping(address => uint256) public supportedTokenIndex;
 
-    // token to amount
-    mapping(address => uint256) public previousCycleRewardPool;
+    // mapping from token -> amount
+    mapping(address => uint256) public unclaimedRewards;
     mapping(address => uint256) public previousCycleRewardShare;
-    // rewards that have already been allocated
-    mapping(address => uint256) public rewardsClaimed;
 
     uint256 public cycleDuration;
     uint256 public cycleTimeout;
 
-    // Mapping from address -> isBlacklisted
-    mapping(address => bool) public isBlacklisted;
+    // mapping of cycle -> darknode -> already_claimed
+    mapping(uint256 => mapping(address => bool)) public rewardClaimed;
 
     // Mapping from darknode -> token -> balances
     mapping(address => mapping(address => uint256)) public darknodeBalances;
-
-    // Mapping from darknodeAddress -> cycleWhenWhitelisted
-    mapping(address => uint256) public darknodeWhitelist;
 
     /// @notice Emitted when a darknode is blacklisted from receiving rewards
     /// @param _darknode The address of the darknode which was blacklisted
     /// @param _time The time at which the darknode was blacklisted
     event LogDarknodeBlacklisted(address _darknode, uint256 _time);
-
-    /// @notice Emitted when a darknode is unblacklisted from receiving rewards
-    /// @param _darknode The address of the darknode which was unblacklisted
-    /// @param _time The time at which the darknode was unblacklisted
-    event LogDarknodeUnBlacklisted(address _darknode, uint256 _time);
 
     /// @notice Emitted when a darknode is whitelisted to receive rewards
     /// @param _darknode The address of the darknode which was whitelisted
@@ -83,11 +70,6 @@ contract DarknodePayment is Ownable {
     /// @param _token The address of the token that was transferred
     event LogPaymentReceived(address _payer, uint256 _amount, address _token);
 
-    /// @notice Emitted when a darknode is updated
-    /// @param _oldTotal The previous total number of whitelisted darknodes
-    /// @param _newTotal The new total number of whitelisted darknodes
-    event LogDarknodeWhitelistUpdated(uint256 _oldTotal, uint256 _newTotal);
-
     /// @notice Emitted when a darknode calls withdraw
     /// @param _payee The address of the darknode which withdrew
     /// @param _value The amount of DAI withdrawn
@@ -105,11 +87,6 @@ contract DarknodePayment is Ownable {
     /// @param _oldDuration The old duration
     event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
 
-    /// @notice Emitted when the DarknodePaymentStore contract changes
-    /// @param _newDarknodePaymentStore The new DarknodePaymentStore
-    /// @param _oldDarknodePaymentStore The old DarknodePaymentStore
-    event LogDarknodePaymentStoreChanged(address _newDarknodePaymentStore, address _oldDarknodePaymentStore);
-
     /// @notice Emitted when the DarknodeJudge contract changes
     /// @param _newDarknodeJudge The new DarknodeJudge
     /// @param _oldDarknodeJudge The old DarknodeJudge
@@ -122,14 +99,14 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice Only allow the Darknode Payment contract.
-    modifier onlyDarknodePaymentStore() {
-        require(darknodePaymentStore == msg.sender, "not DarknodePaymentStore");
+    modifier onlyDarknodeJudge() {
+        require(darknodeJudge == msg.sender, "not DarknodeJudge");
         _;
     }
 
-    /// @notice Only allow the Darknode Payment contract.
-    modifier onlyDarknodeJudge() {
-        require(darknodeJudge == msg.sender, "not DarknodeJudge");
+    /// @notice Only allow darknodes which haven't been blacklisted
+    modifier notBlacklisted(address _darknode) {
+        require(!store.isBlacklisted(_darknode), "darknode is blacklisted");
         _;
     }
 
@@ -143,15 +120,15 @@ contract DarknodePayment is Ownable {
     constructor(
         string _VERSION,
         DarknodeRegistry _darknodeRegistry,
+        DarknodePaymentStore _darknodePaymentStore,
         uint256 _cycleDuration
     ) public {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
+        store = _darknodePaymentStore;
         cycleDuration = _cycleDuration * 1 days;
-        pendingCycleDuration = cycleDuration;
         // Default the judge to owner
         darknodeJudge = msg.sender;
-        pendingDarknodeJudge = darknodeJudge;
 
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
@@ -159,25 +136,18 @@ contract DarknodePayment is Ownable {
         cycleTimeout = now + cycleDuration;
     }
 
-    /// @notice Checks to see if a darknode is whitelisted
-    ///
-    /// @param _darknode The address of the darknode
-    /// @return true if the darknode is whitelisted
-    function isWhitelisted(address _darknode) public view returns (bool) {
-        return darknodeWhitelist[_darknode] != 0;
-    }
-
     /// @notice The current balance of the contract available as reward for the current cycle
     function currentCycleRewardPool(address _token) external view returns (uint256) {
-        uint256 currentBalance = CompatibleERC20(_token).balanceOf(address(this));
-        // Lock up the reward for darknodes to claim
-        return currentBalance - previousCycleRewardPool[_token] - rewardsClaimed[_token];
+        return store.availableBalance(_token) - unclaimedRewards[_token];
+    }
+
+    function blacklist(address _darknode) external onlyDarknodeJudge {
+        store.blacklist(_darknode);
     }
 
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
-        uint256 startTime = now;
-        require(startTime >= cycleTimeout, "can't cycle yet");
+        require(now >= cycleTimeout, "can't cycle yet");
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         require(dnrCurrentEpoch != currentCycle, "no new epoch");
 
@@ -187,28 +157,12 @@ contract DarknodePayment is Ownable {
             _snapshotBalance(supportedTokens[i]);
         }
 
-        // Update the cycle
-        if (pendingCycleDuration != cycleDuration) {
-            emit LogCycleDurationChanged(pendingCycleDuration, cycleDuration);
-            cycleDuration = pendingCycleDuration;
-        }
-        if (pendingDarknodeJudge != darknodeJudge) {
-            emit LogDarknodeJudgeChanged(pendingDarknodeJudge, darknodeJudge);
-            darknodeJudge = pendingDarknodeJudge;
-        }
-        if (pendingDarknodePaymentStore != darknodePaymentStore) {
-            emit LogDarknodePaymentStoreChanged(pendingDarknodePaymentStore, darknodePaymentStore);
-            darknodePaymentStore = pendingDarknodePaymentStore;
-        }
-
         previousCycle = currentCycle;
         currentCycle = dnrCurrentEpoch;
-        cycleTimeout = startTime + cycleDuration;
+        cycleTimeout = now + cycleDuration;
 
-        // Update pending whitelist/blacklist numbers
-        whitelistTotal += (pendingWhitelist - pendingBlacklist);
-        pendingWhitelist = 0;
-        pendingBlacklist = 0;
+        // Update the share size for next cycle
+        shareSize = store.darknodeWhitelistLength();
 
         emit LogNewCycle(currentCycle, previousCycle, cycleTimeout);
         return currentCycle;
@@ -218,17 +172,14 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _darknode The address of the darknode
     /// @param _token Which token to transfer
-    function transfer(address _darknode, address _token) external {
+    function withdraw(address _darknode, address _token) external onlyDarknode(_darknode) {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
         require(darknodeOwner != 0x0, "invalid darknode owner");
 
         uint256 amount = darknodeBalances[_darknode][_token];
         require(amount > 0, "nothing to withdraw");
 
-        darknodeBalances[_darknode][_token] = 0;
-        rewardsClaimed[_token] -= amount;
-
-        CompatibleERC20(_token).safeTransfer(darknodeOwner, amount);
+        store.transfer(_darknode, _token, amount, darknodeOwner);
         emit LogDarknodeWithdrew(_darknode, amount, _token);
     }
 
@@ -237,68 +188,58 @@ contract DarknodePayment is Ownable {
     /// @param _value The amount of token deposit in the token's smallest unit.
     /// @param _token The token address
     function deposit(uint256 _value, address _token) external payable {
-        require(msg.value == 0, "unexpected ether transfer");
-        uint256 receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, this, _value);
+        uint256 receivedValue;
+        if (_token == ETHEREUM) {
+            receivedValue = msg.value;
+            address(store).transfer(msg.value);
+        } else {
+            require(msg.value == 0, "unexpected ether transfer");
+            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, this, _value);
+            // Forward the funds to the store
+            CompatibleERC20(_token).safeTransfer(address(store), receivedValue);
+        }
         emit LogPaymentReceived(msg.sender, receivedValue, _token);
     }
 
-    /// @notice Blacklists a darknode from receiving rewards
-    ///
-    /// @param _darknode The darknode to be blacklisted
-    function blacklist(address _darknode) external onlyDarknodeJudge onlyDarknode(_darknode) {
-        require(!isBlacklisted[_darknode], "already blacklisted");
+    /// @notice Claims the rewards allocated to the darknode last cycle and increments
+    /// the darknode balances. Whitelists the darknode if it hasn't already been
+    /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
+    function claim(address _darknode) external notBlacklisted(_darknode) {
+        uint256 whitelistedCycle = store.darknodeWhitelist(_darknode);
 
-        if (isWhitelisted(_darknode)) {
-            pendingBlacklist += 1;
-            darknodeWhitelist[_darknode] = 0;
+        // The darknode hasn't been whitelisted before
+        if (whitelistedCycle == 0) {
+            store.whitelist(_darknode, currentCycle);
+            return;
         }
-        
-        isBlacklisted[_darknode] = true;
 
-        emit LogDarknodeBlacklisted(_darknode, now);
-    }
+        require(whitelistedCycle != currentCycle, "can't claim for this cycle");
 
-    /// @notice whitelist a darknode to receive rewards
-    ///
-    /// @param _darknode the darknode to be whitelisted
-    function whitelist(address _darknode) external onlyDarknodePaymentStore onlyDarknode(_darknode) {
-        require(!isBlacklisted[_darknode], "darknode is blacklisted");
-        require(!isWhitelisted(_darknode), "already whitelisted");
-
-        darknodeWhitelist[_darknode] = currentCycle;
-        pendingWhitelist += 1;
-        emit LogDarknodeWhitelisted(_darknode, currentCycle, now);
-    }
-
-    /// @notice Claims the share amount to the darknode
-    ///
-    /// @param _darknode The address of the darknode
-    function claim(address _darknode) external onlyDarknodePaymentStore onlyDarknode(_darknode) {
-        uint arrayLength = supportedTokens.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            address token = supportedTokens[i];
-            darknodeBalances[_darknode][token] += previousCycleRewardShare[token];
-            rewardsClaimed[token] += previousCycleRewardShare[token];
-            previousCycleRewardPool[token] -= previousCycleRewardShare[token];
-
-        }
+        // Claim share of rewards allocated for last cycle
+        _claimDarknodeReward(_darknode);
         emit LogDarknodeClaim(_darknode, previousCycle);
     }
+
     /// @notice Adds more payable tokens.
     ///
     /// @param _token The address of the token to be registered.
     function registerToken(address _token) public onlyOwner {
-        require(!tokenIsSupported[_token], "token already registered");
+        require(supportedTokenIndex[_token] == 0, "token already registered");
         supportedTokens.push(_token);
-        tokenIsSupported[_token] = true;
+        supportedTokenIndex[_token] = supportedTokens.length;
     }
 
-    /// @notice Updates the DarknodePaymentStore contract address.
+    /// @notice Removes a token from the list of supported tokens
     ///
-    /// @param _addr The new DarknodePaymentStore contract address.
-    function updateDarknodePaymentStore(address _addr) external onlyOwner {
-        require(_addr != 0x0, "invalid contract address");
-        pendingDarknodePaymentStore = _addr;
+    /// @param _token The address of the token to be deregistered.
+    function deregisterToken(address _token) public onlyOwner {
+        require(supportedTokenIndex[_token] > 0, "token not registered");
+        uint256 deletedTokenIndex = supportedTokenIndex[_token] - 1;
+        supportedTokens[deletedTokenIndex] = supportedTokens[supportedTokens.length-1];
+        // Decreasing the length will clean up the storage for us
+        // So we don't need to manually delete the element
+        supportedTokens.length--;
+        supportedTokenIndex[_token] = 0;
     }
 
     /// @notice Updates the DarknodeJudge contract address.
@@ -306,38 +247,51 @@ contract DarknodePayment is Ownable {
     /// @param _addr The new DarknodeJudge contract address.
     function updateDarknodeJudge(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
-        pendingDarknodeJudge = _addr;
+        darknodeJudge = _addr;
     }
 
     /// @notice Updates cycle duration
     ///
     /// @param _duration The time before a new cycle can be called, in days
     function updateCycleDuration(uint256 _duration) external onlyOwner {
-        pendingCycleDuration = _duration * 1 days;
+        cycleDuration = _duration * 1 days;
     }
 
-    /// @notice Removes a blacklisted darknode from the blacklist
-    ///
-    /// @param _addr The darknode to be unblacklisted
-    function unBlacklist(address _addr) external onlyOwner onlyDarknode(_addr) {
-        require(isBlacklisted[_addr], "not in blacklist");
-
-        isBlacklisted[_addr] = false;
-        emit LogDarknodeUnBlacklisted(_addr, now);
+    /// @notice Allows the contract owner to initiate an ownership transfer of
+    /// the DarknodeRegistryStore. 
+    /// @param _newOwner The address to transfer the ownership to.
+    function transferStoreOwnership(address _newOwner) external onlyOwner {
+        store.transferOwnership(_newOwner);
     }
 
-    /// @notice Snaphots the current balance of token
-    ///
-    /// @param _token The token to snapshot
+    /// @notice Claims ownership of the store passed in to the constructor.
+    /// `transferStoreOwnership` must have previously been called when
+    /// transferring from another Darknode Registry.
+    function claimStoreOwnership() external onlyOwner {
+        store.claimOwnership();
+    }
+
+    function _claimDarknodeReward(address _darknode) private {
+        require(!rewardClaimed[previousCycle][_darknode], "reward already claimed");
+        rewardClaimed[previousCycle][_darknode] = true;
+        uint arrayLength = supportedTokens.length;
+        for (uint i = 0; i < arrayLength; i++) {
+            address token = supportedTokens[i];
+            require(unclaimedRewards[token] >= previousCycleRewardShare[token], "insufficient token balance");
+            unclaimedRewards[token] -= previousCycleRewardShare[token];
+
+            store.incrementDarknodeBalance(_darknode, token, previousCycleRewardShare[token]);
+        }
+    }
+
     function _snapshotBalance(address _token) private {
-        if (whitelistTotal == 0) {
-            previousCycleRewardPool[_token] = 0;
+        if (shareSize == 0) {
+            unclaimedRewards[_token] = 0;
             previousCycleRewardShare[_token] = 0;
         } else {
             // Lock up the current balance for darknode reward allocation
-            uint256 currentBalance = CompatibleERC20(_token).balanceOf(address(this));
-            previousCycleRewardPool[_token] = currentBalance - rewardsClaimed[_token];
-            previousCycleRewardShare[_token] = previousCycleRewardPool[_token] / whitelistTotal;
+            unclaimedRewards[_token] = store.availableBalance(_token);
+            previousCycleRewardShare[_token] = unclaimedRewards[_token] / shareSize;
         }
     }
 

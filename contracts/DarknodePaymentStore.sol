@@ -1,76 +1,107 @@
 pragma solidity ^0.4.25;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./DarknodePayment.sol";
+import "./CompatibleERC20.sol";
+import "./DarknodeRegistry.sol";
 
 /// @notice DarknodePaymentStore is responsible for paying off darknodes for their computation.
-contract DarknodePaymentStore is Ownable {
+contract DarknodePaymentStore is Claimable {
     using SafeMath for uint256;
+    using CompatibleERC20Functions for CompatibleERC20;
 
     string public VERSION; // Passed in as a constructor parameter.
 
-    // Tracks which Darknodes are blacklisted and which ones are whitelisted
-    DarknodePayment public darknodePayment; // Passed in as a constructor parameter.
+    /// @notice The special address for Ether.
+    address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    // mapping of darknode -> cycle -> claimed
-    mapping(address => mapping(uint256 => bool)) public rewardClaimed;
+    uint256 public darknodeWhitelistLength;
 
-    /// @notice Only allow darknodes which haven't been blacklisted
-    modifier notBlacklisted(address _darknode) {
-        require(!darknodePayment.isBlacklisted(_darknode), "darknode is blacklisted");
-        _;
-    }
+    // mapping of darknode -> token -> balance
+    mapping(address => mapping(address => uint256)) public darknodeBalance;
+
+    // mapping of token -> lockedAmount
+    mapping(address => uint256) public lockedBalance;
+
+    // mapping of darknode -> blacklist
+    mapping(address => bool) public isBlacklisted;
+
+    // mapping of darknode -> cycle
+    mapping(address => uint256) public darknodeWhitelist;
 
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _darknodePayment The address of the DarknodePayment contract
     constructor(
-        string _VERSION,
-        DarknodePayment _darknodePayment
+        string _VERSION
     ) public {
         VERSION = _VERSION;
-        darknodePayment = _darknodePayment;
     }
 
-    /// @notice Withdraw fees earned by a Darknode. The fees will be sent to
-    /// the owner of the Darknode.
+    /// @notice Checks to see if a darknode is whitelisted
     ///
-    /// @param _darknode The address of the Darknode whose fees are being
-    ///        withdrawn. The owner of this Darknode will receive the fees.
-    function withdraw(address _darknode, address _token) external {
-        darknodePayment.transfer(_darknode, _token);
+    /// @param _darknode The address of the darknode
+    /// @return true if the darknode is whitelisted
+    function isWhitelisted(address _darknode) public view returns (bool) {
+        return darknodeWhitelist[_darknode] != 0;
     }
 
-    /// @notice Claims the rewards allocated to the darknode last cycle and increments
-    /// the darknode balances. Whitelists the darknode if it hasn't already been
-    /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
-    function claim(address _darknode) external notBlacklisted(_darknode) {
-        uint256 fetchedCurrentCycle = darknodePayment.currentCycle();
-        uint256 whitelistedCycle = darknodePayment.darknodeWhitelist(_darknode);
-
-        if (whitelistedCycle == fetchedCurrentCycle) {
-            // Can't claim rewards until next cycle
-            return;            
+    function totalBalance(address _token) public view returns (uint256) {
+        if (_token == ETHEREUM) {
+            return address(this).balance;
+        } else {
+            return CompatibleERC20(_token).balanceOf(address(this));
         }
-
-        // The darknode hasn't been whitelisted before
-        if (whitelistedCycle == 0) {
-            darknodePayment.whitelist(_darknode);
-            return;
-        }
-
-        // Claim share of rewards allocated for last cycle
-        _claimDarknodeReward(_darknode);
     }
 
-    function _claimDarknodeReward(address _darknode) private {
-        uint256 prevCycle = darknodePayment.previousCycle();
-        require(!rewardClaimed[_darknode][prevCycle], "reward already claimed");
-        rewardClaimed[_darknode][prevCycle] = true;
-        darknodePayment.claim(_darknode);
+    function availableBalance(address _token) public view returns (uint256) {
+        return totalBalance(_token) - lockedBalance[_token];
+    }
+
+    function blacklist(address _darknode) external onlyOwner {
+        require(!isBlacklisted[_darknode], "already blacklisted");
+        isBlacklisted[_darknode] = true;
+
+        // Unwhitelist if necessary
+        if (isWhitelisted(_darknode)) {
+            darknodeWhitelist[_darknode] = 0;
+            darknodeWhitelistLength--;
+        }
+    }
+
+    function whitelist(address _darknode, uint256 _cycle) external onlyOwner {
+        require(!isBlacklisted[_darknode], "darknode blacklisted");
+        require(!isWhitelisted(_darknode), "already whitelisted");
+
+        darknodeWhitelist[_darknode] = _cycle;
+        darknodeWhitelistLength++;
+    }
+
+    function incrementDarknodeBalance(address _darknode, address _token, uint256 _amount) external onlyOwner {
+        require(_amount > 0, "invalid amount");
+        require(availableBalance(_token) >= _amount, "insufficient contract balance");
+
+        darknodeBalance[_darknode][_token] += _amount;
+        lockedBalance[_token] += _amount;
+    }
+
+    /// @notice Transfers an amount out of balance
+    ///
+    /// @param _darknode The address of the darknode
+    /// @param _token Which token to transfer
+    /// @param _amount The amount to transfer
+    /// @param _recipient The address to withdraw it to
+    function transfer(address _darknode, address _token, uint256 _amount, address _recipient) external onlyOwner {
+        require(darknodeBalance[_darknode][_token] >= _amount, "insufficient balance");
+        darknodeBalance[_darknode][_token] -= _amount;
+        lockedBalance[_token] -= _amount;
+
+        if (_token == ETHEREUM) {
+            _recipient.transfer(_amount);
+        } else {
+            CompatibleERC20(_token).safeTransfer(_recipient, _amount);
+        }
     }
 
 }

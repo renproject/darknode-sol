@@ -65,20 +65,20 @@ module.exports = async function (deployer, network) {
             Orderbook.address,
         ))
         .then(() => deployer.deploy(
+            DarknodePaymentStore,
+            VERSION_STRING,
+        ))
+        .then(() => deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
             DarknodeRegistry.address,
+            DarknodePaymentStore.address,
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
-        ))
-        .then(() => deployer.deploy(
-            DarknodePaymentStore,
-            VERSION_STRING,
-            DarknodePayment.address,
         ))
         .then(async () => {
             // Update DarknodePaymentStore address
             const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-            await darknodePayment.updateDarknodePaymentStore(DarknodePaymentStore.address);
+            await darknodePayment.claimStoreOwnership();
             await darknodePayment.registerToken(DAIToken.address);
 
             // Update slasher address
