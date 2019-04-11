@@ -208,9 +208,8 @@ contract DarknodePayment is Ownable {
             address(store).transfer(msg.value);
         } else {
             require(msg.value == 0, "unexpected ether transfer");
-            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, this, _value);
             // Forward the funds to the store
-            CompatibleERC20(_token).safeTransfer(address(store), receivedValue);
+            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
         }
         emit LogPaymentReceived(msg.sender, receivedValue, _token);
     }
