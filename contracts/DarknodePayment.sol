@@ -48,9 +48,6 @@ contract DarknodePayment is Ownable {
     // mapping of darknode -> cycle -> already_claimed
     mapping(address => mapping(uint256 => bool)) public rewardClaimed;
 
-    // Mapping from darknode -> token -> balances
-    mapping(address => mapping(address => uint256)) public darknodeBalances;
-
     /// @notice Emitted when a darknode is blacklisted from receiving rewards
     /// @param _darknode The address of the darknode which was blacklisted
     /// @param _time The time at which the darknode was blacklisted
@@ -187,7 +184,7 @@ contract DarknodePayment is Ownable {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
         require(darknodeOwner != 0x0, "invalid darknode owner");
 
-        uint256 amount = darknodeBalances[_darknode][_token];
+        uint256 amount = store.darknodeBalance(_darknode, _token);
         require(amount > 0, "nothing to withdraw");
 
         store.transfer(_darknode, _token, amount, darknodeOwner);
