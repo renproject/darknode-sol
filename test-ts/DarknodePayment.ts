@@ -295,22 +295,22 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("should revert if unauthorized to call blacklist or whitelist", async () => {
         await store.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not DarknodeJudge/);
+        await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not Blacklister/);
         await store.isBlacklisted(darknode1).should.eventually.be.false;
     })
 
-    it("can update the judge address", async () => {
+    it("can update the blacklister address", async () => {
         await store.isBlacklisted(darknode4).should.eventually.be.false;
-        await dnp.updateDarknodeJudge(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
+        await dnp.updateBlacklister(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
         await waitForCycle();
-        await dnp.blacklist(darknode4, { from: accounts[2] }).should.not.be.rejectedWith(null, /not DarknodeJudge/);
+        await dnp.blacklist(darknode4, { from: accounts[2] }).should.not.be.rejectedWith(null, /not Blacklister/);
         await store.isBlacklisted(darknode4).should.eventually.be.true;
-        await dnp.updateDarknodeJudge(owner).should.be.not.rejectedWith(null, /invalid contract address/);
+        await dnp.updateBlacklister(owner).should.be.not.rejectedWith(null, /invalid contract address/);
         await waitForCycle();
     })
 
-    it("cannot update the judge address to an invalid address", async () => {
-        await dnp.updateDarknodeJudge("0x0").should.be.rejectedWith(null, /invalid contract address/);
+    it("cannot update the blacklister address to an invalid address", async () => {
+        await dnp.updateBlacklister("0x0").should.be.rejectedWith(null, /invalid contract address/);
     })
 
     it("cannot blacklist invalid addresses", async () => {
@@ -323,7 +323,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("should reject white/blacklist attempts from non-store contract", async () => {
         await store.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodeJudge/);
+        await dnp.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not Blacklister/);
         await store.isBlacklisted(darknode1).should.eventually.be.false;
         await store.isWhitelisted(darknode5).should.eventually.be.false;
         await store.whitelist(darknode5, new BN(1), { from: darknode1 }).should.be.rejected;

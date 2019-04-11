@@ -23,7 +23,7 @@ contract DarknodePayment is Ownable {
     // DarknodePaymentStore is the storage contract for darknode payments.
     DarknodePaymentStore public store; // Passed in as a constructor parameter.
 
-    address public darknodeJudge; // Contract that can call blacklist
+    address public blacklister; // Contract that can call blacklist
 
     // The number of whitelisted darknodes this cycle
     uint256 public shareSize;
@@ -87,10 +87,10 @@ contract DarknodePayment is Ownable {
     /// @param _oldDuration The old duration
     event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
 
-    /// @notice Emitted when the DarknodeJudge contract changes
-    /// @param _newDarknodeJudge The new DarknodeJudge
-    /// @param _oldDarknodeJudge The old DarknodeJudge
-    event LogDarknodeJudgeChanged(address _newDarknodeJudge, address _oldDarknodeJudge);
+    /// @notice Emitted when the Blacklister contract changes
+    /// @param _newBlacklister The new Blacklister
+    /// @param _oldBlacklister The old Blacklister
+    event LogBlacklisterChanged(address _newBlacklister, address _oldBlacklister);
 
     /// @notice Emitted when a new token is registered
     /// @param _token The token that was registered
@@ -107,8 +107,8 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice Only allow the Darknode Payment contract.
-    modifier onlyDarknodeJudge() {
-        require(darknodeJudge == msg.sender, "not DarknodeJudge");
+    modifier onlyBlacklister() {
+        require(blacklister == msg.sender, "not Blacklister");
         _;
     }
 
@@ -136,8 +136,8 @@ contract DarknodePayment is Ownable {
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
         cycleDuration = _cycleDuration * 1 days;
-        // Default the judge to owner
-        darknodeJudge = msg.sender;
+        // Default the blacklister to owner
+        blacklister = msg.sender;
 
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
@@ -235,7 +235,7 @@ contract DarknodePayment is Ownable {
         emit LogDarknodeClaim(_darknode, previousCycle);
     }
 
-    function blacklist(address _darknode) external onlyDarknodeJudge onlyDarknode(_darknode) {
+    function blacklist(address _darknode) external onlyBlacklister onlyDarknode(_darknode) {
         store.blacklist(_darknode);
         emit LogDarknodeBlacklisted(_darknode, now);
     }
@@ -265,13 +265,13 @@ contract DarknodePayment is Ownable {
         pendingDeregisterTokens.push(_token);
     }
 
-    /// @notice Updates the DarknodeJudge contract address.
+    /// @notice Updates the Blacklister contract address.
     ///
-    /// @param _addr The new DarknodeJudge contract address.
-    function updateDarknodeJudge(address _addr) external onlyOwner {
+    /// @param _addr The new Blacklister contract address.
+    function updateBlacklister(address _addr) external onlyOwner {
         require(_addr != 0x0, "invalid contract address");
-        emit LogDarknodeJudgeChanged(_addr, darknodeJudge);
-        darknodeJudge = _addr;
+        emit LogBlacklisterChanged(_addr, blacklister);
+        blacklister = _addr;
     }
 
     /// @notice Updates cycle duration
