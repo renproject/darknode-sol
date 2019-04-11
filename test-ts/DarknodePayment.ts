@@ -355,6 +355,18 @@ contract("DarknodePayment", (accounts: string[]) => {
         // FIXME: Unimplemented
     })
 
+    it("cannot change cycle if insufficient time has passed", async () => {
+        await waitForCycle(CYCLE_DURATION/2);
+        await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+    });
+
+    it("can change cycle duration", async () => {
+        // Set the duration to 3 days
+        await changeCycleDuration(3);
+        // Reset the duration back to normal
+        await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
+    });
+
     const tick = async (address) => {
         return dnp.claim(address);
     }
@@ -399,7 +411,34 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     }
 
-    const waitForCycle = async (seconds=CYCLE_DURATION) => {
+    const changeCycleDuration = async (timeInDays: number) => {
+        const timeInSecs = timeInDays * day;
+        const currentCycleDurationInSecs = new BN(await dnp.cycleDuration()).toNumber();
+        // console.log(currentCycleDurationInSecs.toString());
+
+        await dnp.updateCycleDuration(timeInDays);
+        (await dnp.cycleDuration()).should.bignumber.equal(timeInSecs);
+
+        // put into effect the new cycle duration
+        await increaseTime(currentCycleDurationInSecs);
+        await dnp.changeCycle().should.not.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+        await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+
+        if (timeInSecs < currentCycleDurationInSecs) {
+            await increaseTime(timeInSecs);
+            await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
+        } else {
+            await increaseTime(currentCycleDurationInSecs);
+            await dnp.changeCycle().should.eventually.be.rejected; //With(null, /cannot cycle yet: too early/);
+            await increaseTime(timeInSecs - currentCycleDurationInSecs);
+            await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
+        }
+    }
+
+    const waitForCycle = async (seconds?) => {
+        if (!seconds) {
+            seconds = new BN(await dnp.cycleDuration()).toNumber();
+        }
         const numEpochs = Math.floor(seconds / (1 * day));
         await increaseTime(seconds);
         for (let i = 0; i < numEpochs; i++) {
