@@ -276,6 +276,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _duration The time before a new cycle can be called, in days
     function updateCycleDuration(uint256 _duration) external onlyOwner {
+        require(_duration >= 0, "cycle duration must be positive");
         uint256 oldDuration = cycleDuration;
         cycleDuration = _duration * 1 days;
         emit LogCycleDurationChanged(cycleDuration, oldDuration);
