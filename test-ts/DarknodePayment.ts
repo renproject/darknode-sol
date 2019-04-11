@@ -292,9 +292,8 @@ contract("DarknodePayment", (accounts: string[]) => {
         newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
     });
 
-    it("should error when epoch hasn't changed but time has passed", async () => {
-        await increaseTime(CYCLE_DURATION);
-        await dnp.changeCycle().should.be.rejectedWith(null, /no new epoch/);
+    it("should error when block number has not changed", async () => {
+        // FIXME: Unimplemented
     })
 
     it("should revert if unauthorized to call blacklist or whitelist", async () => {

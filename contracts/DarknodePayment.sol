@@ -119,8 +119,7 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice The contract constructor.
-    /// Starts the current cycle using the time of deploy and the current
-    /// epoch according to the darknode registry
+    /// Starts the current cycle using the time of deploy
     ///
     /// @param _VERSION A string defining the contract version.
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
@@ -140,8 +139,7 @@ contract DarknodePayment is Ownable {
         blacklister = msg.sender;
 
         // Start the current cycle
-        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
-        currentCycle = dnrCurrentEpoch;
+        currentCycle = block.number;
         cycleStartTime = now;
         cycleTimeout = cycleStartTime + cycleDuration;
     }
@@ -160,10 +158,9 @@ contract DarknodePayment is Ownable {
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
         require(now >= cycleTimeout, "cannot cycle yet: too early");
-        (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
-        require(dnrCurrentEpoch != currentCycle, "no new epoch");
+        require(block.number != currentCycle, "no new block");
 
-        // Snapshot balances for the past epoch
+        // Snapshot balances for the past cycle
         uint arrayLength = supportedTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
             _snapshotBalance(supportedTokens[i]);
@@ -171,7 +168,7 @@ contract DarknodePayment is Ownable {
 
         // Start a new cycle
         previousCycle = currentCycle;
-        currentCycle = dnrCurrentEpoch;
+        currentCycle = block.number;
         cycleStartTime = now;
         cycleTimeout = cycleStartTime + cycleDuration;
 
