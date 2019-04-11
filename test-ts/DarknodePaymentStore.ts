@@ -63,6 +63,15 @@ contract("DarknodePaymentStore", (accounts: string[]) => {
         await waitForCycle();
     });
 
+    it("can register tokens", async() => {
+        await dnp.registerToken(dai.address);
+        // complete token registration
+        await waitForCycle();
+        (await dnp.supportedTokens(0)).should.equal(dai.address);
+        (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+    });
+
+
     it("cannot deposit with ETH attached", async () => {
         const amount = new BN("100000000000000000");
         await dnp.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);

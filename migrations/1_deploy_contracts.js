@@ -76,14 +76,13 @@ module.exports = async function (deployer, network) {
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
         .then(async () => {
-            // Initiate ownership transfer of DNR store
+            // Initiate ownership transfer of DNP store
             const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
             await darknodePaymentStore.transferOwnership(DarknodePayment.address);
 
             // Update DarknodePaymentStore address
             const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
             await darknodePayment.claimStoreOwnership();
-            await darknodePayment.registerToken(DAIToken.address);
 
             // Update slasher address
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
