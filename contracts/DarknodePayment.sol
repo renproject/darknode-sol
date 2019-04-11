@@ -190,7 +190,7 @@ contract DarknodePayment is Ownable {
         address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
         require(darknodeOwner != 0x0, "invalid darknode owner");
 
-        uint256 amount = store.darknodeBalance(_darknode, _token);
+        uint256 amount = store.darknodeBalances(_darknode, _token);
         require(amount > 0, "nothing to withdraw");
 
         store.transfer(_darknode, _token, amount, darknodeOwner);

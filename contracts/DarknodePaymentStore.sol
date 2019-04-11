@@ -19,10 +19,10 @@ contract DarknodePaymentStore is Claimable {
     uint256 public darknodeWhitelistLength;
 
     // mapping of darknode -> token -> balance
-    mapping(address => mapping(address => uint256)) public darknodeBalance;
+    mapping(address => mapping(address => uint256)) public darknodeBalances;
 
     // mapping of token -> lockedAmount
-    mapping(address => uint256) public lockedBalance;
+    mapping(address => uint256) public lockedBalances;
 
     // mapping of darknode -> blacklist
     mapping(address => bool) public isBlacklisted;
@@ -60,7 +60,7 @@ contract DarknodePaymentStore is Claimable {
     }
 
     function availableBalance(address _token) public view returns (uint256) {
-        return totalBalance(_token) - lockedBalance[_token];
+        return totalBalance(_token) - lockedBalances[_token];
     }
 
     function blacklist(address _darknode) external onlyOwner {
@@ -86,8 +86,8 @@ contract DarknodePaymentStore is Claimable {
         require(_amount > 0, "invalid amount");
         require(availableBalance(_token) >= _amount, "insufficient contract balance");
 
-        darknodeBalance[_darknode][_token] += _amount;
-        lockedBalance[_token] += _amount;
+        darknodeBalances[_darknode][_token] += _amount;
+        lockedBalances[_token] += _amount;
     }
 
     /// @notice Transfers an amount out of balance
@@ -97,9 +97,9 @@ contract DarknodePaymentStore is Claimable {
     /// @param _amount The amount to transfer
     /// @param _recipient The address to withdraw it to
     function transfer(address _darknode, address _token, uint256 _amount, address _recipient) external onlyOwner {
-        require(darknodeBalance[_darknode][_token] >= _amount, "insufficient balance");
-        darknodeBalance[_darknode][_token] -= _amount;
-        lockedBalance[_token] -= _amount;
+        require(darknodeBalances[_darknode][_token] >= _amount, "insufficient balance");
+        darknodeBalances[_darknode][_token] -= _amount;
+        lockedBalances[_token] -= _amount;
 
         if (_token == ETHEREUM) {
             _recipient.transfer(_amount);
