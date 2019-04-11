@@ -28,6 +28,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     let store: DarknodePaymentStoreContract;
     let dai: ERC20Contract;
+    let erc20Token: ERC20Contract;
     let dnr: DarknodeRegistryContract;
     let dnp: DarknodePaymentContract;
     let ren: RepublicTokenContract;
@@ -42,6 +43,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     before(async () => {
         ren = await RepublicToken.deployed();
         dai = await ERC20.deployed();
+        erc20Token = await ERC20.new();
         dnr = await DarknodeRegistry.deployed();
         store = await DarknodePaymentStore.deployed();
         dnp = await DarknodePayment.deployed();
@@ -68,6 +70,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     it("can register tokens", async() => {
         await dnp.registerToken(dai.address);
         await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already pending registration/);
+        await dnp.registerToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending registration/);
         // complete token registration
         await waitForCycle();
         (await dnp.supportedTokens(0)).should.equal(dai.address);
@@ -86,12 +89,15 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
         // complete token registration
         await waitForCycle();
-        (await dnp.supportedTokens(1)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(2);
+        (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
         await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
         await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
+        await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
         // complete token deregistration
         await waitForCycle();
+        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
+        (await dnp.supportedTokenIndex(erc20Token.address)).should.bignumber.equal(0);
     });
 
     it("can deposit ETH using deposit()", async () => {
