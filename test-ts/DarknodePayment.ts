@@ -373,6 +373,37 @@ contract("DarknodePayment", (accounts: string[]) => {
         await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
     });
 
+
+    it.only("can transfer ownership of the darknode payment store", async () => {
+        // [ACTION] Initiate ownership transfer to wrong account
+        await dnp.transferStoreOwnership(accounts[1]);
+
+        // [ACTION] Can correct ownership transfer
+        await dnp.transferStoreOwnership(owner);
+
+        // [CHECK] Owner should still be dnp
+        (await store.owner()).should.equal(dnp.address);
+
+        // [ACTION] Claim ownership
+        await store.claimOwnership();
+
+        // [CHECK] Owner should now be main account
+        (await store.owner()).should.equal(owner);
+
+        // [RESET] Initiate ownership transfer back to DNR
+        await store.transferOwnership(dnp.address);
+
+        // [CHECK] Owner should still be main account
+        (await store.owner()).should.equal(owner);
+
+        // [RESET] Claim ownership
+        await dnp.claimStoreOwnership();
+
+        // [CHECK] Owner should now be the dnp
+        (await store.owner()).should.equal(dnp.address);
+    });
+
+
     const tick = async (address) => {
         return dnp.claim(address);
     }
