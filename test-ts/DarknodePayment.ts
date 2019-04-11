@@ -74,6 +74,10 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
     });
 
+    it("cannot register already registered tokens", async() => {
+        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already registered/);
+    });
+
     it("cannot deregister unregistered tokens", async() => {
         await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
     });
