@@ -23,6 +23,8 @@ export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
 export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
 
+export const ETHEREUM_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
 // Makes an ID for a darknode
 export function ID(i: string | number) {
     return web3.utils.toChecksumAddress(web3.utils.sha3(i.toString()).slice(0, 42));
