@@ -86,27 +86,37 @@ contract("DarknodePaymentStore", (accounts: string[]) => {
     })
 
     it("can be paid DAI from a payee", async () => {
-        const previousBalance = new BN(await dnp.unclaimedRewards(dai.address));
-        previousBalance.should.bignumber.equal(new BN(0));
+        // Tick once to whitelist
+        await dnp.claim(darknode1);
+
+        // Attempts to whitelist again during the same cycle should do nothing
+        await dnp.claim(darknode1).should.be.rejectedWith(null, /can't claim for this cycle/);
+        await waitForCycle();
+
+        // darknode1 is now whitelisted is able to participate in rewards
+
+        const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
         const amount = new BN("100000000000000000");
         await deposit(amount);
-        // There should be a positive amount in the reward pool
-        (new BN(await dnp.currentCycleRewardPool(dai.address)).gt(new BN(0))).should.be.true;
+
+        // We should have increased the reward pool
+        (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(previousBalance.add(amount));
 
         // We should have zero claimed balance before ticking
         (new BN(await store.darknodeBalance(darknode1, dai.address))).should.bignumber.equal(new BN(0));
 
-        // Tick once to whitelist
-        await dnp.claim(darknode1);
-        // Attempts to whitelist again during the same cycle should do nothing
-        await dnp.claim(darknode1);
-        await waitForCycle();
-
-        // Tick a second time to participate in rewards
+        // We don't need to claim since we weren't allocated rewards last cycle
+        // But claim shouldn't revert
         await dnp.claim(darknode1);
         await waitForCycle();
 
-        // Tick a third time to claim rewards
+        // We should be the only one who participated last cycle
+        (new BN(await dnp.shareSize())).should.bignumber.equal(1);
+        // We should be allocated all the rewards
+        (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(amount);
+        (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(amount);
+
+        // Claim the rewards for last cycle
         await dnp.claim(darknode1);
         await waitForCycle();
         // There should be nothing left in the reward pool
