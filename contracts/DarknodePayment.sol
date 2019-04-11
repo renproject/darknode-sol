@@ -145,6 +145,12 @@ contract DarknodePayment is Ownable {
         cycleTimeout = now + cycleDuration;
     }
 
+    /// @notice Forward all payments to the DarknodePaymentStore.
+    function () public payable {
+        address(store).transfer(msg.value);
+        emit LogPaymentReceived(msg.sender, msg.value, ETHEREUM);
+    }
+
     /// @notice The current balance of the contract available as reward for the current cycle
     function currentCycleRewardPool(address _token) external view returns (uint256) {
         return store.availableBalance(_token) - unclaimedRewards[_token];

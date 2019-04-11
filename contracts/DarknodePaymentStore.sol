@@ -39,6 +39,10 @@ contract DarknodePaymentStore is Claimable {
         VERSION = _VERSION;
     }
 
+    /// @notice Allow direct payments to be made to the DarknodePaymentStore.
+    function () public payable {
+    }
+
     /// @notice Checks to see if a darknode is whitelisted
     ///
     /// @param _darknode The address of the darknode
