@@ -64,7 +64,7 @@ contract DarknodePaymentStore is Claimable {
     }
 
     function blacklist(address _darknode) external onlyOwner {
-        require(!isBlacklisted[_darknode], "already blacklisted");
+        require(!isBlacklisted[_darknode], "darknode already blacklisted");
         isBlacklisted[_darknode] = true;
 
         // Unwhitelist if necessary
@@ -75,8 +75,8 @@ contract DarknodePaymentStore is Claimable {
     }
 
     function whitelist(address _darknode, uint256 _cycle) external onlyOwner {
-        require(!isBlacklisted[_darknode], "darknode blacklisted");
-        require(!isWhitelisted(_darknode), "already whitelisted");
+        require(!isBlacklisted[_darknode], "darknode is blacklisted");
+        require(!isWhitelisted(_darknode), "darknode already whitelisted");
 
         darknodeWhitelist[_darknode] = _cycle;
         darknodeWhitelistLength++;
@@ -97,7 +97,7 @@ contract DarknodePaymentStore is Claimable {
     /// @param _amount The amount to transfer
     /// @param _recipient The address to withdraw it to
     function transfer(address _darknode, address _token, uint256 _amount, address _recipient) external onlyOwner {
-        require(darknodeBalances[_darknode][_token] >= _amount, "insufficient balance");
+        require(darknodeBalances[_darknode][_token] >= _amount, "insufficient darknode balance");
         darknodeBalances[_darknode][_token] -= _amount;
         lockedBalances[_token] -= _amount;
 

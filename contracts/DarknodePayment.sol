@@ -102,7 +102,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Only allow registered dark nodes.
     modifier onlyDarknode(address _addr) {
-        require(darknodeRegistry.isRegistered(_addr), "not a registered darknode");
+        require(darknodeRegistry.isRegistered(_addr), "darknode is not registered");
         _;
     }
 
@@ -158,7 +158,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
-        require(now >= cycleTimeout, "can't cycle yet");
+        require(now >= cycleTimeout, "cannot cycle yet: too early");
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         require(dnrCurrentEpoch != currentCycle, "no new epoch");
 
@@ -227,7 +227,7 @@ contract DarknodePayment is Ownable {
             return;
         }
 
-        require(whitelistedCycle != currentCycle, "can't claim for this cycle");
+        require(whitelistedCycle != currentCycle, "cannot claim for this cycle");
 
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
@@ -246,7 +246,7 @@ contract DarknodePayment is Ownable {
         require(supportedTokenIndex[_token] == 0, "token already registered");
         uint arrayLength = pendingTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
-            require(pendingTokens[i] != _token, "already pending registration");
+            require(pendingTokens[i] != _token, "token already pending registration");
         }
         pendingTokens.push(_token);
     }
@@ -259,7 +259,7 @@ contract DarknodePayment is Ownable {
         require(supportedTokenIndex[_token] > 0, "token not registered");
         uint arrayLength = pendingDeregisterTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
-            require(pendingDeregisterTokens[i] != _token, "already pending deregistration");
+            require(pendingDeregisterTokens[i] != _token, "token already pending deregistration");
         }
         pendingDeregisterTokens.push(_token);
     }

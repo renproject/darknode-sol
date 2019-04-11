@@ -67,7 +67,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("can register tokens", async() => {
         await dnp.registerToken(dai.address);
-        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /already pending registration/);
+        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already pending registration/);
         // complete token registration
         await waitForCycle();
         (await dnp.supportedTokens(0)).should.equal(dai.address);
@@ -85,7 +85,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.supportedTokens(1)).should.equal(ETHEREUM_TOKEN_ADDRESS);
         (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(2);
         await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
-        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /already pending deregistration/);
+        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
         // complete token deregistration
         await waitForCycle();
     });
@@ -120,7 +120,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     it("cannot tick if not registered", async () => {
-        await dnp.claim(accounts[0]).should.be.rejectedWith(null, /not a registered darknode/);
+        await dnp.claim(accounts[0]).should.be.rejectedWith(null, /darknode is not registered/);
     })
 
     it("cannot withdraw if there is no balance", async () => {
@@ -133,7 +133,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await store.isWhitelisted(darknode1).should.eventually.be.false;
         await dnp.claim(darknode1);
         // Attempts to whitelist again during the same cycle should do nothing
-        await dnp.claim(darknode1).should.be.rejectedWith(null, /can't claim for this cycle/);
+        await dnp.claim(darknode1).should.be.rejectedWith(null, /cannot claim for this cycle/);
         await store.isWhitelisted(darknode1).should.eventually.be.true;
         await waitForCycle();
         new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(1));
@@ -316,9 +316,9 @@ contract("DarknodePayment", (accounts: string[]) => {
     it("cannot blacklist invalid addresses", async () => {
         const invalidAddress = "0x0"
         await store.isBlacklisted(invalidAddress).should.eventually.be.false;
-        await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /not a registered darknode/);
+        await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /darknode is not registered/);
         await store.isBlacklisted(owner).should.eventually.be.false;
-        await dnp.blacklist(owner).should.be.rejectedWith(null, /not a registered darknode/);
+        await dnp.blacklist(owner).should.be.rejectedWith(null, /darknode is not registered/);
     })
 
     it("should reject white/blacklist attempts from non-store contract", async () => {
@@ -338,13 +338,13 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("cannot blacklist already blacklisted darknodes", async () => {
         await store.isBlacklisted(darknode5).should.eventually.be.true;
-        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /already blacklisted/);
+        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
         await store.isBlacklisted(darknode5).should.eventually.be.true;
     })
 
     it("cannot whitelist blacklisted darknodes", async () => {
         await store.isBlacklisted(darknode5).should.eventually.be.true;
-        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /already blacklisted/);
+        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
         await dnp.claim(darknode5).should.be.rejectedWith(null, /darknode is blacklisted/);
     })
 
