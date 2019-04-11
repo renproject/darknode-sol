@@ -340,6 +340,7 @@ contract DarknodePayment is Ownable {
             supportedTokenIndex[token] = supportedTokens.length;
             emit LogTokenRegistered(token);
         }
+        pendingTokens.length = 0;
         // Deregister tokens
         arrayLength = pendingDeregisterTokens.length;
         for (i = 0; i < arrayLength; i++) {
@@ -347,6 +348,7 @@ contract DarknodePayment is Ownable {
             _deregisterToken(token);
             emit LogTokenDeregistered(token);
         }
+        pendingDeregisterTokens.length = 0;
     }
 
 }
