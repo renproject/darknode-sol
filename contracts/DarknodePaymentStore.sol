@@ -24,10 +24,10 @@ contract DarknodePaymentStore is Claimable {
     // mapping of token -> lockedAmount
     mapping(address => uint256) public lockedBalances;
 
-    // mapping of darknode -> blacklist
-    mapping(address => bool) public isBlacklisted;
+    // mapping of darknode -> blacklistTimestamp
+    mapping(address => uint256) public darknodeBlacklist;
 
-    // mapping of darknode -> cycle
+    // mapping of darknode -> whitelistTimestamp
     mapping(address => uint256) public darknodeWhitelist;
 
     /// @notice The contract constructor.
@@ -41,6 +41,14 @@ contract DarknodePaymentStore is Claimable {
 
     /// @notice Allow direct payments to be made to the DarknodePaymentStore.
     function () public payable {
+    }
+
+    /// @notice Checks to see if a darknode is blacklisted
+    ///
+    /// @param _darknode The address of the darknode
+    /// @return true if the darknode is blacklisted
+    function isBlacklisted(address _darknode) public view returns (bool) {
+        return darknodeBlacklist[_darknode] != 0;
     }
 
     /// @notice Checks to see if a darknode is whitelisted
@@ -64,8 +72,8 @@ contract DarknodePaymentStore is Claimable {
     }
 
     function blacklist(address _darknode) external onlyOwner {
-        require(!isBlacklisted[_darknode], "darknode already blacklisted");
-        isBlacklisted[_darknode] = true;
+        require(!isBlacklisted(_darknode), "darknode already blacklisted");
+        darknodeBlacklist[_darknode] = now;
 
         // Unwhitelist if necessary
         if (isWhitelisted(_darknode)) {
@@ -74,11 +82,11 @@ contract DarknodePaymentStore is Claimable {
         }
     }
 
-    function whitelist(address _darknode, uint256 _cycle) external onlyOwner {
-        require(!isBlacklisted[_darknode], "darknode is blacklisted");
+    function whitelist(address _darknode) external onlyOwner {
+        require(!isBlacklisted(_darknode), "darknode is blacklisted");
         require(!isWhitelisted(_darknode), "darknode already whitelisted");
 
-        darknodeWhitelist[_darknode] = _cycle;
+        darknodeWhitelist[_darknode] = now;
         darknodeWhitelistLength++;
     }
 

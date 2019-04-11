@@ -42,6 +42,7 @@ contract DarknodePayment is Ownable {
     mapping(address => uint256) public unclaimedRewards;
     mapping(address => uint256) public previousCycleRewardShare;
 
+    uint256 public cycleStartTime;
     uint256 public cycleDuration;
     uint256 public cycleTimeout;
 
@@ -55,9 +56,8 @@ contract DarknodePayment is Ownable {
 
     /// @notice Emitted when a darknode is whitelisted to receive rewards
     /// @param _darknode The address of the darknode which was whitelisted
-    /// @param _cycle The cycle in which the darknode was whitelisted
     /// @param _time The time at which the darknode was whitelisted
-    event LogDarknodeWhitelisted(address _darknode, uint256 _cycle, uint256 _time);
+    event LogDarknodeWhitelisted(address _darknode, uint256 _time);
 
     /// @notice Emitted when a darknode claims their share of reward
     /// @param _darknode The darknode which claimed
@@ -142,7 +142,8 @@ contract DarknodePayment is Ownable {
         // Start the current cycle
         (uint256 dnrCurrentEpoch, ) = darknodeRegistry.currentEpoch();
         currentCycle = dnrCurrentEpoch;
-        cycleTimeout = now + cycleDuration;
+        cycleStartTime = now;
+        cycleTimeout = cycleStartTime + cycleDuration;
     }
 
     /// @notice Forward all payments to the DarknodePaymentStore.
@@ -171,7 +172,8 @@ contract DarknodePayment is Ownable {
         // Start a new cycle
         previousCycle = currentCycle;
         currentCycle = dnrCurrentEpoch;
-        cycleTimeout = now + cycleDuration;
+        cycleStartTime = now;
+        cycleTimeout = cycleStartTime + cycleDuration;
 
         // Update the share size for next cycle
         shareSize = store.darknodeWhitelistLength();
@@ -218,16 +220,16 @@ contract DarknodePayment is Ownable {
     /// the darknode balances. Whitelists the darknode if it hasn't already been
     /// whitelisted. If a darknode does not call claim() then the rewards for the previous cycle is lost.
     function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
-        uint256 whitelistedCycle = store.darknodeWhitelist(_darknode);
+        uint256 whitelistedTime = store.darknodeWhitelist(_darknode);
 
         // The darknode hasn't been whitelisted before
-        if (whitelistedCycle == 0) {
-            store.whitelist(_darknode, currentCycle);
-            emit LogDarknodeWhitelisted(_darknode, currentCycle, now);
+        if (whitelistedTime == 0) {
+            store.whitelist(_darknode);
+            emit LogDarknodeWhitelisted(_darknode, now);
             return;
         }
 
-        require(whitelistedCycle != currentCycle, "cannot claim for this cycle");
+        require(whitelistedTime < cycleStartTime, "cannot claim for this cycle");
 
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
