@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime,
+    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS
 } from "./helper/testUtils";
 
 
@@ -67,17 +67,57 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     it("can register tokens", async() => {
         await dnp.registerToken(dai.address);
+        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /already pending registration/);
         // complete token registration
         await waitForCycle();
         (await dnp.supportedTokens(0)).should.equal(dai.address);
         (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
     });
 
+    it("cannot deregister unregistered tokens", async() => {
+        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+    });
 
-    it("cannot deposit with ETH attached", async () => {
+    it("can deregister tokens", async() => {
+        await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
+        // complete token registration
+        await waitForCycle();
+        (await dnp.supportedTokens(1)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(2);
+        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
+        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /already pending deregistration/);
+        // complete token deregistration
+        await waitForCycle();
+    });
+
+    it("can deposit ETH using deposit()", async () => {
+        // deposit using deposit() function
+        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+        const amount = new BN("1000000000");
+        await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
+        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+    });
+
+    it("can deposit ETH via direct payment to DarknodePayment contract", async () => {
+        // deposit using direct deposit to dnp
+        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+        const amount = new BN("1000000000");
+        await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
+        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+    });
+
+    it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
+        // deposit using direct deposit to store
+        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+        const amount = new BN("1000000000");
+        await web3.eth.sendTransaction({ to: store.address, from: owner, value: amount.toString() });
+        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+    });
+
+    it("cannot deposit ERC20 with ETH attached", async () => {
         const amount = new BN("100000000000000000");
         await dnp.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
-    })
+    });
 
     it("cannot tick if not registered", async () => {
         await dnp.claim(accounts[0]).should.be.rejectedWith(null, /not a registered darknode/);
