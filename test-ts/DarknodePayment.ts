@@ -76,7 +76,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not DarknodeJudge/);
         await store.isBlacklisted(darknode1).should.eventually.be.false;
         await store.isWhitelisted(darknode1).should.eventually.be.false;
-        await store.whitelist(darknode1, new BN(1), { from: darknode1 }).should.be.rejectedWith(null, /not DarknodePaymentStore/);
+        await store.whitelist(darknode1, new BN(1), { from: darknode1 }).should.be.rejected;
         await store.isWhitelisted(darknode1).should.eventually.be.false;
     })
 
