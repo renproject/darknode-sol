@@ -24,6 +24,7 @@ module.exports = {
         "test/UtilsTest.sol",
         "test/tokens/TokenWithFees.sol",
         "test/LinkedListTest.sol",
+        "test/tokens/PaymentToken.sol",
         "test/CycleChanger.sol",
     ],
 };
