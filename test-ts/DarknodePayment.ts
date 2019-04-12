@@ -307,10 +307,9 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot withdraw if a darknode owner is invalid", async () => {
-            // FIXME: test invalid darknode owner
-            // await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+            await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
             // accounts[0] is not a registered darknode
-            // await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+            await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
         })
 
         it("cannot withdraw more than once in a cycle", async () => {
