@@ -67,295 +67,373 @@ contract("DarknodePayment", (accounts: string[]) => {
         await waitForCycle();
     });
 
-    it("can register tokens", async() => {
-        await dnp.registerToken(dai.address);
-        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already pending registration/);
-        await dnp.registerToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending registration/);
-        // complete token registration
-        await waitForCycle();
-        (await dnp.supportedTokens(0)).should.equal(dai.address);
-        (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+    describe("Token registration", async() => {
+        it("can register tokens", async() => {
+            await dnp.registerToken(dai.address);
+            await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already pending registration/);
+            await dnp.registerToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending registration/);
+            // complete token registration
+            await waitForCycle();
+            (await dnp.supportedTokens(0)).should.equal(dai.address);
+            (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+        });
+
+        it("cannot register already registered tokens", async() => {
+            await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already registered/);
+        });
+
+        it("cannot deregister unregistered tokens", async() => {
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+        });
+
+        it("can deregister tokens", async() => {
+            await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
+            // complete token registration
+            await waitForCycle();
+            (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
+            await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
+            // complete token deregistration
+            await waitForCycle();
+            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
+            (await dnp.supportedTokenIndex(erc20Token.address)).should.bignumber.equal(0);
+        });
     });
 
-    it("cannot register already registered tokens", async() => {
-        await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already registered/);
+    describe("Token deposits", async () => {
+
+        it("can deposit ETH using deposit()", async () => {
+            // deposit using deposit() function
+            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
+            const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+            const amount = new BN("1000000000");
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
+            new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+            // We should have increased the reward pool
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+        });
+
+        it("can deposit ETH via direct payment to DarknodePayment contract", async () => {
+            // deposit using direct deposit to dnp
+            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
+            const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+            const amount = new BN("1000000000");
+            await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
+            new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+            // We should have increased the reward pool
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+        });
+
+        it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
+            // deposit using direct deposit to store
+            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
+            const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+            const amount = new BN("1000000000");
+            await web3.eth.sendTransaction({ to: store.address, from: owner, value: amount.toString() });
+            new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+            // We should have increased the reward pool
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+        });
+
+        it("cannot deposit ERC20 with ETH attached", async () => {
+            const amount = new BN("100000000000000000");
+            await dnp.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
+        });
     });
 
-    it("cannot deregister unregistered tokens", async() => {
-        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
-    });
 
-    it("can deregister tokens", async() => {
-        await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
-        // complete token registration
-        await waitForCycle();
-        (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
-        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
-        await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
-        await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
-        // complete token deregistration
-        await waitForCycle();
-        (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
-        (await dnp.supportedTokenIndex(erc20Token.address)).should.bignumber.equal(0);
-    });
+    describe("Claiming rewards", async () => {
+        it("cannot tick if not registered", async () => {
+            await dnp.claim(accounts[0]).should.be.rejectedWith(null, /darknode is not registered/);
+        })
 
-    it("can deposit ETH using deposit()", async () => {
-        // deposit using deposit() function
-        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
-        const amount = new BN("1000000000");
-        await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
-        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
-    });
+        it("cannot withdraw if there is no balance", async () => {
+            await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
+        })
 
-    it("can deposit ETH via direct payment to DarknodePayment contract", async () => {
-        // deposit using direct deposit to dnp
-        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
-        const amount = new BN("1000000000");
-        await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
-        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
-    });
+        it("can whitelist darknodes", async () => {
+            await waitForCycle();
+            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(0));
+            await store.isWhitelisted(darknode1).should.eventually.be.false;
+            await dnp.claim(darknode1);
+            // Attempts to whitelist again during the same cycle should do nothing
+            await dnp.claim(darknode1).should.be.rejectedWith(null, /cannot claim for this cycle/);
+            await store.isWhitelisted(darknode1).should.eventually.be.true;
+            await waitForCycle();
+            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(1));
+        })
 
-    it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
-        // deposit using direct deposit to store
-        const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
-        const amount = new BN("1000000000");
-        await web3.eth.sendTransaction({ to: store.address, from: owner, value: amount.toString() });
-        new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
-    });
+        it("can be paid DAI from a payee", async () => {
+            // darknode1 is whitelisted and can participate in rewards
+            const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
+            const amount = new BN("100000000000000000");
+            await deposit(amount);
 
-    it("cannot deposit ERC20 with ETH attached", async () => {
-        const amount = new BN("100000000000000000");
-        await dnp.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(null, /unexpected ether transfer/);
-    });
+            // We should have increased the reward pool
+            (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(previousBalance.add(amount));
 
-    it("cannot tick if not registered", async () => {
-        await dnp.claim(accounts[0]).should.be.rejectedWith(null, /darknode is not registered/);
-    })
+            // We should have zero claimed balance before ticking
+            (new BN(await store.darknodeBalances(darknode1, dai.address))).should.bignumber.equal(new BN(0));
 
-    it("cannot withdraw if there is no balance", async () => {
-        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
-    })
+            // We don't need to claim since we weren't allocated rewards last cycle
+            // But claim shouldn't revert
+            await dnp.claim(darknode1);
+            await waitForCycle();
 
-    it("can whitelist darknodes", async () => {
-        await waitForCycle();
-        new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(0));
-        await store.isWhitelisted(darknode1).should.eventually.be.false;
-        await dnp.claim(darknode1);
-        // Attempts to whitelist again during the same cycle should do nothing
-        await dnp.claim(darknode1).should.be.rejectedWith(null, /cannot claim for this cycle/);
-        await store.isWhitelisted(darknode1).should.eventually.be.true;
-        await waitForCycle();
-        new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(1));
-    })
+            // We should be the only one who participated last cycle
+            (new BN(await dnp.shareSize())).should.bignumber.equal(1);
+            // We should be allocated all the rewards
+            (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(amount);
+            (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(amount);
 
-    it("can be paid DAI from a payee", async () => {
-        // darknode1 is whitelisted and can participate in rewards
-        const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
-        const amount = new BN("100000000000000000");
-        await deposit(amount);
+            // Claim the rewards for last cycle
+            await dnp.claim(darknode1);
+            await waitForCycle();
+            // There should be nothing left in the reward pool
+            (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(new BN(0));
+            const darknode1Balance = new BN(await store.darknodeBalances(darknode1, dai.address));
+            darknode1Balance.should.bignumber.equal(amount);
+        });
 
-        // We should have increased the reward pool
-        (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(previousBalance.add(amount));
+        it("can be paid ETH from a payee", async () => {
+            // register ETH
+            await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
+            await waitForCycle();
 
-        // We should have zero claimed balance before ticking
-        (new BN(await store.darknodeBalances(darknode1, dai.address))).should.bignumber.equal(new BN(0));
+            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
+            const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
+            const amount = new BN("1000000000");
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /mismatched deposit value/);
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
+            new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
+            // We should have increased the reward pool
+            const newReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
+            newReward.should.bignumber.equal(previousReward.add(amount));
 
-        // We don't need to claim since we weren't allocated rewards last cycle
-        // But claim shouldn't revert
-        await dnp.claim(darknode1);
-        await waitForCycle();
+            // We should have zero claimed balance before ticking
+            (new BN(await store.darknodeBalances(darknode1, ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(new BN(0));
 
-        // We should be the only one who participated last cycle
-        (new BN(await dnp.shareSize())).should.bignumber.equal(1);
-        // We should be allocated all the rewards
-        (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(amount);
-        (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(amount);
+            // We don't need to claim since we weren't allocated rewards last cycle
+            // But claim shouldn't revert
+            await dnp.claim(darknode1);
+            await waitForCycle();
 
-        // Claim the rewards for last cycle
-        await dnp.claim(darknode1);
-        await waitForCycle();
-        // There should be nothing left in the reward pool
-        (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(new BN(0));
-        const darknode1Balance = new BN(await store.darknodeBalances(darknode1, dai.address));
-        darknode1Balance.should.bignumber.equal(amount);
-    });
+            // We should be the only one who participated last cycle
+            (new BN(await dnp.shareSize())).should.bignumber.equal(1);
+            // We should be allocated all the rewards
+            (new BN(await dnp.unclaimedRewards(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
+            (new BN(await dnp.previousCycleRewardShare(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
 
-    it("can pay out DAI when darknodes withdraw", async () => {
-        const darknode1Balance = new BN(await store.darknodeBalances(darknode1, dai.address));
-        darknode1Balance.gt(new BN(0)).should.be.true;
-        await withdraw(darknode1);
-    })
+            // Claim the rewards for last cycle
+            await dnp.claim(darknode1);
+            await waitForCycle();
+            // There should be nothing left in the reward pool
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(new BN(0));
+            const earnedRewards = new BN(await store.darknodeBalances(darknode1, ETHEREUM_TOKEN_ADDRESS));
+            earnedRewards.should.bignumber.equal(newReward);
 
-    it("cannot call tick twice in the same cycle", async () => {
-        await dnp.claim(darknode1);
-        await dnp.claim(darknode1).should.be.rejectedWith(null, /reward already claimed/);
-    })
+            const oldBalance = new BN(await web3.eth.getBalance(darknode1));
+            await dnp.withdraw(darknode1, ETHEREUM_TOKEN_ADDRESS);
 
-    it("can tick again after a cycle has passed", async () => {
-        await dnp.claim(darknode1);
-        await waitForCycle();
-        await dnp.claim(darknode1).should.not.be.rejectedWith(null, /reward already claimed/);
-    })
+            // Our balances should have increased
+            const newBalance = new BN(await web3.eth.getBalance(darknode1));
+            newBalance.should.bignumber.equal(oldBalance.add(earnedRewards));
 
-    it("should evenly split reward pool between ticked darknodes", async () => {
-        const numDarknodes = 3;
+            // We should have nothing left to withdraw
+            const postWithdrawRewards = new BN(await store.darknodeBalances(darknode1, ETHEREUM_TOKEN_ADDRESS));
+            postWithdrawRewards.should.bignumber.equal(new BN(0));
 
-        // Start from number 2 to avoid previous balances
-        const startDarknode = 2;
+            // Deregister ETH
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.not.be.rejectedWith(null, /token already pending deregistration/);
+            await waitForCycle();
+            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
+        });
 
-        // Whitelist
-        await multiTick(startDarknode, numDarknodes);
-        // Change the epoch
-        await waitForCycle();
+        it("can pay out DAI when darknodes withdraw", async () => {
+            const darknode1Balance = new BN(await store.darknodeBalances(darknode1, dai.address));
+            darknode1Balance.gt(new BN(0)).should.be.true;
+            await withdraw(darknode1);
+        })
 
-        const rewards = new BN("300000000000000000");
-        await deposit(rewards);
+        it("cannot call tick twice in the same cycle", async () => {
+            await dnp.claim(darknode1);
+            await dnp.claim(darknode1).should.be.rejectedWith(null, /reward already claimed/);
+        })
 
-        // Participate in rewards
-        await multiTick(startDarknode, numDarknodes);
-        // Change the epoch
-        await waitForCycle();
+        it("can tick again after a cycle has passed", async () => {
+            await dnp.claim(darknode1);
+            await waitForCycle();
+            await dnp.claim(darknode1).should.not.be.rejectedWith(null, /reward already claimed/);
+        })
 
-        // Claim rewards for past epoch
-        await multiTick(startDarknode, numDarknodes);
+        it("should evenly split reward pool between ticked darknodes", async () => {
+            const numDarknodes = 3;
 
-        for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-            (new BN(await store.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await dnp.shareSize())));
-        }
+            // Start from number 2 to avoid previous balances
+            const startDarknode = 2;
 
-        // Withdraw for each darknode
-        await multiWithdraw(startDarknode, numDarknodes);
+            // Whitelist
+            await multiTick(startDarknode, numDarknodes);
+            // Change the epoch
+            await waitForCycle();
 
-        // claim rewards for darknode1
-        await tick(darknode1);
-    });
+            const rewards = new BN("300000000000000000");
+            await deposit(rewards);
 
-    it("cannot withdraw if a darknode owner is invalid", async () => {
-        // FIXME: test invalid darknode owner
-        // await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
-        // accounts[0] is not a registered darknode
-        // await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
-    })
+            // Participate in rewards
+            await multiTick(startDarknode, numDarknodes);
+            // Change the epoch
+            await waitForCycle();
 
-    it("cannot withdraw more than once in a cycle", async () => {
-        const numDarknodes = 4;
-        new BN(await dnp.shareSize()).should.bignumber.equal(numDarknodes);
+            // Claim rewards for past epoch
+            await multiTick(startDarknode, numDarknodes);
 
-        const rewards = new BN("300000000000000000");
-        await deposit(rewards);
-        await multiTick(1, numDarknodes);
-        // Change the epoch
-        await waitForCycle();
+            for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
+                (new BN(await store.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await dnp.shareSize())));
+            }
 
-        // Claim rewards for past cycle
-        await multiTick(1, numDarknodes);
+            // Withdraw for each darknode
+            await multiWithdraw(startDarknode, numDarknodes);
 
-        // First withdraw should pass
-        await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
+            // claim rewards for darknode1
+            await tick(darknode1);
+        });
 
-        // Rest should fail
-        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
-        await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
-    });
+        it("cannot withdraw if a darknode owner is invalid", async () => {
+            // FIXME: test invalid darknode owner
+            // await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+            // accounts[0] is not a registered darknode
+            // await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+        })
 
-    it("cannot tick if it is blacklisted", async () => {
-        // Should succeed if not blacklisted
-        await tick(darknode2);
+        it("cannot withdraw more than once in a cycle", async () => {
+            const numDarknodes = 4;
+            new BN(await dnp.shareSize()).should.bignumber.equal(numDarknodes);
 
-        await dnp.blacklist(darknode2);
+            const rewards = new BN("300000000000000000");
+            await deposit(rewards);
+            await multiTick(1, numDarknodes);
+            // Change the epoch
+            await waitForCycle();
 
-        // Change the epoch
-        await waitForCycle();
+            // Claim rewards for past cycle
+            await multiTick(1, numDarknodes);
 
-        // Tick should fail
-        await tick(darknode2).should.be.rejectedWith(null, /darknode is blacklisted/);
-    });
+            // First withdraw should pass
+            await withdraw(darknode1).should.not.be.rejectedWith(null, /nothing to withdraw/);
 
-    it("can still withdraw allocated rewards when blacklisted", async () => {
-        // Change the epoch
-        await waitForCycle();
-        // Change the epoch
-        await waitForCycle();
-        // Add rewards into the next cycle's pool
-        (await store.isWhitelisted(darknode3)).should.be.true;
-        const previousBalances = (new BN(await store.darknodeBalances(darknode3, dai.address)));
+            // Rest should fail
+            await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
+            await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(null, /nothing to withdraw/);
+        });
 
-        const rewards = new BN("300000000000000000");
-        await deposit(rewards);
-        // Change the epoch
-        await waitForCycle();
+        it("cannot tick if it is blacklisted", async () => {
+            // Should succeed if not blacklisted
+            await tick(darknode2);
 
-        // Claim the rewards for the pool
-        await tick(darknode3);
+            await dnp.blacklist(darknode2);
 
-        const rewardSplit = new BN(await dnp.shareSize());
+            // Change the epoch
+            await waitForCycle();
 
-        // Claim rewards for past cycle
-        await dnp.blacklist(darknode3);
+            // Tick should fail
+            await tick(darknode2).should.be.rejectedWith(null, /darknode is blacklisted/);
+        });
 
-        const newBalances = (new BN(await store.darknodeBalances(darknode3, dai.address)));
-        newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
+        it("can still withdraw allocated rewards when blacklisted", async () => {
+            // Change the epoch
+            await waitForCycle();
+            // Change the epoch
+            await waitForCycle();
+            // Add rewards into the next cycle's pool
+            (await store.isWhitelisted(darknode3)).should.be.true;
+            const previousBalances = (new BN(await store.darknodeBalances(darknode3, dai.address)));
+
+            const rewards = new BN("300000000000000000");
+            await deposit(rewards);
+            // Change the epoch
+            await waitForCycle();
+
+            // Claim the rewards for the pool
+            await tick(darknode3);
+
+            const rewardSplit = new BN(await dnp.shareSize());
+
+            // Claim rewards for past cycle
+            await dnp.blacklist(darknode3);
+
+            const newBalances = (new BN(await store.darknodeBalances(darknode3, dai.address)));
+            newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
+
+            withdraw(darknode3);
+        });
+
     });
 
     it("should error when block number has not changed", async () => {
         // FIXME: Unimplemented
     })
 
-    it("should revert if unauthorized to call blacklist or whitelist", async () => {
-        await store.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not Blacklister/);
-        await store.isBlacklisted(darknode1).should.eventually.be.false;
-    })
+    describe("Black/whitelisting of Darknodes", async () => {
 
-    it("can update the blacklister address", async () => {
-        await store.isBlacklisted(darknode4).should.eventually.be.false;
-        await dnp.updateBlacklister(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
-        await waitForCycle();
-        await dnp.blacklist(darknode4, { from: accounts[2] }).should.not.be.rejectedWith(null, /not Blacklister/);
-        await store.isBlacklisted(darknode4).should.eventually.be.true;
-        await dnp.updateBlacklister(owner).should.be.not.rejectedWith(null, /invalid contract address/);
-        await waitForCycle();
-    })
+        it("should revert if unauthorized to call blacklist or whitelist", async () => {
+            await store.isBlacklisted(darknode1).should.eventually.be.false;
+            await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not Blacklister/);
+            await store.isBlacklisted(darknode1).should.eventually.be.false;
+        })
 
-    it("cannot update the blacklister address to an invalid address", async () => {
-        await dnp.updateBlacklister("0x0").should.be.rejectedWith(null, /invalid contract address/);
-    })
+        it("can update the blacklister address", async () => {
+            await store.isBlacklisted(darknode4).should.eventually.be.false;
+            await dnp.updateBlacklister(accounts[2]).should.be.not.rejectedWith(null, /invalid contract address/);
+            await waitForCycle();
+            await dnp.blacklist(darknode4, { from: accounts[2] }).should.not.be.rejectedWith(null, /not Blacklister/);
+            await store.isBlacklisted(darknode4).should.eventually.be.true;
+            await dnp.updateBlacklister(owner).should.be.not.rejectedWith(null, /invalid contract address/);
+            await waitForCycle();
+        })
 
-    it("cannot blacklist invalid addresses", async () => {
-        const invalidAddress = "0x0"
-        await store.isBlacklisted(invalidAddress).should.eventually.be.false;
-        await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /darknode is not registered/);
-        await store.isBlacklisted(owner).should.eventually.be.false;
-        await dnp.blacklist(owner).should.be.rejectedWith(null, /darknode is not registered/);
-    })
+        it("cannot update the blacklister address to an invalid address", async () => {
+            await dnp.updateBlacklister("0x0").should.be.rejectedWith(null, /invalid contract address/);
+        })
 
-    it("should reject white/blacklist attempts from non-store contract", async () => {
-        await store.isBlacklisted(darknode1).should.eventually.be.false;
-        await dnp.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not Blacklister/);
-        await store.isBlacklisted(darknode1).should.eventually.be.false;
-        await store.isWhitelisted(darknode5).should.eventually.be.false;
-        await store.whitelist(darknode5, { from: darknode1 }).should.be.rejected;
-        await store.isWhitelisted(darknode5).should.eventually.be.false;
-    })
+        it("cannot blacklist invalid addresses", async () => {
+            const invalidAddress = "0x0"
+            await store.isBlacklisted(invalidAddress).should.eventually.be.false;
+            await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /darknode is not registered/);
+            await store.isBlacklisted(owner).should.eventually.be.false;
+            await dnp.blacklist(owner).should.be.rejectedWith(null, /darknode is not registered/);
+        })
 
-    it("can blacklist darknodes", async () => {
-        await store.isBlacklisted(darknode5).should.eventually.be.false;
-        await dnp.blacklist(darknode5);
-        await store.isBlacklisted(darknode5).should.eventually.be.true;
-    })
+        it("should reject white/blacklist attempts from non-store contract", async () => {
+            await store.isBlacklisted(darknode1).should.eventually.be.false;
+            await dnp.blacklist(darknode1, { from: darknode1 }).should.be.rejectedWith(null, /not Blacklister/);
+            await store.isBlacklisted(darknode1).should.eventually.be.false;
+            await store.isWhitelisted(darknode5).should.eventually.be.false;
+            await store.whitelist(darknode5, { from: darknode1 }).should.be.rejected;
+            await store.isWhitelisted(darknode5).should.eventually.be.false;
+        })
 
-    it("cannot blacklist already blacklisted darknodes", async () => {
-        await store.isBlacklisted(darknode5).should.eventually.be.true;
-        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
-        await store.isBlacklisted(darknode5).should.eventually.be.true;
-    })
+        it("can blacklist darknodes", async () => {
+            await store.isBlacklisted(darknode5).should.eventually.be.false;
+            await dnp.blacklist(darknode5);
+            await store.isBlacklisted(darknode5).should.eventually.be.true;
+        })
 
-    it("cannot whitelist blacklisted darknodes", async () => {
-        await store.isBlacklisted(darknode5).should.eventually.be.true;
-        await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
-        await dnp.claim(darknode5).should.be.rejectedWith(null, /darknode is blacklisted/);
-    })
+        it("cannot blacklist already blacklisted darknodes", async () => {
+            await store.isBlacklisted(darknode5).should.eventually.be.true;
+            await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
+            await store.isBlacklisted(darknode5).should.eventually.be.true;
+        })
+
+        it("cannot whitelist blacklisted darknodes", async () => {
+            await store.isBlacklisted(darknode5).should.eventually.be.true;
+            await dnp.blacklist(darknode5).should.be.rejectedWith(null, /darknode already blacklisted/);
+            await dnp.claim(darknode5).should.be.rejectedWith(null, /darknode is blacklisted/);
+        });
+
+    });
 
     it("cannot change cycle if insufficient time has passed", async () => {
         await waitForCycle(CYCLE_DURATION/2);

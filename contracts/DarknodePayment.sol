@@ -203,6 +203,7 @@ contract DarknodePayment is Ownable {
     function deposit(uint256 _value, address _token) external payable {
         uint256 receivedValue;
         if (_token == ETHEREUM) {
+            require(_value == msg.value, "mismatched deposit value");
             receivedValue = msg.value;
             address(store).transfer(msg.value);
         } else {
