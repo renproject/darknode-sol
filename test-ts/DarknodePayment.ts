@@ -16,7 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
-const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
+const ERC20 = artifacts.require("PaymentToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
@@ -83,13 +83,13 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.registerToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending registration/);
             // complete token registration
             await waitForCycle();
-            (await dnp.supportedTokens(0)).should.equal(dai.address);
-            (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+            (await dnp.registeredTokens(0)).should.equal(dai.address);
+            (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
             await waitForCycle();
-            (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
+            (await dnp.registeredTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
         });
 
         it("cannot register already registered tokens", async() => {
@@ -106,8 +106,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
             // complete token deregistration
             await waitForCycle();
-            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
-            (await dnp.supportedTokenIndex(erc20Token.address)).should.bignumber.equal(0);
+            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
+            (await dnp.registeredTokenIndex(erc20Token.address)).should.bignumber.equal(0);
         });
 
         it("cannot deregister unregistered tokens", async() => {
@@ -262,7 +262,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // Deregister ETH
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.not.be.rejectedWith(null, /token already pending deregistration/);
             await waitForCycle();
-            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
+            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
         });
 
         it("can pay out DAI when darknodes withdraw", async () => {
