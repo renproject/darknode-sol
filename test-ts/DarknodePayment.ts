@@ -83,12 +83,12 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.registerToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending registration/);
             // complete token registration
             await waitForCycle();
-            (await dnp.supportedTokens(0)).should.equal(dai.address);
+            (await dnp.registeredTokens(0)).should.equal(dai.address);
             (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
             await waitForCycle();
-            (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.registeredTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
             (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
         });
 
