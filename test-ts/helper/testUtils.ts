@@ -23,6 +23,8 @@ export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
 export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
 
+export const ETHEREUM_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
 // Makes an ID for a darknode
 export function ID(i: string | number) {
     return web3.utils.toChecksumAddress(web3.utils.sha3(i.toString()).slice(0, 42));
@@ -42,6 +44,20 @@ export const randomBytes = (bytes: number): string => {
 
 export const randomAddress = (): string => {
     return web3.utils.toChecksumAddress(randomBytes(20));
+};
+
+export const increaseTime = async (seconds: number) => {
+    await new Promise((resolve, reject) => {
+        web3.currentProvider.send(
+            { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 },
+            (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(value);
+            }
+        );
+    });
 };
 
 export async function waitForEpoch(dnr: DarknodeRegistryContract) {

@@ -1,5 +1,7 @@
 pragma solidity ^0.4.25;
 
+import "./DarknodePayment.sol";
+import "./DarknodePaymentStore.sol";
 import "./DarknodeRegistry.sol";
 import "./DarknodeRewardVault.sol";
 import "./DarknodeSlasher.sol";

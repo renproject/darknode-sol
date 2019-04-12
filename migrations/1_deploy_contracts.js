@@ -1,4 +1,7 @@
+const DAIToken = artifacts.require("DAIToken");
 const RepublicToken = artifacts.require("RepublicToken");
+const DarknodePayment = artifacts.require("DarknodePayment");
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
@@ -14,6 +17,9 @@ module.exports = async function (deployer, network) {
 
     await deployer
         .deploy(RepublicToken)
+        .then(() => deployer.deploy(
+            DAIToken
+        ))
         .then(() => deployer.deploy(
             DarknodeRegistryStore,
             VERSION_STRING,
@@ -58,7 +64,27 @@ module.exports = async function (deployer, network) {
             DarknodeRegistry.address,
             Orderbook.address,
         ))
+        .then(() => deployer.deploy(
+            DarknodePaymentStore,
+            VERSION_STRING,
+        ))
+        .then(() => deployer.deploy(
+            DarknodePayment,
+            VERSION_STRING,
+            DarknodeRegistry.address,
+            DarknodePaymentStore.address,
+            config.DARKNODE_PAYMENT_CYCLE_DURATION,
+        ))
         .then(async () => {
+            // Initiate ownership transfer of DNP store
+            const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
+            await darknodePaymentStore.transferOwnership(DarknodePayment.address);
+
+            // Update DarknodePaymentStore address
+            const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+            await darknodePayment.claimStoreOwnership();
+
+            // Update slasher address
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
             await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
         });

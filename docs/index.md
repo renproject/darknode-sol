@@ -7,3 +7,5 @@
 * [Darknode Slasher](./03-darknode-slasher.md)
 * [Orderbook](./04-orderbook.md)
 * [Settlement](./05-settlement.md)
+* [Paying the Darknodes](./06-darknode-payment.md)
+
