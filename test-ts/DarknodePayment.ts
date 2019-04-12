@@ -73,6 +73,10 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     describe("Token registration", async() => {
+        it("cannot register token if not owner", async() => {
+            await dnp.registerToken(dai.address, { from: accounts[1] }).should.be.rejected;
+        });
+
         it("can register tokens", async() => {
             await dnp.registerToken(dai.address);
             await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already pending registration/);
@@ -81,22 +85,22 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForCycle();
             (await dnp.supportedTokens(0)).should.equal(dai.address);
             (await dnp.supportedTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+            await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
+            // complete token registration
+            await waitForCycle();
+            (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
         });
 
         it("cannot register already registered tokens", async() => {
             await dnp.registerToken(dai.address).should.be.rejectedWith(null, /token already registered/);
         });
 
-        it("cannot deregister unregistered tokens", async() => {
-            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+        it("cannot deregister token if not owner", async() => {
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS, { from: accounts[1] }).should.be.rejected;
         });
 
         it("can deregister tokens", async() => {
-            await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
-            // complete token registration
-            await waitForCycle();
-            (await dnp.supportedTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-            (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
             await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
@@ -105,6 +109,11 @@ contract("DarknodePayment", (accounts: string[]) => {
             (await dnp.supportedTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
             (await dnp.supportedTokenIndex(erc20Token.address)).should.bignumber.equal(0);
         });
+
+        it("cannot deregister unregistered tokens", async() => {
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+        });
+
     });
 
     describe("Token deposits", async () => {
@@ -378,10 +387,14 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     describe("Black/whitelisting of Darknodes", async () => {
 
-        it("should revert if unauthorized to call blacklist or whitelist", async () => {
+        it("should revert if unauthorized to call blacklist", async () => {
             await store.isBlacklisted(darknode1).should.eventually.be.false;
             await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(null, /not Blacklister/);
             await store.isBlacklisted(darknode1).should.eventually.be.false;
+        })
+
+        it("should disallow unauthorized updates to blacklister address", async () => {
+            await dnp.updateBlacklister(accounts[2], { from: accounts[2] }).should.be.rejected;
         })
 
         it("can update the blacklister address", async () => {
@@ -442,6 +455,10 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
+        it("should disallow unauthorized changes to cycle duration", async () => {
+            await dnp.updateCycleDuration(4, { from: accounts[3] }).should.eventually.be.rejected;
+        });
+
         it("can change cycle duration", async () => {
             // Set the duration to 3 days
             await changeCycleDuration(3);
@@ -457,33 +474,40 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     });
 
-    it("can transfer ownership of the darknode payment store", async () => {
-        // [ACTION] Initiate ownership transfer to wrong account
-        await dnp.transferStoreOwnership(accounts[1]);
+    describe("Transferring ownership", async () => {
+        it("should disallow unauthorized transferring of ownership", async () => {
+            await dnp.transferStoreOwnership(accounts[1], { from: accounts[1] } ).should.eventually.be.rejected;
+            await dnp.claimStoreOwnership({ from: accounts[1] }).should.eventually.be.rejected;
+        });
 
-        // [ACTION] Can correct ownership transfer
-        await dnp.transferStoreOwnership(owner);
+        it("can transfer ownership of the darknode payment store", async () => {
+            // [ACTION] Initiate ownership transfer to wrong account
+            await dnp.transferStoreOwnership(accounts[1]);
 
-        // [CHECK] Owner should still be dnp
-        (await store.owner()).should.equal(dnp.address);
+            // [ACTION] Can correct ownership transfer
+            await dnp.transferStoreOwnership(owner);
 
-        // [ACTION] Claim ownership
-        await store.claimOwnership();
+            // [CHECK] Owner should still be dnp
+            (await store.owner()).should.equal(dnp.address);
 
-        // [CHECK] Owner should now be main account
-        (await store.owner()).should.equal(owner);
+            // [ACTION] Claim ownership
+            await store.claimOwnership();
 
-        // [RESET] Initiate ownership transfer back to dnp
-        await store.transferOwnership(dnp.address);
+            // [CHECK] Owner should now be main account
+            (await store.owner()).should.equal(owner);
 
-        // [CHECK] Owner should still be main account
-        (await store.owner()).should.equal(owner);
+            // [RESET] Initiate ownership transfer back to dnp
+            await store.transferOwnership(dnp.address);
 
-        // [RESET] Claim ownership
-        await dnp.claimStoreOwnership();
+            // [CHECK] Owner should still be main account
+            (await store.owner()).should.equal(owner);
 
-        // [CHECK] Owner should now be the dnp
-        (await store.owner()).should.equal(dnp.address);
+            // [RESET] Claim ownership
+            await dnp.claimStoreOwnership();
+
+            // [CHECK] Owner should now be the dnp
+            (await store.owner()).should.equal(dnp.address);
+        });
     });
 
     describe("DarknodePaymentStore negative tests", async () => {
