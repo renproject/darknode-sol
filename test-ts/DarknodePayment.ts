@@ -542,6 +542,14 @@ contract("DarknodePayment", (accounts: string[]) => {
             await store.transfer(darknode1, dai.address, invalidAmount, darknode1).should.eventually.be.rejectedWith(null, /insufficient darknode balance/);
         })
 
+        it("cannot call functions from non-owner", async () => {
+            await store.blacklist(darknode1, { from: accounts[2] }).should.eventually.be.rejected;
+            await store.whitelist(darknode1, { from: accounts[2] }).should.eventually.be.rejected;
+            await store.incrementDarknodeBalance(darknode1, dai.address, new BN(0), { from: accounts[2] }).should.eventually.be.rejected;
+            await store.transfer(darknode1, dai.address, new BN(0), darknode1, { from: accounts[2] }).should.eventually.be.rejected;
+            await store.transferOwnership(dnp.address, { from: accounts[2] }).should.eventually.be.rejected;
+        })
+
         // Transfer the ownership back to DNP
         after(async () => {
             // [RESET] Initiate ownership transfer back to dnp
