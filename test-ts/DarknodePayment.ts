@@ -365,6 +365,8 @@ contract("DarknodePayment", (accounts: string[]) => {
     it("can change cycle duration", async () => {
         // Set the duration to 3 days
         await changeCycleDuration(3);
+        // Set the duration to 0 days
+        await changeCycleDuration(0);
         // Reset the duration back to normal
         await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
     });
@@ -496,6 +498,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         // put into effect the new cycle duration
         await increaseTime(currentCycleDurationInSecs);
         await dnp.changeCycle().should.not.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+        if (timeInSecs == 0) {
+            await dnp.changeCycle().should.not.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+            return;
+        }
+
         await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
 
         if (timeInSecs < currentCycleDurationInSecs) {
