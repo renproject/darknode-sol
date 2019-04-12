@@ -5,6 +5,7 @@ import {
 } from "./helper/testUtils";
 
 
+import { CycleChangerArtifact, CycleChangerContract } from "./bindings/cycle_changer";
 import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bindings/darknode_payment_store";
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
@@ -13,6 +14,7 @@ import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republi
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
+const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
 const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
@@ -32,6 +34,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnr: DarknodeRegistryContract;
     let dnp: DarknodePaymentContract;
     let ren: RepublicTokenContract;
+    let cc: CycleChangerContract;
 
     const owner = accounts[0];
     const darknode1 = accounts[1];
@@ -47,6 +50,8 @@ contract("DarknodePayment", (accounts: string[]) => {
         dnr = await DarknodeRegistry.deployed();
         store = await DarknodePaymentStore.deployed();
         dnp = await DarknodePayment.deployed();
+
+        cc = await CycleChanger.new(dnp.address);
 
         // [ACTION] Register
         // Don't register a darknode under account[0]
@@ -372,10 +377,6 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     });
 
-    it("should error when block number has not changed", async () => {
-        // FIXME: Unimplemented
-    })
-
     describe("Black/whitelisting of Darknodes", async () => {
 
         it("should revert if unauthorized to call blacklist or whitelist", async () => {
@@ -435,18 +436,26 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     });
 
-    it("cannot change cycle if insufficient time has passed", async () => {
-        await waitForCycle(CYCLE_DURATION/2);
-        await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
-    });
+    describe("Changing cycles", async () => {
 
-    it("can change cycle duration", async () => {
-        // Set the duration to 3 days
-        await changeCycleDuration(3);
-        // Set the duration to 0 days
-        await changeCycleDuration(0);
-        // Reset the duration back to normal
-        await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
+        it("cannot change cycle if insufficient time has passed", async () => {
+            await waitForCycle(CYCLE_DURATION/2);
+            await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+        });
+
+        it("can change cycle duration", async () => {
+            // Set the duration to 3 days
+            await changeCycleDuration(3);
+        });
+
+        it("should error when block number has not changed", async () => {
+            // Set the duration to 0 days
+            await changeCycleDuration(0);
+            await cc.changeCycle().should.eventually.be.rejectedWith(null, /no new block/);
+            // Reset the duration back to normal
+            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
+        });
+
     });
 
     it("can transfer ownership of the darknode payment store", async () => {
