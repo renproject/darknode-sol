@@ -305,8 +305,6 @@ contract DarknodePayment is Ownable {
 
             // Only incrememt balance if shares were allocated last cycle
             if (previousCycleRewardShare[token] > 0) {
-                // This should never happen but we want to be defensive
-                require(unclaimedRewards[token] >= previousCycleRewardShare[token], "insufficient token balance");
                 unclaimedRewards[token] = unclaimedRewards[token].sub(previousCycleRewardShare[token]);
                 store.incrementDarknodeBalance(_darknode, token, previousCycleRewardShare[token]);
             }
