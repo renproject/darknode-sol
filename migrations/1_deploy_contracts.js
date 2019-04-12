@@ -1,4 +1,4 @@
-const DAIToken = artifacts.require("DAIToken");
+const PaymentToken = artifacts.require("PaymentToken");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
@@ -18,7 +18,7 @@ module.exports = async function (deployer, network) {
     await deployer
         .deploy(RepublicToken)
         .then(() => deployer.deploy(
-            DAIToken
+            PaymentToken
         ))
         .then(() => deployer.deploy(
             DarknodeRegistryStore,

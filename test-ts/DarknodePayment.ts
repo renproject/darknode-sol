@@ -16,7 +16,7 @@ import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
-const ERC20 = artifacts.require("DAIToken") as ERC20Artifact;
+const ERC20 = artifacts.require("PaymentToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
