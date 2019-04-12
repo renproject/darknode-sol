@@ -141,7 +141,7 @@ contract DarknodePayment is Ownable {
         // Start the current cycle
         currentCycle = block.number;
         cycleStartTime = now;
-        cycleTimeout = cycleStartTime + cycleDuration;
+        cycleTimeout = cycleStartTime.add(cycleDuration);
     }
 
     /// @notice Forward all payments to the DarknodePaymentStore.
@@ -152,7 +152,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice The current balance of the contract available as reward for the current cycle
     function currentCycleRewardPool(address _token) external view returns (uint256) {
-        return store.availableBalance(_token) - unclaimedRewards[_token];
+        return store.availableBalance(_token).sub(unclaimedRewards[_token]);
     }
 
     /// @notice Changes the current cycle.
@@ -170,7 +170,7 @@ contract DarknodePayment is Ownable {
         previousCycle = currentCycle;
         currentCycle = block.number;
         cycleStartTime = now;
-        cycleTimeout = cycleStartTime + cycleDuration;
+        cycleTimeout = cycleStartTime.add(cycleDuration);
 
         // Update the share size for next cycle
         shareSize = store.darknodeWhitelistLength();
@@ -278,7 +278,7 @@ contract DarknodePayment is Ownable {
     /// @param _duration The time before a new cycle can be called, in days
     function updateCycleDuration(uint256 _duration) external onlyOwner {
         uint256 oldDuration = cycleDuration;
-        cycleDuration = _duration * 1 days;
+        cycleDuration = _duration.mul(1 days);
         emit LogCycleDurationChanged(cycleDuration, oldDuration);
     }
 
@@ -307,7 +307,7 @@ contract DarknodePayment is Ownable {
             if (previousCycleRewardShare[token] > 0) {
                 // This should never happen but we want to be defensive
                 require(unclaimedRewards[token] >= previousCycleRewardShare[token], "insufficient token balance");
-                unclaimedRewards[token] -= previousCycleRewardShare[token];
+                unclaimedRewards[token] = unclaimedRewards[token].sub(previousCycleRewardShare[token]);
                 store.incrementDarknodeBalance(_darknode, token, previousCycleRewardShare[token]);
             }
         }
@@ -320,16 +320,16 @@ contract DarknodePayment is Ownable {
         } else {
             // Lock up the current balance for darknode reward allocation
             unclaimedRewards[_token] = store.availableBalance(_token);
-            previousCycleRewardShare[_token] = unclaimedRewards[_token] / shareSize;
+            previousCycleRewardShare[_token] = unclaimedRewards[_token].div(shareSize);
         }
     }
 
     function _deregisterToken(address _token) private {
-        uint256 deletedTokenIndex = supportedTokenIndex[_token] - 1;
-        supportedTokens[deletedTokenIndex] = supportedTokens[supportedTokens.length-1];
+        uint256 deletedTokenIndex = supportedTokenIndex[_token].sub(1);
+        supportedTokens[deletedTokenIndex] = supportedTokens[supportedTokens.length.sub(1)];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
-        supportedTokens.length--;
+        supportedTokens.length = supportedTokens.length.sub(1);
         supportedTokenIndex[_token] = 0;
     }
 

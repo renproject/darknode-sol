@@ -68,7 +68,7 @@ contract DarknodePaymentStore is Claimable {
     }
 
     function availableBalance(address _token) public view returns (uint256) {
-        return totalBalance(_token) - lockedBalances[_token];
+        return totalBalance(_token).sub(lockedBalances[_token]);
     }
 
     function blacklist(address _darknode) external onlyOwner {
@@ -78,7 +78,8 @@ contract DarknodePaymentStore is Claimable {
         // Unwhitelist if necessary
         if (isWhitelisted(_darknode)) {
             darknodeWhitelist[_darknode] = 0;
-            darknodeWhitelistLength--;
+            // Use Safemath when subtracting to avoid underflows
+            darknodeWhitelistLength = darknodeWhitelistLength.sub(1);
         }
     }
 
@@ -94,8 +95,8 @@ contract DarknodePaymentStore is Claimable {
         require(_amount > 0, "invalid amount");
         require(availableBalance(_token) >= _amount, "insufficient contract balance");
 
-        darknodeBalances[_darknode][_token] += _amount;
-        lockedBalances[_token] += _amount;
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_amount);
+        lockedBalances[_token] = lockedBalances[_token].add(_amount);
     }
 
     /// @notice Transfers an amount out of balance
@@ -106,8 +107,8 @@ contract DarknodePaymentStore is Claimable {
     /// @param _recipient The address to withdraw it to
     function transfer(address _darknode, address _token, uint256 _amount, address _recipient) external onlyOwner {
         require(darknodeBalances[_darknode][_token] >= _amount, "insufficient darknode balance");
-        darknodeBalances[_darknode][_token] -= _amount;
-        lockedBalances[_token] -= _amount;
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].sub(_amount);
+        lockedBalances[_token] = lockedBalances[_token].sub(_amount);
 
         if (_token == ETHEREUM) {
             _recipient.transfer(_amount);
