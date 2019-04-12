@@ -15,9 +15,8 @@ contract CycleChanger {
         darknodePayment = _darknodePayment;
     }
 
-    function changeCycle() public returns (bool) {
+    function changeCycle() public {
         darknodePayment.changeCycle();
         darknodePayment.changeCycle();
-        return true;
     }
 }
