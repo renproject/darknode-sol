@@ -43,7 +43,7 @@ contract DarknodePayment is Ownable {
     address[] public registeredTokens;
 
     /// @notice Mapping from token -> index. Index starts from 1. 0 means not in list.
-    mapping(address => uint256) public supportedTokenIndex;
+    mapping(address => uint256) public registeredTokenIndex;
 
     /// @notice Mapping from token -> amount.
     ///         The amount of rewards allocated for all darknodes to claim into their account.
@@ -265,7 +265,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to be registered.
     function registerToken(address _token) public onlyOwner {
-        require(supportedTokenIndex[_token] == 0, "token already registered");
+        require(registeredTokenIndex[_token] == 0, "token already registered");
         uint arrayLength = pendingTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
             require(pendingTokens[i] != _token, "token already pending registration");
@@ -278,7 +278,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to be deregistered.
     function deregisterToken(address _token) public onlyOwner {
-        require(supportedTokenIndex[_token] > 0, "token not registered");
+        require(registeredTokenIndex[_token] > 0, "token not registered");
         uint arrayLength = pendingDeregisterTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
             require(pendingDeregisterTokens[i] != _token, "token already pending deregistration");
@@ -357,12 +357,12 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to deregister.
     function _deregisterToken(address _token) private {
-        uint256 deletedTokenIndex = supportedTokenIndex[_token].sub(1);
+        uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
         registeredTokens[deletedTokenIndex] = registeredTokens[registeredTokens.length.sub(1)];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
         registeredTokens.length = registeredTokens.length.sub(1);
-        supportedTokenIndex[_token] = 0;
+        registeredTokenIndex[_token] = 0;
     }
 
     /// @notice Updates the list of registeredTokens removing tokens that need to be
@@ -374,7 +374,7 @@ contract DarknodePayment is Ownable {
         for (uint i = 0; i < arrayLength; i++) {
             address token = pendingTokens[i];
             registeredTokens.push(token);
-            supportedTokenIndex[token] = registeredTokens.length;
+            registeredTokenIndex[token] = registeredTokens.length;
             emit LogTokenRegistered(token);
         }
         pendingTokens.length = 0;
