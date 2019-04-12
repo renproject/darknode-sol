@@ -357,10 +357,6 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.claim(darknode5).should.be.rejectedWith(null, /darknode is blacklisted/);
     })
 
-    it("cannot whitelist already whitelisted darknodes", async () => {
-        // FIXME: Unimplemented
-    })
-
     it("cannot change cycle if insufficient time has passed", async () => {
         await waitForCycle(CYCLE_DURATION/2);
         await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
@@ -373,8 +369,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
     });
 
-
-    it.only("can transfer ownership of the darknode payment store", async () => {
+    it("can transfer ownership of the darknode payment store", async () => {
         // [ACTION] Initiate ownership transfer to wrong account
         await dnp.transferStoreOwnership(accounts[1]);
 
@@ -390,7 +385,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         // [CHECK] Owner should now be main account
         (await store.owner()).should.equal(owner);
 
-        // [RESET] Initiate ownership transfer back to DNR
+        // [RESET] Initiate ownership transfer back to dnp
         await store.transferOwnership(dnp.address);
 
         // [CHECK] Owner should still be main account
@@ -403,6 +398,48 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await store.owner()).should.equal(dnp.address);
     });
 
+    describe("DarknodePaymentStore negative tests", async () => {
+        // Transfer the ownership to owner
+        before(async () => {
+            // [ACTION] Can correct ownership transfer
+            await dnp.transferStoreOwnership(owner);
+            // [ACTION] Claim ownership
+            await store.claimOwnership();
+            // [CHECK] Owner should now be main account
+            (await store.owner()).should.equal(owner);
+        });
+
+        it("cannot whitelist blacklisted darknodes", async () => {
+            await store.isBlacklisted(darknode5).should.eventually.be.true;
+            await store.whitelist(darknode5).should.eventually.be.rejectedWith(null, /darknode is blacklisted/);
+        });
+
+        it("cannot whitelist already whitelisted darknodes", async () => {
+            await store.isWhitelisted(darknode1).should.eventually.be.true;
+            await store.whitelist(darknode1).should.eventually.be.rejectedWith(null, /darknode already whitelisted/);
+        })
+
+        it("cannot increment balances by an invalid amounts", async () => {
+            await store.incrementDarknodeBalance(darknode1, dai.address, 0).should.eventually.be.rejectedWith(null, /invalid amount/);
+            const invalidAmount = new BN(await store.availableBalance(dai.address)).add(new BN(1));
+            await store.incrementDarknodeBalance(darknode1, dai.address, invalidAmount).should.eventually.be.rejectedWith(null, /insufficient contract balance/);
+        })
+
+        it("cannot transfer more than is in the balance", async () => {
+            const invalidAmount = new BN(await store.darknodeBalances(darknode1, dai.address)).add(new BN(1));
+            await store.transfer(darknode1, dai.address, invalidAmount, darknode1).should.eventually.be.rejectedWith(null, /insufficient darknode balance/);
+        })
+
+        // Transfer the ownership back to DNP
+        after(async () => {
+            // [RESET] Initiate ownership transfer back to dnp
+            await store.transferOwnership(dnp.address);
+            // [RESET] Claim ownership
+            await dnp.claimStoreOwnership();
+            // [CHECK] Owner should now be the dnp
+            (await store.owner()).should.equal(dnp.address);
+        });
+    });
 
     const tick = async (address) => {
         return dnp.claim(address);
