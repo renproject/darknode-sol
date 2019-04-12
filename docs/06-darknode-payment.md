@@ -20,7 +20,7 @@ The other main function is `changeCycle()` which can be called after the minimum
 * Updates the `shareSize` to the current number of whitelisted darknodes.
 * Updates the list of registered tokens. Tokens pending registration will be registered and tokens pending deregistration will be deregistered.
 
-A few of these actions such as handling snapshotting of balances and registration of tokens, involve iterating through a list of `supportedTokens`. Tokens can be registered by calling the `registerToken()` function. Tokens can be deregistered using `deregisterToken()`.
+A few of these actions such as handling snapshotting of balances and registration of tokens, involve iterating through a list of `registeredTokens`. Tokens can be registered by calling the `registerToken()` function. Tokens can be deregistered using `deregisterToken()`.
 
 There is an incentive for people to call the `changeCycle()` function since darknodes need to be whitelisted for a least one full cycle before they can participate in rewards. So although calling `changeCycle()` isn't a requirement, there is still an incentive to do so.
 
@@ -28,9 +28,9 @@ When claiming rewards, the `unclaimedRewards` mapping stores the amount that has
 
 ### Permissions
 
-The `blacklist()` function can only be called by `darknodeJudge`. This is an address which has the ability to blacklist, defaults to the owner of the contract. The `darknodeJudge` can be changed using the `updateDarknodeJudge()`.
+The `blacklist()` function can only be called by `blacklister`. This is an address which has the ability to blacklist, defaults to the owner of the contract. The `blacklister` can be changed using the `updateBlacklister()`.
 
-The `transferStoreOwnership()`, `claimStoreOwnership()`, `registerToken()`, `deregisterToken()`, `updateDarknodeJudge()`, `updateCycleDuration()` functions can only be called by the owner of the contract.
+The `transferStoreOwnership()`, `claimStoreOwnership()`, `registerToken()`, `deregisterToken()`, `updateBlacklister()`, `updateCycleDuration()` functions can only be called by the owner of the contract.
 
 All other functions are external functions callable by anyone.
 
@@ -40,4 +40,4 @@ The `DarknodePaymentStore` handles the storage of the whitelist, blacklist, dark
 
 The `DarknodePaymentStore` is a claimable contract whose owner should be the `DarknodePayment` contract.
 
-The balances of darknodes can only ever be increased using the `incrementDarknodeBalances()` function. The balances will decrease only when the `transfer()` function is called. This will transfer a specified amount to the specified recipient, deducting the specified amount from the darknode balance.
+The balances of darknodes can only ever be increased using the `incrementDarknodeBalance()` function. The balances will decrease only when the `transfer()` function is called. This will transfer a specified amount to the specified recipient, deducting the specified amount from the darknode balance.
