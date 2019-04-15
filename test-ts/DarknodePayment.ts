@@ -635,13 +635,24 @@ contract("DarknodePayment", (accounts: string[]) => {
     }
 
     const waitForCycle = async (seconds?) => {
-        if (!seconds) {
-            seconds = 2 * (new BN(await dnp.cycleDuration()).toNumber());
+        let retry = seconds === undefined;
+        if (seconds === undefined) {
+            seconds = (new BN(await dnp.cycleDuration()).toNumber());
         }
-        await increaseTime(seconds);
-        if (seconds >= CYCLE_DURATION) {
-            await dnp.changeCycle();
-        }
-    }
 
+        do {
+            try {
+                await increaseTime(seconds);
+                if (seconds >= CYCLE_DURATION) {
+                    await dnp.changeCycle();
+                }
+                break;
+            } catch (error) {
+                console.log(retry);
+                if (!retry) {
+                    throw error;
+                }
+            }
+        } while (retry);
+    }
 });
