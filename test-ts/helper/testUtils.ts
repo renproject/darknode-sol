@@ -71,7 +71,8 @@ export async function waitForEpoch(dnr: DarknodeRegistryContract) {
             // epoch reverted, epoch interval hasn't passed
         }
         // Sleep for `timeout` seconds
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
+        await increaseTime(timeout);
+        // await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
     }
 }
 
