@@ -1,13 +1,11 @@
+/// <reference types="../test-ts/typings/truffle" />
+
 const PaymentToken = artifacts.require("PaymentToken");
 const RepublicToken = artifacts.require("RepublicToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
-const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const Orderbook = artifacts.require("Orderbook");
-const DarknodeRewardVault = artifacts.require("DarknodeRewardVault");
-const SettlementRegistry = artifacts.require("SettlementRegistry");
 
 const config = require("./config.js");
 
@@ -34,21 +32,6 @@ module.exports = async function (deployer, network) {
             config.MINIMUM_POD_SIZE,
             config.MINIMUM_EPOCH_INTERVAL
         ))
-        .then(() => deployer.deploy(
-            SettlementRegistry,
-            VERSION_STRING,
-        ))
-        .then(() => deployer.deploy(
-            Orderbook,
-            VERSION_STRING,
-            DarknodeRegistry.address,
-            SettlementRegistry.address,
-        ))
-        .then(() => deployer.deploy(
-            DarknodeRewardVault,
-            VERSION_STRING,
-            DarknodeRegistry.address
-        ))
         .then(async () => {
             // Initiate ownership transfer of DNR store 
             const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
@@ -58,12 +41,6 @@ module.exports = async function (deployer, network) {
             const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
             await darknodeRegistry.claimStoreOwnership();
         })
-        .then(() => deployer.deploy(
-            DarknodeSlasher,
-            VERSION_STRING,
-            DarknodeRegistry.address,
-            Orderbook.address,
-        ))
         .then(() => deployer.deploy(
             DarknodePaymentStore,
             VERSION_STRING,
@@ -84,8 +61,8 @@ module.exports = async function (deployer, network) {
             const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
             await darknodePayment.claimStoreOwnership();
 
-            // Update slasher address
-            const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-            await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
+            // // Update slasher address
+            // const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
+            // await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
         });
 }
