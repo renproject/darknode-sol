@@ -23,14 +23,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         ren = await RepublicToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
+        await dnr.updateSlasher(accounts[0]);
+        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorized/);
+        await waitForEpoch(dnr);
 
         for (let i = 1; i < accounts.length; i++) {
             await ren.transfer(accounts[i], MINIMUM_BOND);
         }
-    });
-
-    it("first epoch can only be called by the owner", async () => {
-        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorized/);
     });
 
     it("should return empty list when no darknodes are registered", async () => {
@@ -494,11 +493,9 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.slasher()).should.equal(newSlasher);
 
         // [RESET] Reset the slasher address to the previous slasher address
-        if (previousSlasher !== NULL) {
-            await dnr.updateSlasher(previousSlasher);
-            await waitForEpoch(dnr);
-            (await dnr.slasher()).should.equal(previousSlasher);
-        }
+        await dnr.updateSlasher(previousSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(previousSlasher);
     });
 
     it("anyone except the slasher can not call slash", async () => {
@@ -526,6 +523,9 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
             .should.be.rejectedWith(null, /must be slasher/);
         await dnr.slash(ID("2"), ID("6"), ID("7"), { from: slasher });
+        await dnr.slash(ID("3"), ID("6"), ID("7"), { from: slasher });
+
+        // NOTE: The darknode doesn't prevent slashing a darknode twice
         await dnr.slash(ID("3"), ID("6"), ID("7"), { from: slasher });
 
         // [RESET] Reset slasher to the slasher contract

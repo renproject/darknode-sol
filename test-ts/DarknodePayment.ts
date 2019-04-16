@@ -11,7 +11,6 @@ import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/d
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
-import { TimeArtifact, TimeContract } from "./bindings/time";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
