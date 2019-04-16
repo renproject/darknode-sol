@@ -95,7 +95,7 @@ contract DarknodePaymentStore is Claimable {
         // Unwhitelist if necessary
         if (isWhitelisted(_darknode)) {
             darknodeWhitelist[_darknode] = 0;
-            // Use Safemath when subtracting to avoid underflows
+            // Use SafeMath when subtracting to avoid underflows
             darknodeWhitelistLength = darknodeWhitelistLength.sub(1);
         }
     }

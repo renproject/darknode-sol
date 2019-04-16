@@ -1,15 +1,17 @@
-# Republic Protocol — Solidity
+# `darknode-sol`
+## Solidity smart contracts used by Ren Darknodes
 
 [![Build Status](https://travis-ci.org/republicprotocol/republic-sol.svg?branch=master)](https://travis-ci.org/republicprotocol/republic-sol)
 [![Coverage Status](https://coveralls.io/repos/github/republicprotocol/republic-sol/badge.svg?branch=master)](https://coveralls.io/github/republicprotocol/republic-sol?branch=master)
 
-[Documentation](./docs/index.md)
+**`darknode-sol`** contains a collection of Ethereum smart contracts utilized by the Ren Darknodes, written in Solidity. Ren bootstraps off Ethereum as a trusted third-party computer to handle Darknode registration and fee payouts.
 
-**Republic Protocol — Solidity** is the official reference implementation of Republic Protocol on Ethereum, written in Solidity. Republic Protocol uses Ethereum as a trusted third-party computer to perform computations that must not be corrupted, and reach consensus on the state of orders.
+Ren is powered by the RenVM — the Ren Virtual Machine — in a decentralized network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
 
-Republic Protocol runs the Secure Order Matcher — the core component of the protocol — in a decentralised network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
+## Docs
 
-See [Republic Protocol - Go](https://github.com/republicprotocol/republic-go) for the official reference implementation of Republic Protocol, written in Go.
+* [Darknode Registry](./docs/01-darknode-registry.md)
+* [Darknode Payments](./docs/02-darknode-payments.md)
 
 ## Tests
 
@@ -22,7 +24,7 @@ npm install
 Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545.
 
 ```sh
-npx ganache-cli
+npx ganache-cli -d
 ```
 
 Run the Truffle test suite.

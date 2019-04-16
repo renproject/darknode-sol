@@ -331,7 +331,7 @@ contract DarknodePayment is Ownable {
         for (uint i = 0; i < arrayLength; i++) {
             address token = registeredTokens[i];
 
-            // Only incrememt balance if shares were allocated last cycle
+            // Only increment balance if shares were allocated last cycle
             if (previousCycleRewardShare[token] > 0) {
                 unclaimedRewards[token] = unclaimedRewards[token].sub(previousCycleRewardShare[token]);
                 store.incrementDarknodeBalance(_darknode, token, previousCycleRewardShare[token]);
