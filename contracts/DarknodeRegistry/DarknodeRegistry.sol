@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../RenToken.sol";
+import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
@@ -29,14 +30,12 @@ contract DarknodeRegistry is Ownable {
     uint256 public minimumBond;
     uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
-    address public slasher;
 
     /// When one of the above variables is modified, it is only updated when the
     /// next epoch is called. These variables store the values for the next epoch.
     uint256 public nextMinimumBond;
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
-    address public nextSlasher;
 
     /// The current and previous epoch
     Epoch public currentEpoch;
@@ -47,6 +46,10 @@ contract DarknodeRegistry is Ownable {
 
     /// Darknode Registry Store is the storage contract for darknodes.
     DarknodeRegistryStore public store;
+
+    /// Darknode Slasher allows darknodes to vote on bond slashing.
+    DarknodeSlasher public slasher;
+    DarknodeSlasher public nextSlasher;
 
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
@@ -271,8 +274,8 @@ contract DarknodeRegistry is Ownable {
     /// @notice Allow the contract owner to update the DarknodeSlasher contract
     /// address.
     /// @param _slasher The new slasher address.
-    function updateSlasher(address _slasher) external onlyOwner {
-        require(_slasher != 0x0, "invalid slasher address");
+    function updateSlasher(DarknodeSlasher _slasher) external onlyOwner {
+        require(address(_slasher) != 0x0, "invalid slasher address");
         nextSlasher = _slasher;
     }
 

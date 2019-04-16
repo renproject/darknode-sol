@@ -6,6 +6,7 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 const config = require("./config.js");
 
@@ -52,6 +53,10 @@ module.exports = async function (deployer, network) {
             DarknodePaymentStore.address,
             config.DARKNODE_PAYMENT_CYCLE_DURATION,
         ))
+        .then(() => deployer.deploy(
+            DarknodeSlasher,
+            DarknodeRegistry.address,
+        ))
         .then(async () => {
             // Initiate ownership transfer of DNP store
             const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
@@ -61,8 +66,8 @@ module.exports = async function (deployer, network) {
             const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
             await darknodePayment.claimStoreOwnership();
 
-            // // Update slasher address
-            // const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-            // await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
+            // Update slasher address
+            const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
+            await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
         });
 }
