@@ -3,9 +3,9 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./DarknodeRegistry.sol";
+import "../CompatibleERC20.sol";
+import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./DarknodePaymentStore.sol";
-import "./CompatibleERC20.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their computation.
 contract DarknodePayment is Ownable {

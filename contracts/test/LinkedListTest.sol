@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "../libraries/LinkedList.sol";
+import "../LinkedList.sol";
 
 /// @notice A token that exposes the LinkedList library for testing.
 contract LinkedListTest {

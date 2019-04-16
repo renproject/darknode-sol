@@ -3,7 +3,7 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./RepublicToken.sol";
+import "../RepublicToken.sol";
 import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and

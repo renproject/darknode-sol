@@ -6,7 +6,7 @@ module.exports = {
         "RepublicToken.sol",
 
         // Contract for building bindings
-        "Bindings.sol",
+        "test/Bindings.sol",
 
         // Migration contract
         "migrations/Migrations.sol",
@@ -17,7 +17,6 @@ module.exports = {
         "test/tokens/NonCompliantToken.sol",
         "test/tokens/NormalToken.sol",
         "test/tokens/ReturnsFalseToken.sol",
-        "test/UtilsTest.sol",
         "test/tokens/TokenWithFees.sol",
         "test/LinkedListTest.sol",
         "test/tokens/PaymentToken.sol",

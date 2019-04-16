@@ -3,8 +3,8 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./libraries/LinkedList.sol";
-import "./RepublicToken.sol";
+import "../LinkedList.sol";
+import "../RepublicToken.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been separated to improve

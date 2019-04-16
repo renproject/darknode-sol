@@ -11,6 +11,7 @@ import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/d
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { TimeArtifact, TimeContract } from "./bindings/time";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
@@ -637,18 +638,21 @@ contract("DarknodePayment", (accounts: string[]) => {
     const waitForCycle = async (seconds?) => {
         let retry = seconds === undefined;
         if (seconds === undefined) {
-            seconds = (new BN(await dnp.cycleDuration()).toNumber());
+            // seconds = (new BN(await dnp.cycleDuration()).toNumber());
+            seconds = (new BN(await dnp.cycleTimeout())).sub(new BN(await cc.time())).toNumber();
         }
 
         do {
             try {
-                await increaseTime(seconds);
-                if (seconds >= CYCLE_DURATION) {
+                if (seconds > 0) {
+                    await increaseTime(seconds);
+                }
+                if (retry || seconds >= CYCLE_DURATION) {
                     await dnp.changeCycle();
                 }
                 break;
             } catch (error) {
-                console.log(retry);
+                console.log(error);
                 if (!retry) {
                     throw error;
                 }

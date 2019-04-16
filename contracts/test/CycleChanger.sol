@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "../DarknodePayment.sol";
+import "../DarknodePayment/DarknodePayment.sol";
 
 /// @notice CycleChanger attempts to change the cycle twice in the same block.
 contract CycleChanger {
@@ -18,5 +18,9 @@ contract CycleChanger {
     function changeCycle() public {
         darknodePayment.changeCycle();
         darknodePayment.changeCycle();
+    }
+
+    function time() public view returns (uint256) {
+        return now;
     }
 }
