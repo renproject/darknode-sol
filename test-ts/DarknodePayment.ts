@@ -10,12 +10,12 @@ import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bi
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
-import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
-const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
 const ERC20 = artifacts.require("PaymentToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
@@ -33,7 +33,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let erc20Token: ERC20Contract;
     let dnr: DarknodeRegistryContract;
     let dnp: DarknodePaymentContract;
-    let ren: RepublicTokenContract;
+    let ren: RenTokenContract;
     let cc: CycleChangerContract;
 
     const owner = accounts[0];
@@ -44,7 +44,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     const darknode5 = accounts[5];
 
     before(async () => {
-        ren = await RepublicToken.deployed();
+        ren = await RenToken.deployed();
         dai = await ERC20.deployed();
         erc20Token = await ERC20.new();
         dnr = await DarknodeRegistry.deployed();

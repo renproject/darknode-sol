@@ -7,20 +7,20 @@ import {
 
 import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
 import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
-import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
 
-const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
 
 contract("DarknodeRegistry", (accounts: string[]) => {
 
-    let ren: RepublicTokenContract;
+    let ren: RenTokenContract;
     let dnrs: DarknodeRegistryStoreContract;
     let dnr: DarknodeRegistryContract;
 
     before(async () => {
-        ren = await RepublicToken.deployed();
+        ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
         await dnr.updateSlasher(accounts[0]);

@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../LinkedList.sol";
-import "../RepublicToken.sol";
+import "../RenToken.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been separated to improve
@@ -48,16 +48,16 @@ contract DarknodeRegistryStore is Claimable {
     mapping(address => Darknode) private darknodeRegistry;
     LinkedList.List private darknodes;
 
-    // RepublicToken.
-    RepublicToken public ren;
+    // RenToken.
+    RenToken public ren;
 
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _ren The address of the RepublicToken contract.
+    /// @param _ren The address of the RenToken contract.
     constructor(
         string _VERSION,
-        RepublicToken _ren
+        RenToken _ren
     ) public {
         VERSION = _VERSION;
         ren = _ren;

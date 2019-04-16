@@ -1,7 +1,7 @@
 /// <reference types="../test-ts/typings/truffle" />
 
 const PaymentToken = artifacts.require("PaymentToken");
-const RepublicToken = artifacts.require("RepublicToken");
+const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
@@ -14,19 +14,19 @@ module.exports = async function (deployer, network) {
     const VERSION_STRING = `${network}-${config.VERSION}`;
 
     await deployer
-        .deploy(RepublicToken)
+        .deploy(RenToken)
         .then(() => deployer.deploy(
             PaymentToken
         ))
         .then(() => deployer.deploy(
             DarknodeRegistryStore,
             VERSION_STRING,
-            RepublicToken.address,
+            RenToken.address,
         ))
         .then(() => deployer.deploy(
             DarknodeRegistry,
             VERSION_STRING,
-            RepublicToken.address,
+            RenToken.address,
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,

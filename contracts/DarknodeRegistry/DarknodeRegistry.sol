@@ -3,7 +3,7 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "../RepublicToken.sol";
+import "../RenToken.sol";
 import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
@@ -43,7 +43,7 @@ contract DarknodeRegistry is Ownable {
     Epoch public previousEpoch;
 
     /// Republic ERC20 token contract used to transfer bonds.
-    RepublicToken public ren;
+    RenToken public ren;
 
     /// Darknode Registry Store is the storage contract for darknodes.
     DarknodeRegistryStore public store;
@@ -105,7 +105,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _renAddress The address of the RepublicToken contract.
+    /// @param _renAddress The address of the RenToken contract.
     /// @param _storeAddress The address of the DarknodeRegistryStore contract.
     /// @param _minimumBond The minimum bond amount that can be submitted by a
     ///        Darknode.
@@ -114,7 +114,7 @@ contract DarknodeRegistry is Ownable {
     ///        epochs.
     constructor(
         string _VERSION,
-        RepublicToken _renAddress,
+        RenToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,

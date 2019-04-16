@@ -1,5 +1,5 @@
 {
-  "name": "republic-sol",
+  "name": "darknode-sol",
   "version": "0.0.3",
   "scripts": {
     "clean": "if [ -d \"test\" ]; then rm -r test; fi;",

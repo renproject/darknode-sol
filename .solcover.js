@@ -3,7 +3,7 @@ module.exports = {
     testrpcOptions: "-d --accounts 10 --port 8555",
     skipFiles: [
         // REN token
-        "RepublicToken.sol",
+        "RenToken.sol",
 
         // Contract for building bindings
         "test/Bindings.sol",
