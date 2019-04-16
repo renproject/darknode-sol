@@ -54,19 +54,19 @@ contract DarknodeRegistry is Ownable {
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
     /// @param _bond The amount of REN that was transferred as bond.
-    event LogDarknodeRegistered(address _darknodeID, uint256 _bond);
+    event LogDarknodeRegistered(address indexed _darknodeID, uint256 _bond);
 
     /// @notice Emitted when a darknode is deregistered.
     /// @param _darknodeID The darknode ID that was deregistered.
-    event LogDarknodeDeregistered(address _darknodeID);
+    event LogDarknodeDeregistered(address indexed _darknodeID);
 
     /// @notice Emitted when a refund has been made.
     /// @param _owner The address that was refunded.
     /// @param _amount The amount of REN that was refunded.
-    event LogDarknodeOwnerRefunded(address _owner, uint256 _amount);
+    event LogDarknodeOwnerRefunded(address indexed _owner, uint256 _amount);
 
     /// @notice Emitted when a new epoch has begun.
-    event LogNewEpoch();
+    event LogNewEpoch(uint256 indexed epochhash);
 
     /// @notice Emitted when a constructor parameter has been updated.
     event LogMinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
@@ -232,7 +232,7 @@ contract DarknodeRegistry is Ownable {
         }
 
         // Emit an event
-        emit LogNewEpoch();
+        emit LogNewEpoch(epochhash);
     }
 
     /// @notice Allows the contract owner to initiate an ownership transfer of

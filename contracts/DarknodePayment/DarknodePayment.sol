@@ -69,29 +69,29 @@ contract DarknodePayment is Ownable {
     /// @notice Emitted when a darknode is blacklisted from receiving rewards
     /// @param _darknode The address of the darknode which was blacklisted
     /// @param _time The time at which the darknode was blacklisted
-    event LogDarknodeBlacklisted(address _darknode, uint256 _time);
+    event LogDarknodeBlacklisted(address indexed _darknode, uint256 _time);
 
     /// @notice Emitted when a darknode is whitelisted to receive rewards
     /// @param _darknode The address of the darknode which was whitelisted
     /// @param _time The time at which the darknode was whitelisted
-    event LogDarknodeWhitelisted(address _darknode, uint256 _time);
+    event LogDarknodeWhitelisted(address indexed _darknode, uint256 _time);
 
     /// @notice Emitted when a darknode claims their share of reward
     /// @param _darknode The darknode which claimed
     /// @param _cycle The cycle that the darknode claimed for
-    event LogDarknodeClaim(address _darknode, uint256 _cycle);
+    event LogDarknodeClaim(address indexed _darknode, uint256 _cycle);
 
     /// @notice Emitted when someone pays the DarknodePayment contract
     /// @param _payer The darknode which claimed
     /// @param _amount The cycle that the darknode claimed for
     /// @param _token The address of the token that was transferred
-    event LogPaymentReceived(address _payer, uint256 _amount, address _token);
+    event LogPaymentReceived(address indexed _payer, uint256 _amount, address _token);
 
     /// @notice Emitted when a darknode calls withdraw
     /// @param _payee The address of the darknode which withdrew
     /// @param _value The amount of DAI withdrawn
     /// @param _token The address of the token that was withdrawn
-    event LogDarknodeWithdrew(address _payee, uint256 _value, address _token);
+    event LogDarknodeWithdrew(address indexed _payee, uint256 _value, address _token);
 
     /// @notice Emitted when a new cycle happens
     /// @param _newCycle The new, current cycle
