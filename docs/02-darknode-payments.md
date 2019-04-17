@@ -41,6 +41,45 @@ The `DarknodePaymentStore` is a claimable contract whose owner should be the `Da
 
 The balances of darknodes can only ever be increased using the `incrementDarknodeBalance()` function. The balances will decrease only when the `transfer()` function is called. This will transfer a specified amount to the specified recipient, deducting the specified amount from the darknode balance.
 
+## Interface
+
+### Darknode operators
+
+```ts
+function changeCycle() returns (uint256);
+function withdraw(address _darknode, address _token);
+```
+
+### Darknodes
+
+```ts
+function claim(address _darknode) onlyDarknode(_darknode) notBlacklisted(_darknode);
+function blacklist(address _darknode) onlyBlacklister onlyDarknode(_darknode);
+```
+
+### Owner
+
+```ts
+function registerToken(address _token) onlyOwner;
+function deregisterToken(address _token) onlyOwner;
+function updateBlacklister(address _addr) onlyOwner;
+function updateCycleDuration(uint256 _duration) onlyOwner;
+function transferStoreOwnership(address _newOwner) onlyOwner;
+function claimStoreOwnership() onlyOwner;
+```
+
+### Fee payees
+
+There are two ways fees can be paid to the contract.
+
+The first, and the one with lower fees, is to directly send the fees to the `DarknodePaymentStore` contract.
+
+The second way is to call the `deposit` function on the `DarknodePayment` contract:
+
+```ts
+function deposit(uint256 _value, address _token) payable;
+```
+
 
 <!-- # Darknode Payment
 

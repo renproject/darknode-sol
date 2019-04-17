@@ -170,7 +170,7 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice Forward all payments to the DarknodePaymentStore.
-    function () public payable {
+    function () external payable {
         address(store).transfer(msg.value);
         emit LogPaymentReceived(msg.sender, msg.value, ETHEREUM);
     }
@@ -276,7 +276,7 @@ contract DarknodePayment is Ownable {
     ///         cycle.
     ///
     /// @param _token The address of the token to be registered.
-    function registerToken(address _token) public onlyOwner {
+    function registerToken(address _token) external onlyOwner {
         require(registeredTokenIndex[_token] == 0, "token already registered");
         uint arrayLength = pendingTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
@@ -289,7 +289,7 @@ contract DarknodePayment is Ownable {
     ///         Deregistration is pending until next cycle.
     ///
     /// @param _token The address of the token to be deregistered.
-    function deregisterToken(address _token) public onlyOwner {
+    function deregisterToken(address _token) external onlyOwner {
         require(registeredTokenIndex[_token] > 0, "token not registered");
         uint arrayLength = pendingDeregisterTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
