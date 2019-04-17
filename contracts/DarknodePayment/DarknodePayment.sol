@@ -357,8 +357,10 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to deregister.
     function _deregisterToken(address _token) private {
+        address lastToken = registeredTokens[registeredTokens.length.sub(1)];
         uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
-        registeredTokens[deletedTokenIndex] = registeredTokens[registeredTokens.length.sub(1)];
+        registeredTokens[deletedTokenIndex] = lastToken;
+        registeredTokenIndex[lastToken] = registeredTokenIndex[_token];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
         registeredTokens.length = registeredTokens.length.sub(1);
