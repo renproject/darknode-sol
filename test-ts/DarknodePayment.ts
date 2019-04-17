@@ -269,7 +269,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForCycle();
 
             // We should be the only one who participated last cycle
-            (new BN(await dnp.shareSize())).should.bignumber.equal(1);
+            (new BN(await dnp.shareCount())).should.bignumber.equal(1);
             // We should be allocated all the rewards
             (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(amount);
             (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(amount);
@@ -307,7 +307,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForCycle();
 
             // We should be the only one who participated last cycle
-            (new BN(await dnp.shareSize())).should.bignumber.equal(1);
+            (new BN(await dnp.shareCount())).should.bignumber.equal(1);
             // We should be allocated all the rewards
             (new BN(await dnp.unclaimedRewards(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
             (new BN(await dnp.previousCycleRewardShare(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
@@ -377,7 +377,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await multiTick(startDarknode, numDarknodes);
 
             for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-                (new BN(await store.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await dnp.shareSize())));
+                (new BN(await store.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await dnp.shareCount())));
             }
 
             // Withdraw for each darknode
@@ -395,7 +395,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot withdraw more than once in a cycle", async () => {
             const numDarknodes = 4;
-            new BN(await dnp.shareSize()).should.bignumber.equal(numDarknodes);
+            new BN(await dnp.shareCount()).should.bignumber.equal(numDarknodes);
 
             const rewards = new BN("300000000000000000");
             await deposit(rewards);
@@ -444,7 +444,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // Claim the rewards for the pool
             await tick(darknode3);
 
-            const rewardSplit = new BN(await dnp.shareSize());
+            const rewardSplit = new BN(await dnp.shareCount());
 
             // Claim rewards for past cycle
             await dnp.blacklist(darknode3);

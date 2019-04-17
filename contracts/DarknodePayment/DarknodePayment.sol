@@ -31,10 +31,10 @@ contract DarknodePayment is Ownable {
     uint256 public previousCycle;
 
     /// @notice The number of whitelisted darknodes this cycle
-    uint256 public shareSize;
+    uint256 public shareCount;
 
     /// @notice The list of tokens that will be registered next cycle.
-    ///         We only update the shareSize at the change of cycle to
+    ///         We only update the shareCount at the change of cycle to
     ///         prevent the number of shares from changing.
     address[] public pendingTokens;
 
@@ -199,7 +199,7 @@ contract DarknodePayment is Ownable {
         cycleTimeout = cycleStartTime.add(cycleDuration);
 
         // Update the share size for next cycle
-        shareSize = store.darknodeWhitelistLength();
+        shareCount = store.darknodeWhitelistLength();
         // Update the list of registeredTokens
         _updateTokenList();
 
@@ -356,13 +356,13 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address the token to snapshot.
     function _snapshotBalance(address _token) private {
-        if (shareSize == 0) {
+        if (shareCount == 0) {
             unclaimedRewards[_token] = 0;
             previousCycleRewardShare[_token] = 0;
         } else {
             // Lock up the current balance for darknode reward allocation
             unclaimedRewards[_token] = store.availableBalance(_token);
-            previousCycleRewardShare[_token] = unclaimedRewards[_token].div(shareSize);
+            previousCycleRewardShare[_token] = unclaimedRewards[_token].div(shareCount);
         }
     }
 

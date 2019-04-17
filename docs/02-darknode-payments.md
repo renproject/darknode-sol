@@ -14,9 +14,9 @@ The other main function is `changeCycle()` which can be called after the minimum
 
 `changeCycle()` performs the following actions:
 
-* Snapshot the current token balances based off `shareSize` (the number of whitelisted darknodes last cycle). This will allocate a share of reward for each of the whitelisted darknodes from last cycle. Newly whitelisted darknodes will not get a share.
+* Snapshot the current token balances based off `shareCount` (the number of whitelisted darknodes last cycle). This will allocate a share of reward for each of the whitelisted darknodes from last cycle. Newly whitelisted darknodes will not get a share.
 * Update the `currentCycle` and `previousCycle` variables.
-* Updates the `shareSize` to the current number of whitelisted darknodes.
+* Updates the `shareCount` to the current number of whitelisted darknodes.
 * Updates the list of registered tokens. Tokens pending registration will be registered and tokens pending deregistration will be deregistered.
 
 A few of these actions such as handling snapshotting of balances and registration of tokens, involve iterating through a list of `registeredTokens`. Tokens can be registered by calling the `registerToken()` function. Tokens can be deregistered using `deregisterToken()`.
