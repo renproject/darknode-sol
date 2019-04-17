@@ -1,6 +1,7 @@
 {
   "name": "darknode-sol",
   "version": "0.0.3",
+  "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
     "clean": "if [ -d \"test\" ]; then rm -r test; fi;",
     "test": "if [ -d \"test\" ]; then npm run warn; else npm run test-ts; fi;",
