@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS
+    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, ID,
 } from "./helper/testUtils";
 
 
@@ -73,6 +73,39 @@ contract("DarknodePayment", (accounts: string[]) => {
     });
 
     describe("Token registration", async () => {
+
+        const printTokens = async () => {
+            console.log(`Registered tokens: [`);
+            let i = 0;
+            while (true) {
+                try {
+                    const token = await dnp.registeredTokens(i);
+                    console.log(`    ${token}, (${await dnp.registeredTokenIndex(token)})`);
+                    i++;
+                } catch (error) {
+                    break;
+                }
+            }
+            console.log(`]`);
+        }
+
+        const indexesValid = async () => {
+            let i = 0;
+            while (true) {
+                try {
+                    const token = await dnp.registeredTokens(i);
+                    (await dnp.registeredTokenIndex(token)).should.bignumber.equal(i + 1);
+                    i++;
+                } catch (error) {
+                    if (error.toString().match("invalid opcode")) {
+                        break;
+                    }
+                    await printTokens();
+                    throw error;
+                }
+            }
+        }
+
         it("cannot register token if not owner", async () => {
             await dnp.registerToken(dai.address, { from: accounts[1] }).should.be.rejected;
         });
@@ -114,6 +147,29 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
         });
 
+        it("properly sets index [regression]", async () => {
+            const one = "1".repeat(40);
+            const two = "2".repeat(40);
+            const three = "3".repeat(40);
+
+            await indexesValid();
+            await dnp.registerToken(one);
+            await dnp.registerToken(two);
+            await dnp.registerToken(three);
+            await waitForCycle();
+            await indexesValid();
+
+            // const expected = await dnp.registeredTokenIndex(one);
+            await dnp.deregisterToken(one);
+            await waitForCycle();
+            await indexesValid();
+            // (await dnp.registeredTokenIndex(two)).should.bignumber.equal(expected);
+            await dnp.deregisterToken(two);
+            await dnp.deregisterToken(three);
+            await indexesValid();
+            await waitForCycle();
+            await indexesValid();
+        });
     });
 
     describe("Token deposits", async () => {
@@ -636,26 +692,14 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const waitForCycle = async (seconds?) => {
         let retry = seconds === undefined;
-        if (seconds === undefined) {
-            // seconds = (new BN(await dnp.cycleDuration()).toNumber());
-            seconds = (new BN(await dnp.cycleTimeout())).sub(new BN(await cc.time())).toNumber();
-        }
 
-        do {
-            try {
-                if (seconds > 0) {
-                    await increaseTime(seconds);
-                }
-                if (retry || seconds >= CYCLE_DURATION) {
-                    await dnp.changeCycle();
-                }
-                break;
-            } catch (error) {
-                console.log(error);
-                if (!retry) {
-                    throw error;
-                }
-            }
-        } while (retry);
+        const timeout = new BN(await dnp.cycleTimeout());
+        const now = new BN(await cc.time());
+        if (retry) {
+            // seconds = (new BN(await dnp.cycleDuration()).toNumber());
+            seconds = Math.max(1, (timeout).sub(now).toNumber());
+        }
+        await increaseTime(seconds);
+        await dnp.changeCycle();
     }
 });

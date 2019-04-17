@@ -45,18 +45,41 @@ export const randomAddress = (): string => {
     return web3.utils.toChecksumAddress(randomBytes(20));
 };
 
-export const increaseTime = async (seconds: number) => {
+const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
         web3.currentProvider.send(
             { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 },
-            (err, value) => {
+            (err, _) => {
                 if (err) {
                     reject(err);
                 }
-                resolve(value);
+                web3.currentProvider.send({
+                    jsonrpc: '2.0',
+                    method: 'evm_mine',
+                    params: [],
+                    id: new Date().getSeconds()
+                }, (err, _) => {
+                    if (err) {
+                        reject();
+                    }
+                    resolve();
+                });
             }
-        );
+        )
     });
+}
+
+const getCurrentTimestamp = async (): Promise<number> => (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp;
+
+export const increaseTime = async (seconds: number) => {
+    let currentTimestamp = await getCurrentTimestamp();
+    const target = currentTimestamp + seconds;
+    do {
+        const increase = Math.ceil(target - currentTimestamp + 1);
+        increaseTimeHelper(increase);
+        currentTimestamp = await getCurrentTimestamp();
+        // console.log(`Increased by ${increase} to is ${currentTimestamp}. Target is ${target}. Reached: ${currentTimestamp >= target}`);
+    } while (currentTimestamp < target);
 };
 
 export async function waitForEpoch(dnr: DarknodeRegistryContract) {
