@@ -11,6 +11,7 @@ import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/d
 import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
 import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
 import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
+import { SelfDestructingTokenArtifact } from "./bindings/self_destructing_token";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
@@ -20,6 +21,7 @@ const ERC20 = artifacts.require("PaymentToken") as ERC20Artifact;
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
 const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const SelfDestructingToken = artifacts.require("SelfDestructingToken") as SelfDestructingTokenArtifact;
 
 const hour = 60 * 60;
 const day = 24 * hour;
@@ -42,6 +44,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     const darknode3 = accounts[3];
     const darknode4 = accounts[4];
     const darknode5 = accounts[5];
+    const darknode6 = accounts[6];
 
     before(async () => {
         ren = await RenToken.deployed();
@@ -89,7 +92,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             console.log(`]`);
         }
 
-        const indexesValid = async () => {
+        const checkTokenIndexes = async () => {
             let i = 0;
             while (true) {
                 try {
@@ -123,6 +126,17 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForCycle();
             (await dnp.registeredTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
+            await checkTokenIndexes();
+        });
+
+        it("can deregister a destroyed token", async () => {
+            await dnp.claim(darknode6);
+            const sdt = await SelfDestructingToken.new();
+            await dnp.registerToken(sdt.address);
+            await waitForCycle();
+            await sdt.destruct();
+            await dnp.deregisterToken(sdt.address);
+            await waitForCycle();
         });
 
         it("cannot register already registered tokens", async () => {
@@ -141,34 +155,35 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForCycle();
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
             (await dnp.registeredTokenIndex(erc20Token.address)).should.bignumber.equal(0);
+            await checkTokenIndexes();
         });
 
         it("cannot deregister unregistered tokens", async () => {
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
         });
 
-        it("properly sets index [regression]", async () => {
+        it("properly sets index", async () => {
             const one = "1".repeat(40);
             const two = "2".repeat(40);
             const three = "3".repeat(40);
 
-            await indexesValid();
+            await checkTokenIndexes();
             await dnp.registerToken(one);
             await dnp.registerToken(two);
             await dnp.registerToken(three);
             await waitForCycle();
-            await indexesValid();
+            await checkTokenIndexes();
 
             // const expected = await dnp.registeredTokenIndex(one);
             await dnp.deregisterToken(one);
             await waitForCycle();
-            await indexesValid();
+            await checkTokenIndexes();
             // (await dnp.registeredTokenIndex(two)).should.bignumber.equal(expected);
             await dnp.deregisterToken(two);
             await dnp.deregisterToken(three);
-            await indexesValid();
+            await checkTokenIndexes();
             await waitForCycle();
-            await indexesValid();
+            await checkTokenIndexes();
         });
     });
 
@@ -225,14 +240,14 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can whitelist darknodes", async () => {
             await waitForCycle();
-            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(0));
+            const whitelistLength = await store.darknodeWhitelistLength();
             await store.isWhitelisted(darknode1).should.eventually.be.false;
             await dnp.claim(darknode1);
             // Attempts to whitelist again during the same cycle should do nothing
             await dnp.claim(darknode1).should.be.rejectedWith(null, /cannot claim for this cycle/);
             await store.isWhitelisted(darknode1).should.eventually.be.true;
             await waitForCycle();
-            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(1));
+            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(whitelistLength).add(new BN(1)));
         })
 
         it("can be paid DAI from a payee", async () => {
