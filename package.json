@@ -13,7 +13,7 @@
     "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null"
   },
   "dependencies": {
-    "openzeppelin-solidity": "1.11.0"
+    "openzeppelin-solidity": "2.2.0"
   },
   "devDependencies": {
     "@0xproject/abi-gen": "^1.0.12",
@@ -33,9 +33,9 @@
     "ganache-cli": "^6.1.8",
     "js-sha3": "^0.8.0",
     "sol-merger": "^0.1.2",
-    "solc": "0.4.25",
+    "solc": "0.5.6",
     "solidity-coverage": "^0.5.11",
-    "truffle": "^5.0.0-beta.1",
+    "truffle": "5.0.13",
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "underscore": "^1.9.1",

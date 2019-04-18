@@ -5,7 +5,9 @@ import "./helper/testUtils";
 import { StandardTokenContract } from "./bindings/standard_token";
 
 import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./bindings/compatible_erc20_test";
+import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./bindings/compatible_erc20_functions";
 
+const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions") as CompatibleERC20FunctionsArtifact;
 const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;
 const NormalToken = artifacts.require("NormalToken");
 const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
@@ -14,9 +16,12 @@ const TokenWithFees = artifacts.require("TokenWithFees");
 
 contract("CompatibleERC20", (accounts) => {
 
+    let fns: CompatibleERC20FunctionsContract;
     let mock: CompatibleERC20TestContract;
 
     before(async () => {
+        fns = await CompatibleERC20Functions.deployed();
+        (CompatibleERC20Test as any).link("CompatibleERC20Functions", fns.address);
         mock = await CompatibleERC20Test.new();
     });
 

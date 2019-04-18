@@ -1,5 +1,6 @@
 /// <reference types="../test-ts/typings/truffle" />
 
+const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions");
 const PaymentToken = artifacts.require("PaymentToken");
 const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
@@ -46,6 +47,11 @@ module.exports = async function (deployer, network) {
             DarknodePaymentStore,
             VERSION_STRING,
         ))
+        .then(() => deployer.deploy(
+            CompatibleERC20Functions
+        ))
+        .then(() => deployer.link(CompatibleERC20Functions, DarknodePayment)
+        )
         .then(() => deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
