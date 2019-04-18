@@ -3,9 +3,8 @@ pragma solidity 0.5.6;
 import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-// import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
-import "../CompatibleERC20.sol";
+import "../CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
 /// @notice DarknodePaymentStore is responsible for tracking black/whitelisted

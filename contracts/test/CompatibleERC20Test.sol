@@ -3,7 +3,7 @@ pragma solidity 0.5.6;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../CompatibleERC20.sol";
+import "../CompatibleERC20Functions.sol";
 
 contract CompatibleERC20Test  {
     using SafeMath for uint256;
