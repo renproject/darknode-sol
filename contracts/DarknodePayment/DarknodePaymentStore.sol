@@ -1,7 +1,9 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.5.6;
 
 import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+// import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
 import "../CompatibleERC20.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
@@ -12,7 +14,7 @@ import "../DarknodeRegistry/DarknodeRegistry.sol";
 ///         out to darknodes.
 contract DarknodePaymentStore is Claimable {
     using SafeMath for uint256;
-    using CompatibleERC20Functions for CompatibleERC20;
+    using CompatibleERC20Functions for ERC20;
 
     string public VERSION; // Passed in as a constructor parameter.
 
@@ -38,13 +40,13 @@ contract DarknodePaymentStore is Claimable {
     ///
     /// @param _VERSION A string defining the contract version.
     constructor(
-        string _VERSION
+        string memory _VERSION
     ) public {
         VERSION = _VERSION;
     }
 
     /// @notice Allow direct payments to be made to the DarknodePaymentStore.
-    function () public payable {
+    function () external payable {
     }
 
     /// @notice Checks to see if a darknode is blacklisted
@@ -71,7 +73,7 @@ contract DarknodePaymentStore is Claimable {
         if (_token == ETHEREUM) {
             return address(this).balance;
         } else {
-            return CompatibleERC20(_token).balanceOf(address(this));
+            return ERC20(_token).balanceOf(address(this));
         }
     }
 
@@ -134,7 +136,7 @@ contract DarknodePaymentStore is Claimable {
     /// @param _token Which token to transfer
     /// @param _amount The amount to transfer
     /// @param _recipient The address to withdraw it to
-    function transfer(address _darknode, address _token, uint256 _amount, address _recipient) external onlyOwner {
+    function transfer(address _darknode, address _token, uint256 _amount, address payable _recipient) external onlyOwner {
         require(darknodeBalances[_darknode][_token] >= _amount, "insufficient darknode balance");
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].sub(_amount);
         lockedBalances[_token] = lockedBalances[_token].sub(_amount);
@@ -142,7 +144,7 @@ contract DarknodePaymentStore is Claimable {
         if (_token == ETHEREUM) {
             _recipient.transfer(_amount);
         } else {
-            CompatibleERC20(_token).safeTransfer(_recipient, _amount);
+            ERC20(_token).safeTransfer(_recipient, _amount);
         }
     }
 

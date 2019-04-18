@@ -1,10 +1,10 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.5.6;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract NCT_ERC20Basic {
     uint public totalSupply;
-    function balanceOf(address who) public constant returns (uint);
+    function balanceOf(address who) public view returns (uint);
     function transfer(address to, uint value) public;
     event Transfer(address indexed from, address indexed to, uint value);
 }
@@ -27,14 +27,14 @@ contract NCT_BasicToken is NCT_ERC20Basic {
         emit Transfer(msg.sender, _to, _value);
     }
 
-    function balanceOf(address _owner) public constant returns (uint balance) {
+    function balanceOf(address _owner) public view returns (uint balance) {
         return balances[_owner];
     }
 
 }
 
 contract NCT_ERC20 is NCT_ERC20Basic {
-    function allowance(address owner, address spender) public constant returns (uint);
+    function allowance(address owner, address spender) public view returns (uint);
     function transferFrom(address from, address to, uint value) public;
     function approve(address spender, uint value) public;
     event Approval(address indexed owner, address indexed spender, uint value);
@@ -60,7 +60,7 @@ contract NCT_StandardToken is NCT_BasicToken, NCT_ERC20 {
         emit Approval(msg.sender, _spender, _value);
     }
 
-    function allowance(address _owner, address _spender) public constant returns (uint remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint remaining) {
         return allowed[_owner][_spender];
     }
 

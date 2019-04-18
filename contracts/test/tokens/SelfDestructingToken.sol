@@ -1,23 +1,25 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.5.6;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 
 /// @notice A test ERC20 token that can destroy itself.
-contract SelfDestructingToken is StandardToken, Ownable {
+contract SelfDestructingToken is ERC20, ERC20Detailed, Ownable {
 
-    string public constant name = "Self Destructing Token";
-    string public constant symbol = "SDT";
-    uint8 public constant decimals = 18;
-    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
+    string private constant _name = "Self Destructing Token";
+    string private constant _symbol = "SDT";
+    uint8 private constant _decimals = 18;
 
-    /// @notice The RenToken Constructor.
-    constructor() public {
-        totalSupply_ = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
+    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(_decimals);
+
+    /// @notice The SelfDestructingToken Constructor.
+    constructor() ERC20Detailed(_name, _symbol, _decimals) ERC20() public {
+        _mint(msg.sender, INITIAL_SUPPLY);
     }
 
+
     function destruct() public onlyOwner {
-        selfdestruct(owner);
+        selfdestruct(msg.sender);
     }
 }
