@@ -52,5 +52,5 @@ npm run coverage
 Deploy to Kovan:
 
 ```sh
-npm run kovan
+npm run deployToKovan
 ```
