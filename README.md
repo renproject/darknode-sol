@@ -46,3 +46,11 @@ Run the Truffle test suite with coverage.
 ```sh
 npm run coverage
 ```
+
+## Deploying
+
+Deploy to Kovan:
+
+```sh
+npm run kovan
+```

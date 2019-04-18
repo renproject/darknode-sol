@@ -48,7 +48,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     before(async () => {
         ren = await RenToken.deployed();
-        dai = await ERC20.deployed();
+        dai = await ERC20.new();
         erc20Token = await ERC20.new();
         dnr = await DarknodeRegistry.deployed();
         store = await DarknodePaymentStore.deployed();
