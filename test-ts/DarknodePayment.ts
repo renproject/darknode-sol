@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, ID,
+    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, NULL,
 } from "./helper/testUtils";
 
 
@@ -388,7 +388,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot withdraw if a darknode owner is invalid", async () => {
-            await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+            await dnp.withdraw(NULL, dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
             // accounts[0] is not a registered darknode
             await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
         })
@@ -480,11 +480,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         })
 
         it("cannot update the blacklister address to an invalid address", async () => {
-            await dnp.updateBlacklister("0x0").should.be.rejectedWith(null, /invalid contract address/);
+            await dnp.updateBlacklister(NULL).should.be.rejectedWith(null, /invalid contract address/);
         })
 
         it("cannot blacklist invalid addresses", async () => {
-            const invalidAddress = "0x0"
+            const invalidAddress = NULL;
             await store.isBlacklisted(invalidAddress).should.eventually.be.false;
             await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /darknode is not registered/);
             await store.isBlacklisted(owner).should.eventually.be.false;

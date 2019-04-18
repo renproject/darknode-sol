@@ -215,7 +215,7 @@ contract DarknodePayment is Ownable {
     /// @param _token Which token to transfer
     function withdraw(address _darknode, address _token) external {
         address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
-        require(darknodeOwner != address(0), "invalid darknode owner");
+        require(darknodeOwner != address(0x0), "invalid darknode owner");
 
         uint256 amount = store.darknodeBalances(_darknode, _token);
         require(amount > 0, "nothing to withdraw");
