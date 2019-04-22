@@ -160,7 +160,7 @@ contract DarknodePayment is Ownable {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        cycleDuration = _cycleDuration * 1 days;
+        cycleDuration = _cycleDuration.mul(1 days);
         // Default the blacklister to owner
         blacklister = msg.sender;
 
