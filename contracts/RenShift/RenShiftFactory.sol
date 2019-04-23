@@ -12,8 +12,8 @@ contract RenShiftFactory {
         rewardVault = _rewardVault;
     }
 
-    function create(string memory _name, string memory _symbol, uint8 _decimals) public {
-        new RenShift(owner, _name, _symbol, _decimals, 0, rewardVault);
+    function create(string memory _name, string memory _symbol, uint8 _decimals, uint256 feesInBips) public {
+        new RenShift(owner, _name, _symbol, _decimals, feesInBips, rewardVault);
     } 
 
 }
