@@ -1,9 +1,9 @@
 pragma solidity 0.5.6;
 
-import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
+import "../Claimable.sol";
 import "../CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 

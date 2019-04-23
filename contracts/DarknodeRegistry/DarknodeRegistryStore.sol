@@ -1,8 +1,8 @@
 pragma solidity 0.5.6;
 
-import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+import "../Claimable.sol";
 import "../LinkedList.sol";
 import "../RenToken.sol";
 
