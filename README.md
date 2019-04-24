@@ -21,7 +21,7 @@ Install the dependencies.
 npm install
 ```
 
-Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545.
+Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545. The `-d` flag will use a deterministic mnemonic for reproducibility.
 
 ```sh
 npx ganache-cli -d
