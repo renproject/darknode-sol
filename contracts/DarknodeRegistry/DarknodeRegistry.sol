@@ -3,7 +3,8 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./RepublicToken.sol";
+import "../RenToken.sol";
+import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
@@ -29,41 +30,43 @@ contract DarknodeRegistry is Ownable {
     uint256 public minimumBond;
     uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
-    address public slasher;
 
     /// When one of the above variables is modified, it is only updated when the
     /// next epoch is called. These variables store the values for the next epoch.
     uint256 public nextMinimumBond;
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
-    address public nextSlasher;
 
     /// The current and previous epoch
     Epoch public currentEpoch;
     Epoch public previousEpoch;
 
     /// Republic ERC20 token contract used to transfer bonds.
-    RepublicToken public ren;
+    RenToken public ren;
 
     /// Darknode Registry Store is the storage contract for darknodes.
     DarknodeRegistryStore public store;
 
+    /// Darknode Slasher allows darknodes to vote on bond slashing.
+    DarknodeSlasher public slasher;
+    DarknodeSlasher public nextSlasher;
+
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeID The darknode ID that was registered.
     /// @param _bond The amount of REN that was transferred as bond.
-    event LogDarknodeRegistered(address _darknodeID, uint256 _bond);
+    event LogDarknodeRegistered(address indexed _darknodeID, uint256 _bond);
 
     /// @notice Emitted when a darknode is deregistered.
     /// @param _darknodeID The darknode ID that was deregistered.
-    event LogDarknodeDeregistered(address _darknodeID);
+    event LogDarknodeDeregistered(address indexed _darknodeID);
 
     /// @notice Emitted when a refund has been made.
     /// @param _owner The address that was refunded.
     /// @param _amount The amount of REN that was refunded.
-    event LogDarknodeOwnerRefunded(address _owner, uint256 _amount);
+    event LogDarknodeOwnerRefunded(address indexed _owner, uint256 _amount);
 
     /// @notice Emitted when a new epoch has begun.
-    event LogNewEpoch();
+    event LogNewEpoch(uint256 indexed epochhash);
 
     /// @notice Emitted when a constructor parameter has been updated.
     event LogMinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
@@ -105,7 +108,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
-    /// @param _renAddress The address of the RepublicToken contract.
+    /// @param _renAddress The address of the RenToken contract.
     /// @param _storeAddress The address of the DarknodeRegistryStore contract.
     /// @param _minimumBond The minimum bond amount that can be submitted by a
     ///        Darknode.
@@ -114,7 +117,7 @@ contract DarknodeRegistry is Ownable {
     ///        epochs.
     constructor(
         string _VERSION,
-        RepublicToken _renAddress,
+        RenToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
@@ -229,7 +232,7 @@ contract DarknodeRegistry is Ownable {
         }
 
         // Emit an event
-        emit LogNewEpoch();
+        emit LogNewEpoch(epochhash);
     }
 
     /// @notice Allows the contract owner to initiate an ownership transfer of
@@ -271,8 +274,8 @@ contract DarknodeRegistry is Ownable {
     /// @notice Allow the contract owner to update the DarknodeSlasher contract
     /// address.
     /// @param _slasher The new slasher address.
-    function updateSlasher(address _slasher) external onlyOwner {
-        require(_slasher != 0x0, "invalid slasher address");
+    function updateSlasher(DarknodeSlasher _slasher) external onlyOwner {
+        require(address(_slasher) != 0x0, "invalid slasher address");
         nextSlasher = _slasher;
     }
 

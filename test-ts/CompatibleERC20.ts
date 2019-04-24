@@ -1,10 +1,10 @@
 import { BN } from "bn.js";
 
-import "../helper/testUtils";
+import "./helper/testUtils";
 
-import { StandardTokenContract } from "../bindings/standard_token";
+import { StandardTokenContract } from "./bindings/standard_token";
 
-import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "../bindings/compatible_erc20_test";
+import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./bindings/compatible_erc20_test";
 
 const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;
 const NormalToken = artifacts.require("NormalToken");

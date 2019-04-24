@@ -5,32 +5,35 @@ import {
     NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
 import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
-import { RepublicTokenArtifact, RepublicTokenContract } from "./bindings/republic_token";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
+import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./bindings/darknode_slasher";
 
-const RepublicToken = artifacts.require("RepublicToken") as RepublicTokenArtifact;
+const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;
 const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
+const DarknodeSlasher = artifacts.require("DarknodeSlasher") as DarknodeSlasherArtifact;
 
 contract("DarknodeRegistry", (accounts: string[]) => {
 
-    let ren: RepublicTokenContract;
+    let ren: RenTokenContract;
     let dnrs: DarknodeRegistryStoreContract;
     let dnr: DarknodeRegistryContract;
+    let slasher: DarknodeSlasherContract;
 
     before(async () => {
-        ren = await RepublicToken.deployed();
+        ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
+        slasher = await DarknodeSlasher.deployed();
+        await dnr.updateSlasher(slasher.address);
+        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorized/);
+        await waitForEpoch(dnr);
 
         for (let i = 1; i < accounts.length; i++) {
             await ren.transfer(accounts[i], MINIMUM_BOND);
         }
-    });
-
-    it("first epoch can only be called by the owner", async () => {
-        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(null, /not authorized/);
     });
 
     it("should return empty list when no darknodes are registered", async () => {
@@ -494,19 +497,15 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.slasher()).should.equal(newSlasher);
 
         // [RESET] Reset the slasher address to the previous slasher address
-        if (previousSlasher !== NULL) {
-            await dnr.updateSlasher(previousSlasher);
-            await waitForEpoch(dnr);
-            (await dnr.slasher()).should.equal(previousSlasher);
-        }
+        await dnr.updateSlasher(previousSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(previousSlasher);
     });
 
     it("anyone except the slasher can not call slash", async () => {
         // [SETUP] Set slasher to accounts[3]
-        const previousSlasher = await dnr.slasher();
-        const slasher = accounts[3];
+        const slasherOwner = accounts[0];
         const notSlasher = accounts[4];
-        await dnr.updateSlasher(slasher);
 
         // [SETUP] Register darknodes 3, 4, 7 and 8
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
@@ -525,11 +524,16 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [CHECK] Only the slasher can call `slash`
         await dnr.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
             .should.be.rejectedWith(null, /must be slasher/);
-        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: slasher });
-        await dnr.slash(ID("3"), ID("6"), ID("7"), { from: slasher });
+        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner })
+            .should.be.rejectedWith(null, /must be slasher/);
+        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
+            .should.be.rejectedWith(null, /revert/);
 
-        // [RESET] Reset slasher to the slasher contract
-        await dnr.updateSlasher(previousSlasher);
+        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
+
+        // // NOTE: The darknode doesn't prevent slashing a darknode twice
+        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
     });
 
     it("transfer ownership of the dark node store", async () => {

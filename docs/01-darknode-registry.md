@@ -1,13 +1,10 @@
 # Darknode Registry
 
-The Darknode Registry is an Ethereum smart contract used to register Darknodes and define the network configuration for the Secure Order Matcher.
+The Darknode Registry is an Ethereum smart contract used to register Darknodes and define the network configuration for RenVM.
 
 ## Bond
 
-A *bond* of 100,000REN is required when registering a Darknode. This bond is slashed in half by the [Darknode Slasher](./03-darknode-slasher.md) when a proof of malicious behaviour is produced. The bond prevents malicious adversaries from:
-
-1. registering a large number of Darknodes to gain control over the network, and
-2. presenting a false positive in the Secure Order Matcher.
+A *bond* of 100,000REN is required when registering a Darknode. This bond is slashed in half by the [Darknode Slasher](./03-darknode-slasher.md) when a proof of malicious behaviour is produced. The bond prevents malicious adversaries from registering a large number of Darknodes to gain control over the network.
 
 ## Epochs
 
@@ -52,11 +49,11 @@ for i in 1 .. n do
     p ← p + 1
 ```
 
-Using the list of registered Darknodes for _ξ_, and the block hash for _ξ_, observers will compute the same configuration of Darknode Pods without needing to interact. Darknode Pods define which Darknodes need to collaborate to run the Secure Order Matcher during _ξ_.
+Using the list of registered Darknodes for _ξ_, and the block hash for _ξ_, observers will compute the same configuration of Darknode Pods without needing to interact. Darknode Pods define which Darknodes need to collaborate on computations for _ξ_.
 
 ## Registration
 
-Before a Darknode is included in a Darknode Pod (e.g. traders and other Darknodes acknowledge it as part of the network of Darknodes that runs the Secure Order Matcher), it must have its Darknode Address registered by a *Darknode operator*. The Darknode operator is the Ethereum account that will receive the fees earned by the Darknode during its operations. The Darknode operator is the only account that can deregister a Darknode, other than the [Darknode Slasher](./03-darknode-slasher.md).
+Before a Darknode is included in a Darknode Pod (i.e. other Darknodes acknowledge it as part of the network of Darknodes that runs RenVM), it must have its Darknode Address registered by a *Darknode operator*. The Darknode operator is the Ethereum account that will receive the fees earned by the Darknode during its operations. The Darknode operator is the only account that can deregister a Darknode, other than the [Darknode Slasher](./03-darknode-slasher.md).
 
 In the diagram below represents a timeline for the registration, deregistration, and refunding, of a Darknode. The grey boxes represent the discrete time intervals, epochs, and the coloured numbers are used to describe the sequence of events.
 

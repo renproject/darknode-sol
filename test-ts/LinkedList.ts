@@ -1,6 +1,6 @@
-import { ID, NULL } from "../helper/testUtils";
+import { ID, NULL } from "./helper/testUtils";
 
-import { LinkedListTestArtifact, LinkedListTestContract } from "../bindings/linked_list_test";
+import { LinkedListTestArtifact, LinkedListTestContract } from "./bindings/linked_list_test";
 
 const LinkedListTest = artifacts.require("LinkedListTest") as LinkedListTestArtifact;
 

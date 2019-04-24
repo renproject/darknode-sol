@@ -1,6 +1,7 @@
 {
-  "name": "republic-sol",
+  "name": "darknode-sol",
   "version": "0.0.3",
+  "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
     "clean": "if [ -d \"test\" ]; then rm -r test; fi;",
     "test": "if [ -d \"test\" ]; then npm run warn; else npm run test-ts; fi;",
@@ -9,7 +10,8 @@
     "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33mnpm run clean\\033[0m'.\n\"",
     "test-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && truffle test); npm run clean",
     "coverage-ts": "trap \"npm run clean\" INT TERM; (npm run bindings && tsc && solidity-coverage); npm run clean",
-    "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null"
+    "bindings": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/bindings --template './test-ts/bindings/templates/contract.handlebars' --partials './test-ts/bindings/templates/partials/*.handlebars' 1> /dev/null",
+    "deployToKovan": "truffle migrate --network kovan && npm run merge .merged/kovan"
   },
   "dependencies": {
     "openzeppelin-solidity": "1.11.0"
@@ -21,6 +23,7 @@
     "@types/crypto-js": "^3.1.42",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.11.3",
+    "any-promise": "^1.3.0",
     "bignumber.js": "^7.2.1",
     "bn.js": "^4.11.8",
     "chai": "^4.2.0",
@@ -28,13 +31,15 @@
     "chai-bignumber": "git://github.com/negaex/chai-bignumber.git#master",
     "coveralls": "^3.0.2",
     "crypto-js": "^3.1.9-1",
+    "dotenv": "^7.0.0",
     "eth-gas-reporter": "^0.1.12",
     "ganache-cli": "^6.1.8",
     "js-sha3": "^0.8.0",
     "sol-merger": "^0.1.2",
     "solc": "0.4.25",
     "solidity-coverage": "^0.5.11",
-    "truffle": "^5.0.0-beta.1",
+    "truffle": "5.0.0-beta.1",
+    "truffle-hdwallet-provider": "^1.0.0-web3one.5",
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "underscore": "^1.9.1",

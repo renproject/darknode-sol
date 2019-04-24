@@ -3,12 +3,13 @@ pragma solidity ^0.4.25;
 import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "./CompatibleERC20.sol";
-import "./DarknodeRegistry.sol";
+import "../CompatibleERC20.sol";
+import "../DarknodeRegistry/DarknodeRegistry.sol";
 
-/// @notice DarknodePaymentStore is responsible for tracking black/whitelisted darknodes
-///         as well as the balances which have been allocated to the darknodes.
-///         It is also responsible for holding the tokens to be paid out to darknodes.
+/// @notice DarknodePaymentStore is responsible for tracking black/whitelisted
+///         darknodes as well as the balances which have been allocated to the
+///         darknodes. It is also responsible for holding the tokens to be paid
+///         out to darknodes.
 contract DarknodePaymentStore is Claimable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for CompatibleERC20;
@@ -75,7 +76,8 @@ contract DarknodePaymentStore is Claimable {
     }
 
     /// @notice Get the available balance of the contract for a particular token
-    ///         This is the free amount which has not yet been allocated to darknodes.
+    ///         This is the free amount which has not yet been allocated to
+    ///         darknodes.
     ///
     /// @param _token The token to check balance of
     /// @return The available balance of the contract
@@ -95,12 +97,13 @@ contract DarknodePaymentStore is Claimable {
         // Unwhitelist if necessary
         if (isWhitelisted(_darknode)) {
             darknodeWhitelist[_darknode] = 0;
-            // Use Safemath when subtracting to avoid underflows
+            // Use SafeMath when subtracting to avoid underflows
             darknodeWhitelistLength = darknodeWhitelistLength.sub(1);
         }
     }
 
-    /// @notice Whitelists a darknode allowing it to participate in reward allocation.
+    /// @notice Whitelists a darknode allowing it to participate in reward
+    ///         allocation.
     ///
     /// @param _darknode The address of the darknode to whitelist
     function whitelist(address _darknode) external onlyOwner {
@@ -111,7 +114,8 @@ contract DarknodePaymentStore is Claimable {
         darknodeWhitelistLength++;
     }
 
-    /// @notice Increments the amount of funds allocated to a particular darknode.
+    /// @notice Increments the amount of funds allocated to a particular
+    ///         darknode.
     ///
     /// @param _darknode The address of the darknode to increase balance of
     /// @param _token The token which the balance should be incremented
