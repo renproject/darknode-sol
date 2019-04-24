@@ -12,7 +12,7 @@ const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
 const NonCompliantToken = artifacts.require("NonCompliantToken");
 const TokenWithFees = artifacts.require("TokenWithFees");
 
-contract("CompliantERC20", (accounts) => {
+contract("CompatibleERC20", (accounts) => {
 
     let mock: CompatibleERC20TestContract;
 

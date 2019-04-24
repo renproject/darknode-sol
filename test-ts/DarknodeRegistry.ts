@@ -494,9 +494,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.slasher()).should.equal(newSlasher);
 
         // [RESET] Reset the slasher address to the previous slasher address
-        await dnr.updateSlasher(previousSlasher);
-        await waitForEpoch(dnr);
-        (await dnr.slasher()).should.equal(previousSlasher);
+        if (previousSlasher !== NULL) {
+            await dnr.updateSlasher(previousSlasher);
+            await waitForEpoch(dnr);
+            (await dnr.slasher()).should.equal(previousSlasher);
+        }
     });
 
     it("anyone except the slasher can not call slash", async () => {
