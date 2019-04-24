@@ -376,7 +376,7 @@ contract DarknodePayment is Ownable {
         uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
         // Move the last token to _token's position and update it's index
         registeredTokens[deletedTokenIndex] = lastToken;
-        registeredTokenIndex[lastToken] = deletedTokenIndex + 1;
+        registeredTokenIndex[lastToken] = registeredTokenIndex[_token];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
         registeredTokens.length = registeredTokens.length.sub(1);
