@@ -1,0 +1,44 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2.1
+
+executors:
+  default:
+    docker:
+      - image: circleci/node:8.15
+    working_directory: ~/darknode-sol
+
+commands:
+  install_deps:
+    description: "Install dependencies"
+    steps:
+      # Download and cache dependencies
+      - restore_cache:
+          name: Restore node_modules
+          keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          name: Save node_modules
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package-lock.json" }}
+
+jobs:
+  build:
+    executor: default
+    steps:
+      - checkout
+      - install_deps
+      - run:
+          name: Run tests
+          command: npm run clean && npm run coverage
+
+workflows:
+  build:
+    jobs:
+      - build
