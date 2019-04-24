@@ -36,7 +36,7 @@ jobs:
       - install_deps
       - run:
           name: Run tests
-          command: npm run clean && npm run coverage
+          command: npm run coverage
 
 workflows:
   build:
