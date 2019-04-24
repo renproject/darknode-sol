@@ -1,11 +1,37 @@
 // tslint:disable
 
-import { BN } from "bn.js";
-import { Log, Provider, TransactionReceipt, Tx } from "web3/types";
+
+/////////// WEB3 ///////////////////////////////////////////////////////////////
+
+import BN from "bn.js";
+import { Contract, Log, SendOptions, TransactionReceipt } from "web3-eth-contract";
+import { provider } from "web3-providers";
 
 export interface Transaction { receipt: TransactionReceipt; tx: string; logs: Log[]; }
 
 type BigNumber = string | number | BN;
+
+
+export interface Read<T> {
+    call: (options?: SendOptions) => Promise<T>;
+}
+export interface Write {
+    send: (options?: SendOptions) => Promise<Transaction>;
+}
+export interface {{contractName}}Web3 extends Contract {
+    methods: {
+        {{#each methods}}
+        {{#this.constant}}
+        {{this.tsName}}({{> typed_params_2 inputs=inputs}}): Read<{{> return_type outputs=outputs}}>;
+        {{/this.constant}}
+        {{^this.constant}}
+        {{this.tsName}}({{> typed_params_2 inputs=inputs}}): Write;
+        {{/this.constant}}
+        {{/each}}
+    }
+}
+
+/////////// TRUFFLE CONTRACT ///////////////////////////////////////////////////
 
 {{#if events}}
 export const {{contractName}}Events = {
@@ -33,5 +59,5 @@ export interface {{contractName}}Artifact {
     "new"({{> typed_params inputs=ctor.inputs}}): Promise<{{contractName}}Contract>;
     at(address: string): Promise<{{contractName}}Contract>;
     deployed(): Promise<{{contractName}}Contract>;
-    setProvider(provider: Provider): void;
+    setProvider(provider: provider): void;
 }

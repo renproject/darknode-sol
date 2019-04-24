@@ -1,4 +1,4 @@
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import {
     MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, NULL,

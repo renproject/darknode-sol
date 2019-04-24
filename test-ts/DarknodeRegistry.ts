@@ -1,4 +1,4 @@
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,

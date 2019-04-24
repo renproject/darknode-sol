@@ -1,20 +1,23 @@
 
 import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as chaiBigNumber from "chai-bignumber";
+// @ts-ignore
+import chaiAsPromised from "chai-as-promised";
+// @ts-ignore
+import chaiBigNumber from "chai-bignumber";
 import * as crypto from "crypto";
 
 import BigNumber from "bignumber.js";
 
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import { DarknodeRegistryContract } from "../bindings/darknode_registry";
 
 // Import chai log helper
 import "./logs";
 
+console.log(chaiAsPromised);
 chai.use(chaiAsPromised);
-chai.use(chaiBigNumber(BigNumber));
+chai.use((chaiBigNumber as any)(BigNumber) as any);
 chai.should();
 
 const config = require("../../migrations/config.js");
@@ -48,8 +51,8 @@ export const randomAddress = (): string => {
 const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
         web3.currentProvider.send(
-            { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 },
-            (err, _) => {
+            { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 } as any,
+            ((err, _) => {
                 if (err) {
                     reject(err);
                 }
@@ -58,13 +61,13 @@ const increaseTimeHelper = async (seconds: number) => {
                     method: 'evm_mine',
                     params: [],
                     id: new Date().getSeconds()
-                }, (err, _) => {
+                } as any, ((err, _) => {
                     if (err) {
                         reject();
                     }
                     resolve();
-                });
-            }
+                }) as any);
+            }) as any
         )
     });
 }

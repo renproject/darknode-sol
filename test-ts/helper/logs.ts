@@ -2,7 +2,7 @@ import * as chai from "chai";
 
 import BigNumber from "bignumber.js";
 
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 interface Log {
     event: string;
