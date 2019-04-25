@@ -14,6 +14,7 @@ module.exports = {
         // Contracts for assisting the tests
         "test/CompatibleERC20Test.sol",
         "test/tokens/ImpreciseToken.sol",
+        "test/tokens/SelfDestructingToken.sol",
         "test/tokens/NonCompliantToken.sol",
         "test/tokens/NormalToken.sol",
         "test/tokens/ReturnsFalseToken.sol",
