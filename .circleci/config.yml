@@ -18,15 +18,15 @@ commands:
       - restore_cache:
           name: Restore node_modules
           keys:
-            - v1-dependencies-{{ checksum "package-lock.json" }}
+            - v1-dependencies-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
-          command: npm install
+          command: yarn install
       - save_cache:
           name: Save node_modules
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package-lock.json" }}
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
       - install_deps
       - run:
           name: Run tests
-          command: npm run coverage
+          command: yarn run coverage
 
 workflows:
   build:
