@@ -1,8 +1,8 @@
-pragma solidity 0.5.6;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
 contract PaymentToken is ERC20Pausable, ERC20Burnable, ERC20Detailed {
 

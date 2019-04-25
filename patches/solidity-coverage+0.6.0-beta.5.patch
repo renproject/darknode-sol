@@ -1,0 +1,71 @@
+diff --git a/node_modules/solidity-coverage/lib/truffleConfig.js b/node_modules/solidity-coverage/lib/truffleConfig.js
+index e5eee1f..59efb0a 100644
+--- a/node_modules/solidity-coverage/lib/truffleConfig.js
++++ b/node_modules/solidity-coverage/lib/truffleConfig.js
+@@ -12,7 +12,7 @@ module.exports = function truffleConfig(port, gasLimit, gasPrice) {
+         },
+         compilers: {
+           solc: {
+-            version: "0.5.3",
++            version: "0.5.7",
+           }
+         }
+     };`;
+diff --git a/node_modules/solidity-coverage/test/app.js b/node_modules/solidity-coverage/test/app.js
+index 8b56a42..fcc6688 100644
+--- a/node_modules/solidity-coverage/test/app.js
++++ b/node_modules/solidity-coverage/test/app.js
+@@ -7,11 +7,15 @@ const childprocess = require('child_process');
+ const mock = require('./util/mockTruffle.js');
+ 
+ // shell.test alias for legibility
+-function pathExists(path) { return shell.test('-e', path); }
++function pathExists(path) {
++  return shell.test('-e', path);
++}
+ 
+ // tests run out of memory in CI without this
+ function collectGarbage() {
+-  if (global.gc) { global.gc(); }
++  if (global.gc) {
++    global.gc();
++  }
+ }
+ 
+ describe('app', () => {
+@@ -143,7 +147,7 @@ describe('app', () => {
+   it('trufflejs specifies coverage network: should generate coverage, cleanup and exit(0)', () => {
+     if (!process.env.CI) {
+       const trufflejs =
+-      `module.exports = {
++        `module.exports = {
+         networks: {
+           development: {
+             host: "localhost",
+@@ -158,7 +162,7 @@ describe('app', () => {
+         },
+         compilers: {
+           solc: {
+-            version: "0.5.3",
++            version: "0.5.7",
+             settings: {
+               evmVersion: "constantinople"
+             }
+diff --git a/node_modules/solidity-coverage/test/util/mockTruffle.js b/node_modules/solidity-coverage/test/util/mockTruffle.js
+index dded226..334e363 100644
+--- a/node_modules/solidity-coverage/test/util/mockTruffle.js
++++ b/node_modules/solidity-coverage/test/util/mockTruffle.js
+@@ -1,4 +1,3 @@
+-
+ /*
+   This file contains utilities for generating a mock truffle project to test solcover's
+   run script against.
+@@ -16,7 +15,7 @@ const defaultTruffleJs = `module.exports = {
+     },
+     compilers: {
+       solc: {
+-        version: "0.5.3",
++        version: "0.5.7",
+       }
+     }
+   };`

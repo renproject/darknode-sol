@@ -1,13 +1,19 @@
-// tslint:disable
-
-
 /////////// WEB3 ///////////////////////////////////////////////////////////////
 
+// tslint:disable
+
 import BN from "bn.js";
-import { Contract, Log, SendOptions, TransactionReceipt } from "web3-eth-contract";
-import { provider } from "web3-providers";
+import { Log, PromiEvent, TransactionReceipt } from "web3-core";
+import { Contract } from "web3-eth-contract";
 
 export interface Transaction { receipt: TransactionReceipt; tx: string; logs: Log[]; }
+
+export interface SendOptions {
+    from?: string;
+    gasPrice?: string;
+    gas?: number;
+    value?: number | string | BN;
+}
 
 type BigNumber = string | number | BN;
 
@@ -16,7 +22,7 @@ export interface Read<T> {
     call: (options?: SendOptions) => Promise<T>;
 }
 export interface Write {
-    send: (options?: SendOptions) => Promise<Transaction>;
+    send: (options?: SendOptions) => PromiEvent<Transaction>;
 }
 export interface {{contractName}}Web3 extends Contract {
     methods: {
@@ -32,6 +38,8 @@ export interface {{contractName}}Web3 extends Contract {
 }
 
 /////////// TRUFFLE CONTRACT ///////////////////////////////////////////////////
+
+import { provider } from "web3-providers";
 
 {{#if events}}
 export const {{contractName}}Events = {

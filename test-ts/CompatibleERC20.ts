@@ -2,10 +2,10 @@ import BN from "bn.js";
 
 import "./helper/testUtils";
 
-import { ERC20Contract } from "./bindings/erc20";
+import { ERC20Contract } from "./typings/bindings/erc20";
 
-import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./bindings/compatible_erc20_test";
-import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./bindings/compatible_erc20_functions";
+import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./typings/bindings/compatible_erc20_test";
+import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./typings/bindings/compatible_erc20_functions";
 
 const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions") as CompatibleERC20FunctionsArtifact;
 const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;

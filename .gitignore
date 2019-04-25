@@ -12,7 +12,7 @@ coverage.json
 /.merged
 /test
 local_*
-test-ts/bindings/*.ts
+test-ts/typings/bindings/*.ts
 bindings.go
 
 !node_modules/openzeppelin-solidity/

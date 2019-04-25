@@ -1,4 +1,4 @@
-pragma solidity 0.5.6;
+pragma solidity ^0.5.7;
 
 import "./DarknodePayment/DarknodePayment.sol";
 import "./DarknodePayment/DarknodePaymentStore.sol";

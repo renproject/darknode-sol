@@ -1,7 +1,7 @@
-pragma solidity 0.5.6;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 
 contract TokenWithFees is ERC20, ERC20Detailed {
 

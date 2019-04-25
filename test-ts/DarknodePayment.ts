@@ -5,13 +5,13 @@ import {
 } from "./helper/testUtils";
 
 
-import { CycleChangerArtifact, CycleChangerContract } from "./bindings/cycle_changer";
-import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bindings/darknode_payment_store";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
-import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
-import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
-import { SelfDestructingTokenArtifact } from "./bindings/self_destructing_token";
+import { CycleChangerArtifact, CycleChangerContract } from "./typings/bindings/cycle_changer";
+import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./typings/bindings/darknode_payment_store";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./typings/bindings/darknode_registry";
+import { DarknodePaymentArtifact, DarknodePaymentContract } from "./typings/bindings/darknode_payment";
+import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
+import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
+import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 

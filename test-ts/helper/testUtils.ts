@@ -10,12 +10,11 @@ import BigNumber from "bignumber.js";
 
 import BN from "bn.js";
 
-import { DarknodeRegistryContract } from "../bindings/darknode_registry";
+import { DarknodeRegistryContract } from "../typings/bindings/darknode_registry";
 
 // Import chai log helper
 import "./logs";
 
-console.log(chaiAsPromised);
 chai.use(chaiAsPromised);
 chai.use((chaiBigNumber as any)(BigNumber) as any);
 chai.should();
