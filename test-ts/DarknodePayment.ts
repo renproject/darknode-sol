@@ -195,7 +195,10 @@ contract("DarknodePayment", (accounts: string[]) => {
             const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
-            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
+            // make sure we have enough balance
+            const ownerBalance = new BN(await web3.eth.getBalance(owner));
+            ownerBalance.gte(amount).should.be.true;
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount }).should.not.be.rejected;
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
@@ -206,6 +209,9 @@ contract("DarknodePayment", (accounts: string[]) => {
             const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
+            // make sure we have enough balance
+            const ownerBalance = new BN(await web3.eth.getBalance(owner));
+            ownerBalance.gte(amount).should.be.true;
             await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
