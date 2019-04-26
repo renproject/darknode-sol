@@ -1,7 +1,7 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../RenToken.sol";
 import "../DarknodeSlasher/DarknodeSlasher.sol";
@@ -101,7 +101,7 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Only allow the Slasher contract.
     modifier onlySlasher() {
-        require(slasher == msg.sender, "must be slasher");
+        require(address(slasher) == msg.sender, "must be slasher");
         _;
     }
 
@@ -116,7 +116,7 @@ contract DarknodeRegistry is Ownable {
     /// @param _minimumEpochInterval The minimum number of blocks between
     ///        epochs.
     constructor(
-        string _VERSION,
+        string memory _VERSION,
         RenToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
@@ -156,12 +156,12 @@ contract DarknodeRegistry is Ownable {
     /// @param _darknodeID The darknode ID that will be registered.
     /// @param _publicKey The public key of the darknode. It is stored to allow
     ///        other darknodes and traders to encrypt messages to the trader.
-    function register(address _darknodeID, bytes _publicKey) external onlyRefunded(_darknodeID) {
+    function register(address _darknodeID, bytes calldata _publicKey) external onlyRefunded(_darknodeID) {
         // Use the current minimum bond as the darknode's bond.
         uint256 bond = minimumBond;
 
         // Transfer bond to store
-        require(ren.transferFrom(msg.sender, store, bond), "bond transfer failed");
+        require(ren.transferFrom(msg.sender, address(store), bond), "bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
@@ -195,7 +195,7 @@ contract DarknodeRegistry is Ownable {
     function epoch() external {
         if (previousEpoch.blocknumber == 0) {
             // The first epoch must be called by the owner of the contract
-            require(msg.sender == owner, "not authorized (first epochs)");
+            require(msg.sender == owner(), "not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed
@@ -228,7 +228,7 @@ contract DarknodeRegistry is Ownable {
         }
         if (nextSlasher != slasher) {
             slasher = nextSlasher;
-            emit LogSlasherUpdated(slasher, nextSlasher);
+            emit LogSlasherUpdated(address(slasher), address(nextSlasher));
         }
 
         // Emit an event
@@ -275,7 +275,7 @@ contract DarknodeRegistry is Ownable {
     /// address.
     /// @param _slasher The new slasher address.
     function updateSlasher(DarknodeSlasher _slasher) external onlyOwner {
-        require(address(_slasher) != 0x0, "invalid slasher address");
+        require(address(_slasher) != address(0), "invalid slasher address");
         nextSlasher = _slasher;
     }
 
@@ -333,7 +333,7 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Retrieves the address of the account that registered a darknode.
     /// @param _darknodeID The ID of the darknode to retrieve the owner for.
-    function getDarknodeOwner(address _darknodeID) external view returns (address) {
+    function getDarknodeOwner(address _darknodeID) external view returns (address payable) {
         return store.darknodeOwner(_darknodeID);
     }
 
@@ -345,7 +345,7 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Retrieves the encryption public key of the darknode.
     /// @param _darknodeID The ID of the darknode to retrieve the public key for.
-    function getDarknodePublicKey(address _darknodeID) external view returns (bytes) {
+    function getDarknodePublicKey(address _darknodeID) external view returns (bytes memory) {
         return store.darknodePublicKey(_darknodeID);
     }
 
@@ -359,7 +359,7 @@ contract DarknodeRegistry is Ownable {
     ///        retrieved. If _count is more than the remaining number of
     ///        registered darknodes, the rest of the list will contain
     ///        0x0s.
-    function getDarknodes(address _start, uint256 _count) external view returns (address[]) {
+    function getDarknodes(address _start, uint256 _count) external view returns (address[] memory) {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
@@ -369,7 +369,7 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Retrieves a list of darknodes which were registered for the
     /// previous epoch. See `getDarknodes` for the parameter documentation.
-    function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[]) {
+    function getPreviousDarknodes(address _start, uint256 _count) external view returns (address[] memory) {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodesPreviousEpoch;
@@ -437,7 +437,7 @@ contract DarknodeRegistry is Ownable {
     /// epoch.
     /// @param _darknodeID The ID of the darknode
     /// @param _epoch One of currentEpoch, previousEpoch
-    function isRegisteredInEpoch(address _darknodeID, Epoch _epoch) private view returns (bool) {
+    function isRegisteredInEpoch(address _darknodeID, Epoch memory _epoch) private view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         bool registered = registeredAt != 0 && registeredAt <= _epoch.blocknumber;
@@ -452,7 +452,7 @@ contract DarknodeRegistry is Ownable {
     /// parameters `_start` and `_count`.
     /// @param _usePreviousEpoch If true, use the previous epoch, otherwise use
     ///        the current epoch.
-    function getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[]) {
+    function getDarknodesFromEpochs(address _start, uint256 _count, bool _usePreviousEpoch) private view returns (address[] memory) {
         uint256 count = _count;
         if (count == 0) {
             count = numDarknodes;
@@ -463,13 +463,13 @@ contract DarknodeRegistry is Ownable {
         // Begin with the first node in the list
         uint256 n = 0;
         address next = _start;
-        if (next == 0x0) {
+        if (next == address(0)) {
             next = store.begin();
         }
 
         // Iterate until all registered Darknodes have been collected
         while (n < count) {
-            if (next == 0x0) {
+            if (next == address(0)) {
                 break;
             }
             // Only include Darknodes that are currently registered

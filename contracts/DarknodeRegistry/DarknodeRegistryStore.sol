@@ -1,8 +1,8 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/ownership/Claimable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+import "../Claimable.sol";
 import "../LinkedList.sol";
 import "../RenToken.sol";
 
@@ -24,7 +24,7 @@ contract DarknodeRegistryStore is Claimable {
         // function. The owner is the only address that is allowed to
         // deregister the Darknode, unless the Darknode is slashed for
         // malicious behavior.
-        address owner;
+        address payable owner;
 
         // The bond is the amount of REN submitted as a bond by the Darknode.
         // This amount is reduced when the Darknode is slashed for malicious
@@ -56,7 +56,7 @@ contract DarknodeRegistryStore is Claimable {
     /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RenToken contract.
     constructor(
-        string _VERSION,
+        string memory _VERSION,
         RenToken _ren
     ) public {
         VERSION = _VERSION;
@@ -74,9 +74,9 @@ contract DarknodeRegistryStore is Claimable {
     /// @param _deregisteredAt The time stamp when the darknode is deregistered.
     function appendDarknode(
         address _darknodeID,
-        address _darknodeOwner,
+        address payable _darknodeOwner,
         uint256 _bond,
-        bytes _publicKey,
+        bytes calldata _publicKey,
         uint256 _registeredAt,
         uint256 _deregisteredAt
     ) external onlyOwner {
@@ -108,7 +108,7 @@ contract DarknodeRegistryStore is Claimable {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
-        require(ren.transfer(owner, bond), "bond transfer failed");
+        require(ren.transfer(owner(), bond), "bond transfer failed");
     }
 
     /// @notice Updates the bond of a darknode. The new bond must be smaller
@@ -117,7 +117,7 @@ contract DarknodeRegistryStore is Claimable {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
         require(decreasedBond < previousBond, "bond not decreased");
         darknodeRegistry[darknodeID].bond = decreasedBond;
-        require(ren.transfer(owner, previousBond.sub(decreasedBond)), "bond transfer failed");
+        require(ren.transfer(owner(), previousBond.sub(decreasedBond)), "bond transfer failed");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.
@@ -126,7 +126,7 @@ contract DarknodeRegistryStore is Claimable {
     }
 
     /// @notice Returns the owner of a given darknode.
-    function darknodeOwner(address darknodeID) external view onlyOwner returns (address) {
+    function darknodeOwner(address darknodeID) external view onlyOwner returns (address payable) {
         return darknodeRegistry[darknodeID].owner;
     }
 
@@ -146,7 +146,7 @@ contract DarknodeRegistryStore is Claimable {
     }
 
     /// @notice Returns the encryption public key of a given darknode.
-    function darknodePublicKey(address darknodeID) external view onlyOwner returns (bytes) {
+    function darknodePublicKey(address darknodeID) external view onlyOwner returns (bytes memory) {
         return darknodeRegistry[darknodeID].publicKey;
     }
 }

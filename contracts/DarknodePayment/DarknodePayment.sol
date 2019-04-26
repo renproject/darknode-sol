@@ -1,9 +1,10 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../CompatibleERC20.sol";
+import "../CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./DarknodePaymentStore.sol";
 
@@ -11,7 +12,7 @@ import "./DarknodePaymentStore.sol";
 ///         computation.
 contract DarknodePayment is Ownable {
     using SafeMath for uint256;
-    using CompatibleERC20Functions for CompatibleERC20;
+    using CompatibleERC20Functions for ERC20;
 
     string public VERSION; // Passed in as a constructor parameter.
 
@@ -151,7 +152,7 @@ contract DarknodePayment is Ownable {
     /// @param _cycleDuration The minimum time before a new cycle can occur, in
     ///        days
     constructor(
-        string _VERSION,
+        string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
         uint256 _cycleDuration
@@ -213,8 +214,8 @@ contract DarknodePayment is Ownable {
     /// @param _darknode The address of the darknode
     /// @param _token Which token to transfer
     function withdraw(address _darknode, address _token) external {
-        address darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
-        require(darknodeOwner != 0x0, "invalid darknode owner");
+        address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
+        require(darknodeOwner != address(0x0), "invalid darknode owner");
 
         uint256 amount = store.darknodeBalances(_darknode, _token);
         require(amount > 0, "nothing to withdraw");
@@ -236,7 +237,7 @@ contract DarknodePayment is Ownable {
         } else {
             require(msg.value == 0, "unexpected ether transfer");
             // Forward the funds to the store
-            receivedValue = CompatibleERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
+            receivedValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
         }
         emit LogPaymentReceived(msg.sender, receivedValue, _token);
     }
@@ -302,7 +303,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _addr The new Blacklister contract address.
     function updateBlacklister(address _addr) external onlyOwner {
-        require(_addr != 0x0, "invalid contract address");
+        require(_addr != address(0), "invalid contract address");
         emit LogBlacklisterChanged(_addr, blacklister);
         blacklister = _addr;
     }
@@ -398,8 +399,8 @@ contract DarknodePayment is Ownable {
         pendingTokens.length = 0;
         // Deregister tokens
         arrayLength = pendingDeregisterTokens.length;
-        for (i = 0; i < arrayLength; i++) {
-            token = pendingDeregisterTokens[i];
+        for (uint i = 0; i < arrayLength; i++) {
+            address token = pendingDeregisterTokens[i];
             _deregisterToken(token);
             emit LogTokenDeregistered(token);
         }

@@ -1,28 +1,29 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.7;
 
-import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
-contract RenToken is PausableToken, BurnableToken {
+contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
 
-    string public constant name = "Republic Token";
-    string public constant symbol = "REN";
-    uint8 public constant decimals = 18;
-    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(decimals);
+    string private constant _name = "Republic Token";
+    string private constant _symbol = "REN";
+    uint8 private constant _decimals = 18;
+
+    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(_decimals);
 
     /// @notice The RenToken Constructor.
-    constructor() public {
-        totalSupply_ = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
+    constructor() ERC20Burnable() ERC20Pausable() ERC20Detailed(_name, _symbol, _decimals) public {
+        _mint(msg.sender, INITIAL_SUPPLY);
     }
 
     function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
         /* solium-disable error-reason */
         require(amount > 0);
 
-        balances[owner] = balances[owner].sub(amount);
-        balances[beneficiary] = balances[beneficiary].add(amount);
-        emit Transfer(owner, beneficiary, amount);
+        _transfer(msg.sender, beneficiary, amount);
+        emit Transfer(msg.sender, beneficiary, amount);
 
         return true;
     }

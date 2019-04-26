@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.7;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
@@ -9,7 +9,7 @@ library LinkedList {
     * @notice A permanent NULL node (0x0) in the circular double linked list.
     * NULL.next is the head, and NULL.previous is the tail.
     */
-    address public constant NULL = 0x0;
+    address public constant NULL = address(0);
 
     /**
     * @notice A node points to the node before it, and the node after it. If

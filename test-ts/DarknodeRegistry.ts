@@ -1,14 +1,14 @@
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,
     NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
-import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
-import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./bindings/darknode_registry_store";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./bindings/darknode_slasher";
+import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
+import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./typings/bindings/darknode_registry_store";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./typings/bindings/darknode_registry";
+import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./typings/bindings/darknode_slasher";
 
 const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;

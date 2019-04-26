@@ -1,17 +1,17 @@
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, ID,
+    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, NULL,
 } from "./helper/testUtils";
 
 
-import { CycleChangerArtifact, CycleChangerContract } from "./bindings/cycle_changer";
-import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./bindings/darknode_payment_store";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./bindings/darknode_registry";
-import { DarknodePaymentArtifact, DarknodePaymentContract } from "./bindings/darknode_payment";
-import { ERC20Artifact, ERC20Contract } from "./bindings/erc20";
-import { RenTokenArtifact, RenTokenContract } from "./bindings/ren_token";
-import { SelfDestructingTokenArtifact } from "./bindings/self_destructing_token";
+import { CycleChangerArtifact, CycleChangerContract } from "./typings/bindings/cycle_changer";
+import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./typings/bindings/darknode_payment_store";
+import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./typings/bindings/darknode_registry";
+import { DarknodePaymentArtifact, DarknodePaymentContract } from "./typings/bindings/darknode_payment";
+import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
+import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
+import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
 
 import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
 
@@ -195,7 +195,10 @@ contract("DarknodePayment", (accounts: string[]) => {
             const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
-            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() }).should.not.be.rejected;
+            // make sure we have enough balance
+            const ownerBalance = new BN(await web3.eth.getBalance(owner));
+            ownerBalance.gte(amount).should.be.true;
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount }).should.not.be.rejected;
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
@@ -206,6 +209,9 @@ contract("DarknodePayment", (accounts: string[]) => {
             const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
+            // make sure we have enough balance
+            const ownerBalance = new BN(await web3.eth.getBalance(owner));
+            ownerBalance.gte(amount).should.be.true;
             await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
@@ -388,7 +394,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot withdraw if a darknode owner is invalid", async () => {
-            await dnp.withdraw("0x0", dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
+            await dnp.withdraw(NULL, dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
             // accounts[0] is not a registered darknode
             await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(null, /invalid darknode owner/);
         })
@@ -480,11 +486,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         })
 
         it("cannot update the blacklister address to an invalid address", async () => {
-            await dnp.updateBlacklister("0x0").should.be.rejectedWith(null, /invalid contract address/);
+            await dnp.updateBlacklister(NULL).should.be.rejectedWith(null, /invalid contract address/);
         })
 
         it("cannot blacklist invalid addresses", async () => {
-            const invalidAddress = "0x0"
+            const invalidAddress = NULL;
             await store.isBlacklisted(invalidAddress).should.eventually.be.false;
             await dnp.blacklist(invalidAddress).should.be.rejectedWith(null, /darknode is not registered/);
             await store.isBlacklisted(owner).should.eventually.be.false;

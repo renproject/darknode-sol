@@ -1,11 +1,13 @@
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 import "./helper/testUtils";
 
-import { StandardTokenContract } from "./bindings/standard_token";
+import { ERC20Contract } from "./typings/bindings/erc20";
 
-import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./bindings/compatible_erc20_test";
+import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./typings/bindings/compatible_erc20_test";
+import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./typings/bindings/compatible_erc20_functions";
 
+const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions") as CompatibleERC20FunctionsArtifact;
 const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;
 const NormalToken = artifacts.require("NormalToken");
 const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
@@ -31,7 +33,7 @@ contract("CompatibleERC20", (accounts) => {
 
     for (const testCase of testCases) {
         context(testCase.desc, async () => {
-            let token: StandardTokenContract;
+            let token: ERC20Contract;
             const FEE = VALUE.mul(new BN(testCase.fees)).div(new BN(1000));
 
             before(async () => {
