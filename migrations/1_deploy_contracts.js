@@ -78,15 +78,6 @@ module.exports = async function (deployer, network) {
             VERSION_STRING,
         );
 
-        // Link the functions
-        await deployer.deploy(
-            CompatibleERC20Functions
-        );
-        await deployer.link(
-            CompatibleERC20Functions,
-            DarknodePayment
-        );
-
         // Deploy Darknode Payment
         await deployer.deploy(
             DarknodePayment,

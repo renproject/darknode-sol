@@ -35,7 +35,7 @@ library CompatibleERC20Functions {
 
     /// @notice Calls transferFrom on the token, reverts if the call fails and
     /// returns the value transferred after fees.
-    function safeTransferFromWithFees(IERC20 token, address from, address to, uint256 value) public returns (uint256) {
+    function safeTransferFromWithFees(IERC20 token, address from, address to, uint256 value) internal returns (uint256) {
         uint256 balancesBefore = token.balanceOf(to);
         callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
         require(previousReturnValue(), "transferFrom failed");

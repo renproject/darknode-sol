@@ -16,12 +16,9 @@ const TokenWithFees = artifacts.require("TokenWithFees");
 
 contract("CompatibleERC20", (accounts) => {
 
-    let fns: CompatibleERC20FunctionsContract;
     let mock: CompatibleERC20TestContract;
 
     before(async () => {
-        fns = await CompatibleERC20Functions.deployed();
-        (CompatibleERC20Test as any).link("CompatibleERC20Functions", fns.address);
         mock = await CompatibleERC20Test.new();
     });
 
