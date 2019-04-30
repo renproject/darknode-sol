@@ -4482,10 +4482,10 @@ tree-kill@^1.2.0:
   resolved "https://registry.yarnpkg.com/tree-kill/-/tree-kill-1.2.1.tgz#5398f374e2f292b9dcc7b2e71e30a5c3bb6c743a"
   integrity sha512-4hjqbObwlh2dLyW4tcz0Ymw0ggoaVDMveUB9w8kFSQScdRLo0gxO9J7WFcUBo+W3C1TLdFIEwNOWebgZZ0RH9Q==
 
-truffle-hdwallet-provider@^1.0.0-web3one.5:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/truffle-hdwallet-provider/-/truffle-hdwallet-provider-1.0.7.tgz#e3368dc4141692e402ff1bb1e99790dcb1ad5bca"
-  integrity sha512-+UK4FEU38b3/vKdno8ieV9Lj+2e4hOXM7sjgiJrsqeAFp2VUhlA3Ypp8MIlKHM2Wbs2Vo8YFi0WhUtq1BhVilg==
+truffle-hdwallet-provider@1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/truffle-hdwallet-provider/-/truffle-hdwallet-provider-1.0.8.tgz#76ab28e08b4c84dc8b3c98c9c2b4bba9c9d834e0"
+  integrity sha512-kG/WSEvwWSRuFbyEnoNgGQtKrKJMr/MwKoZfiPeT6L6d2gS2QnH2xbJbWxV+LtENjERSodjI9bbO/TN73CXWSQ==
   dependencies:
     any-promise "^1.3.0"
     bindings "^1.3.1"
