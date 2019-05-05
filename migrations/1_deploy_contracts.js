@@ -1,6 +1,5 @@
 /// <reference types="../test-ts/typings/truffle" />
 
-const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions");
 const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
