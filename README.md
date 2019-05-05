@@ -18,19 +18,19 @@ Ren is powered by the RenVM — the Ren Virtual Machine — in a decentralized n
 Install the dependencies.
 
 ```
-npm install
+yarn install
 ```
 
 Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545. The `-d` flag will use a deterministic mnemonic for reproducibility.
 
 ```sh
-npx ganache-cli -d
+yarn ganache-cli -d
 ```
 
 Run the Truffle test suite.
 
 ```sh
-npm run test
+yarn run test
 ```
 
 ## Coverage
@@ -38,13 +38,13 @@ npm run test
 Install the dependencies.
 
 ```
-npm install
+yarn install
 ```
 
 Run the Truffle test suite with coverage.
 
 ```sh
-npm run coverage
+yarn run coverage
 ```
 
 ## Deploying
@@ -52,5 +52,5 @@ npm run coverage
 Deploy to Kovan:
 
 ```sh
-npm run deployToKovan
+yarn run deployToKovan
 ```
