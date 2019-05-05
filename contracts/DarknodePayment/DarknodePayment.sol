@@ -149,18 +149,17 @@ contract DarknodePayment is Ownable {
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _darknodePaymentStore The address of the DarknodePaymentStore
     ///        contract
-    /// @param _cycleDuration The minimum time before a new cycle can occur, in
-    ///        days
+    /// @param _cycleDurationSecs The minimum time before a new cycle can occur in seconds
     constructor(
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint256 _cycleDuration
+        uint256 _cycleDurationSecs
     ) public {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        cycleDuration = _cycleDuration.mul(1 days);
+        cycleDuration = _cycleDurationSecs;
         // Default the blacklister to owner
         blacklister = msg.sender;
 

@@ -99,6 +99,6 @@ module.exports = async function (deployer, network) {
             await darknodePayment.registerToken(token);
         }
         await darknodePayment.changeCycle();
-        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION);
+        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
     }
 }

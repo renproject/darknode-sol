@@ -13,7 +13,7 @@ import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
 import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
 import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
 
-import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
+import { DARKNODE_PAYMENT_CYCLE_DURATION_SECS } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
@@ -25,8 +25,6 @@ const SelfDestructingToken = artifacts.require("SelfDestructingToken") as SelfDe
 
 const hour = 60 * 60;
 const day = 24 * hour;
-
-const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
 contract("DarknodePayment", (accounts: string[]) => {
 
@@ -529,7 +527,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(CYCLE_DURATION / 2);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 2);
             await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
@@ -547,7 +545,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await changeCycleDuration(0);
             await cc.changeCycle().should.eventually.be.rejectedWith(null, /no new block/);
             // Reset the duration back to normal
-            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
+            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
         });
 
     });
