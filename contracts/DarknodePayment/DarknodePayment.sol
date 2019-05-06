@@ -39,9 +39,6 @@ contract DarknodePayment is Ownable {
     ///         prevent the number of shares from changing.
     address[] public pendingTokens;
 
-    /// @notice The list of tokens that will be deregistered next cycle.
-    address[] public pendingDeregisterTokens;
-
     /// @notice The list of tokens which are already registered and rewards can
     ///         be claimed for.
     address[] public registeredTokens;
@@ -149,18 +146,17 @@ contract DarknodePayment is Ownable {
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _darknodePaymentStore The address of the DarknodePaymentStore
     ///        contract
-    /// @param _cycleDuration The minimum time before a new cycle can occur, in
-    ///        days
+    /// @param _cycleDurationSecs The minimum time before a new cycle can occur in seconds
     constructor(
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint256 _cycleDuration
+        uint256 _cycleDurationSecs
     ) public {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        cycleDuration = _cycleDuration.mul(1 days);
+        cycleDuration = _cycleDurationSecs;
         // Default the blacklister to owner
         blacklister = msg.sender;
 
@@ -292,11 +288,7 @@ contract DarknodePayment is Ownable {
     /// @param _token The address of the token to be deregistered.
     function deregisterToken(address _token) external onlyOwner {
         require(registeredTokenIndex[_token] > 0, "token not registered");
-        uint arrayLength = pendingDeregisterTokens.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            require(pendingDeregisterTokens[i] != _token, "token already pending deregistration");
-        }
-        pendingDeregisterTokens.push(_token);
+        _deregisterToken(_token);
     }
 
     /// @notice Updates the Blacklister contract address.
@@ -381,12 +373,12 @@ contract DarknodePayment is Ownable {
         // So we don't need to manually delete the element
         registeredTokens.length = registeredTokens.length.sub(1);
         registeredTokenIndex[_token] = 0;
+
+        emit LogTokenDeregistered(_token);
     }
 
-    /// @notice Updates the list of registeredTokens removing tokens that need
-    ///         to be deregistered and adding tokens that are to be registered.
-    ///         The list of tokens that are pending registration or
-    ///         deregistration are emptied afterwards.
+    /// @notice Updates the list of registeredTokens adding tokens that are to be registered.
+    ///         The list of tokens that are pending registration are emptied afterwards.
     function _updateTokenList() private {
         // Register tokens
         uint arrayLength = pendingTokens.length;
@@ -397,14 +389,6 @@ contract DarknodePayment is Ownable {
             emit LogTokenRegistered(token);
         }
         pendingTokens.length = 0;
-        // Deregister tokens
-        arrayLength = pendingDeregisterTokens.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            address token = pendingDeregisterTokens[i];
-            _deregisterToken(token);
-            emit LogTokenDeregistered(token);
-        }
-        pendingDeregisterTokens.length = 0;
     }
 
 }

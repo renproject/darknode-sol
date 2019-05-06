@@ -1,6 +1,5 @@
 /// <reference types="../test-ts/typings/truffle" />
 
-const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions");
 const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
@@ -99,6 +98,6 @@ module.exports = async function (deployer, network) {
             await darknodePayment.registerToken(token);
         }
         await darknodePayment.changeCycle();
-        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION);
+        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
     }
 }
