@@ -419,8 +419,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await tick(darknode1);
 
             // Withdraw for each darknode
-            await dnp.withdraw(darknode1, dai.address);
-            await dnp.withdraw(darknode1, ETHEREUM_TOKEN_ADDRESS);
+            await dnp.withdrawMultiple(darknode1, [dai.address, ETHEREUM_TOKEN_ADDRESS]);
         });
 
         it("cannot withdraw if a darknode owner is invalid", async () => {
