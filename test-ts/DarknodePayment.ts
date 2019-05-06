@@ -162,9 +162,12 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("properly sets index", async () => {
-            const one = "1".repeat(40);
-            const two = "2".repeat(40);
-            const three = "3".repeat(40);
+            const token1 = await ERC20.new();
+            const token2 = await ERC20.new();
+            const token3 = await ERC20.new();
+            const one = token1.address;
+            const two = token2.address;
+            const three = token3.address;
 
             await checkTokenIndexes();
             await dnp.registerToken(one);
