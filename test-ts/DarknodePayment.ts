@@ -136,6 +136,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await sdt.destruct();
             await dnp.deregisterToken(sdt.address);
             await waitForCycle();
+            await dnp.blacklist(darknode6);
         });
 
         it("cannot register already registered tokens", async () => {
