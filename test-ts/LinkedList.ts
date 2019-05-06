@@ -63,8 +63,8 @@ contract("LinkedList", () => {
     });
 
     it("handle removing NULL", async () => {
-        await linkedList.insertBefore(NODE1, NULL).should.not.be.rejected;
-        await linkedList.remove(NULL).should.not.be.rejected;
+        await linkedList.insertBefore(NODE1, NULL);
+        await linkedList.remove(NULL);
     });
 
     it("should not add the same value more than once", async () => {

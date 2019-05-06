@@ -36,7 +36,7 @@ jobs:
       - install_deps
       - run:
           name: Run tests
-          command: yarn run coverage
+          command: yarn run coverage && yarn run coveralls
 
 workflows:
   build:

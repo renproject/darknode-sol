@@ -166,6 +166,28 @@ contract DarknodePayment is Ownable {
         cycleTimeout = cycleStartTime.add(cycleDuration);
     }
 
+    /// @notice Transfers the funds allocated to the darknode to the darknode
+    ///         owner.
+    ///
+    /// @param _darknode The address of the darknode
+    /// @param _token Which token to transfer
+    function withdraw(address _darknode, address _token) public {
+        address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
+        require(darknodeOwner != address(0x0), "invalid darknode owner");
+
+        uint256 amount = store.darknodeBalances(_darknode, _token);
+        require(amount > 0, "nothing to withdraw");
+
+        store.transfer(_darknode, _token, amount, darknodeOwner);
+        emit LogDarknodeWithdrew(_darknode, amount, _token);
+    }
+
+    function withdrawMultiple(address _darknode, address[] calldata _tokens) external {
+        for (uint i = 0; i < _tokens.length; i++) {
+            withdraw(_darknode, _tokens[i]);
+        }
+    }
+
     /// @notice Forward all payments to the DarknodePaymentStore.
     function () external payable {
         address(store).transfer(msg.value);
@@ -176,6 +198,10 @@ contract DarknodePayment is Ownable {
     ///         current cycle
     function currentCycleRewardPool(address _token) external view returns (uint256) {
         return store.availableBalance(_token).sub(unclaimedRewards[_token]);
+    }
+
+    function darknodeBalances(address _darknodeID, address _token) external view returns (uint256) {
+        return store.darknodeBalances(_darknodeID, _token);
     }
 
     /// @notice Changes the current cycle.
@@ -202,22 +228,6 @@ contract DarknodePayment is Ownable {
 
         emit LogNewCycle(currentCycle, previousCycle, cycleTimeout);
         return currentCycle;
-    }
-
-    /// @notice Transfers the funds allocated to the darknode to the darknode
-    ///         owner.
-    ///
-    /// @param _darknode The address of the darknode
-    /// @param _token Which token to transfer
-    function withdraw(address _darknode, address _token) external {
-        address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
-        require(darknodeOwner != address(0x0), "invalid darknode owner");
-
-        uint256 amount = store.darknodeBalances(_darknode, _token);
-        require(amount > 0, "nothing to withdraw");
-
-        store.transfer(_darknode, _token, amount, darknodeOwner);
-        emit LogDarknodeWithdrew(_darknode, amount, _token);
     }
 
     /// @notice Deposits token into the contract to be paid to the Darknodes
