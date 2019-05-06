@@ -148,8 +148,8 @@ module.exports = async function (deployer, network) {
         }
     }
 
-    if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION) {
-        console.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION}`);
-        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION);
+    if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS) {
+        console.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS}`);
+        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
     }
 }

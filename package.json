@@ -4,15 +4,15 @@
   "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
     "clean": "if [ -d \"test\" ]; then rm -r test; fi;",
-    "test": "if [ -d \"test\" ]; then npm run warn; else npm run test:ts; fi;",
-    "coverage": "if [ -d \"test\" ]; then npm run warn; else npm run coverage:ts; fi;",
+    "test": "if [ -d \"test\" ]; then yarn run warn; else yarn run test:ts; fi;",
+    "coverage": "if [ -d \"test\" ]; then yarn run warn; else yarn run coverage:ts; fi;",
     "merge": "sol-merger \"./contracts/**/*.sol\"",
-    "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33mnpm run clean\\033[0m'.\n\"",
-    "test:ts": "trap \"npm run clean\" INT TERM; (npm run bindings:ts && tsc && truffle test); npm run clean",
-    "coverage:ts": "trap \"npm run clean\" INT TERM; (npm run bindings:ts && tsc && solidity-coverage); npm run clean",
+    "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33myarn run clean\\033[0m'.\n\"",
+    "test:ts": "trap \"yarn run clean\" INT TERM; (yarn run bindings:ts && tsc && truffle test); yarn run clean",
+    "coverage:ts": "trap \"yarn run clean\" INT TERM; (yarn run bindings:ts && tsc && solidity-coverage); yarn run clean",
     "bindings:ts": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/typings/bindings --template './test-ts/typings/bindings/templates/contract.handlebars' --partials './test-ts/typings/bindings/templates/partials/*.handlebars' 1> /dev/null",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
-    "deployToKovan": "truffle migrate --network kovan && npm run merge .merged/kovan",
+    "deployToKovan": "truffle migrate --network kovan && yarn run merge .merged/kovan",
     "postinstall": "patch-package"
   },
   "dependencies": {

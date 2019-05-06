@@ -13,7 +13,7 @@ import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
 import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
 import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
 
-import { DARKNODE_PAYMENT_CYCLE_DURATION } from "../migrations/config";
+import { DARKNODE_PAYMENT_CYCLE_DURATION_SECS } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
@@ -25,8 +25,6 @@ const SelfDestructingToken = artifacts.require("SelfDestructingToken") as SelfDe
 
 const hour = 60 * 60;
 const day = 24 * hour;
-
-const CYCLE_DURATION = DARKNODE_PAYMENT_CYCLE_DURATION * day;
 
 contract("DarknodePayment", (accounts: string[]) => {
 
@@ -129,7 +127,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await checkTokenIndexes();
         });
 
-        it.skip("can deregister a destroyed token", async () => {
+        it("can deregister a destroyed token", async () => {
             // Claim so that the darknode share count isn't 0.
             await dnp.claim(darknode6);
             const sdt = await SelfDestructingToken.new();
@@ -138,6 +136,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await sdt.destruct();
             await dnp.deregisterToken(sdt.address);
             await waitForCycle();
+            await dnp.blacklist(darknode6);
         });
 
         it("cannot register already registered tokens", async () => {
@@ -150,10 +149,9 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can deregister tokens", async () => {
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
-            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
-            await dnp.deregisterToken(erc20Token.address); // .should.not.be.rejectedWith(null, /token already pending deregistration/);
-            // complete token deregistration
-            await waitForCycle();
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+            await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token not registered/);
+            // check token deregistration
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
             (await dnp.registeredTokenIndex(erc20Token.address)).should.bignumber.equal(0);
             await checkTokenIndexes();
@@ -164,9 +162,12 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("properly sets index", async () => {
-            const one = "1".repeat(40);
-            const two = "2".repeat(40);
-            const three = "3".repeat(40);
+            const token1 = await ERC20.new();
+            const token2 = await ERC20.new();
+            const token3 = await ERC20.new();
+            const one = token1.address;
+            const two = token2.address;
+            const three = token3.address;
 
             await checkTokenIndexes();
             await dnp.registerToken(one);
@@ -558,8 +559,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(CYCLE_DURATION / 2);
-            await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 2).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
@@ -576,7 +576,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await changeCycleDuration(0);
             await cc.changeCycle().should.eventually.be.rejectedWith(null, /no new block/);
             // Reset the duration back to normal
-            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION);
+            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
         });
 
     });
