@@ -119,6 +119,7 @@ module.exports = async function (deployer, network) {
     }
 
     if (registerTokens) {
+        console.log("Running `await DarknodePayment.at(DarknodePayment.address)`");
         const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
         for (const [tokenName, tokenAddress] of tokens) {
             process.stdout.write(`\rRegistering tokens in DarknodePayment: ${tokenName}\t\t`);
