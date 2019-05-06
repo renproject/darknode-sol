@@ -531,8 +531,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 2);
-            await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 2).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
