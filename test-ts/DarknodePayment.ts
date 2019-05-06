@@ -148,8 +148,8 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can deregister tokens", async () => {
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
-            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token already pending deregistration/);
-            await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token already pending deregistration/);
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(null, /token not registered/);
+            await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(null, /token not registered/);
             // complete token deregistration
             await waitForCycle();
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
