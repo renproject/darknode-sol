@@ -127,7 +127,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await checkTokenIndexes();
         });
 
-        it.skip("can deregister a destroyed token", async () => {
+        it("can deregister a destroyed token", async () => {
             // Claim so that the darknode share count isn't 0.
             await dnp.claim(darknode6);
             const sdt = await SelfDestructingToken.new();
