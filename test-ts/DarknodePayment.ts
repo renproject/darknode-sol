@@ -558,7 +558,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 2).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 4).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
@@ -567,7 +567,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can change cycle duration", async () => {
             // Set the duration to 3 days
-            await changeCycleDuration(3);
+            await changeCycleDuration(3 * day);
         });
 
         it("should error when block number has not changed", async () => {
@@ -711,12 +711,10 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     }
 
-    const changeCycleDuration = async (timeInDays: number) => {
-        const timeInSecs = timeInDays * day;
+    const changeCycleDuration = async (timeInSecs: number) => {
         const currentCycleDurationInSecs = new BN(await dnp.cycleDuration()).toNumber();
-        // console.log(currentCycleDurationInSecs.toString());
 
-        await dnp.updateCycleDuration(timeInDays);
+        await dnp.updateCycleDuration(timeInSecs);
         (await dnp.cycleDuration()).should.bignumber.equal(timeInSecs);
 
         // put into effect the new cycle duration
