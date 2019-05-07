@@ -11,7 +11,7 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 const config = require("./config.js");
 
-module.exports = async function (deployer, network) {
+module.exports = async function (deployer, network, accounts) {
 
     const VERSION_STRING = `${network}-${config.VERSION}`;
 
@@ -22,7 +22,7 @@ module.exports = async function (deployer, network) {
         DarknodeSlasher.address = "0x0000000000000000000000000000000000000000";
         DarknodeRegistry.address = "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D";
         DarknodeRegistryStore.address = "0x88e4477e4fdd677aee2dc9376471d45c198669fa";
-        DarknodePayment.address = "0x89693dd95c6149B7e67df8c5FCeEF0af91d6E29b";
+        DarknodePayment.address = "0xba8d77a48d24866be4b775e732f6f8d198f7ba26";
         DarknodePaymentStore.address = "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9";
         tokens = new Map()
             .set("DAI", "0xc4375b7de8af5a38a93548eb8453a498222c4ff2")
@@ -39,13 +39,13 @@ module.exports = async function (deployer, network) {
     }
 
     if (!RenToken.address) {
-        console.log("Deploying RenToken");
+        deployer.logger.log("Deploying RenToken");
         await deployer.deploy(RenToken);
     }
 
     /** DARKNODE REGISTRY *****************************************************/
     if (!DarknodeRegistry.address) {
-        console.log("Deploying DarknodeRegistryStore");
+        deployer.logger.log("Deploying DarknodeRegistryStore");
         await deployer.deploy(
             DarknodeRegistryStore,
             VERSION_STRING,
@@ -54,7 +54,7 @@ module.exports = async function (deployer, network) {
     }
 
     if (!DarknodeRegistry.address) {
-        console.log("Deploying DarknodeRegistry");
+        deployer.logger.log("Deploying DarknodeRegistry");
         await deployer.deploy(
             DarknodeRegistry,
             VERSION_STRING,
@@ -68,7 +68,7 @@ module.exports = async function (deployer, network) {
 
     const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
     if ((await darknodeRegistryStore.owner()) !== DarknodeRegistry.address) {
-        console.log("Linking DarknodeRegistryStore and DarknodeRegistry")
+        deployer.logger.log("Linking DarknodeRegistryStore and DarknodeRegistry")
         // Initiate ownership transfer of DNR store 
         await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
 
@@ -79,7 +79,7 @@ module.exports = async function (deployer, network) {
 
     /** SLASHER **************************************************************/
     if (!DarknodeSlasher.address) {
-        console.log("Deploying DarknodeSlasher");
+        deployer.logger.log("Deploying DarknodeSlasher");
         await deployer.deploy(
             DarknodeSlasher,
             DarknodeRegistry.address,
@@ -88,14 +88,14 @@ module.exports = async function (deployer, network) {
 
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
     if ((await darknodeRegistry.slasher()) != DarknodeSlasher.address) {
-        console.log("Linking DarknodeSlasher and DarknodeRegistry")
+        deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry")
         // Update slasher address
         await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
     }
 
     /** DARKNODE PAYMENT ******************************************************/
     if (!DarknodePaymentStore.address) {
-        console.log("Deploying DarknodePaymentStore");
+        deployer.logger.log("Deploying DarknodePaymentStore");
         await deployer.deploy(
             DarknodePaymentStore,
             VERSION_STRING,
@@ -103,10 +103,9 @@ module.exports = async function (deployer, network) {
     }
 
     let changeCycle = false;
-    let registerTokens = false;
     if (!DarknodePayment.address) {
         // Deploy Darknode Payment
-        console.log("Deploying DarknodePayment");
+        deployer.logger.log("Deploying DarknodePayment");
         await deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
@@ -115,41 +114,47 @@ module.exports = async function (deployer, network) {
             0, // Cycle Duration (updated below, after a cycle has been called)
         );
         changeCycle = true;
-        registerTokens = true;
-    }
-
-    if (registerTokens) {
-        const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-        for (const [tokenName, tokenAddress] of tokens) {
-            process.stdout.write(`\rRegistering tokens in DarknodePayment: ${tokenName}\t\t`);
-            await darknodePayment.registerToken(tokenAddress);
-        }
-        console.log("\rRegistering tokens in DarknodePayment\t\t");
     }
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+    for (const [tokenName, tokenAddress] of tokens) {
+        const registered = await darknodePayment.registeredTokenIndex(tokenAddress);
+        if (registered.toString() === "0") {
+            deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
+            await darknodePayment.registerToken(tokenAddress);
+        }
+    }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
-    if (await darknodePaymentStore.owner() !== DarknodePayment.address) {
-        console.log("Linking DarknodePaymentStore and DarknodePayment")
+    const currentOwner = await darknodePaymentStore.owner();
+    if (currentOwner !== DarknodePayment.address) {
+        deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment")
         // Initiate ownership transfer of DarknodePaymentStore
-        await darknodePaymentStore.transferOwnership(DarknodePayment.address);
+
+        if (accounts.indexOf(currentOwner) >= 0) {
+            await darknodePaymentStore.transferOwnership(DarknodePayment.address, {
+                from: currentOwner
+            });
+        } else {
+            const oldDarknodePayment = await DarknodePayment.at(currentOwner);
+            await oldDarknodePayment.transferStoreOwnership(DarknodePayment.address);
+        }
 
         // Update DarknodePaymentStore address
         await darknodePayment.claimStoreOwnership();
     }
 
+    if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS) {
+        deployer.logger.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS}`);
+        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
+    }
+
     if (changeCycle) {
         try {
-            console.log("Calling darknodePayment.changeCycle()");
+            deployer.logger.log("Calling darknodePayment.changeCycle()");
             await darknodePayment.changeCycle();
         } catch (error) {
             console.error("Unable to call darknodePayment.changeCycle()");
         }
-    }
-
-    if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS) {
-        console.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS}`);
-        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
     }
 }
