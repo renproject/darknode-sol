@@ -10,7 +10,7 @@
     "warn": "echo \"Refusing to overwrite 'test' directory. Run '\\033[1;33myarn run clean\\033[0m'.\n\"",
     "test:ts": "trap \"yarn run clean\" INT TERM; (yarn run bindings:ts && tsc && truffle test) && yarn run clean",
     "coverage:ts": "trap \"yarn run clean\" INT TERM; (yarn run bindings:ts && tsc && solidity-coverage) && yarn run clean",
-    "bindings:ts": "truffle compile && ./node_modules/.bin/abi-gen --abis 'build/contracts/*.json' --output ./test-ts/typings/bindings --template './test-ts/typings/bindings/templates/contract.handlebars' --partials './test-ts/typings/bindings/templates/partials/*.handlebars' 1> /dev/null",
+    "bindings:ts": "truffle compile && abi-gen --abis 'build/contracts/*.json' --output ./test-ts/typings/bindings --template './test-ts/typings/bindings/templates/contract.handlebars' --partials './test-ts/typings/bindings/templates/partials/*.handlebars' 1> /dev/null",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
     "deployToKovan": "truffle migrate --network kovan && yarn run merge .merged/kovan",
     "coveralls": "cat ./coverage/lcov.info | coveralls"
@@ -19,7 +19,7 @@
     "openzeppelin-solidity": "2.2.0"
   },
   "devDependencies": {
-    "@0xproject/abi-gen": "^1.0.13",
+    "@0x/abi-gen": "^2.0.9",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
     "@types/crypto-js": "^3.1.43",
