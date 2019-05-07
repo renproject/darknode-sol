@@ -103,7 +103,6 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     let changeCycle = false;
-    let registerTokens = true;
     if (!DarknodePayment.address) {
         // Deploy Darknode Payment
         deployer.logger.log("Deploying DarknodePayment");
@@ -115,19 +114,16 @@ module.exports = async function (deployer, network, accounts) {
             0, // Cycle Duration (updated below, after a cycle has been called)
         );
         changeCycle = true;
-        registerTokens = true;
-    }
-
-    if (registerTokens) {
-        const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-        for (const [tokenName, tokenAddress] of tokens) {
-            process.stdout.write(`\rRegistering tokens in DarknodePayment: ${tokenName}\t\t`);
-            await darknodePayment.registerToken(tokenAddress);
-        }
-        process.stdout.write("\rRegistering tokens in DarknodePayment\t\t\n");
     }
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+    for (const [tokenName, tokenAddress] of tokens) {
+        const registered = await darknodePayment.registeredTokenIndex(tokenAddress);
+        if (registered.toString() !== "0") {
+            deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
+            await darknodePayment.registerToken(tokenAddress);
+        }
+    }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
     const currentOwner = await darknodePaymentStore.owner();
