@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity ^0.5.8;
 
 import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -312,10 +312,11 @@ contract DarknodePayment is Ownable {
 
     /// @notice Updates cycle duration
     ///
-    /// @param _duration The time before a new cycle can be called, in days
-    function updateCycleDuration(uint256 _duration) external onlyOwner {
+    /// @param _durationSecs The amount of time (in seconds) that should have
+    ///        passed before a new cycle can be called.
+    function updateCycleDuration(uint256 _durationSecs) external onlyOwner {
         uint256 oldDuration = cycleDuration;
-        cycleDuration = _duration.mul(1 days);
+        cycleDuration = _durationSecs;
         emit LogCycleDurationChanged(cycleDuration, oldDuration);
     }
 
