@@ -3,11 +3,12 @@
   "version": "0.0.3",
   "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
-    "coverage": "yarn run bindings:ts && solidity-coverage",
-    "merge": "sol-merger \"./contracts/**/*.sol\"",
-    "test": "yarn run bindings:ts && truffle test",
-    "bindings:ts": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "coverage": "yarn run generate && solidity-coverage",
+    "test": "yarn run generate && truffle test",
+    "bindings:ts": "truffle compile && typechain --target web3-1.0.0 './build/**/*.json'",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
+    "merge": "sol-merger \"./contracts/**/*.sol\"",
     "deployToKovan": "truffle migrate --network kovan && yarn run merge .merged/kovan",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "postinstall": "patch-package"
