@@ -146,17 +146,17 @@ contract DarknodePayment is Ownable {
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _darknodePaymentStore The address of the DarknodePaymentStore
     ///        contract
-    /// @param _cycleDurationSecs The minimum time before a new cycle can occur in seconds
+    /// @param _cycleDurationSeconds The minimum time before a new cycle can occur in seconds
     constructor(
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint256 _cycleDurationSecs
+        uint256 _cycleDurationSeconds
     ) public {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        cycleDuration = _cycleDurationSecs;
+        cycleDuration = _cycleDurationSeconds;
         // Default the blacklister to owner
         blacklister = msg.sender;
 
@@ -312,11 +312,11 @@ contract DarknodePayment is Ownable {
 
     /// @notice Updates cycle duration
     ///
-    /// @param _durationSecs The amount of time (in seconds) that should have
+    /// @param _durationSeconds The amount of time (in seconds) that should have
     ///        passed before a new cycle can be called.
-    function updateCycleDuration(uint256 _durationSecs) external onlyOwner {
+    function updateCycleDuration(uint256 _durationSeconds) external onlyOwner {
         uint256 oldDuration = cycleDuration;
-        cycleDuration = _durationSecs;
+        cycleDuration = _durationSeconds;
         emit LogCycleDurationChanged(cycleDuration, oldDuration);
     }
 
