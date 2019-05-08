@@ -13,7 +13,7 @@ import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
 import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
 import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
 
-import { DARKNODE_PAYMENT_CYCLE_DURATION_SECS } from "../migrations/config";
+import { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
 const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
@@ -558,7 +558,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECS / 4).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS / 4).should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
         });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
@@ -575,7 +575,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await changeCycleDuration(0);
             await cc.changeCycle().should.eventually.be.rejectedWith(null, /no new block/);
             // Reset the duration back to normal
-            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION_SECS);
+            await changeCycleDuration(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS);
         });
 
     });
@@ -711,29 +711,29 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     }
 
-    const changeCycleDuration = async (timeInSecs: number) => {
-        const currentCycleDurationInSecs = new BN(await dnp.cycleDuration()).toNumber();
+    const changeCycleDuration = async (timeInSeconds: number) => {
+        const currentCycleDurationInSeconds = new BN(await dnp.cycleDuration()).toNumber();
 
-        await dnp.updateCycleDuration(timeInSecs);
-        (await dnp.cycleDuration()).should.bignumber.equal(timeInSecs);
+        await dnp.updateCycleDuration(timeInSeconds);
+        (await dnp.cycleDuration()).should.bignumber.equal(timeInSeconds);
 
         // put into effect the new cycle duration
-        await increaseTime(currentCycleDurationInSecs);
+        await increaseTime(currentCycleDurationInSeconds);
         await dnp.changeCycle().should.not.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
-        if (timeInSecs == 0) {
+        if (timeInSeconds == 0) {
             await dnp.changeCycle().should.not.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
             return;
         }
 
         await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
 
-        if (timeInSecs < currentCycleDurationInSecs) {
-            await increaseTime(timeInSecs);
+        if (timeInSeconds < currentCycleDurationInSeconds) {
+            await increaseTime(timeInSeconds);
             await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
         } else {
-            await increaseTime(currentCycleDurationInSecs);
+            await increaseTime(currentCycleDurationInSeconds);
             await dnp.changeCycle().should.eventually.be.rejected; //With(null, /cannot cycle yet: too early/);
-            await increaseTime(timeInSecs - currentCycleDurationInSecs);
+            await increaseTime(timeInSeconds - currentCycleDurationInSeconds);
             await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
         }
     }
