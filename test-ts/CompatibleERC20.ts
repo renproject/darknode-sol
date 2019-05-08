@@ -82,7 +82,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.naiveDeposit(token.address, VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -97,7 +97,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.deposit(token.address, VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -111,7 +111,7 @@ contract("CompatibleERC20", (accounts) => {
 
                 // Withdraw
                 await mock.withdraw(token.address, VALUE.mul(new BN(2)))
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -133,7 +133,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve twice without resetting allowance
                 await mock.approve(token.address, NEW_VALUE);
                 await mock.approve(token.address, NEW_VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Can transfer from the contract
                 await token.transferFrom(mock.address, accounts[0], NEW_VALUE.sub(NEW_FEE));
@@ -158,7 +158,7 @@ contract("CompatibleERC20", (accounts) => {
                 await token.approve(mock.address, VALUE);
                 if (testCase.fees) {
                     await mock.naiveDeposit(token.address, VALUE)
-                        .should.be.rejectedWith(null, "incorrect balance in deposit");
+                        .should.be.rejectedWith("incorrect balance in deposit");
                     await token.approve(mock.address, 0);
                 } else {
                     await mock.naiveDeposit(token.address, VALUE);
