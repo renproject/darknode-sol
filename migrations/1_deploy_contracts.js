@@ -11,7 +11,7 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 const config = require("./config.js");
 
-module.exports = async function (deployer, network, accounts) {
+module.exports = async function (deployer, network) {
 
     const VERSION_STRING = `${network}-${config.VERSION}`;
 
@@ -22,13 +22,24 @@ module.exports = async function (deployer, network, accounts) {
         DarknodeSlasher.address = "0x0000000000000000000000000000000000000000";
         DarknodeRegistry.address = "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D";
         DarknodeRegistryStore.address = "0x88e4477e4fdd677aee2dc9376471d45c198669fa";
-        DarknodePayment.address = "0x05c2F7a859A957BF23438DEBC7C5D4fAC8583995";
-        DarknodePaymentStore.address = "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9";
+        DarknodePayment.address = "";
+        DarknodePaymentStore.address = "";
         tokens = new Map()
             .set("DAI", "0xc4375b7de8af5a38a93548eb8453a498222c4ff2")
             .set("ETH", "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
-            .set("zBTC", "0x2a8368d2a983a0aeae8da0ebc5b7c03a0ea66b37")
-            .set("zZEC", "0xd67256552f93b39ac30083b4b679718a061feae6");
+        // .set("zBTC", "0x2a8368d2a983a0aeae8da0ebc5b7c03a0ea66b37")
+        // .set("zZEC", "0xd67256552f93b39ac30083b4b679718a061feae6");
+        ;
+    } else if (network.match("mainnet")) {
+        RenToken.address = "0x408e41876cCCDC0F92210600ef50372656052a38";
+        DarknodeSlasher.address = "0x0000000000000000000000000000000000000000";
+        DarknodeRegistry.address = "0x34bd421C7948Bc16f826Fd99f9B785929b121633";
+        DarknodeRegistryStore.address = "0x06df0657ba5e8f5339e742212669f6e7ee3c5057";
+        DarknodePayment.address = "";
+        DarknodePaymentStore.address = "";
+        tokens = new Map()
+            .set("DAI", "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359")
+            .set("ETH", "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
     } else {
         RenToken.address = "";
         DarknodeSlasher.address = "";
@@ -131,11 +142,11 @@ module.exports = async function (deployer, network, accounts) {
         deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment")
         // Initiate ownership transfer of DarknodePaymentStore
 
-        if (accounts.indexOf(currentOwner) >= 0) {
+        try {
             await darknodePaymentStore.transferOwnership(DarknodePayment.address, {
                 from: currentOwner
             });
-        } else {
+        } catch (error) {
             const oldDarknodePayment = await DarknodePayment.at(currentOwner);
             await oldDarknodePayment.transferStoreOwnership(DarknodePayment.address);
         }

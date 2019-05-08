@@ -11,7 +11,14 @@ module.exports = {
       provider: () => new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
       network_id: 42,
       gas: 6721975,
-      gasPrice: 10 * GWEI,
+      gasPrice: 6.5 * GWEI,
+    },
+    mainnet: {
+      // @ts-ignore
+      provider: () => new HDWalletProvider(process.env.MNEMONIC_MAINNET, `https://infura.io/v3/${process.env.INFURA_KEY}`),
+      network_id: 42,
+      gas: 6721975,
+      gasPrice: 6.5 * GWEI,
     },
     development: {
       host: "localhost",
@@ -32,8 +39,9 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: "0.5.7",
+      version: "0.5.8",
       settings: {
+        evmVersion: "petersburg",
         optimizer: {
           enabled: true,
           runs: 200,
