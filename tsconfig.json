@@ -1,15 +1,16 @@
 {
     "compilerOptions": {
         "typeRoots": [
-            "./test/typings"
+            "./types"
         ],
-        "outDir": "./test",
         "lib": [
             "es2015"
         ],
         "types": [
             "node",
-            "mocha"
+            "mocha",
+            "truffle-contracts",
+            "chai"
         ],
         "module": "commonjs",
         "noImplicitAny": false,

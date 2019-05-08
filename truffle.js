@@ -1,3 +1,4 @@
+require("ts-node/register");
 require("dotenv").config();
 
 const HDWalletProvider = require("truffle-hdwallet-provider");

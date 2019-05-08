@@ -1,0 +1,11 @@
+diff --git a/node_modules/solidity-coverage/lib/truffleConfig.js b/node_modules/solidity-coverage/lib/truffleConfig.js
+index 51eb480..a22a277 100644
+--- a/node_modules/solidity-coverage/lib/truffleConfig.js
++++ b/node_modules/solidity-coverage/lib/truffleConfig.js
+@@ -1,5 +1,6 @@
+ module.exports = function truffleConfig(port, gasLimit, gasPrice) {
+   return `
++      require("ts-node/register");
+       module.exports = {
+         networks: {
+           development: {

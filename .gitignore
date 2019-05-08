@@ -13,6 +13,9 @@ coverage.json
 local_*
 bindings.go
 
+test/typings/bindings/*.ts
+types/truffle-contracts/
+
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
 !node_modules/openzeppelin-solidity/contracts/
