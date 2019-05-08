@@ -8,7 +8,7 @@ module.exports = {
   networks: {
     kovan: {
       // @ts-ignore
-      provider: () => new HDWalletProvider(process.env.MNEMONIC, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
+      provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
       network_id: 42,
       gas: 6721975,
       gasPrice: 6.5 * GWEI,
