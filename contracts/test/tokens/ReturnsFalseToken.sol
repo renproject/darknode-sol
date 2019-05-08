@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity ^0.5.8;
 
 contract RFT_Token {
     uint256 public totalSupply;

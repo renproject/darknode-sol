@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity ^0.5.8;
 
 import "../../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
