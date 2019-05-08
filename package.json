@@ -6,7 +6,7 @@
     "coverage": "yarn run bindings:ts && solidity-coverage",
     "merge": "sol-merger \"./contracts/**/*.sol\"",
     "test": "yarn run bindings:ts && truffle test",
-    "bindings:ts": "truffle compile && abi-gen --abis 'build/contracts/*.json' --output ./test/typings/bindings --template './test/typings/bindings/templates/contract.handlebars' --partials './test/typings/bindings/templates/partials/*.handlebars' 1> /dev/null && typechain --target truffle './build/**/*.json'",
+    "bindings:ts": "truffle compile && typechain --target truffle './build/**/*.json'",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
     "deployToKovan": "truffle migrate --network kovan && yarn run merge .merged/kovan",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
@@ -16,7 +16,6 @@
     "openzeppelin-solidity": "2.2.0"
   },
   "devDependencies": {
-    "@0x/abi-gen": "^2.0.9",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
     "@types/crypto-js": "^3.1.43",

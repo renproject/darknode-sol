@@ -5,36 +5,29 @@ import {
 } from "./helper/testUtils";
 
 
-import { CycleChangerArtifact, CycleChangerContract } from "./typings/bindings/cycle_changer";
-import { DarknodePaymentStoreArtifact, DarknodePaymentStoreContract } from "./typings/bindings/darknode_payment_store";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./typings/bindings/darknode_registry";
-import { DarknodePaymentArtifact, DarknodePaymentContract } from "./typings/bindings/darknode_payment";
-import { ERC20Artifact, ERC20Contract } from "./typings/bindings/erc20";
-import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
-import { SelfDestructingTokenArtifact } from "./typings/bindings/self_destructing_token";
-
 import { DARKNODE_PAYMENT_CYCLE_DURATION_SECS } from "../migrations/config";
+import { RenTokenInstance, DarknodePaymentStoreInstance, ERC20Instance, DarknodeRegistryInstance, DarknodePaymentInstance, CycleChangerInstance } from "../types/truffle-contracts";
 
-const CycleChanger = artifacts.require("CycleChanger") as CycleChangerArtifact;
-const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
-const ERC20 = artifacts.require("PaymentToken") as ERC20Artifact;
-const DarknodePaymentStore = artifacts.require("DarknodePaymentStore") as DarknodePaymentStoreArtifact;
-const DarknodePayment = artifacts.require("DarknodePayment") as DarknodePaymentArtifact;
-const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
-const SelfDestructingToken = artifacts.require("SelfDestructingToken") as SelfDestructingTokenArtifact;
+const CycleChanger = artifacts.require("CycleChanger");
+const RenToken = artifacts.require("RenToken");
+const ERC20 = artifacts.require("PaymentToken");
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
+const DarknodePayment = artifacts.require("DarknodePayment");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 
 const hour = 60 * 60;
 const day = 24 * hour;
 
 contract("DarknodePayment", (accounts: string[]) => {
 
-    let store: DarknodePaymentStoreContract;
-    let dai: ERC20Contract;
-    let erc20Token: ERC20Contract;
-    let dnr: DarknodeRegistryContract;
-    let dnp: DarknodePaymentContract;
-    let ren: RenTokenContract;
-    let cc: CycleChangerContract;
+    let store: DarknodePaymentStoreInstance;
+    let dai: ERC20Instance;
+    let erc20Token: ERC20Instance;
+    let dnr: DarknodeRegistryInstance;
+    let dnp: DarknodePaymentInstance;
+    let ren: RenTokenInstance;
+    let cc: CycleChangerInstance;
 
     const owner = accounts[0];
     const darknode1 = accounts[1];
@@ -199,7 +192,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // make sure we have enough balance
             const ownerBalance = new BN(await web3.eth.getBalance(owner));
             ownerBalance.gte(amount).should.be.true;
-            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount });
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString(), from: accounts[0] });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
@@ -232,7 +225,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot deposit ERC20 with ETH attached", async () => {
             const amount = new BN("100000000000000000");
-            await dnp.deposit(amount, dai.address, { value: 1 }).should.be.rejectedWith(/unexpected ether transfer/);
+            await dnp.deposit(amount, dai.address, { value: 1, from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
         });
     });
 
@@ -303,7 +296,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
             await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(/mismatched deposit value/);
-            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString() });
+            await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString(), from: accounts[0] });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             const newReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
@@ -403,7 +396,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             const rewards = new BN("300000000000000000");
             await depositDai(rewards);
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
-            await dnp.deposit(rewards, ETHEREUM_TOKEN_ADDRESS, { value: rewards });
+            await dnp.deposit(rewards, ETHEREUM_TOKEN_ADDRESS, { value: rewards.toString(), from: accounts[0] });
 
             // Participate in rewards
             await tick(darknode1);

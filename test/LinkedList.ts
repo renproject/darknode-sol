@@ -1,12 +1,12 @@
 import { ID, NULL } from "./helper/testUtils";
 
-import { LinkedListTestArtifact, LinkedListTestContract } from "./typings/bindings/linked_list_test";
+import { LinkedListTestInstance } from "../types/truffle-contracts";
 
-const LinkedListTest = artifacts.require("LinkedListTest") as LinkedListTestArtifact;
+const LinkedListTest = artifacts.require("LinkedListTest");
 
 contract("LinkedList", () => {
 
-    let linkedList: LinkedListTestContract;
+    let linkedList: LinkedListTestInstance;
 
     const [NODE1, NODE2, NODE3, NODE4, NOT_NODE1, NOT_NODE2] =
         [ID("1"), ID("2"), ID("3"), ID("4"), ID("NOT1"), ID("NOT2")];

@@ -4,23 +4,19 @@ import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,
     NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
+import { RenTokenInstance, DarknodeRegistryStoreInstance, DarknodeRegistryInstance, DarknodeSlasherInstance } from "../types/truffle-contracts";
 
-import { RenTokenArtifact, RenTokenContract } from "./typings/bindings/ren_token";
-import { DarknodeRegistryStoreArtifact, DarknodeRegistryStoreContract } from "./typings/bindings/darknode_registry_store";
-import { DarknodeRegistryArtifact, DarknodeRegistryContract } from "./typings/bindings/darknode_registry";
-import { DarknodeSlasherArtifact, DarknodeSlasherContract } from "./typings/bindings/darknode_slasher";
-
-const RenToken = artifacts.require("RenToken") as RenTokenArtifact;
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore") as DarknodeRegistryStoreArtifact;
-const DarknodeRegistry = artifacts.require("DarknodeRegistry") as DarknodeRegistryArtifact;
-const DarknodeSlasher = artifacts.require("DarknodeSlasher") as DarknodeSlasherArtifact;
+const RenToken = artifacts.require("RenToken");
+const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
+const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 contract("DarknodeRegistry", (accounts: string[]) => {
 
-    let ren: RenTokenContract;
-    let dnrs: DarknodeRegistryStoreContract;
-    let dnr: DarknodeRegistryContract;
-    let slasher: DarknodeSlasherContract;
+    let ren: RenTokenInstance;
+    let dnrs: DarknodeRegistryStoreInstance;
+    let dnr: DarknodeRegistryInstance;
+    let slasher: DarknodeSlasherInstance;
 
     before(async () => {
         ren = await RenToken.deployed();

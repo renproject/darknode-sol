@@ -1,14 +1,9 @@
 import BN from "bn.js";
 
 import "./helper/testUtils";
+import { CompatibleERC20TestInstance, ReturnsFalseTokenInstance } from "../types/truffle-contracts";
 
-import { ERC20Contract } from "./typings/bindings/erc20";
-
-import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./typings/bindings/compatible_erc20_test";
-import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./typings/bindings/compatible_erc20_functions";
-
-const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions") as CompatibleERC20FunctionsArtifact;
-const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;
+const CompatibleERC20Test = artifacts.require("CompatibleERC20Test");
 const NormalToken = artifacts.require("NormalToken");
 const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
 const NonCompliantToken = artifacts.require("NonCompliantToken");
@@ -16,7 +11,7 @@ const TokenWithFees = artifacts.require("TokenWithFees");
 
 contract("CompatibleERC20", (accounts) => {
 
-    let mock: CompatibleERC20TestContract;
+    let mock: CompatibleERC20TestInstance;
 
     before(async () => {
         mock = await CompatibleERC20Test.new();
@@ -33,7 +28,7 @@ contract("CompatibleERC20", (accounts) => {
 
     for (const testCase of testCases) {
         context(testCase.desc, async () => {
-            let token: ERC20Contract;
+            let token: ReturnsFalseTokenInstance;
             const FEE = VALUE.mul(new BN(testCase.fees)).div(new BN(1000));
 
             before(async () => {
