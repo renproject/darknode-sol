@@ -41,5 +41,7 @@ module.exports = {
         }
       }
     }
-  }
+  },
+  // This is required by truffle to find any ts test files
+  test_file_extension_regexp: /.*\.ts$/
 };
