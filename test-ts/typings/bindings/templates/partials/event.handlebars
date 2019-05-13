@@ -1,8 +1,0 @@
-{{name}}: ({{#each inputs}}{{name}}: {{#parameterType type components}}{{/parameterType}}{{#unless @last}}, {{/unless}}{{/each}}) => ({
-    event: '{{name}}',
-    args: {
-        {{#each inputs}}
-        {{name}},
-        {{/each}}
-    },
-}),

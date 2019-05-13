@@ -1,3 +1,4 @@
+require("ts-node/register");
 require("dotenv").config();
 
 const HDWalletProvider = require("truffle-hdwallet-provider");
@@ -48,5 +49,7 @@ module.exports = {
         }
       }
     }
-  }
+  },
+  // This is required by truffle to find any ts test files
+  test_file_extension_regexp: /.*\.ts$/
 };

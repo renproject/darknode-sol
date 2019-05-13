@@ -1,14 +1,9 @@
 import BN from "bn.js";
 
 import "./helper/testUtils";
+import { CompatibleERC20TestInstance, ReturnsFalseTokenInstance } from "../types/truffle-contracts";
 
-import { ERC20Contract } from "./typings/bindings/erc20";
-
-import { CompatibleERC20TestArtifact, CompatibleERC20TestContract } from "./typings/bindings/compatible_erc20_test";
-import { CompatibleERC20FunctionsArtifact, CompatibleERC20FunctionsContract } from "./typings/bindings/compatible_erc20_functions";
-
-const CompatibleERC20Functions = artifacts.require("CompatibleERC20Functions") as CompatibleERC20FunctionsArtifact;
-const CompatibleERC20Test = artifacts.require("CompatibleERC20Test") as CompatibleERC20TestArtifact;
+const CompatibleERC20Test = artifacts.require("CompatibleERC20Test");
 const NormalToken = artifacts.require("NormalToken");
 const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
 const NonCompliantToken = artifacts.require("NonCompliantToken");
@@ -16,7 +11,7 @@ const TokenWithFees = artifacts.require("TokenWithFees");
 
 contract("CompatibleERC20", (accounts) => {
 
-    let mock: CompatibleERC20TestContract;
+    let mock: CompatibleERC20TestInstance;
 
     before(async () => {
         mock = await CompatibleERC20Test.new();
@@ -33,7 +28,7 @@ contract("CompatibleERC20", (accounts) => {
 
     for (const testCase of testCases) {
         context(testCase.desc, async () => {
-            let token: ERC20Contract;
+            let token: ReturnsFalseTokenInstance;
             const FEE = VALUE.mul(new BN(testCase.fees)).div(new BN(1000));
 
             before(async () => {
@@ -82,7 +77,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.naiveDeposit(token.address, VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -97,7 +92,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.deposit(token.address, VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -111,7 +106,7 @@ contract("CompatibleERC20", (accounts) => {
 
                 // Withdraw
                 await mock.withdraw(token.address, VALUE.mul(new BN(2)))
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Compare balances after depositing
                 (await token.balanceOf(accounts[0])).should.bignumber.equal(before);
@@ -133,7 +128,7 @@ contract("CompatibleERC20", (accounts) => {
                 // Approve twice without resetting allowance
                 await mock.approve(token.address, NEW_VALUE);
                 await mock.approve(token.address, NEW_VALUE)
-                    .should.be.rejectedWith(null, /revert/);
+                    .should.be.rejectedWith(/revert/);
 
                 // Can transfer from the contract
                 await token.transferFrom(mock.address, accounts[0], NEW_VALUE.sub(NEW_FEE));
@@ -158,7 +153,7 @@ contract("CompatibleERC20", (accounts) => {
                 await token.approve(mock.address, VALUE);
                 if (testCase.fees) {
                     await mock.naiveDeposit(token.address, VALUE)
-                        .should.be.rejectedWith(null, "incorrect balance in deposit");
+                        .should.be.rejectedWith("incorrect balance in deposit");
                     await token.approve(mock.address, 0);
                 } else {
                     await mock.naiveDeposit(token.address, VALUE);
