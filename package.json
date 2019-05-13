@@ -11,8 +11,9 @@
     "merge": "sol-merger \"./contracts/**/*.sol\"",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "postinstall": "patch-package",
-    "deployToKovan": "truffle migrate --skipDryRun --network kovan && yarn run merge .merged/kovan",
-    "deployToMainnet": "truffle migrate --skipDryRun --network mainnet && yarn run merge .merged/mainnet"
+    "deploy": "truffle migrate --skipDryRun --network $NETWORK",
+    "verify": "truffle run verify --network $NETWORK",
+    "preverify": "rm -rf .merged; yarn run merge .merged"
   },
   "dependencies": {
     "openzeppelin-solidity": "2.2.0"
