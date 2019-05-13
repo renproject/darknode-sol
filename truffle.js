@@ -56,6 +56,7 @@ module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_KEY,
   },
+  contracts_build_directory: "./build/contracts",
   flattenedLocation: "./.merged/kovan",
   // This is required by truffle to find any ts test files
   test_file_extension_regexp: /.*\.ts$/
