@@ -1,6 +1,4 @@
-// Type definitions for chai-bignumber 0.0.0
-// Project: https://github.com/negaex/chai-bignumber/
-// Definitions by: negaex <https://github.com/negaex>,
+/* tslint:disable */
 
 /// <reference types="chai" />
 
@@ -29,3 +27,4 @@ declare namespace Chai {
         equal(actual?: any, expected?: any, msg?: string): void;
     }
 }
+

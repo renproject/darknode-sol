@@ -1,3 +1,4 @@
+require("ts-node/register");
 require("dotenv").config();
 
 const HDWalletProvider = require("truffle-hdwallet-provider");
@@ -55,5 +56,7 @@ module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_KEY,
   },
-  flattenedLocation: "./.merged/kovan"
+  flattenedLocation: "./.merged/kovan",
+  // This is required by truffle to find any ts test files
+  test_file_extension_regexp: /.*\.ts$/
 };

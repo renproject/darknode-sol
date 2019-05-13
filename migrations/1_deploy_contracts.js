@@ -1,4 +1,4 @@
-/// <reference types="../test-ts/typings/truffle" />
+/// <reference types="../types/truffle-contracts" />
 
 const BN = require("bn.js");
 

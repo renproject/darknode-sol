@@ -10,10 +10,9 @@ import BigNumber from "bignumber.js";
 
 import BN from "bn.js";
 
-import { DarknodeRegistryContract } from "../typings/bindings/darknode_registry";
-
 // Import chai log helper
 import "./logs";
+import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
 
 chai.use(chaiAsPromised);
 chai.use((chaiBigNumber as any)(BigNumber) as any);
@@ -84,7 +83,7 @@ export const increaseTime = async (seconds: number) => {
     } while (currentTimestamp < target);
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryContract) {
+export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
     const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
     while (true) {
         // Must be an on-chain call, or the time won't be updated

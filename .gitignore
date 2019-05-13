@@ -10,10 +10,10 @@ coverage.json
 .env
 /build
 /.merged
-/test
 local_*
-test-ts/typings/bindings/*.ts
 bindings.go
+
+types
 
 !node_modules/openzeppelin-solidity/
 node_modules/openzeppelin-solidity/*
