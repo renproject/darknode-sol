@@ -8,11 +8,10 @@
     "test": "yarn run generate && truffle test",
     "bindings:ts": "truffle compile && typechain --target web3-1.0.0 './build/**/*.json'",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
-    "merge": "sol-merger \"./contracts/**/*.sol\"",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "postinstall": "patch-package",
-    "deployToKovan": "truffle migrate --skipDryRun --network kovan && yarn run merge .merged/kovan",
-    "deployToMainnet": "truffle migrate --skipDryRun --network mainnet && yarn run merge .merged/mainnet"
+    "deploy": "truffle migrate --skipDryRun --network $NETWORK",
+    "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
     "openzeppelin-solidity": "2.2.0"
@@ -37,11 +36,11 @@
     "js-sha3": "^0.8.0",
     "patch-package": "^6.1.2",
     "postinstall-postinstall": "^2.0.0",
-    "sol-merger": "^0.1.3",
     "solc": "^0.5.8",
     "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
     "truffle": "5.0.15",
     "truffle-hdwallet-provider": "1.0.8",
+    "truffle-plugin-verify": "github:noiach/truffle-plugin-verify",
     "truffle-typings": "^1.0.5",
     "ts-generator": "^0.0.8",
     "ts-node": "^8.1.0",

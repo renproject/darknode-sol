@@ -52,5 +52,11 @@ yarn run coverage
 Deploy to Kovan:
 
 ```sh
-yarn run deployToKovan
+NETWORK=kovan yarn run deploy
+```
+
+## Verifying Contract Code
+
+```sh
+NETWORK=kovan yarn run verify YourContractName
 ```
