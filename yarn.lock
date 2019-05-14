@@ -4102,7 +4102,7 @@ sol-explore@^1.6.2:
 
 "sol-merger@github:vinceau/sol-merger":
   version "0.1.3"
-  resolved "https://codeload.github.com/vinceau/sol-merger/tar.gz/f6ddc6694e962702e5975a5120c4490439a11f60"
+  resolved "https://codeload.github.com/vinceau/sol-merger/tar.gz/29023727c7867cd8fd46d4bc205e3ebdcb2e41c0"
   dependencies:
     bluebird "^3.5.3"
     cli-color "^1.4.0"
@@ -4589,7 +4589,7 @@ truffle-hdwallet-provider@1.0.8:
 
 "truffle-plugin-verify@github:noiach/truffle-plugin-verify":
   version "0.1.0-alpha3"
-  resolved "https://codeload.github.com/noiach/truffle-plugin-verify/tar.gz/25e03eda300646e0da5d544263d19f5b0d5faf32"
+  resolved "https://codeload.github.com/noiach/truffle-plugin-verify/tar.gz/bf2445664bee7337d317d5d099bcb5bb09d411d6"
   dependencies:
     await-sleep "0.0.1"
     axios "^0.18.0"
