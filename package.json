@@ -40,7 +40,7 @@
     "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
     "truffle": "5.0.15",
     "truffle-hdwallet-provider": "1.0.8",
-    "truffle-plugin-verify": "github:noiach/truffle-plugin-verify",
+    "truffle-plugin-verify": "^0.2.0-alpha1",
     "truffle-typings": "^1.0.5",
     "ts-generator": "^0.0.8",
     "ts-node": "^8.1.0",
