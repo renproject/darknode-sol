@@ -1,6 +1,6 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 

@@ -1,10 +1,10 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../Claimable.sol";
-import "../CompatibleERC20Functions.sol";
+import "../libraries/Claimable.sol";
+import "../libraries/CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
 /// @notice DarknodePaymentStore is responsible for tracking black/whitelisted
@@ -93,7 +93,7 @@ contract DarknodePaymentStore is Claimable {
     /// @param _darknode The address of the darknode to blacklist
     function blacklist(address _darknode) external onlyOwner {
         require(!isBlacklisted(_darknode), "darknode already blacklisted");
-        darknodeBlacklist[_darknode] = now;
+        darknodeBlacklist[_darknode] = block.timestamp;
 
         // Unwhitelist if necessary
         if (isWhitelisted(_darknode)) {
@@ -111,7 +111,7 @@ contract DarknodePaymentStore is Claimable {
         require(!isBlacklisted(_darknode), "darknode is blacklisted");
         require(!isWhitelisted(_darknode), "darknode already whitelisted");
 
-        darknodeWhitelist[_darknode] = now;
+        darknodeWhitelist[_darknode] = block.timestamp;
         darknodeWhitelistLength++;
     }
 

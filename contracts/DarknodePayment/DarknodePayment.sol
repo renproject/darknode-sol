@@ -1,10 +1,10 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../CompatibleERC20Functions.sol";
+import "../libraries/CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./DarknodePaymentStore.sol";
 
@@ -162,7 +162,7 @@ contract DarknodePayment is Ownable {
 
         // Start the current cycle
         currentCycle = block.number;
-        cycleStartTime = now;
+        cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
     }
 
@@ -218,7 +218,7 @@ contract DarknodePayment is Ownable {
         // Start a new cycle
         previousCycle = currentCycle;
         currentCycle = block.number;
-        cycleStartTime = now;
+        cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
 
         // Update the share size for next cycle
