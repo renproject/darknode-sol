@@ -9,17 +9,15 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
-const config = require("./config.js");
 const networks = require("./networks.js");
 
 module.exports = async function (deployer, network) {
     deployer.logger.log(`Deploying to ${network}...`);
 
-    const VERSION_STRING = `${network}-${config.VERSION}`;
+    const addresses = networks[network] || {};
+    const config = networks[network] ? networks[network].config : networks.config;
 
-    const addresses = networks[network] || {
-        tokens: {}
-    };
+    const VERSION_STRING = `${network}-${config.VERSION}`;
 
     RenToken.address = addresses.RenToken || "";
     DarknodeSlasher.address = addresses.DarknodeSlasher || "";
@@ -27,7 +25,7 @@ module.exports = async function (deployer, network) {
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
-    const tokens = addresses.tokens;
+    const tokens = addresses.tokens || {};
 
     if (!RenToken.address) {
         deployer.logger.log("Deploying RenToken");
@@ -149,4 +147,13 @@ module.exports = async function (deployer, network) {
             console.error("Unable to call darknodePayment.changeCycle()");
         }
     }
+
+    console.log({
+        RenToken: RenToken.address,
+        DarknodeSlasher: DarknodeSlasher.address,
+        DarknodeRegistry: DarknodeRegistry.address,
+        DarknodeRegistryStore: DarknodeRegistryStore.address,
+        DarknodePaymentStore: DarknodePaymentStore.address,
+        DarknodePayment: DarknodePayment.address,
+    });
 }

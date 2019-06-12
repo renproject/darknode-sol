@@ -1,24 +1,24 @@
 
 import * as chai from "chai";
+import * as crypto from "crypto";
+
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";
 // @ts-ignore
 import chaiBigNumber from "chai-bignumber";
-import * as crypto from "crypto";
-
 import BigNumber from "bignumber.js";
-
 import BN from "bn.js";
 
+import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
 // Import chai log helper
 import "./logs";
-import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
 
 chai.use(chaiAsPromised);
 chai.use((chaiBigNumber as any)(BigNumber) as any);
 chai.should();
 
-const config = require("../../migrations/config.js");
+const networkAddresses = require("../../migrations/networks.js");
+const config = networkAddresses.config;
 export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
 
 export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);

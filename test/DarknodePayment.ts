@@ -1,13 +1,13 @@
 import BN from "bn.js";
 
+import { config } from "../migrations/networks";
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, NULL,
+    CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
+    DarknodeRegistryInstance, ERC20Instance, RenTokenInstance,
+} from "../types/truffle-contracts";
+import {
+    ETHEREUM_TOKEN_ADDRESS, increaseTime, MINIMUM_BOND, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-
-
-import { RenTokenInstance, DarknodePaymentStoreInstance, ERC20Instance, DarknodeRegistryInstance, DarknodePaymentInstance, CycleChangerInstance } from "../types/truffle-contracts";
-
-import { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger");
 const RenToken = artifacts.require("RenToken");
@@ -16,6 +16,8 @@ const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
+
+const { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } = config;
 
 const hour = 60 * 60;
 const day = 24 * hour;

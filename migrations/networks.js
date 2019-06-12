@@ -1,3 +1,17 @@
+const BN = require("bn.js");
+
+const config = {
+    VERSION: "1.0.0",
+    MINIMUM_BOND: new BN(100000).mul(new BN(10).pow(new BN(18))),
+    MINIMUM_POD_SIZE: 3, // 24 in production
+    MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
+    DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS: 300, // 300 for testnet (5 minutes in seconds), 86400 in mainnet testing (1 day), 2628000 in production (1 month in seconds)
+    owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111", // Darknode public key
+    renShiftFees: 0,
+    renExFees: 0,
+    vault: "",
+}
+
 module.exports = {
     mainnet: {
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
@@ -8,8 +22,13 @@ module.exports = {
         DarknodePayment: "0x5a7802E66b067cB1770ee5b1165AA201690A8B6a",
         tokens: {
             DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-        }
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+        config: {
+            ...config,
+            owner: "TODO",
+            vault: "TODO",
+        },
     },
     kovan: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
@@ -22,7 +41,13 @@ module.exports = {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
             zBTC: "0x2a8368d2a983a0aeae8da0ebc5b7c03a0ea66b37",
-            zZEC: "0xd67256552f93b39ac30083b4b679718a061feae6"
-        }
-    }
+            zZEC: "0xd67256552f93b39ac30083b4b679718a061feae6",
+        },
+        config: {
+            ...config,
+            owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111",
+            vault: "0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66",
+        },
+    },
+    config,
 }

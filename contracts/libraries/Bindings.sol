@@ -6,6 +6,5 @@ import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "../RenToken/RenToken.sol";
 
 /// @notice Bindings imports all of the contracts for generating bindings.
-/* solium-disable no-empty-blocks */
-contract Bindings {
-}
+/* solium-disable-next-line no-empty-blocks */
+contract Bindings {}

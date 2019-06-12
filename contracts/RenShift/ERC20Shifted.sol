@@ -16,3 +16,9 @@ contract ERC20Shifted is ERC20, ERC20Detailed, Ownable {
         _mint(_to, _amount);
     }
 }
+
+/* solium-disable-next-line no-empty-blocks */
+contract zBTC is ERC20Shifted {}
+
+/* solium-disable-next-line no-empty-blocks */
+contract zZEC is ERC20Shifted {}

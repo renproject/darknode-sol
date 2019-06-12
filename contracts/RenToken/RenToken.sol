@@ -19,7 +19,8 @@ contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
     }
 
     function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
-        /* solium-disable error-reason */
+        // Note: The deployed version has no revert reason
+        /* solium-disable-next-line error-reason */
         require(amount > 0);
 
         _transfer(msg.sender, beneficiary, amount);
