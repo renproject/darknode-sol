@@ -9,7 +9,7 @@
     "bindings:ts": "truffle compile && typechain --target web3-1.0.0 './build/**/*.json'",
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "postinstall": "patch-package",
+    "prepare": "patch-package",
     "deploy": "truffle migrate --skipDryRun --network $NETWORK",
     "verify": "truffle run verify --network $NETWORK"
   },
@@ -36,7 +36,7 @@
     "js-sha3": "^0.8.0",
     "patch-package": "^6.1.2",
     "postinstall-postinstall": "^2.0.0",
-    "solc": "^0.5.8",
+    "solc": "0.5.9",
     "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
     "truffle": "5.0.15",
     "truffle-hdwallet-provider": "1.0.8",
@@ -54,7 +54,7 @@
     "web3-providers": "^1.0.0-beta.52"
   },
   "resolutions": {
-    "solc": "^0.5.8",
+    "solc": "0.5.9",
     "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477"
   }
 }
