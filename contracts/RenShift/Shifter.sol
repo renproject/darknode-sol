@@ -5,9 +5,9 @@ import "./ERC20Shifted.sol";
 contract Shifter {
     /// @notice Shifter can be upgraded by setting a `nextShifter`. This process
     /// takes 1 day.
-    Shifter public previousShifter;
-    Shifter public nextShifter;
-    Shifter public pendingNextShifter;
+    address public previousShifter;
+    address public nextShifter;
+    address public pendingNextShifter;
     uint256 public shifterUpgradeTime;
     uint256 constant shifterUpgradeDelay = 1 days;
 
@@ -31,7 +31,7 @@ contract Shifter {
     event LogShiftIn(address indexed _to, uint256 _amount);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _fee);
 
-    constructor(Shifter _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
+    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
         previousShifter = _previousShifter;
         token = _token;
         mintAuthority = _mintAuthority;
@@ -48,7 +48,7 @@ contract Shifter {
 
     /// @notice Allows the contract owner to initiate an ownership transfer of
     ///         the token.
-    /// @param _newOwner The address to transfer the ownership to.
+    /// @param _nextShifter The address to transfer the ownership to.
     function upgradeShifter(address _nextShifter) public {
         require(msg.sender == mintAuthority, "Not authorized");
 
@@ -58,8 +58,8 @@ contract Shifter {
             // transfer the token to the next shifter and start pointing to it.
 
             nextShifter = pendingNextShifter;
-            token.transferOwnership(nextShifter);
-            nextShifter.claimTokenOwnership();
+            token.transferOwnership(address(nextShifter));
+            Shifter(nextShifter).claimTokenOwnership();
         } else {
             // Start a timer so allow the shifter to be upgraded.
 
@@ -78,7 +78,7 @@ contract Shifter {
         bytes32 _commitment,
         bytes memory _sig
     ) public returns (uint256) {
-        if (nextShifter) {return nextShifter.shiftIn(_to, _amount, _nonce, _commitment);}
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).shiftIn(_to, _amount, _nonce, _commitment, _sig);}
 
         require(status[_commitment] == ShiftResult.New, "commitment already spent");
         require(verifySig(_to, _amount, _commitment, _nonce, _sig), "invalid signature");
@@ -100,7 +100,7 @@ contract Shifter {
     }
 
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
-        if (nextShifter) {return nextShifter.proxyShiftOut(_from, _to, _amount);}
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).proxyShiftOut(_from, _to, _amount);}
 
         uint256 absoluteFee = (_amount * fee)/10000;
 
@@ -115,7 +115,7 @@ contract Shifter {
     /// @notice verifySig checks the the provided signature matches the provided
     /// parameters
     function verifySig(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment, bytes memory _sig) public view returns (bool) {
-        if (nextShifter) {return nextShifter.verifySig(_to, _amount, _nonce, _commitment, _sig);}
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).verifySig(_to, _amount, _nonce, _commitment, _sig);}
 
         bytes32 r;
         bytes32 s;
@@ -132,7 +132,7 @@ contract Shifter {
 
     /// @notice sigHash hashes the parameters so that they can be signed
     function sigHash(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment) public view returns (bytes32) {
-        if (nextShifter) {return nextShifter.sigHash(_to, _amount, _nonce, _commitment);}
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).sigHash(_to, _amount, _nonce, _commitment);}
         return keccak256(abi.encode(address(token), _to, _amount, _nonce, _commitment));
     }
 }
