@@ -7,7 +7,7 @@ const config = {
     MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
     DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS: 300, // 300 for testnet (5 minutes in seconds), 86400 in mainnet testing (1 day), 2628000 in production (1 month in seconds)
     owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111", // Darknode public key
-    renShiftFees: 0,
+    shifterFees: 0,
     renExFees: 0,
     vault: "",
 }

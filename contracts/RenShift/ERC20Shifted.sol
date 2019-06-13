@@ -2,9 +2,10 @@ pragma solidity ^0.5.8;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract ERC20Shifted is ERC20, ERC20Detailed, Ownable {
+import "../libraries/Claimable.sol";
+
+contract ERC20Shifted is ERC20, ERC20Detailed, Claimable {
     constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {
     }
 
@@ -18,7 +19,7 @@ contract ERC20Shifted is ERC20, ERC20Detailed, Ownable {
 }
 
 /* solium-disable-next-line no-empty-blocks */
-contract zBTC is ERC20Shifted {}
+contract zBTC is ERC20Shifted("Shifted BTC", "zBTC", 8) {}
 
 /* solium-disable-next-line no-empty-blocks */
-contract zZEC is ERC20Shifted {}
+contract zZEC is ERC20Shifted("Shifted ZEC", "zZEC", 8) {}

@@ -1,6 +1,6 @@
 /// <reference types="../types/truffle-contracts" />
 
-const RenShift = artifacts.require("RenShift");
+const Shifter = artifacts.require("Shifter");
 const zBTC = artifacts.require("zBTC");
 const zZEC = artifacts.require("zZEC");
 
@@ -14,36 +14,36 @@ module.exports = async function (deployer, network, accounts) {
     const config = networks[network] ? networks[network].config : networks.config;
     const owner = config.owner || web3.eth.accounts.create();
 
-    RenShift.address = addresses.RenShift || "";
+    Shifter.address = addresses.Shifter || "";
     zZEC.address = tokens.zZEC || "";
     zBTC.address = tokens.zBTC || "";
 
-    /** RenShift **************************************************************/
+    /** Shifter **************************************************************/
 
-    if (!RenShift.address) {
+    if (!Shifter.address) {
         await deployer.deploy(
-            RenShift,
+            Shifter,
             config.owner, // address _owner
             config.vault || accounts[0], // address _vault
-            config.renShiftFees, // uint16 _fee
+            config.shifterFees, // uint16 _fee
         );
     }
-    const renShift = await RenShift.at(RenShift.address);
+    const shifter = await Shifter.at(Shifter.address);
 
     if (!zBTC.address) {
-        await renShift.newShiftedToken("Shifted Bitcoin", "zBTC", 8);
-        zBTC.address = await renShift.shiftedTokens("zBTC");
+        await shifter.newShiftedToken("Shifted Bitcoin", "zBTC", 8);
+        zBTC.address = await shifter.shiftedTokens("zBTC");
         console.log(`[BTC]: ${zBTC.address}`);
     }
 
     if (!zZEC.address) {
-        await renShift.newShiftedToken("Shifted ZCash", "zZEC", 8);
-        zZEC.address = await renShift.shiftedTokens("zZEC");
+        await shifter.newShiftedToken("Shifted ZCash", "zZEC", 8);
+        zZEC.address = await shifter.shiftedTokens("zZEC");
         console.log(`[ZEC]: ${zZEC.address}`);
     }
 
     console.log({
-        RenShift: RenShift.address,
+        Shifter: Shifter.address,
         tokens: {
             zBTC: zBTC.address,
             zZEC: zZEC.address,
