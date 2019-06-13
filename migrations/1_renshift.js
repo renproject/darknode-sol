@@ -1,7 +1,9 @@
 /// <reference types="../types/truffle-contracts" />
 
-const Shifter = artifacts.require("Shifter");
+const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
+
+const ZECShifter = artifacts.require("ZECShifter");
 const zZEC = artifacts.require("zZEC");
 
 const networks = require("./networks.js");
@@ -12,41 +14,67 @@ module.exports = async function (deployer, network, accounts) {
     const addresses = networks[network] || {};
     const tokens = addresses.tokens || {};
     const config = networks[network] ? networks[network].config : networks.config;
-    const owner = config.owner || web3.eth.accounts.create();
+    const _mintAuthority = config.owner || web3.eth.accounts.create();
+    const _feeAuthority = config.vault || accounts[0];
 
-    Shifter.address = addresses.Shifter || "";
-    zZEC.address = tokens.zZEC || "";
-    zBTC.address = tokens.zBTC || "";
+    BTCShifter.address = addresses.BTCShifter || "";
+    ZECShifter.address = addresses.ZECShifter || "";
+    zZEC.address = addresses.zZEC || "";
+    zBTC.address = addresses.zBTC || "";
 
-    /** Shifter **************************************************************/
+    /** BTC *******************************************************************/
 
-    if (!Shifter.address) {
+    if (!zBTC.address) {
+        await deployer.deploy(zBTC, "Shifted Bitcoin", "zBTC", 8);
+    }
+    const zbtc = await zBTC.at(zBTC.address);
+
+    if (!BTCShifter.address) {
         await deployer.deploy(
-            Shifter,
-            config.owner, // address _owner
+            BTCShifter,
+            owner, // address _owner
             config.vault || accounts[0], // address _vault
             config.shifterFees, // uint16 _fee
         );
     }
-    const shifter = await Shifter.at(Shifter.address);
+    const btcShifter = await BTCShifter.at(BTCShifter.address);
 
-    if (!zBTC.address) {
-        await shifter.newShiftedToken("Shifted Bitcoin", "zBTC", 8);
-        zBTC.address = await shifter.shiftedTokens("zBTC");
-        console.log(`[BTC]: ${zBTC.address}`);
+    if (await zbtc.owner() !== BTCShifter.address) {
+        await zbtc.transferOwnership(BTCShifter.address);
+        await btcShifter.claimOwnership();
     }
+
+
+    /** ZEC *******************************************************************/
 
     if (!zZEC.address) {
-        await shifter.newShiftedToken("Shifted ZCash", "zZEC", 8);
-        zZEC.address = await shifter.shiftedTokens("zZEC");
-        console.log(`[ZEC]: ${zZEC.address}`);
+        await deployer.deploy(zZEC, "Shifted ZCash", "zZEC", 8);
+    }
+    const zzec = await zZEC.at(zZEC.address);
+
+    if (!ZECShifter.address) {
+        await deployer.deploy(
+            ZECShifter,
+            zZEC.address,
+            _feeRecipient, // address _owner
+            _mintAuthority, // address _vault
+            _fee, // uint16 _fee
+        );
+    }
+    const zecShifter = await ZECShifter.at(ZECShifter.address);
+
+    if (await zzec.owner() !== ZECShifter.address) {
+        await zzec.transferOwnership(ZECShifter.address);
+        await zecShifter.claimOwnership();
     }
 
+
+    /** LOG *******************************************************************/
+
     console.log({
-        Shifter: Shifter.address,
-        tokens: {
-            zBTC: zBTC.address,
-            zZEC: zZEC.address,
-        }
+        BTCShifter: BTCShifter.address,
+        ZECShifter: ZECShifter.address,
+        zBTC: zBTC.address,
+        zZEC: zZEC.address,
     });
 }

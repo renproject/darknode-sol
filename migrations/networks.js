@@ -40,8 +40,6 @@ module.exports = {
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-            zBTC: "0x2a8368d2a983a0aeae8da0ebc5b7c03a0ea66b37",
-            zZEC: "0xd67256552f93b39ac30083b4b679718a061feae6",
         },
         config: {
             ...config,

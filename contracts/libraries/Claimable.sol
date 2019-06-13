@@ -31,7 +31,7 @@ contract Claimable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(isOwner());
+        require(isOwner(), "must be owner");
         _;
     }
 
@@ -39,7 +39,7 @@ contract Claimable {
     * @dev Modifier throws if called by any account other than the pendingOwner.
     */
     modifier onlyPendingOwner() {
-      require(msg.sender == _pendingOwner);
+      require(msg.sender == _pendingOwner, "must be pending owner");
       _;
     }
 

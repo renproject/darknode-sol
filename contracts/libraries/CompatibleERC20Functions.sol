@@ -46,7 +46,7 @@ library CompatibleERC20Functions {
         // safeApprove should only be called when setting an initial allowance,
         // or when resetting it to zero. To increase and decrease it, use
         // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
-        require((value == 0) || (token.allowance(address(this), spender) == 0));
+        require((value == 0) || (token.allowance(address(this), spender) == 0), "must first reset approval");
         callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
 
@@ -75,14 +75,14 @@ library CompatibleERC20Functions {
         //  2. The call itself is made, and success asserted
         //  3. The return value is decoded, which in turn checks the size of the returned data.
 
-        require(address(token).isContract());
+        require(address(token).isContract(), "token not found");
 
         // solhint-disable-next-line avoid-low-level-calls
         (bool success, bytes memory returndata) = address(token).call(data);
-        require(success);
+        require(success, "token call failed");
 
         if (returndata.length > 0) { // Return data is optional
-            require(abi.decode(returndata, (bool)));
+            require(abi.decode(returndata, (bool)), "token call failed");
         }
     }
 

@@ -14,7 +14,8 @@
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
-    "openzeppelin-solidity": "2.2.0"
+    "openzeppelin-solidity": "2.2.0",
+    "zos": "^2.3.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
