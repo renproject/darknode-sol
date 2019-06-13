@@ -12,10 +12,11 @@ module.exports = async function (deployer, network, accounts) {
     deployer.logger.log(`Deploying to ${network}...`);
 
     const addresses = networks[network] || {};
-    const tokens = addresses.tokens || {};
     const config = networks[network] ? networks[network].config : networks.config;
     const _mintAuthority = config.owner || web3.eth.accounts.create();
-    const _feeAuthority = config.vault || accounts[0];
+    // TODO: _feeRecipient should be the DarknodePayment contract
+    // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
+    const _feeRecipient = config.vault || accounts[0];
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
@@ -32,18 +33,19 @@ module.exports = async function (deployer, network, accounts) {
     if (!BTCShifter.address) {
         await deployer.deploy(
             BTCShifter,
-            owner, // address _owner
-            config.vault || accounts[0], // address _vault
-            config.shifterFees, // uint16 _fee
+            "0x0000000000000000000000000000000000000000",
+            zBTC.address,
+            _feeRecipient,
+            _mintAuthority,
+            config.shifterFees,
         );
     }
     const btcShifter = await BTCShifter.at(BTCShifter.address);
 
     if (await zbtc.owner() !== BTCShifter.address) {
         await zbtc.transferOwnership(BTCShifter.address);
-        await btcShifter.claimOwnership();
+        await btcShifter.claimTokenOwnership();
     }
-
 
     /** ZEC *******************************************************************/
 
@@ -55,17 +57,18 @@ module.exports = async function (deployer, network, accounts) {
     if (!ZECShifter.address) {
         await deployer.deploy(
             ZECShifter,
+            "0x0000000000000000000000000000000000000000",
             zZEC.address,
-            _feeRecipient, // address _owner
-            _mintAuthority, // address _vault
-            _fee, // uint16 _fee
+            _feeRecipient,
+            _mintAuthority,
+            config.shifterFees,
         );
     }
     const zecShifter = await ZECShifter.at(ZECShifter.address);
 
     if (await zzec.owner() !== ZECShifter.address) {
         await zzec.transferOwnership(ZECShifter.address);
-        await zecShifter.claimOwnership();
+        await zecShifter.claimTokenOwnership();
     }
 
 

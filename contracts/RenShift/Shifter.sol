@@ -3,8 +3,10 @@ pragma solidity ^0.5.8;
 import "./ERC20Shifted.sol";
 
 contract Shifter {
-    /// @notice Shifter can be upgraded by setting a `nextShifter`. This process
-    /// takes 1 day.
+    /// @notice Shifter can be upgraded by setting a `nextShifter`. The
+    /// forwarding address is only set after a delay has passed.
+    /// This upgradability pattern is not as sophisticated as a DelegateProxy,
+    /// but is less error prone.
     address public previousShifter;
     address public nextShifter;
     address public pendingNextShifter;
@@ -81,10 +83,11 @@ contract Shifter {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).shiftIn(_to, _amount, _nonce, _commitment, _sig);}
 
         require(status[_commitment] == ShiftResult.New, "commitment already spent");
-        require(verifySig(_to, _amount, _commitment, _nonce, _sig), "invalid signature");
+        require(verifySig(_to, _amount, _nonce, _commitment, _sig), "invalid signature");
         uint256 absoluteFee = (_amount * fee)/10000;
         status[_commitment] = ShiftResult.Spent;
         token.mint(_to, _amount-absoluteFee);
+        token.mint(feeRecipient, absoluteFee);
         emit LogShiftIn(_to, _amount);
         return _amount-absoluteFee;
     }
@@ -137,8 +140,15 @@ contract Shifter {
     }
 }
 
-/* solium-disable-next-line no-empty-blocks */
-contract BTCShifter is Shifter {}
+/* solium-disable no-empty-blocks */
+contract BTCShifter is Shifter {
+    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
+        Shifter(_previousShifter, _token, _feeRecipient, _mintAuthority, _fee) public {
+    }
+}
 
-/* solium-disable-next-line no-empty-blocks */
-contract ZECShifter is Shifter {}
+contract ZECShifter is Shifter {
+    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
+        Shifter(_previousShifter, _token, _feeRecipient, _mintAuthority, _fee) public {
+    }
+}
