@@ -52,7 +52,7 @@ contract Shifter {
 
     /// @notice Allows the contract owner to initiate an ownership transfer of
     ///         the token.
-    /// @param _nextShifter The address to transfer the ownership to.
+    /// @param _nextShifter The address to transfer the ownership to, or 0x0.
     function upgradeShifter(address _nextShifter) public {
         require(msg.sender == mintAuthority, "not authorized");
 
@@ -62,8 +62,13 @@ contract Shifter {
             // transfer the token to the next shifter and start pointing to it.
 
             nextShifter = pendingNextShifter;
-            token.transferOwnership(address(nextShifter));
-            Shifter(nextShifter).claimTokenOwnership();
+
+            if (_nextShifter == address(0x0)) {
+                require(token.owner() == address(this), "must be owner of token to reset upgrade");
+            } else {
+                token.transferOwnership(address(nextShifter));
+                Shifter(nextShifter).claimTokenOwnership();
+            }
         } else {
             // Start a timer so allow the shifter to be upgraded.
 

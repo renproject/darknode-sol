@@ -110,13 +110,33 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
         it("can't call forwardShiftOut", async () => {
             const btcAddress = `0x${randomBytes(35).toString("hex")}`;
-            await (btcShifter.shiftOut(btcAddress, removeFee(value, 10).toNumber(), { from: malicious }))
+            await (btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious }))
                 .should.be.rejectedWith(/must be previous Shifter contract/);
         })
     });
 
     describe("upgrading", () => {
         let newShifter;
+
+        // Reset the upgrade
+        after(async () => {
+            // Trying to reset upgrade in btcShifter without owning the token
+            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
+            await increaseTime(2 * 60 * 60 * 24);
+            await (btcShifter.upgradeShifter(NULL, { from: mintAuthority.address }))
+                .should.be.rejectedWith(/must be owner of token to reset upgrade/);
+
+            // Upgrade newShifter to point to btcShifter
+            await newShifter.upgradeShifter(btcShifter.address, { from: mintAuthority.address });
+            await increaseTime(2 * 60 * 60 * 24);
+            await newShifter.upgradeShifter(btcShifter.address, { from: mintAuthority.address });
+
+            // Reset the upgrade in btcShifter
+            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
+            await increaseTime(2 * 60 * 60 * 24);
+            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
+        });
+
         it("can upgrade the shifter", async () => {
             newShifter = await BTCShifter.new(
                 btcShifter.address,
@@ -158,6 +178,17 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const value = new BN(200000);
             it("can mint tokens", async () => mintTest(newShifter, value));
             it("can burn tokens", async () => burnTest(newShifter, value))
+        });
+
+        it("can't upgrade to an invalid shifter", async () => {
+            await newShifter.upgradeShifter(malicious, { from: mintAuthority.address });
+
+            // Sleep for two days
+            await increaseTime(2 * 60 * 60 * 24);
+
+            // Not soo soon
+            await (newShifter.upgradeShifter(malicious, { from: mintAuthority.address }))
+                .should.be.rejectedWith(/revert/);
         });
     });
 });
