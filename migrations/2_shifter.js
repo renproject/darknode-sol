@@ -6,6 +6,8 @@ const zBTC = artifacts.require("zBTC");
 const ZECShifter = artifacts.require("ZECShifter");
 const zZEC = artifacts.require("zZEC");
 
+const DarknodePayment = artifacts.require("DarknodePayment");
+
 const networks = require("./networks.js");
 
 module.exports = async function (deployer, network, accounts) {
@@ -16,12 +18,14 @@ module.exports = async function (deployer, network, accounts) {
     const _mintAuthority = config.owner || web3.eth.accounts.create();
     // TODO: _feeRecipient should be the DarknodePayment contract
     // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
-    const _feeRecipient = config.vault || accounts[0];
+    const _feeRecipient = addresses.DarknodePayment || accounts[0];
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
     zZEC.address = addresses.zZEC || "";
     zBTC.address = addresses.zBTC || "";
+
+    const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
 
     /** BTC *******************************************************************/
 
@@ -47,6 +51,12 @@ module.exports = async function (deployer, network, accounts) {
         await btcShifter.claimTokenOwnership();
     }
 
+    const zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
+    if (zBTCRegistered.toString() === "0") {
+        deployer.logger.log(`Registering token zBTC in DarknodePayment`);
+        await darknodePayment.registerToken(zBTC.address);
+    }
+
     /** ZEC *******************************************************************/
 
     if (!zZEC.address) {
@@ -69,6 +79,12 @@ module.exports = async function (deployer, network, accounts) {
     if (await zzec.owner() !== ZECShifter.address) {
         await zzec.transferOwnership(ZECShifter.address);
         await zecShifter.claimTokenOwnership();
+    }
+
+    const zZECRegistered = await darknodePayment.registeredTokenIndex(zZEC.address);
+    if (zZECRegistered.toString() === "0") {
+        deployer.logger.log(`Registering token zZEC in DarknodePayment`);
+        await darknodePayment.registerToken(zZEC.address);
     }
 
 
