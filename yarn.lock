@@ -5225,10 +5225,9 @@ truffle-provider@^0.1.2:
     truffle-interface-adapter "^0.1.6"
     web3 "1.0.0-beta.37"
 
-truffle-typings@^1.0.7:
+"truffle-typings@https://github.com/republicprotocol/truffle-typings":
   version "1.0.7"
-  resolved "https://registry.yarnpkg.com/truffle-typings/-/truffle-typings-1.0.7.tgz#6a0f47247dc860893c8a758053005028db763c3d"
-  integrity sha512-VD9N/hi5Jc0hHT7VKNR2OeB6/n9RY9tIs8tZr/ICa3gUkIra2uZaw2JEJhcysr88T1rrDBP6mV/Nu4qbI9n7VQ==
+  resolved "https://github.com/republicprotocol/truffle-typings#78c38de575091f2cbe15ded0697555e2dbe6ab6c"
   dependencies:
     "@types/chai" "^4.1.4"
     "@types/mocha" "^5.2.5"

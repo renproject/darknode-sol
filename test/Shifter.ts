@@ -12,8 +12,11 @@ contract("Shifter", (accounts) => {
     let btcShifter: BTCShifterInstance;
     let zbtc: zBTCInstance;
 
+    // We generate a new account so that we have access to its private key for
+    // `ecsign`. Web3's sign functions all prefix the message being signed.
     const mintAuthority = web3.eth.accounts.create();
     const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
+
     const feeInBips = new BN(10);
     const feeRecipient = accounts[1];
 
@@ -57,5 +60,24 @@ contract("Shifter", (accounts) => {
             const btcAddress = `0x${randomBytes(35).toString("hex")}`;
             await btcShifter.shiftOut(btcAddress, valueAfterFee.toNumber(), { from: accounts[2] });
         })
+    });
+
+    describe("upgrading", () => {
+        it("can upgrade the shifter", async () => {
+            const newShifter = await BTCShifter.new(
+                NULL,
+                zbtc.address,
+                feeRecipient,
+                mintAuthority.address,
+                feeInBips,
+            );
+
+            // Fund and unlock the mintAuthority
+            await web3.eth.sendTransaction({ to: mintAuthority.address, from: accounts[0], value: web3.utils.toWei("1") });
+            await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
+            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 600);
+
+            await btcShifter.upgradeShifter(newShifter.address, { from: mintAuthority.address });
+        });
     });
 });
