@@ -8,7 +8,7 @@ import { NULL } from "./helper/testUtils";
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
 
-(contract as any).only("Shifter", (accounts) => {
+contract("Shifter", (accounts) => {
     let btcShifter: BTCShifterInstance;
     let zbtc: zBTCInstance;
 
