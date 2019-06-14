@@ -6,7 +6,9 @@ contract Shifter {
     /// @notice Shifter can be upgraded by setting a `nextShifter`. The
     /// forwarding address is only set after a delay has passed.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
-    /// but is less error prone.
+    /// but is less error prone. It's downsides are higher gas fees when using
+    /// the old address, and every function needing to forward the call,
+    /// including storage getters.
     address public previousShifter;
     address public nextShifter;
     address public pendingNextShifter;
@@ -28,7 +30,7 @@ contract Shifter {
 
     /// @notice Each commitment-hash can only be seen once
     enum ShiftResult { New, Spent }
-    mapping (bytes32=>ShiftResult) public status;
+    mapping (bytes32=>mapping (bytes32=>ShiftResult)) public status;
 
     event LogShiftIn(address indexed _to, uint256 _amount);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _fee);
@@ -52,10 +54,10 @@ contract Shifter {
     ///         the token.
     /// @param _nextShifter The address to transfer the ownership to.
     function upgradeShifter(address _nextShifter) public {
-        require(msg.sender == mintAuthority, "Not authorized");
+        require(msg.sender == mintAuthority, "not authorized");
 
         /* solium-disable-next-line security/no-block-members */
-        if (_nextShifter == pendingNextShifter && shifterUpgradeTime >= block.timestamp) {
+        if (_nextShifter == pendingNextShifter && block.timestamp >= shifterUpgradeTime) {
             // If the delay has passed and the next shifter isn't been changed,
             // transfer the token to the next shifter and start pointing to it.
 
@@ -82,10 +84,10 @@ contract Shifter {
     ) public returns (uint256) {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).shiftIn(_to, _amount, _nonce, _commitment, _sig);}
 
-        require(status[_commitment] == ShiftResult.New, "commitment already spent");
+        require(status[_commitment][_nonce] == ShiftResult.New, "commitment already spent");
         require(verifySig(_to, _amount, _nonce, _commitment, _sig), "invalid signature");
         uint256 absoluteFee = (_amount * fee)/10000;
-        status[_commitment] = ShiftResult.Spent;
+        status[_commitment][_nonce] = ShiftResult.Spent;
         token.mint(_to, _amount-absoluteFee);
         token.mint(feeRecipient, absoluteFee);
         emit LogShiftIn(_to, _amount);
@@ -97,13 +99,14 @@ contract Shifter {
         return _shiftOut(msg.sender, _to, _amount);
     }
 
-    function proxyShiftOut(address _from, bytes memory _to, uint256 _amount) public returns (uint256) {
+    /// @notice Callable by the previous Shifter if it has been upgraded.
+    function forwardShiftOut(address _from, bytes memory _to, uint256 _amount) public returns (uint256) {
         require(msg.sender == address(previousShifter), "must be previous Shifter contract");
         return _shiftOut(_from, _to, _amount);
     }
 
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).proxyShiftOut(_from, _to, _amount);}
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);}
 
         uint256 absoluteFee = (_amount * fee)/10000;
 
