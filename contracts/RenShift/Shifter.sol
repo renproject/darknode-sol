@@ -15,20 +15,20 @@ contract Shifter {
     uint256 public shifterUpgradeTime;
     uint256 constant shifterUpgradeDelay = 1 days;
 
-    /// @notice Each Shifter token is tied to a specific shifted token
+    /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
 
-    /// @notice The mintAuthority is an address that can sign mint requests
+    /// @notice The mintAuthority is an address that can sign mint requests.
     address public mintAuthority;
 
     /// @notice When tokens a burnt, a portion of the tokens are forwarded to
     /// a fee recipient.
     address public feeRecipient;
 
-    /// @notice The burning fee in bips
+    /// @notice The burning fee in bips.
     uint16 public fee;
 
-    /// @notice Each commitment-hash can only be seen once
+    /// @notice Each commitment-hash can only be seen once.
     enum ShiftResult { New, Spent }
     mapping (bytes32=>mapping (bytes32=>ShiftResult)) public status;
 
@@ -50,7 +50,15 @@ contract Shifter {
         token.claimOwnership();
     }
 
-    /// @notice Allows the contract owner to initiate an ownership transfer of
+    /// @notice Allow the mint authority to update the fee recipient.
+    /// @param _nextFeeRecipient The address to start paying fees to.
+    function updateFeeRecipient(address _nextFeeRecipient) public {
+        require(msg.sender == mintAuthority, "not authorized");
+
+        feeRecipient = _nextFeeRecipient;
+    }
+
+    /// @notice Allows the mint authority to initiate an ownership transfer of
     ///         the token.
     /// @param _nextShifter The address to transfer the ownership to, or 0x0.
     function upgradeShifter(address _nextShifter) public {
@@ -99,7 +107,7 @@ contract Shifter {
         return _amount-absoluteFee;
     }
 
-    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`
+    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
     function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
         return _shiftOut(msg.sender, _to, _amount);
     }
@@ -124,7 +132,7 @@ contract Shifter {
     }
 
     /// @notice verifySig checks the the provided signature matches the provided
-    /// parameters
+    /// parameters.
     function verifySig(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment, bytes memory _sig) public view returns (bool) {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).verifySig(_to, _amount, _nonce, _commitment, _sig);}
 
@@ -141,7 +149,7 @@ contract Shifter {
         return mintAuthority == ecrecover(sigHash(_to, _amount, _nonce, _commitment), v, r, s);
     }
 
-    /// @notice sigHash hashes the parameters so that they can be signed
+    /// @notice sigHash hashes the parameters so that they can be signed.
     function sigHash(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment) public view returns (bytes32) {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).sigHash(_to, _amount, _nonce, _commitment);}
         return keccak256(abi.encode(address(token), _to, _amount, _nonce, _commitment));

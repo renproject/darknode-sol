@@ -115,7 +115,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         })
     });
 
-    describe("upgrading", () => {
+    describe("upgrading shifter", () => {
         let newShifter;
 
         // Reset the upgrade
@@ -189,6 +189,21 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             // Not soo soon
             await (newShifter.upgradeShifter(malicious, { from: mintAuthority.address }))
                 .should.be.rejectedWith(/revert/);
+        });
+    });
+
+
+    describe("updating fee recipient", () => {
+        it("can upgrade the shifter", async () => {
+            // Fund and unlock the mintAuthority
+            await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
+            await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
+            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 600);
+
+            await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
+                .should.be.rejectedWith(/not authorized/);
+            await btcShifter.updateFeeRecipient(user, { from: mintAuthority.address });
+            await btcShifter.updateFeeRecipient(feeRecipient, { from: mintAuthority.address });
         });
     });
 });
