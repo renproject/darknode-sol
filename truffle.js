@@ -7,7 +7,14 @@ const GWEI = 1000000000;
 
 module.exports = {
   networks: {
-    kovan: {
+    devnet: {
+      // @ts-ignore
+      provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
+      network_id: 42,
+      gas: 6721975,
+      gasPrice: 6.5 * GWEI,
+    },
+    testnet: {
       // @ts-ignore
       provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
       network_id: 42,
