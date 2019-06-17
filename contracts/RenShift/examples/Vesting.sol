@@ -36,6 +36,12 @@ contract Vesting is Ownable {
     //          beneficiary can have a maximum of 1 vesting schedule.
     mapping (address => VestingSchedule) public schedules;
 
+    /// @notice The contract constructor.
+    /// @param _btc A BTCShifter contract address.
+    constructor(BTCShifter _btc) public {
+        btc = _btc;
+    }
+
     /// @notice Allows the contract owner to add a vesting schedule for a
     ///         beneficiary.
     /// @param _amount The amount of Bitcoin provided to the Darknodes in Sats.
