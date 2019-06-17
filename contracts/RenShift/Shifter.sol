@@ -9,11 +9,13 @@ contract Shifter {
     /// but is less error prone. It's downsides are higher gas fees when using
     /// the old address, and every function needing to forward the call,
     /// including storage getters.
-    address public previousShifter;
     address public nextShifter;
     address public pendingNextShifter;
     uint256 public shifterUpgradeTime;
-    uint256 constant shifterUpgradeDelay = 1 days;
+    uint256 constant shifterUpgradeDelay = 0.5 days + 0.5 days;
+
+    /// @notice A set of contracts that can call burn on behalf of a user
+    mapping (address=>bool) public authorizedWrapper;
 
     /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
@@ -35,8 +37,14 @@ contract Shifter {
     event LogShiftIn(address indexed _to, uint256 _amount);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _fee);
 
+    /// @notice Only allow the Darknode Payment contract.
+    modifier onlyMintAuthority() {
+        require(msg.sender == mintAuthority, "must be mint authority");
+        _;
+    }
+
     constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
-        previousShifter = _previousShifter;
+        authorizedWrapper[_previousShifter] = true;
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
@@ -50,20 +58,20 @@ contract Shifter {
         token.claimOwnership();
     }
 
+    function authorizeWrapper(address _wrapper, bool authorized) public onlyMintAuthority {
+        authorizedWrapper[_wrapper] = authorized;
+    }
+
     /// @notice Allow the mint authority to update the fee recipient.
     /// @param _nextFeeRecipient The address to start paying fees to.
-    function updateFeeRecipient(address _nextFeeRecipient) public {
-        require(msg.sender == mintAuthority, "not authorized");
-
+    function updateFeeRecipient(address _nextFeeRecipient) public onlyMintAuthority {
         feeRecipient = _nextFeeRecipient;
     }
 
     /// @notice Allows the mint authority to initiate an ownership transfer of
     ///         the token.
     /// @param _nextShifter The address to transfer the ownership to, or 0x0.
-    function upgradeShifter(address _nextShifter) public {
-        require(msg.sender == mintAuthority, "not authorized");
-
+    function upgradeShifter(address _nextShifter) public onlyMintAuthority {
         /* solium-disable-next-line security/no-block-members */
         if (_nextShifter == pendingNextShifter && block.timestamp >= shifterUpgradeTime) {
             // If the delay has passed and the next shifter isn't been changed,
@@ -114,7 +122,7 @@ contract Shifter {
 
     /// @notice Callable by the previous Shifter if it has been upgraded.
     function forwardShiftOut(address _from, bytes memory _to, uint256 _amount) public returns (uint256) {
-        require(msg.sender == address(previousShifter), "must be previous Shifter contract");
+        require(authorizedWrapper[msg.sender], "not authorized to burn on behalf of user");
         return _shiftOut(_from, _to, _amount);
     }
 

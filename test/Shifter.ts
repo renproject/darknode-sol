@@ -8,19 +8,21 @@ import { increaseTime, NULL } from "./helper/testUtils";
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
 
-contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
+contract.only("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     let btcShifter: BTCShifterInstance;
     let zbtc: zBTCInstance;
 
     // We generate a new account so that we have access to its private key for
     // `ecsign`. Web3's sign functions all prefix the message being signed.
-    const mintAuthority = web3.eth.accounts.create();
-    const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
+    let mintAuthority;
+    let privKey;
 
     const feeInBips = new BN(10);
 
     before(async () => {
         zbtc = await zBTC.new();
+        mintAuthority = web3.eth.accounts.create();
+        privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex")
 
         btcShifter = await BTCShifter.new(
             NULL,
@@ -111,7 +113,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("can't call forwardShiftOut", async () => {
             const btcAddress = `0x${randomBytes(35).toString("hex")}`;
             await (btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious }))
-                .should.be.rejectedWith(/must be previous Shifter contract/);
+                .should.be.rejectedWith(/not authorized to burn on behalf of user/);
         })
     });
 
@@ -149,10 +151,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             // Fund and unlock the mintAuthority
             await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
             await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
-            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 600);
+            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
 
             await (btcShifter.upgradeShifter(newShifter.address, { from: malicious }))
-                .should.be.rejectedWith(/not authorized/);
+                .should.be.rejectedWith(/must be mint authority/);
 
             await btcShifter.upgradeShifter(newShifter.address, { from: mintAuthority.address });
 
@@ -198,10 +200,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             // Fund and unlock the mintAuthority
             await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
             await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
-            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 600);
+            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
 
             await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
-                .should.be.rejectedWith(/not authorized/);
+                .should.be.rejectedWith(/must be mint authority/);
             await btcShifter.updateFeeRecipient(user, { from: mintAuthority.address });
             await btcShifter.updateFeeRecipient(feeRecipient, { from: mintAuthority.address });
         });
