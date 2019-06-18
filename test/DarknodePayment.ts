@@ -71,6 +71,19 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     describe("Token registration", async () => {
 
+        const tokenCount = async () => {
+            let i = 0;
+            while (true) {
+                try {
+                    await dnp.registeredTokens(i);
+                    i++;
+                } catch (error) {
+                    break;
+                }
+            }
+            return i;
+        }
+
         const printTokens = async () => {
             console.log(`Registered tokens: [`);
             let i = 0;
@@ -108,18 +121,20 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("can register tokens", async () => {
+            const lengthBefore = await tokenCount();
+
             await dnp.registerToken(dai.address);
             await dnp.registerToken(dai.address).should.be.rejectedWith(/token already pending registration/);
             await dnp.registerToken(erc20Token.address); // .should.not.be.rejectedWith(/token already pending registration/);
             // complete token registration
             await waitForCycle();
-            (await dnp.registeredTokens(0)).should.equal(dai.address);
-            (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+            (await dnp.registeredTokens(lengthBefore)).should.equal(dai.address);
+            (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(lengthBefore + 1));
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
             await waitForCycle();
-            (await dnp.registeredTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
+            (await dnp.registeredTokens(lengthBefore + 2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(lengthBefore + 3);
             await checkTokenIndexes();
         });
 

@@ -39,10 +39,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     const removeFee = (value, bips) => value.sub(value.mul(new BN(bips)).div(new BN(10000)))
 
     const mintTest = async (shifter: ShifterInstance, value: BN) => {
-        const nonce = `0x${randomBytes(32).toString("hex")}`;
-        const commitment = `0x${randomBytes(32).toString("hex")}`;
+        const nHash = `0x${randomBytes(32).toString("hex")}`;
+        const pHash = `0x${randomBytes(32).toString("hex")}`;
 
-        const hash = await shifter.sigHash(user, value.toNumber(), nonce, commitment);
+        const hash = await shifter.sigHash(user, value.toNumber(), nHash, pHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
         pubToAddress(ecrecover(Buffer.from(hash.slice(2), "hex"), sig.v, sig.r, sig.s)).toString("hex")
@@ -50,14 +50,14 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
         const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-        (await shifter.verifySig(user, value.toNumber(), nonce, commitment, sigString))
+        (await shifter.verifySig(user, value.toNumber(), nHash, pHash, sigString))
             .should.be.true;
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-        await shifter.shiftIn(user, value.toNumber(), nonce, commitment, sigString);
+        await shifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user });
         (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
-        return [commitment, nonce];
+        return [pHash, nHash];
     }
 
     const burnTest = async (shifter: ShifterInstance, value: BN) => {
@@ -67,46 +67,46 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
     describe("can mint and burn", () => {
         const value = new BN(200000);
-        it("can mint tokens with an unused hash, valid signature and commitment", async () => mintTest(btcShifter, value));
+        it("can mint tokens with an unused hash, valid signature and pHash", async () => mintTest(btcShifter, value));
         it("can burn tokens", async () => burnTest(btcShifter, value));
-        it("won't mint for the same nonce and commitment twice", async () => {
-            const [commitment, nonce] = await mintTest(btcShifter, value);
+        it("won't mint for the same nHash and pHash twice", async () => {
+            const [pHash, nHash] = await mintTest(btcShifter, value);
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nonce, commitment);
+            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await (btcShifter.shiftIn(user, value.toNumber(), nonce, commitment, sigString))
-                .should.be.rejectedWith(/commitment already spent/);
+            await (btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user }))
+                .should.be.rejectedWith(/nonce hash already spent/);
         });
 
-        it("can mint for the same commitment with a different nonce", async () => {
-            const [commitment, _] = await mintTest(btcShifter, value);
+        it("can mint for the same pHash with a different nHash", async () => {
+            const [pHash, _] = await mintTest(btcShifter, value);
 
-            const nonce = `0x${randomBytes(32).toString("hex")}`;
+            const nHash = `0x${randomBytes(32).toString("hex")}`;
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nonce, commitment);
+            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
             const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-            await btcShifter.shiftIn(user, value.toNumber(), nonce, commitment, sigString);
+            await btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user });
             (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
             await burnTest(btcShifter, value);
         });
 
         it("won't mind with an invalid signature", async () => {
-            const nonce1 = `0x${randomBytes(32).toString("hex")}`;
-            const nonce2 = `0x${randomBytes(32).toString("hex")}`;
-            const commitment = `0x${randomBytes(32).toString("hex")}`;
+            const nHash1 = `0x${randomBytes(32).toString("hex")}`;
+            const nHash2 = `0x${randomBytes(32).toString("hex")}`;
+            const pHash = `0x${randomBytes(32).toString("hex")}`;
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nonce1, commitment);
+            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash1, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await (btcShifter.shiftIn(user, value.toNumber(), nonce2, commitment, sigString))
+            await (btcShifter.shiftIn(value.toNumber(), nHash2, pHash, sigString, { from: user }))
                 .should.be.rejectedWith(/invalid signature/);
         });
 

@@ -30,9 +30,8 @@ contract Shifter {
     /// @notice The burning fee in bips.
     uint16 public fee;
 
-    /// @notice Each commitment-hash can only be seen once.
-    enum ShiftResult { New, Spent }
-    mapping (bytes32=>mapping (bytes32=>ShiftResult)) public status;
+    /// @notice Each nHash can only be seen once.
+    mapping (bytes32=>bool) public status;
 
     event LogShiftIn(address indexed _to, uint256 _amount);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _fee);
@@ -94,21 +93,26 @@ contract Shifter {
         }
     }
 
+    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
+    function shiftIn(uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
+        return _shiftIn(msg.sender, _amount, _nHash, _pHash, _sig);
+    }
+
+    /// @notice Callable by the previous Shifter if it has been upgraded.
+    function forwardShiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
+        require(authorizedWrapper[msg.sender], "not authorized to mint on behalf of user");
+        return _shiftIn(_to, _amount, _nHash, _pHash, _sig);
+    }
+
     /// @notice shiftIn mints new tokens after verifying the signature and
     /// transfers the tokens to `_to`.
-    function shiftIn(
-        address _to,
-        uint256 _amount,
-        bytes32 _nonce,
-        bytes32 _commitment,
-        bytes memory _sig
-    ) public returns (uint256) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).shiftIn(_to, _amount, _nonce, _commitment, _sig);}
+    function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) internal returns (uint256) {
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);}
 
-        require(status[_commitment][_nonce] == ShiftResult.New, "commitment already spent");
-        require(verifySig(_to, _amount, _nonce, _commitment, _sig), "invalid signature");
+        require(status[_nHash] == false, "nonce hash already spent");
+        require(verifySig(_to, _amount, _nHash, _pHash, _sig), "invalid signature");
         uint256 absoluteFee = (_amount * fee)/10000;
-        status[_commitment][_nonce] = ShiftResult.Spent;
+        status[_nHash] = true;
         token.mint(_to, _amount-absoluteFee);
         token.mint(feeRecipient, absoluteFee);
         emit LogShiftIn(_to, _amount);
@@ -128,6 +132,7 @@ contract Shifter {
 
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);}
+        require(_to.length != 0, "to address is empty");
 
         uint256 absoluteFee = (_amount * fee)/10000;
 
@@ -141,8 +146,8 @@ contract Shifter {
 
     /// @notice verifySig checks the the provided signature matches the provided
     /// parameters.
-    function verifySig(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment, bytes memory _sig) public view returns (bool) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).verifySig(_to, _amount, _nonce, _commitment, _sig);}
+    function verifySig(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public view returns (bool) {
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).verifySig(_to, _amount, _nHash, _pHash, _sig);}
 
         bytes32 r;
         bytes32 s;
@@ -154,13 +159,13 @@ contract Shifter {
             v := byte(0, mload(add(_sig, 0x60)))
         }
 
-        return mintAuthority == ecrecover(sigHash(_to, _amount, _nonce, _commitment), v, r, s);
+        return mintAuthority == ecrecover(sigHash(_to, _amount, _nHash, _pHash), v, r, s);
     }
 
     /// @notice sigHash hashes the parameters so that they can be signed.
-    function sigHash(address _to, uint256 _amount, bytes32 _nonce, bytes32 _commitment) public view returns (bytes32) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).sigHash(_to, _amount, _nonce, _commitment);}
-        return keccak256(abi.encode(address(token), _to, _amount, _nonce, _commitment));
+    function sigHash(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash) public view returns (bytes32) {
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).sigHash(_to, _amount, _nHash, _pHash);}
+        return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
     }
 }
 

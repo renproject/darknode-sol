@@ -1,5 +1,5 @@
 diff --git a/node_modules/truffle-typings/index.d.ts b/node_modules/truffle-typings/index.d.ts
-index 36bd0db..2212d5c 100644
+index eae5e74..4511ef2 100644
 --- a/node_modules/truffle-typings/index.d.ts
 +++ b/node_modules/truffle-typings/index.d.ts
 @@ -5,7 +5,7 @@
