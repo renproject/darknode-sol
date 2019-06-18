@@ -49,6 +49,14 @@ yarn run coverage
 
 ## Deploying
 
+Add a `.env`, filling in the mnemonic and Infura key:
+
+```sh
+MNEMONIC_KOVAN="..."
+MNEMONIC_MAINNET="..."
+INFURA_KEY="..."
+```
+
 Deploy to Kovan:
 
 ```sh
@@ -57,6 +65,14 @@ NETWORK=kovan yarn run deploy
 
 ## Verifying Contract Code
 
+Add an Etherscan API key to your `.env`:
+
+```
+ETHERSCAN_KEY="..."
+```
+
+Run the following (replacing the network and contract name):
+
 ```sh
-NETWORK=kovan yarn run verify YourContractName
+NETWORK=mainnet yarn run verify YourContractName
 ```

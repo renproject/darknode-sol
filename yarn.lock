@@ -168,7 +168,7 @@
   resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.8.19.tgz#ae1357f2d28b8089f86ba0e5545d0512e6ef5b28"
   integrity sha512-9r6zM91/lTnSYTEJbxf7FwgeVXzRZDegaGPXF+Bp0MSMYTTI2UvQPkoti/YE9ZWThU+0DMya6l9XePvOPBLKow==
 
-"@types/web3@^1.0.14":
+"@types/web3@^1.0.14", "@types/web3@^1.0.18":
   version "1.0.18"
   resolved "https://registry.yarnpkg.com/@types/web3/-/web3-1.0.18.tgz#87a8651041d21fc37602ff02327df2c7ecf105d1"
   integrity sha512-uXQL0LDszt2f476LEmYM6AvSv9F4vU4hWQvlUhwfLHNlIB6OyBXoYsCzWAIhhnc5U0HA7ZBcPybxRJ/yfA6THg==
@@ -2134,10 +2134,10 @@ function-bind@^1.0.2, function-bind@^1.1.1:
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
   integrity sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==
 
-ganache-cli@^6.4.3:
-  version "6.4.3"
-  resolved "https://registry.yarnpkg.com/ganache-cli/-/ganache-cli-6.4.3.tgz#2fb66c10f9df157b2cd9aeaf007a9fd47cd79cb1"
-  integrity sha512-3G+CK4ojipDvxQHlpX8PjqaOMRWVcaLZZSW97Bv7fdcPTXQwkji2yY5CY6J12Atiub4M4aJc0va+q3HXeerbIA==
+ganache-cli@^6.4.4:
+  version "6.4.4"
+  resolved "https://registry.yarnpkg.com/ganache-cli/-/ganache-cli-6.4.4.tgz#9772bba8585d6e2049bd85adf24369c1cc165170"
+  integrity sha512-JWygbyZuM2GQl2ZvU7tBkjpgJaKE/XEtB99ech17XTouuqLU5rBcyO3sMb/L83wAtzr0gBnTgenIBl+OeREpJw==
   dependencies:
     bn.js "4.11.8"
     source-map-support "0.5.9"
@@ -4680,7 +4680,7 @@ sol-merger@^0.1.4:
     fs-extra "^7.0.1"
     glob "^7.1.2"
 
-solc@0.5.9:
+solc@0.5.0, solc@0.5.9:
   version "0.5.9"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.9.tgz#ec513bbbbb8b46b4b4d1a6a2764c50f34877fffc"
   integrity sha512-IyCEXnSbpb3ii8FkgNu0QDtCtnvyGCtYNQejOaIZi6/9/CLJ2ozDHN2oNG26HfGZ8op9yDgqC+5SHziFvkRZuA==
@@ -5225,22 +5225,23 @@ truffle-provider@^0.1.2:
     truffle-interface-adapter "^0.1.6"
     web3 "1.0.0-beta.37"
 
-truffle-typings@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/truffle-typings/-/truffle-typings-1.0.6.tgz#762ca7cb3a8b78535043b4a11dabbb7b72179189"
-  integrity sha512-oGAXGKCpf3FoxFcf000ICJf67eOFvyX3UgIgXucmECleQ4ymD+fdMkK1Qgniwi6HSBVQS6brdUiXHq8Q5A5PPA==
+"truffle-typings@https://github.com/republicprotocol/truffle-typings":
+  version "1.0.7"
+  resolved "https://github.com/republicprotocol/truffle-typings#78c38de575091f2cbe15ded0697555e2dbe6ab6c"
   dependencies:
     "@types/chai" "^4.1.4"
     "@types/mocha" "^5.2.5"
+    "@types/web3" "^1.0.18"
 
-truffle@5.0.22:
-  version "5.0.22"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.22.tgz#a5a86a10317dfe1443cbcf25e4848aced8334733"
-  integrity sha512-6J/mgpgtA1m165WJrNmcRcsnaAjrMluGwTfoiG1pbpvsBoXkCL3nIVQaeYgRFOgDdrIJh1sInH+xFRhzkF/MBg==
+truffle@5.0.15:
+  version "5.0.15"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.15.tgz#b0b87829766cce6be072a6f09794cf038930070b"
+  integrity sha512-/FAabG/+xv4mADQvm4YXTMWThXrc9Z4MsMCqWixrd6DlQMPBQIV5F86DeYHgkKbp8hRM3oGUdBVfpWRaha6YKg==
   dependencies:
     app-module-path "^2.2.0"
     mocha "^4.1.0"
     original-require "1.0.1"
+    solc "0.5.0"
 
 ts-essentials@^1.0.0:
   version "1.0.4"
@@ -5363,10 +5364,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.1.tgz#ba72a6a600b2158139c5dd8850f700e231464202"
-  integrity sha512-64HkdiRv1yYZsSe4xC1WVgamNigVYjlssIoaH2HcZF0+ijsk5YK2g0G34w9wJkze8+5ow4STd22AynfO6ZYYLw==
+typescript@^3.5.2:
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.2.tgz#a09e1dc69bc9551cadf17dba10ee42cf55e5d56c"
+  integrity sha512-7KxJovlYhTX5RaRbUdkAXN1KUZ8PwWlTzQdHV6xNqvuFOs7+WBo10TQUqT19Q/Jz2hk5v9TQDIhyLhhJY4p5AA==
 
 typical@^2.6.0, typical@^2.6.1:
   version "2.6.1"

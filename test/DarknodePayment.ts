@@ -228,7 +228,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot deposit ERC20 with ETH attached", async () => {
             const amount = new BN("100000000000000000");
-            await dnp.deposit(amount, dai.address, { value: 1, from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
+            await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
         });
     });
 

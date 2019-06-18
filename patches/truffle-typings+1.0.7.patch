@@ -1,0 +1,13 @@
+diff --git a/node_modules/truffle-typings/index.d.ts b/node_modules/truffle-typings/index.d.ts
+index 36bd0db..2212d5c 100644
+--- a/node_modules/truffle-typings/index.d.ts
++++ b/node_modules/truffle-typings/index.d.ts
+@@ -5,7 +5,7 @@
+ /// <reference types="mocha" />
+ 
+ declare type BN = import("bn.js");
+-declare type Web3 = import("web3");
++declare type Web3 = import("web3").default;
+ 
+ declare const assert: Chai.AssertStatic;
+ declare const expect: Chai.ExpectStatic;

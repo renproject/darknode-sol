@@ -9,7 +9,6 @@ const config = {
     owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111", // Darknode public key
     shifterFees: 0,
     renExFees: 0,
-    vault: "",
 }
 
 module.exports = {
@@ -24,13 +23,18 @@ module.exports = {
             DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
+
+        BTCShifter: "",
+        ZECShifter: "",
+        zZEC: "",
+        zBTC: "",
+
         config: {
             ...config,
             owner: "TODO",
-            vault: "TODO",
         },
     },
-    kovan: {
+    testnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x0000000000000000000000000000000000000000",
         DarknodeRegistry: "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D",
@@ -41,10 +45,38 @@ module.exports = {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
+
+        BTCShifter: "",
+        ZECShifter: "",
+        zZEC: "",
+        zBTC: "",
+
         config: {
             ...config,
             owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111",
-            vault: "0x797522Fb74d42bB9fbF6b76dEa24D01A538d5D66",
+        },
+    },
+
+    devnet: {
+        RenToken: '0x2cd647668494c1b15743ab283a0f980d90a87394',
+        DarknodeSlasher: '0xCEC09904D3471B837E81DaC03E66Dd90888FD9c3',
+        DarknodeRegistry: '0xb820735fd5d3a772eDC31e1f90E369eC25839AEb',
+        DarknodeRegistryStore: '0x6357b8f3eFADCd3Dc1cC767999BDfD147AAd6A9D',
+        DarknodePaymentStore: '0x5bF40Ca61310B43F360Ce0cf1F787151eBFDb50f',
+        DarknodePayment: '0x800D25a54f0c8325eAA411584EE7B577070D2e29',
+        tokens: {
+            DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+
+        BTCShifter: '0x69c29D3Dd348B678D6ed739CD61d3bD8BB587890',
+        ZECShifter: '0x5574Cb447afaFB92dadf801d6F46b4E6FE4043A1',
+        zBTC: '0x9b2B31FBC4D48727460b2966092d6B55cA7C4Be3',
+        zZEC: '0xF575cD19d62Fe2f49ffCD3eCE36E4b46D9F38d52',
+
+        config: {
+            ...config,
+            owner: "0x26507602c1d904a2d330819bfb624014067a179a",
         },
     },
     config,
