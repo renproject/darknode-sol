@@ -11,7 +11,7 @@ contract Vesting is Ownable {
     // TODO: Use MuShifter once implemented.
     BTCShifter public btc;
 
-    uint256 private constant SECONDS_PER_MONTH = 2628000; // TODO: Use days.
+    uint256 private constant SECONDS_PER_MONTH = 365 days / 12;
 
     /// @notice Defines the fields required for a vesting schedule.
     struct VestingSchedule {
