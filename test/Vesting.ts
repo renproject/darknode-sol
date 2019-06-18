@@ -83,9 +83,13 @@ contract("Vesting", (accounts) => {
         }
 
         it("can check claimable amount", async () => {
+            let claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(0));
+            claimable[1].should.bignumber.equal(new BN(0));
+
             await addVestingSchedule();
 
-            let claimable = await vesting.calculateClaimable(beneficiary);
+            claimable = await vesting.calculateClaimable(beneficiary);
             claimable[0].should.bignumber.equal(new BN(0));
             claimable[1].should.bignumber.equal(new BN(0));
 
