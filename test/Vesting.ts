@@ -4,7 +4,8 @@ import { ecsign } from "ethereumjs-util";
 import { soliditySHA3 } from "ethereumjs-abi";
 
 import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
-import { NULL } from "./helper/testUtils";
+import { increaseTime, NULL } from "./helper/testUtils";
+import BigNumber from "bignumber.js";
 
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
@@ -20,7 +21,9 @@ contract("Vesting", (accounts) => {
     const feeInBips = new BN(10);
     const feeRecipient = accounts[1];
 
-    before(async () => {
+    const month = 24 * 60 * 60 * 365 / 12;
+
+    beforeEach(async () => {
         zbtc = await zBTC.new();
 
         btcShifter = await BTCShifter.new(
@@ -41,12 +44,12 @@ contract("Vesting", (accounts) => {
         const beneficiary = accounts[2];
         const amount = new BN(200000);
         const amountAfterFee = new BN(199800);
+        const duration = 6;
 
-        it("can add a vesting schedule", async () => {
+        const addVestingSchedule = async () => {
             const nonce = `0x${randomBytes(32).toString("hex")}`;
 
             const startTime = 0;
-            const duration = 6;
             const phash = soliditySHA3(
                 ["address", "uint256", "uint16"],
                 [new BN(beneficiary, 16), startTime, duration]
@@ -61,9 +64,65 @@ contract("Vesting", (accounts) => {
             (schedule as any).startTime.should.bignumber.equal(new BN(0));
 
             await vesting.addVestingSchedule(amount, nonce, sigString, beneficiary, startTime, duration);
+        }
 
-            schedule = await vesting.schedules(beneficiary);
+        it("can add a vesting schedule", async () => {
+            await addVestingSchedule();
+
+            const schedule = await vesting.schedules(beneficiary);
             (schedule as any).startTime.should.bignumber.not.equal(new BN(0));
+            (schedule as any).amount.should.bignumber.equal(amountAfterFee);
+            (schedule as any).duration.should.bignumber.equal(new BN(duration));
+        });
+
+        // Calculate the claimable amount after a given number of elapsed months.
+        const amountClaimable = (elapsedMonths: number): BN => {
+            const amountBN = new BigNumber(amountAfterFee.toString());
+            const resultBN = amountBN.times(new BigNumber(elapsedMonths)).dividedToIntegerBy(new BigNumber(duration));
+            return new BN(resultBN.toString());
+        }
+
+        it("can check claimable amount", async () => {
+            await addVestingSchedule();
+
+            let claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(0));
+            claimable[1].should.bignumber.equal(new BN(0));
+
+            for (let i = 1; i <= duration; i++) {
+                await increaseTime(month);
+
+                claimable = await vesting.calculateClaimable(beneficiary);
+                claimable[0].should.bignumber.equal(new BN(i));
+                claimable[1].should.bignumber.equal(amountClaimable(i));
+            }
+        });
+
+        it("can claim vested bitcoin", async () => {
+            await addVestingSchedule();
+
+            // Claim after 3 months.
+            await increaseTime(month * 3);
+
+            let claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(3));
+            claimable[1].should.bignumber.equal(amountClaimable(3));
+
+            await vesting.claim(beneficiary, { from: beneficiary });
+
+            // Claim remaining at the end of the vesting period.
+            await increaseTime(month * (duration - 3));
+
+            claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(duration - 3));
+            claimable[1].should.bignumber.equal(amountAfterFee.sub(amountClaimable(3)));
+
+            await vesting.claim(beneficiary, { from: beneficiary });
+
+            claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(0));
+            claimable[1].should.bignumber.equal(new BN(0));
+        });
         });
     });
 });
