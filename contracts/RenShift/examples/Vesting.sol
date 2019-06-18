@@ -120,7 +120,7 @@ contract Vesting is Ownable {
         // Calculate the months elapsed and amount claimable since the last
         // claim attempt.
         uint256 monthsClaimable = Math.min(schedule.duration, elapsedMonths).sub(schedule.monthsClaimed);
-        uint256 amountClaimable = monthsClaimable.mul(schedule.amount.div(schedule.duration));
+        uint256 amountClaimable = schedule.amount.mul(monthsClaimable).div(schedule.duration);
 
         return (monthsClaimable, amountClaimable);
     }
