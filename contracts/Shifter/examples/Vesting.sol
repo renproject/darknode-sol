@@ -8,7 +8,6 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Vesting is Ownable {
     using SafeMath for uint256;
 
-    // TODO: Use MuShifter once implemented.
     BTCShifter public btc;
 
     uint256 private constant SECONDS_PER_MONTH = 365 days / 12;
@@ -45,7 +44,7 @@ contract Vesting is Ownable {
     /// @notice Allows the contract owner to add a vesting schedule for a
     ///         beneficiary.
     /// @param _amount The amount of Bitcoin provided to the Darknodes in Sats.
-    /// @param _nonce The unique nonce provided to the Darknodes.
+    /// @param _nHash The unique nonce provided to the Darknodes.
     /// @param _sig The signature returned by the Darknodes.
     /// @param _beneficiary The address of the recipient entitled to claim the vested tokens.
     /// @param _startTime The start time (in seconds since Unix epoch) at which the vesting
@@ -53,7 +52,7 @@ contract Vesting is Ownable {
     /// @param _duration The number of months for the vesting period.
     function addVestingSchedule(
         uint256        _amount,
-        bytes32        _nonce,
+        bytes32        _nHash,
         bytes calldata _sig,
         address        _beneficiary,
         uint256        _startTime,
@@ -80,8 +79,8 @@ contract Vesting is Ownable {
         // Construct the payload hash and mint new tokens using the Shifter
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
-        bytes32 payloadHash = keccak256(abi.encodePacked(_beneficiary, _startTime, _duration));
-        btc.shiftIn(address(this), _amount, _nonce, payloadHash, _sig);
+        bytes32 pHash = keccak256(abi.encodePacked(_beneficiary, _startTime, _duration));
+        btc.shiftIn(_amount, _nHash, pHash, _sig);
     }
 
     /// @notice Allows a beneficiary to withdraw their vested Bitcoin.
