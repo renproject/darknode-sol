@@ -123,6 +123,16 @@ contract("Vesting", (accounts) => {
             claimable[0].should.bignumber.equal(new BN(0));
             claimable[1].should.bignumber.equal(new BN(0));
         });
+
+        it("cannot claim more than the allocated amount of bitcoin", async () => {
+            await addVestingSchedule();
+
+            // Claim well after vesting period has ended.
+            await increaseTime(month * duration * 10);
+
+            const claimable = await vesting.calculateClaimable(beneficiary);
+            claimable[0].should.bignumber.equal(new BN(duration));
+            claimable[1].should.bignumber.equal(amountAfterFee);
         });
     });
 });
