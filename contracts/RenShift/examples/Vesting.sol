@@ -63,11 +63,14 @@ contract Vesting is Ownable {
         require(_amount > 0, "amount must be greater than 0");
         require(_duration > 0, "duration must be at least 1 month");
 
+        uint256 fee = _amount.mul(btc.fee()).div(10000);
+        uint256 finalAmount = _amount.sub(fee);
+
         // Construct a vesting schedule and assign it to the beneficiary.
         VestingSchedule memory schedule = VestingSchedule({
             startTime: _startTime == 0 ? now : _startTime,
             duration: _duration,
-            amount: _amount,
+            amount: finalAmount,
             monthsClaimed: 0,
             amountClaimed: 0
         });
