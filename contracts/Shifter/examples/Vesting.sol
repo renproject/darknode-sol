@@ -44,7 +44,7 @@ contract Vesting is Ownable {
     /// @notice Allows the contract owner to add a vesting schedule for a
     ///         beneficiary.
     /// @param _amount The amount of Bitcoin provided to the Darknodes in Sats.
-    /// @param _nHash The unique nonce provided to the Darknodes.
+    /// @param _nHash The hash of the nonce returned by the Darknodes.
     /// @param _sig The signature returned by the Darknodes.
     /// @param _beneficiary The address of the recipient entitled to claim the vested tokens.
     /// @param _startTime The start time (in seconds since Unix epoch) at which the vesting
