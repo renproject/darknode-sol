@@ -5,7 +5,7 @@ const HDWalletProvider = require("truffle-hdwallet-provider");
 
 const GWEI = 1000000000;
 
-if (["devnet", "testnet", "mainnet"].indexOf(process.env.NETWORK) && process.env.INFURA_KEY === undefined) {
+if (["devnet", "testnet", "mainnet"].indexOf(process.env.NETWORK) !== -1 && process.env.INFURA_KEY === undefined) {
   throw new Error("Must set INFURA_KEY");
 }
 
