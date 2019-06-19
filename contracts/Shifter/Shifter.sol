@@ -33,8 +33,10 @@ contract Shifter {
     /// @notice Each nHash can only be seen once.
     mapping (bytes32=>bool) public status;
 
-    event LogShiftIn(address indexed _to, uint256 _amount);
-    event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _fee);
+    uint256 public nextShiftID = 0;
+
+    event LogShiftIn(address indexed _to, uint256 _amount, uint256 _shiftID);
+    event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _shiftID);
 
     /// @notice Only allow the Darknode Payment contract.
     modifier onlyMintAuthority() {
@@ -115,7 +117,8 @@ contract Shifter {
         status[_nHash] = true;
         token.mint(_to, _amount-absoluteFee);
         token.mint(feeRecipient, absoluteFee);
-        emit LogShiftIn(_to, _amount);
+        emit LogShiftIn(_to, _amount, nextShiftID);
+        nextShiftID += 1;
         return _amount-absoluteFee;
     }
 
@@ -140,7 +143,8 @@ contract Shifter {
         token.burn(_from, _amount);
         token.mint(feeRecipient, absoluteFee);
 
-        emit LogShiftOut(_to, _amount-absoluteFee, absoluteFee);
+        emit LogShiftOut(_to, _amount-absoluteFee, nextShiftID);
+        nextShiftID += 1;
         return _amount-absoluteFee;
     }
 
