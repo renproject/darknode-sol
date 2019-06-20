@@ -2,8 +2,10 @@ require("ts-node/register");
 require("dotenv").config();
 
 const HDWalletProvider = require("truffle-hdwallet-provider");
+const { execSync } = require("child_process")
 
 const GWEI = 1000000000;
+const commitHash = execSync("git describe --always --long").toString().trim();
 
 if (["devnet", "testnet", "mainnet"].indexOf(process.env.NETWORK) !== -1 && process.env.INFURA_KEY === undefined) {
   throw new Error("Must set INFURA_KEY");
@@ -66,6 +68,9 @@ module.exports = {
   ],
   api_keys: {
     etherscan: process.env.ETHERSCAN_KEY,
+  },
+  verify: {
+    preamble: `Commit hash: ${commitHash}`
   },
   contracts_build_directory: `./build/${process.env.NETWORK || "development"}`,
   // This is required by truffle to find any ts test files
