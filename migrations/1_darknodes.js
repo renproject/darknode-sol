@@ -146,11 +146,11 @@ module.exports = async function (deployer, network) {
             deployer.logger.log("Attempting to change cycle");
             await darknodePayment.changeCycle();
         } catch (error) {
-            console.error("Unable to call darknodePayment.changeCycle()");
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
         }
     }
 
-    console.log({
+    deployer.logger.log({
         RenToken: RenToken.address,
         DarknodeSlasher: DarknodeSlasher.address,
         DarknodeRegistry: DarknodeRegistry.address,

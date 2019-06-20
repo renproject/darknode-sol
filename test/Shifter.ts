@@ -1,10 +1,12 @@
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import { ecrecover, ecsign, pubToAddress } from "ethereumjs-util";
+import { Registry } from "web3-eth-ens";
 
 import { BTCShifterInstance, ShifterInstance, zBTCInstance } from "../types/truffle-contracts";
 import { increaseTime, NULL } from "./helper/testUtils";
 
+const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
 
@@ -60,9 +62,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         return [pHash, nHash];
     }
 
-    const burnTest = async (shifter: ShifterInstance, value: BN) => {
-        const btcAddress = `0x${randomBytes(35).toString("hex")}`;
-        await shifter.shiftOut(btcAddress, removeFee(value, 10).toNumber(), { from: user });
+    const burnTest = async (shifter: ShifterInstance, value: BN, btcAddress?: string) => {
+        // Note: we don't use `||` because we want to pass in `""`
+        btcAddress = btcAddress !== undefined ? btcAddress : `0x${randomBytes(35).toString("hex")}`;
+        return await shifter.shiftOut(btcAddress, removeFee(value, 10).toNumber(), { from: user });
     }
 
     describe("can mint and burn", () => {
@@ -76,7 +79,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await (btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user }))
+            await btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user })
                 .should.be.rejectedWith(/nonce hash already spent/);
         });
 
@@ -106,15 +109,35 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await (btcShifter.shiftIn(value.toNumber(), nHash2, pHash, sigString, { from: user }))
+            await btcShifter.shiftIn(value.toNumber(), nHash2, pHash, sigString, { from: user })
                 .should.be.rejectedWith(/invalid signature/);
+        });
+
+        it("can't call forwardShiftIn", async () => {
+            const nHash = `0x${randomBytes(32).toString("hex")}`;
+            const pHash = `0x${randomBytes(32).toString("hex")}`;
+
+            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
+            const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
+
+            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+
+            await btcShifter.forwardShiftIn(user, value.toNumber(), nHash, pHash, sigString, { from: malicious })
+                .should.be.rejectedWith(/not authorized to mint on behalf of user/);
         });
 
         it("can't call forwardShiftOut", async () => {
             const btcAddress = `0x${randomBytes(35).toString("hex")}`;
-            await (btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious }))
+            await btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious })
                 .should.be.rejectedWith(/not authorized to burn on behalf of user/);
-        })
+        });
+
+
+        it("can't burn to empty address", async () => {
+            await burnTest(btcShifter, value, new Buffer([]) as any as string)
+                .should.be.rejectedWith(/to address is empty/);
+        });
+
     });
 
     describe("upgrading shifter", () => {
@@ -207,5 +230,20 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             await btcShifter.updateFeeRecipient(user, { from: mintAuthority.address });
             await btcShifter.updateFeeRecipient(feeRecipient, { from: mintAuthority.address });
         });
+    });
+
+    describe("shifter registry", () => {
+        it("can register and retrieve shifter", async () => {
+            const registry = await ShifterRegistry.new();
+            await registry.setShifter(zbtc.address, btcShifter.address);
+            (await registry.getShifter(zbtc.address))
+                .should.equal(btcShifter.address);
+
+            (await registry.getShifterBySymbol("zBTC"))
+                .should.equal(btcShifter.address);
+
+            (await registry.getTokenBySymbol("zBTC"))
+                .should.equal(zbtc.address);
+        })
     });
 });

@@ -91,10 +91,10 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     if ((await registry.getShifter(zBTC.address)) === NULL) {
-        console.log(`Registering BTC shifter`);
+        deployer.logger.log(`Registering BTC shifter`);
         await registry.setShifter(zBTC.address, BTCShifter.address);
     } else {
-        console.log(`BTC shifter is already registered: ${await registry.getShifter(zBTC.address)}`);
+        deployer.logger.log(`BTC shifter is already registered: ${await registry.getShifter(zBTC.address)}`);
     }
 
     /** ZEC *******************************************************************/
@@ -128,16 +128,16 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     if ((await registry.getShifter(zZEC.address)) === NULL) {
-        console.log(`Registering ZEC shifter`);
+        deployer.logger.log(`Registering ZEC shifter`);
         await registry.setShifter(zZEC.address, ZECShifter.address);
     } else {
-        console.log(`ZEC shifter is already registered: ${await registry.getShifter(zZEC.address)}`);
+        deployer.logger.log(`ZEC shifter is already registered: ${await registry.getShifter(zZEC.address)}`);
     }
 
 
     /** LOG *******************************************************************/
 
-    console.log({
+    deployer.logger.log({
         BTCShifter: BTCShifter.address,
         ZECShifter: ZECShifter.address,
         zBTC: zBTC.address,
