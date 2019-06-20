@@ -1,5 +1,22 @@
 /// <reference types="../types/truffle-contracts" />
 
+const readline = require('readline');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+function ask(question) {
+    return new Promise((resolve, reject) => {
+        rl.question(question, (input) => resolve(input));
+    });
+}
+
+const NULL = "0x0000000000000000000000000000000000000000";
+
+const ShifterRegistry = artifacts.require("ShifterRegistry");
+
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
 
@@ -22,10 +39,24 @@ module.exports = async function (deployer, network, accounts) {
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
+    ShifterRegistry.address = addresses.ShifterRegistry || "";
     zZEC.address = addresses.zZEC || "";
     zBTC.address = addresses.zBTC || "";
 
+    if (network.match(/devnet|testnet|mainnet/)) {
+        await ask(`\n\nUsing DarknodePayment at ${DarknodePayment.address}. Press any key to continue.`);
+    }
+
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+
+    /** Registry **************************************************************/
+
+    if (!ShifterRegistry.address) {
+        await deployer.deploy(
+            ShifterRegistry,
+        );
+    }
+    const registry = await ShifterRegistry.at(ShifterRegistry.address);
 
     /** BTC *******************************************************************/
 
@@ -37,7 +68,7 @@ module.exports = async function (deployer, network, accounts) {
     if (!BTCShifter.address) {
         await deployer.deploy(
             BTCShifter,
-            "0x0000000000000000000000000000000000000000",
+            NULL,
             zBTC.address,
             _feeRecipient,
             _mintAuthority,
@@ -57,6 +88,13 @@ module.exports = async function (deployer, network, accounts) {
         await darknodePayment.registerToken(zBTC.address);
     }
 
+    if ((await registry.getShifter(zBTC.address)) === NULL) {
+        console.log(`Registring BTC shifter`);
+        await registry.setShifter(zBTC.address, BTCShifter.address);
+    } else {
+        console.log(`BTC shifter is already registered: ${await registry.getShifter(zBTC.address)}`);
+    }
+
     /** ZEC *******************************************************************/
 
     if (!zZEC.address) {
@@ -67,7 +105,7 @@ module.exports = async function (deployer, network, accounts) {
     if (!ZECShifter.address) {
         await deployer.deploy(
             ZECShifter,
-            "0x0000000000000000000000000000000000000000",
+            NULL,
             zZEC.address,
             _feeRecipient,
             _mintAuthority,
@@ -85,6 +123,13 @@ module.exports = async function (deployer, network, accounts) {
     if (zZECRegistered.toString() === "0") {
         deployer.logger.log(`Registering token zZEC in DarknodePayment`);
         await darknodePayment.registerToken(zZEC.address);
+    }
+
+    if ((await registry.getShifter(zZEC.address)) === NULL) {
+        console.log(`Registring ZEC shifter`);
+        await registry.setShifter(zZEC.address, ZECShifter.address);
+    } else {
+        console.log(`ZEC shifter is already registered: ${await registry.getShifter(zZEC.address)}`);
     }
 
 

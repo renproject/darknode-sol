@@ -69,5 +69,5 @@ module.exports = {
   },
   contracts_build_directory: `./build/${process.env.NETWORK || "development"}`,
   // This is required by truffle to find any ts test files
-  test_file_extension_regexp: /.*\.ts$/
+  test_file_extension_regexp: /.*\.ts$/,
 };

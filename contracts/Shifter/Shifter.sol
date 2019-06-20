@@ -35,8 +35,8 @@ contract Shifter {
 
     uint256 public nextShiftID = 0;
 
-    event LogShiftIn(address indexed _to, uint256 _amount, uint256 _shiftID);
-    event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 _shiftID);
+    event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
+    event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 indexed _shiftID);
 
     /// @notice Only allow the Darknode Payment contract.
     modifier onlyMintAuthority() {
