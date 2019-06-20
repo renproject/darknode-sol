@@ -1,0 +1,14 @@
+diff --git a/node_modules/typechain/dist/targets/truffle/generation.js b/node_modules/typechain/dist/targets/truffle/generation.js
+index 8e57db7..aed8120 100644
+--- a/node_modules/typechain/dist/targets/truffle/generation.js
++++ b/node_modules/typechain/dist/targets/truffle/generation.js
+@@ -4,7 +4,8 @@ const typeParser_1 = require("../../parser/typeParser");
+ function codegen(contracts) {
+     const template = `
+ /// <reference types="truffle-typings" />
+-import { BigNumber } from "bignumber.js";
++import BN from "bn.js";
++type BigNumber = string | number | BN;
+ 
+ ${contracts.map(generateContractInterface).join("\n")}
+ 

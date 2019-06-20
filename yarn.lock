@@ -5343,10 +5343,10 @@ type-is@~1.6.17, type-is@~1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typechain@^0.3.14:
-  version "0.3.14"
-  resolved "https://registry.yarnpkg.com/typechain/-/typechain-0.3.14.tgz#c58df17b20494ad08dff311cf6984bf7a2accb78"
-  integrity sha512-nOg7n7LngcA4Sx53q+4jjSpIEulEayZYnCMfyItnyxCX3nTCWVg8QXZppMDYNfITkJHex0v5dTgklOQzSbfUkw==
+typechain@^0.3.17:
+  version "0.3.17"
+  resolved "https://registry.yarnpkg.com/typechain/-/typechain-0.3.17.tgz#aae21d14a9b7aa2a985e25e9f89bea8f54223d4c"
+  integrity sha512-JydKdW/xdpsp3uLz8y8WlfGX6a8/3BLAKAAmVWI4NvsJED2/BgJ5Du36OjSvlMMZDahP1AdbU+B/NsCiUqLRZg==
   dependencies:
     command-line-args "^4.0.7"
     debug "^3.0.1"
