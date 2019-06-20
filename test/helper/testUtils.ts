@@ -77,9 +77,9 @@ export const increaseTime = async (seconds: number) => {
     const target = currentTimestamp + seconds;
     do {
         const increase = Math.ceil(target - currentTimestamp + 1);
-        increaseTimeHelper(increase);
+        await increaseTimeHelper(increase);
         currentTimestamp = await getCurrentTimestamp();
-        // console.log(`Increased by ${increase} to is ${currentTimestamp}. Target is ${target}. Reached: ${currentTimestamp >= target}`);
+        // console.log(`Increased by ${increase} to ${currentTimestamp}. Target is ${target}. Reached: ${currentTimestamp >= target}`);
     } while (currentTimestamp < target);
 };
 
