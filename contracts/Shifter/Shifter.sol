@@ -2,7 +2,11 @@ pragma solidity ^0.5.8;
 
 import "./ERC20Shifted.sol";
 
+/// @notice Shifter handles verifying mint and burn requests. A mintAuthority
+/// approves new assets to be minted by providing a digital signature. An owner
+/// of an asset can request for it to be burnt.
 contract Shifter {
+
     /// @notice Shifter can be upgraded by setting a `nextShifter`. The
     /// forwarding address is only set after a delay has passed.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
@@ -33,8 +37,9 @@ contract Shifter {
     /// @notice Each nHash can only be seen once.
     mapping (bytes32=>bool) public status;
 
+    // LogShiftIn and LogShiftOut contain a unique `shiftID` that identifies
+    // the mint or burn event.
     uint256 public nextShiftID = 0;
-
     event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 indexed _shiftID);
 
@@ -44,6 +49,15 @@ contract Shifter {
         _;
     }
 
+    /// @param _previousShifter An optional contract that can burn and mint on
+    ///        behalf of users. This is required for the contract's
+    ///        upgradability.
+    /// @param _token The ERC20Shifted this Shifter is responsible for.
+    /// @param _feeRecipient The recipient of burning and minting fees.
+    /// @param _mintAuthority The address of the key that can sign mint
+    ///        requests.
+    /// @param _fee The amount subtracted each burn and mint request and
+    ///        forwarded to the feeRecipient. In BIPS.
     constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
         authorizedWrapper[_previousShifter] = true;
         token = _token;
@@ -59,11 +73,8 @@ contract Shifter {
         token.claimOwnership();
     }
 
-    function authorizeWrapper(address _wrapper, bool authorized) public onlyMintAuthority {
-        authorizedWrapper[_wrapper] = authorized;
-    }
-
     /// @notice Allow the mint authority to update the fee recipient.
+    ///
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyMintAuthority {
         feeRecipient = _nextFeeRecipient;
@@ -71,6 +82,7 @@ contract Shifter {
 
     /// @notice Allows the mint authority to initiate an ownership transfer of
     ///         the token.
+    ///
     /// @param _nextShifter The address to transfer the ownership to, or 0x0.
     function upgradeShifter(address _nextShifter) public onlyMintAuthority {
         /* solium-disable-next-line security/no-block-members */
@@ -96,6 +108,14 @@ contract Shifter {
     }
 
     /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
+    ///
+    /// @param _amount The amount of the token being shifted int, in its
+    ///        smallest value. (e.g. satoshis for BTC)
+    /// @param _nHash (nonce hash) The hash of the nonce, amount and pHash.
+    /// @param _pHash (payload hash) The hash of the payload associated with the
+    ///        shift.
+    /// @param _sig The signature of the hash of the following values:
+    ///        (msg.sender, amount, nHash, pHash), signed by the mintAuthority.
     function shiftIn(uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
         return _shiftIn(msg.sender, _amount, _nHash, _pHash, _sig);
     }
@@ -123,6 +143,13 @@ contract Shifter {
     }
 
     /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
+    ///
+    /// @param _to The address to receive the unshifted digital asset. The
+    ///        format of this address should be of the destination chain.
+    ///        For example, when shifting out to Bitcoin, _to should be a
+    ///        Bitcoin address.
+    /// @param _amount The amount of the token being shifted out, in its
+    ///        smallest value. (e.g. satoshis for BTC)
     function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
         return _shiftOut(msg.sender, _to, _amount);
     }
@@ -172,6 +199,9 @@ contract Shifter {
         return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
     }
 }
+
+/// @dev The following are not necessary for deploying BTCShifter or ZECShifter
+/// contracts, but are used to track deployments.
 
 /* solium-disable no-empty-blocks */
 contract BTCShifter is Shifter {

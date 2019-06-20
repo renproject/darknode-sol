@@ -1,7 +1,7 @@
 const BN = require("bn.js");
 
 const config = {
-    VERSION: "1.0.0",
+    VERSION: "927c3d8e",
     MINIMUM_BOND: new BN(100000).mul(new BN(10).pow(new BN(18))),
     MINIMUM_POD_SIZE: 3, // 24 in production
     MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
@@ -61,21 +61,21 @@ module.exports = {
 
     devnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "",
-        DarknodeRegistry: "",
-        DarknodeRegistryStore: "",
-        DarknodePaymentStore: "",
-        DarknodePayment: "",
+        DarknodeSlasher: "0xfe48363206E1849a2F53f5214af932354c35FD89",
+        DarknodeRegistry: "0x6E1a6b85f05bfec5c24C7a26E302cB28e639651c",
+        DarknodeRegistryStore: "0xC126a308dd07Adfa4a445686dcF7CbC423185593",
+        DarknodePaymentStore: "0x6341DF1012E862f766Fcd72e0fCAAc5a3839CFef",
+        DarknodePayment: "0x1f1b1d015Fc31d425C616cC35E39e31686DA69A8",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "",
-        ZECShifter: "",
-        ShifterRegistry: "",
-        zBTC: "",
-        zZEC: "",
+        BTCShifter: "0xbe830ca535BeFf2C7d82B7494e0B9592A3815730",
+        ZECShifter: "0x7dD16bf08e06de454C569121a22E58b279c348FB",
+        zBTC: "0x2341D423440892081516b49e42Fa93aF5280c5f5",
+        zZEC: "0x8beFd13f678F56470A2919678432D58d6B6055B5",
+        ShifterRegistry: "0xda67a63aAf771c4Cef589B164337FBcB93C65034",
 
         config: {
             ...config,
