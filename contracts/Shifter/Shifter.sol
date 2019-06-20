@@ -144,7 +144,11 @@ contract Shifter is Ownable {
 
     /// @notice hashForSignature hashes the parameters so that they can be signed.
     function hashForSignature(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash) public view returns (bytes32) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).hashForSignature(_to, _amount, _nHash, _pHash);}
+        // Check if the contract has been upgraded and forward the call
+        if (nextShifter != address(0x0)) {
+            return Shifter(nextShifter).hashForSignature(_to, _amount, _nHash, _pHash);
+        }
+
         return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
     }
 
@@ -153,32 +157,48 @@ contract Shifter is Ownable {
     /// @notice shiftIn mints new tokens after verifying the signature and
     /// transfers the tokens to `_to`.
     function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) internal returns (uint256) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);}
+        // Check if the contract has been upgraded and forward the call
+        if (nextShifter != address(0x0)) {
+            return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);
+        }
 
+        // Verify signature
         bytes32 signedMessageHash = hashForSignature(_to, _amount, _nHash, _pHash);
         require(status[signedMessageHash] == false, "nonce hash already spent");
         require(verifySignature(signedMessageHash, _sig), "invalid signature");
-        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
         status[signedMessageHash] = true;
+
+        // Mint `amount - fee` for the recipient and mint `fee` for the minter
+        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
         token.mint(_to, _amount-absoluteFee);
         token.mint(feeRecipient, absoluteFee);
+
+        // Emit a log with a unique shift ID
         emit LogShiftIn(_to, _amount, nextShiftID);
         nextShiftID += 1;
+
         return _amount-absoluteFee;
     }
 
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);}
+        // Check if the contract has been upgraded and forward the call
+        if (nextShifter != address(0x0)) {
+            return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);
+        }
+
+        // The recipient must not be empty. Better validation is possible,
+        // but would need to be customized for each destination ledger.
         require(_to.length != 0, "to address is empty");
 
-        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
-
         // Burn full amount and mint fee
+        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
         token.burn(_from, _amount);
         token.mint(feeRecipient, absoluteFee);
 
+        // Emit a log with a unique shift ID
         emit LogShiftOut(_to, _amount-absoluteFee, nextShiftID);
         nextShiftID += 1;
+
         return _amount-absoluteFee;
     }
 }

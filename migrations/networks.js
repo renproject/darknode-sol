@@ -1,7 +1,7 @@
 const BN = require("bn.js");
 
 const config = {
-    VERSION: "927c3d8e",
+    VERSION: "1420b4ef",
     MINIMUM_BOND: new BN(100000).mul(new BN(10).pow(new BN(18))),
     MINIMUM_POD_SIZE: 3, // 24 in production
     MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
@@ -71,11 +71,11 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0xbe830ca535BeFf2C7d82B7494e0B9592A3815730",
-        ZECShifter: "0x7dD16bf08e06de454C569121a22E58b279c348FB",
-        zBTC: "0x2341D423440892081516b49e42Fa93aF5280c5f5",
-        zZEC: "0x8beFd13f678F56470A2919678432D58d6B6055B5",
-        ShifterRegistry: "0xda67a63aAf771c4Cef589B164337FBcB93C65034",
+        BTCShifter: "0x3e61101bd930737Cd85957C03ADdaa72E5D79610",
+        ZECShifter: "0x7aB21aBf823744766804210348C541F7221E1F04",
+        zBTC: "0xa106884C47feb23ba1aeDB7a72A558CdE0d10b90",
+        zZEC: "0xec0237eD6e9F4fB13cb267859b98D98b1fEaa40A",
+        ShifterRegistry: "0xB5a8e98258182706DBa47DD90162D5aec301168E",
 
         config: {
             ...config,
