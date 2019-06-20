@@ -1,22 +1,23 @@
 pragma solidity ^0.5.8;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
+
 import "./ERC20Shifted.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract Shifter {
+contract Shifter is Ownable {
 
-    /// @notice Shifter can be upgraded by setting a `nextShifter`. The
-    /// forwarding address is only set after a delay has passed.
+    /// @notice Shifter can be upgraded by setting a `nextShifter`.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
     /// but is less error prone. It's downsides are higher gas fees when using
     /// the old address, and every function needing to forward the call,
     /// including storage getters.
     address public nextShifter;
-    address public pendingNextShifter;
-    uint256 public shifterUpgradeTime;
-    uint256 constant shifterUpgradeDelay = 0.5 days + 0.5 days;
+
+    uint256 constant bipsDenominator = 10000;
 
     /// @notice A set of contracts that can call burn on behalf of a user
     mapping (address=>bool) public authorizedWrapper;
@@ -43,12 +44,6 @@ contract Shifter {
     event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
     event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 indexed _shiftID);
 
-    /// @notice Only allow the Darknode Payment contract.
-    modifier onlyMintAuthority() {
-        require(msg.sender == mintAuthority, "must be mint authority");
-        _;
-    }
-
     /// @param _previousShifter An optional contract that can burn and mint on
     ///        behalf of users. This is required for the contract's
     ///        upgradability.
@@ -66,6 +61,8 @@ contract Shifter {
         feeRecipient = _feeRecipient;
     }
 
+    // Public functions ////////////////////////////////////////////////////////
+
     /// @notice Claims ownership of the token passed in to the constructor.
     ///         `transferStoreOwnership` must have previously been called.
     ///         Anyone can call this function.
@@ -75,8 +72,15 @@ contract Shifter {
 
     /// @notice Allow the mint authority to update the fee recipient.
     ///
+    /// @param _nextMintAuthority The address to start paying fees to.
+    function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
+        mintAuthority = _nextMintAuthority;
+    }
+
+    /// @notice Allow the mint authority to update the fee recipient.
+    ///
     /// @param _nextFeeRecipient The address to start paying fees to.
-    function updateFeeRecipient(address _nextFeeRecipient) public onlyMintAuthority {
+    function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
         feeRecipient = _nextFeeRecipient;
     }
 
@@ -84,30 +88,18 @@ contract Shifter {
     ///         the token.
     ///
     /// @param _nextShifter The address to transfer the ownership to, or 0x0.
-    function upgradeShifter(address _nextShifter) public onlyMintAuthority {
-        /* solium-disable-next-line security/no-block-members */
-        if (_nextShifter == pendingNextShifter && block.timestamp >= shifterUpgradeTime) {
-            // If the delay has passed and the next shifter isn't been changed,
-            // transfer the token to the next shifter and start pointing to it.
+    function upgradeShifter(address _nextShifter) public onlyOwner {
+        nextShifter = _nextShifter;
 
-            nextShifter = pendingNextShifter;
-
-            if (_nextShifter == address(0x0)) {
-                require(token.owner() == address(this), "must be owner of token to reset upgrade");
-            } else {
-                token.transferOwnership(address(nextShifter));
-                Shifter(nextShifter).claimTokenOwnership();
-            }
+        if (_nextShifter == address(0x0)) {
+            require(token.owner() == address(this), "caller is not the owner of token to reset upgrade");
         } else {
-            // Start a timer so allow the shifter to be upgraded.
-
-            /* solium-disable-next-line security/no-block-members */
-            shifterUpgradeTime = block.timestamp + shifterUpgradeDelay;
-            pendingNextShifter = _nextShifter;
+            token.transferOwnership(address(nextShifter));
+            Shifter(nextShifter).claimTokenOwnership();
         }
     }
 
-    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
+    /// @notice shiftIn mints tokens after taking a fee for the `_feeRecipient`.
     ///
     /// @param _amount The amount of the token being shifted int, in its
     ///        smallest value. (e.g. satoshis for BTC)
@@ -124,22 +116,6 @@ contract Shifter {
     function forwardShiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
         require(authorizedWrapper[msg.sender], "not authorized to mint on behalf of user");
         return _shiftIn(_to, _amount, _nHash, _pHash, _sig);
-    }
-
-    /// @notice shiftIn mints new tokens after verifying the signature and
-    /// transfers the tokens to `_to`.
-    function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) internal returns (uint256) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);}
-
-        require(status[_nHash] == false, "nonce hash already spent");
-        require(verifySig(_to, _amount, _nHash, _pHash, _sig), "invalid signature");
-        uint256 absoluteFee = (_amount * fee)/10000;
-        status[_nHash] = true;
-        token.mint(_to, _amount-absoluteFee);
-        token.mint(feeRecipient, absoluteFee);
-        emit LogShiftIn(_to, _amount, nextShiftID);
-        nextShiftID += 1;
-        return _amount-absoluteFee;
     }
 
     /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
@@ -160,11 +136,42 @@ contract Shifter {
         return _shiftOut(_from, _to, _amount);
     }
 
+    /// @notice verifySignature checks the the provided signature matches the provided
+    /// parameters.
+    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
+        return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
+    }
+
+    /// @notice hashForSignature hashes the parameters so that they can be signed.
+    function hashForSignature(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash) public view returns (bytes32) {
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).hashForSignature(_to, _amount, _nHash, _pHash);}
+        return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
+    }
+
+    // Internal functions //////////////////////////////////////////////////////
+
+    /// @notice shiftIn mints new tokens after verifying the signature and
+    /// transfers the tokens to `_to`.
+    function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) internal returns (uint256) {
+        if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);}
+
+        bytes32 signedMessageHash = hashForSignature(_to, _amount, _nHash, _pHash);
+        require(status[signedMessageHash] == false, "nonce hash already spent");
+        require(verifySignature(signedMessageHash, _sig), "invalid signature");
+        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
+        status[signedMessageHash] = true;
+        token.mint(_to, _amount-absoluteFee);
+        token.mint(feeRecipient, absoluteFee);
+        emit LogShiftIn(_to, _amount, nextShiftID);
+        nextShiftID += 1;
+        return _amount-absoluteFee;
+    }
+
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
         if (nextShifter != address(0x0)) {return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);}
         require(_to.length != 0, "to address is empty");
 
-        uint256 absoluteFee = (_amount * fee)/10000;
+        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
 
         // Burn full amount and mint fee
         token.burn(_from, _amount);
@@ -173,30 +180,6 @@ contract Shifter {
         emit LogShiftOut(_to, _amount-absoluteFee, nextShiftID);
         nextShiftID += 1;
         return _amount-absoluteFee;
-    }
-
-    /// @notice verifySig checks the the provided signature matches the provided
-    /// parameters.
-    function verifySig(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public view returns (bool) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).verifySig(_to, _amount, _nHash, _pHash, _sig);}
-
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        /* solium-disable-next-line */ /* solhint-disable-next-line */
-        assembly {
-            r := mload(add(_sig, 0x20))
-            s := mload(add(_sig, 0x40))
-            v := byte(0, mload(add(_sig, 0x60)))
-        }
-
-        return mintAuthority == ecrecover(sigHash(_to, _amount, _nHash, _pHash), v, r, s);
-    }
-
-    /// @notice sigHash hashes the parameters so that they can be signed.
-    function sigHash(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash) public view returns (bytes32) {
-        if (nextShifter != address(0x0)) {return Shifter(nextShifter).sigHash(_to, _amount, _nHash, _pHash);}
-        return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
     }
 }
 

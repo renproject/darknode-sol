@@ -44,7 +44,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         const nHash = `0x${randomBytes(32).toString("hex")}`;
         const pHash = `0x${randomBytes(32).toString("hex")}`;
 
-        const hash = await shifter.sigHash(user, value.toNumber(), nHash, pHash);
+        const hash = await shifter.hashForSignature(user, value.toNumber(), nHash, pHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
         pubToAddress(ecrecover(Buffer.from(hash.slice(2), "hex"), sig.v, sig.r, sig.s)).toString("hex")
@@ -52,7 +52,8 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
         const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-        (await shifter.verifySig(user, value.toNumber(), nHash, pHash, sigString))
+        const hashForSignature = await shifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+        (await shifter.verifySignature(hashForSignature, sigString))
             .should.be.true;
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
@@ -75,7 +76,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("won't mint for the same nHash and pHash twice", async () => {
             const [pHash, nHash] = await mintTest(btcShifter, value);
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
@@ -88,7 +89,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
             const nHash = `0x${randomBytes(32).toString("hex")}`;
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
@@ -104,7 +105,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const nHash2 = `0x${randomBytes(32).toString("hex")}`;
             const pHash = `0x${randomBytes(32).toString("hex")}`;
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash1, pHash);
+            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash1, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
@@ -117,7 +118,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const nHash = `0x${randomBytes(32).toString("hex")}`;
             const pHash = `0x${randomBytes(32).toString("hex")}`;
 
-            const hash = await btcShifter.sigHash(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
@@ -137,30 +138,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             await burnTest(btcShifter, value, new Buffer([]) as any as string)
                 .should.be.rejectedWith(/to address is empty/);
         });
-
     });
 
     describe("upgrading shifter", () => {
         let newShifter;
-
-        // Reset the upgrade
-        after(async () => {
-            // Trying to reset upgrade in btcShifter without owning the token
-            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
-            await increaseTime(2 * 60 * 60 * 24);
-            await (btcShifter.upgradeShifter(NULL, { from: mintAuthority.address }))
-                .should.be.rejectedWith(/must be owner of token to reset upgrade/);
-
-            // Upgrade newShifter to point to btcShifter
-            await newShifter.upgradeShifter(btcShifter.address, { from: mintAuthority.address });
-            await increaseTime(2 * 60 * 60 * 24);
-            await newShifter.upgradeShifter(btcShifter.address, { from: mintAuthority.address });
-
-            // Reset the upgrade in btcShifter
-            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
-            await increaseTime(2 * 60 * 60 * 24);
-            await btcShifter.upgradeShifter(NULL, { from: mintAuthority.address });
-        });
 
         it("can upgrade the shifter", async () => {
             newShifter = await BTCShifter.new(
@@ -171,64 +152,60 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
                 feeInBips,
             );
 
-            // Fund and unlock the mintAuthority
-            await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
-            await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
-            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
+            // // Fund and unlock the mintAuthority
+            // await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
+            // await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
+            // await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
 
             await (btcShifter.upgradeShifter(newShifter.address, { from: malicious }))
-                .should.be.rejectedWith(/must be mint authority/);
+                .should.be.rejectedWith(/caller is not the owner/);
 
-            await btcShifter.upgradeShifter(newShifter.address, { from: mintAuthority.address });
-
-            // Too soon
-            await btcShifter.upgradeShifter(newShifter.address, { from: mintAuthority.address });
-            (await zbtc.owner()).should.equal(btcShifter.address);
-
-            // Sleep for two days
-            await increaseTime(2 * 60 * 60 * 24);
-
-            // Not soo soon
-            await btcShifter.upgradeShifter(newShifter.address, { from: mintAuthority.address });
+            await btcShifter.upgradeShifter(newShifter.address, { from: defaultAcc });
             (await zbtc.owner()).should.equal(newShifter.address);
         });
 
-        describe("can mint and burn using old shifter", () => {
+        it("can mint and burn using old shifter", async () => {
             const value = new BN(200000);
-            it("can mint tokens", async () => mintTest(btcShifter, value));
-            it("can burn tokens", async () => burnTest(btcShifter, value))
+            await mintTest(btcShifter, value);
+            await burnTest(btcShifter, value);
         });
 
-        describe("can mint and burn using new shifter", () => {
+        it("can mint and burn using new shifter", async () => {
             const value = new BN(200000);
-            it("can mint tokens", async () => mintTest(newShifter, value));
-            it("can burn tokens", async () => burnTest(newShifter, value))
+            await mintTest(newShifter, value);
+            await burnTest(newShifter, value);
         });
 
         it("can't upgrade to an invalid shifter", async () => {
-            await newShifter.upgradeShifter(malicious, { from: mintAuthority.address });
-
-            // Sleep for two days
-            await increaseTime(2 * 60 * 60 * 24);
-
-            // Not soo soon
-            await (newShifter.upgradeShifter(malicious, { from: mintAuthority.address }))
+            await (newShifter.upgradeShifter(malicious, { from: defaultAcc }))
                 .should.be.rejectedWith(/revert/);
+        });
+
+        it("can reset the upgrade", async () => {
+            // Trying to reset upgrade in btcShifter without owning the token
+            await (btcShifter.upgradeShifter(NULL, { from: defaultAcc }))
+                .should.be.rejectedWith(/caller is not the owner of token to reset upgrade/);
+
+            // Upgrade newShifter to point to btcShifter
+            await newShifter.upgradeShifter(btcShifter.address, { from: defaultAcc });
+
+            // Reset the upgrade in btcShifter
+            await btcShifter.upgradeShifter(NULL, { from: defaultAcc });
         });
     });
 
 
     describe("updating fee recipient", () => {
-        it("can upgrade the shifter", async () => {
-            // Fund and unlock the mintAuthority
-            await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
-            await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
-            await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
+        it("can upgrade fee recipient", async () => {
+            // // Fund and unlock the mintAuthority
+            // await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
+            // await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
+            // await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
 
             await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
-                .should.be.rejectedWith(/must be mint authority/);
-            await btcShifter.updateFeeRecipient(user, { from: mintAuthority.address });
-            await btcShifter.updateFeeRecipient(feeRecipient, { from: mintAuthority.address });
+                .should.be.rejectedWith(/caller is not the owner/);
+            await btcShifter.updateFeeRecipient(user, { from: defaultAcc });
+            await btcShifter.updateFeeRecipient(feeRecipient, { from: defaultAcc });
         });
     });
 

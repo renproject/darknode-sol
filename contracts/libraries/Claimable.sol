@@ -31,7 +31,7 @@ contract Claimable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(isOwner(), "must be owner");
+        require(isOwner(), "caller is not the owner");
         _;
     }
 
@@ -39,7 +39,7 @@ contract Claimable {
     * @dev Modifier throws if called by any account other than the pendingOwner.
     */
     modifier onlyPendingOwner() {
-      require(msg.sender == _pendingOwner, "must be pending owner");
+      require(msg.sender == _pendingOwner, "caller is not the pending owner");
       _;
     }
 
@@ -66,14 +66,14 @@ contract Claimable {
     * @dev Allows the current owner to set the pendingOwner address.
     * @param newOwner The address to transfer ownership to.
     */
-    function transferOwnership(address newOwner) onlyOwner public {
+    function transferOwnership(address newOwner) public onlyOwner {
       _pendingOwner = newOwner;
     }
 
     /**
     * @dev Allows the pendingOwner address to finalize the transfer.
     */
-    function claimOwnership() onlyPendingOwner public {
+    function claimOwnership() public onlyPendingOwner {
       emit OwnershipTransferred(_owner, _pendingOwner);
       _owner = _pendingOwner;
       _pendingOwner = address(0);

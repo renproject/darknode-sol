@@ -121,19 +121,19 @@ contract DarknodePayment is Ownable {
     /// @param _token The token that was deregistered
     event LogTokenDeregistered(address _token);
 
-    /// @notice Only allow registered dark nodes.
+    /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
         require(darknodeRegistry.isRegistered(_darknode), "darknode is not registered");
         _;
     }
 
-    /// @notice Only allow the Darknode Payment contract.
+    /// @notice Restrict a function the blacklister.
     modifier onlyBlacklister() {
         require(blacklister == msg.sender, "not Blacklister");
         _;
     }
 
-    /// @notice Only allow darknodes which haven't been blacklisted
+    /// @notice Restrict a function darknodes which haven't been blacklisted
     modifier notBlacklisted(address _darknode) {
         require(!store.isBlacklisted(_darknode), "darknode is blacklisted");
         _;

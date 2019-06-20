@@ -17,4 +17,5 @@ sed -i.bak -e 's/"..\/openzeppelin-solidity\/contracts\//"openzeppelin-solidity\
 sed -i.bak -e 's/"..\/..\/openzeppelin-solidity\/contracts\//"openzeppelin-solidity\/contracts\//' contracts/*/*/*.sol
 rm -r ./contracts/openzeppelin-solidity
 
-rm contracts/**/*.bak
+rm contracts/*/*.bak
+rm contracts/*/*/*.bak

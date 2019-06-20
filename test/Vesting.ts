@@ -2,10 +2,10 @@ import BN from "bn.js";
 import { randomBytes } from "crypto";
 import { ecsign } from "ethereumjs-util";
 import { soliditySHA3 } from "ethereumjs-abi";
+import BigNumber from "bignumber.js";
 
 import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
 import { increaseTime, NULL } from "./helper/testUtils";
-import BigNumber from "bignumber.js";
 
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
@@ -55,8 +55,8 @@ contract("Vesting", (accounts) => {
                 [new BN(beneficiary, 16), startTime, duration]
             ).toString("hex");
 
-            const sigHash = await btcShifter.sigHash(vesting.address, amount.toNumber(), nonce, `0x${phash}`);
-            const sig = ecsign(Buffer.from(sigHash.slice(2), "hex"), privKey);
+            const hashForSignature = await btcShifter.hashForSignature(vesting.address, amount.toNumber(), nonce, `0x${phash}`);
+            const sig = ecsign(Buffer.from(hashForSignature.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
             // User should have no schedules prior to adding.
