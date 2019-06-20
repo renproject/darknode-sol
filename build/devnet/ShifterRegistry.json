@@ -7863,12 +7863,12 @@
         }
       },
       "links": {},
-      "address": "0xB5a8e98258182706DBa47DD90162D5aec301168E",
-      "transactionHash": "0x7e20f064a725c1cb35d4bd295b2b0bec16b1cda88680d6516b6cc05340ca7ac7"
+      "address": "0x542812A37239E14B112e663E809A4A93C9011456",
+      "transactionHash": "0x91a8a7d160c8251d957ffd92a2adf36c90c98a557bd3d8a34f7bbf61cb20e6ba"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-06-20T23:11:48.426Z",
+  "updatedAt": "2019-06-20T23:38:28.912Z",
   "devdoc": {
     "methods": {
       "claimOwnership()": {

@@ -2202,12 +2202,12 @@
         }
       },
       "links": {},
-      "address": "0xec0237eD6e9F4fB13cb267859b98D98b1fEaa40A",
-      "transactionHash": "0x99da1db321b434af2cba87c052f9b8508f56702d107317d65011bfffe27d700c"
+      "address": "0x4CA4929830e29f915AC767207963E3B212C8f876",
+      "transactionHash": "0xf8bf74731c71bab49db4080ae9b525b01a71a63b652b227b874e6b71feaabaf1"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-06-20T23:11:48.455Z",
+  "updatedAt": "2019-06-20T23:38:28.938Z",
   "devdoc": {
     "methods": {
       "allowance(address,address)": {

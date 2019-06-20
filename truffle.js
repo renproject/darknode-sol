@@ -58,6 +58,7 @@ module.exports = {
         evmVersion: "petersburg",
         optimizer: {
           enabled: true,
+
           runs: 200,
         }
       }
@@ -70,7 +71,17 @@ module.exports = {
     etherscan: process.env.ETHERSCAN_KEY,
   },
   verify: {
-    preamble: `Commit hash: ${commitHash}`
+    preamble: `
+Deployed by Ren Project, https://renproject.io
+
+Commit hash: ${commitHash}
+Repository: https://github.com/renproject/darknode-sol
+Issues: https://github.com/renproject/darknode-sol/issues
+
+Licenses
+openzeppelin-solidity: (MIT) https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/LICENSE
+darknode-sol: (GNU GPL V3) https://github.com/renproject/darknode-sol/blob/master/LICENSE
+`
   },
   contracts_build_directory: `./build/${process.env.NETWORK || "development"}`,
   // This is required by truffle to find any ts test files

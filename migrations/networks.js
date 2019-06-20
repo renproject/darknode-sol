@@ -70,11 +70,11 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x3e61101bd930737Cd85957C03ADdaa72E5D79610",
-        ZECShifter: "0x7aB21aBf823744766804210348C541F7221E1F04",
-        zBTC: "0xa106884C47feb23ba1aeDB7a72A558CdE0d10b90",
-        zZEC: "0xec0237eD6e9F4fB13cb267859b98D98b1fEaa40A",
-        ShifterRegistry: "0xB5a8e98258182706DBa47DD90162D5aec301168E",
+        BTCShifter: "0x6056c4e0b45C694005385126aB1b85dcdF6b670F",
+        ZECShifter: "0xb12C42bf450478DbbfeAEa211de769dcb5fbcA9A",
+        zBTC: "0xCe92B8568f9027e9cDb26A36009cE1FaaEF46a83",
+        zZEC: "0x4CA4929830e29f915AC767207963E3B212C8f876",
+        ShifterRegistry: "0x542812A37239E14B112e663E809A4A93C9011456",
 
         config: {
             ...config,
