@@ -22,7 +22,7 @@ module.exports = async function (deployer, network) {
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
 
-    const VERSION_STRING = `${network}-${config.VERSION}-${gitCommit()}`;
+    const VERSION_STRING = `${network}-${gitCommit()}`;
 
     RenToken.address = addresses.RenToken || "";
     DarknodeSlasher.address = addresses.DarknodeSlasher || "";

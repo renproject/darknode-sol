@@ -108,14 +108,14 @@ contract Shifter is Ownable {
     ///        shift.
     /// @param _sig The signature of the hash of the following values:
     ///        (msg.sender, amount, nHash, pHash), signed by the mintAuthority.
-    function shiftIn(uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
-        return _shiftIn(msg.sender, _amount, _nHash, _pHash, _sig);
+    function shiftIn(uint256 _amount, bytes32 _nHash, bytes memory _sig, bytes32 _pHash) public returns (uint256) {
+        return _shiftIn(msg.sender, _amount, _nHash, _sig, _pHash);
     }
 
     /// @notice Callable by the previous Shifter if it has been upgraded.
-    function forwardShiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) public returns (uint256) {
+    function forwardShiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes memory _sig, bytes32 _pHash) public returns (uint256) {
         require(authorizedWrapper[msg.sender], "not authorized to mint on behalf of user");
-        return _shiftIn(_to, _amount, _nHash, _pHash, _sig);
+        return _shiftIn(_to, _amount, _nHash, _sig, _pHash);
     }
 
     /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
@@ -156,10 +156,10 @@ contract Shifter is Ownable {
 
     /// @notice shiftIn mints new tokens after verifying the signature and
     /// transfers the tokens to `_to`.
-    function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes32 _pHash, bytes memory _sig) internal returns (uint256) {
+    function _shiftIn(address _to, uint256 _amount, bytes32 _nHash, bytes memory _sig, bytes32 _pHash) internal returns (uint256) {
         // Check if the contract has been upgraded and forward the call
         if (nextShifter != address(0x0)) {
-            return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _pHash, _sig);
+            return Shifter(nextShifter).forwardShiftIn(_to, _amount, _nHash, _sig, _pHash);
         }
 
         // Verify signature

@@ -57,7 +57,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             .should.be.true;
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-        await shifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user });
+        await shifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user });
         (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
         return [pHash, nHash];
@@ -80,7 +80,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user })
+            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user })
                 .should.be.rejectedWith(/nonce hash already spent/);
         });
 
@@ -94,7 +94,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
             const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-            await btcShifter.shiftIn(value.toNumber(), nHash, pHash, sigString, { from: user });
+            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user });
             (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
             await burnTest(btcShifter, value);
@@ -110,7 +110,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await btcShifter.shiftIn(value.toNumber(), nHash2, pHash, sigString, { from: user })
+            await btcShifter.shiftIn(value.toNumber(), nHash2, sigString, pHash, { from: user })
                 .should.be.rejectedWith(/invalid signature/);
         });
 
@@ -123,7 +123,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 
-            await btcShifter.forwardShiftIn(user, value.toNumber(), nHash, pHash, sigString, { from: malicious })
+            await btcShifter.forwardShiftIn(user, value.toNumber(), nHash, sigString, pHash, { from: malicious })
                 .should.be.rejectedWith(/not authorized to mint on behalf of user/);
         });
 

@@ -80,7 +80,7 @@ contract Vesting is Ownable {
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
         bytes32 pHash = keccak256(abi.encodePacked(_beneficiary, _startTime, _duration));
-        btc.shiftIn(_amount, _nHash, pHash, _sig);
+        btc.shiftIn(_amount, _nHash, _sig, pHash);
     }
 
     /// @notice Allows a beneficiary to withdraw their vested Bitcoin.
