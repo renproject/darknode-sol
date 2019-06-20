@@ -10,8 +10,8 @@ import "../libraries/Claimable.sol";
 /// called by it's associated Shifter.
 contract ERC20Shifted is ERC20, ERC20Detailed, Claimable {
 
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {
-    }
+    /* solium-disable-next-line no-empty-blocks */
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {}
 
     function burn(address _from, uint256 _amount) public onlyOwner {
         _burn(_from, _amount);

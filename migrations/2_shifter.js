@@ -90,11 +90,11 @@ module.exports = async function (deployer, network, accounts) {
         await darknodePayment.registerToken(zBTC.address);
     }
 
-    if ((await registry.getShifter(zBTC.address)) === NULL) {
+    if ((await registry.getShifterByToken(zBTC.address)) === NULL) {
         deployer.logger.log(`Registering BTC shifter`);
         await registry.setShifter(zBTC.address, BTCShifter.address);
     } else {
-        deployer.logger.log(`BTC shifter is already registered: ${await registry.getShifter(zBTC.address)}`);
+        deployer.logger.log(`BTC shifter is already registered: ${await registry.getShifterByToken(zBTC.address)}`);
     }
 
     /** ZEC *******************************************************************/
@@ -127,11 +127,11 @@ module.exports = async function (deployer, network, accounts) {
         await darknodePayment.registerToken(zZEC.address);
     }
 
-    if ((await registry.getShifter(zZEC.address)) === NULL) {
+    if ((await registry.getShifterByToken(zZEC.address)) === NULL) {
         deployer.logger.log(`Registering ZEC shifter`);
         await registry.setShifter(zZEC.address, ZECShifter.address);
     } else {
-        deployer.logger.log(`ZEC shifter is already registered: ${await registry.getShifter(zZEC.address)}`);
+        deployer.logger.log(`ZEC shifter is already registered: ${await registry.getShifterByToken(zZEC.address)}`);
     }
 
 

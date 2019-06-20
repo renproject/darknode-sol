@@ -233,10 +233,28 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     });
 
     describe("shifter registry", () => {
-        it("can register and retrieve shifter", async () => {
-            const registry = await ShifterRegistry.new();
+        let registry;
+
+        before(async () => {
+            registry = await ShifterRegistry.new();
+        });
+
+        it("can register shifters", async () => {
             await registry.setShifter(zbtc.address, btcShifter.address);
-            (await registry.getShifter(zbtc.address))
+            await registry.setShifter(zbtc.address, btcShifter.address)
+                .should.be.rejectedWith(/shifter already registered/);
+            await registry.setShifter(zbtc.address, NULL)
+                .should.be.rejectedWith(/token already registered/);
+        });
+
+        it("can retrieve shifters", async () => {
+            { // Try to register token with an existing symbol
+                const altZbtc = await zBTC.new()
+                await registry.setShifter(altZbtc.address, NULL)
+                    .should.be.rejectedWith(/symbol already registered/);
+            }
+
+            (await registry.getShifterByToken(zbtc.address))
                 .should.equal(btcShifter.address);
 
             (await registry.getShifterBySymbol("zBTC"))
@@ -244,6 +262,27 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
             (await registry.getTokenBySymbol("zBTC"))
                 .should.equal(zbtc.address);
+
+            { // Starting from NULL
+                const shifters = await registry.getShifters(NULL, 10);
+                shifters[0].should.equal(btcShifter.address);
+                shifters[1].should.equal(NULL);
+                shifters.length.should.equal(10);
+            }
+
+            { // Starting from btcShifter.address
+                const shifters = await registry.getShifters(btcShifter.address, 10);
+                shifters[0].should.equal(btcShifter.address);
+                shifters[1].should.equal(NULL);
+                shifters.length.should.equal(10);
+            }
+        });
+
+        it("can deregister shifters", async () => {
+            await registry.removeShifter("zBTC");
+
+            await registry.removeShifter("zBTC")
+                .should.be.rejectedWith(/symbol not registered/);
         })
     });
 });
