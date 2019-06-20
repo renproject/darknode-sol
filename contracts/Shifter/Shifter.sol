@@ -2,7 +2,11 @@ pragma solidity ^0.5.8;
 
 import "./ERC20Shifted.sol";
 
+/// @notice Shifter handles verifying mint and burn requests. A mintAuthority
+/// approves new assets to be minted by providing a digital signature. An owner
+/// of an asset can request for it to be burnt.
 contract Shifter {
+
     /// @notice Shifter can be upgraded by setting a `nextShifter`. The
     /// forwarding address is only set after a delay has passed.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
@@ -195,6 +199,9 @@ contract Shifter {
         return keccak256(abi.encode(address(token), _to, _amount, _nHash, _pHash));
     }
 }
+
+/// @dev The following are not necessary for deploying BTCShifter or ZECShifter
+/// contracts, but are used to track deployments.
 
 /* solium-disable no-empty-blocks */
 contract BTCShifter is Shifter {
