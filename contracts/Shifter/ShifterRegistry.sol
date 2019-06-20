@@ -8,14 +8,14 @@ contract ShifterRegistry is Claimable {
     mapping (address=>address) private shifters;
 
     /// @notice A map of token symbols to canonical shifter addresses
-    mapping (string=>address) private shifterBySymbols;
+    mapping (string=>address) private shiftersBySymbols;
 
     /// @notice Allow the owner to update shifter address for a given 
     ///         ERC20Shifted token contract.
     /// @param _tokenAddress The address of the ERC20Shifted token contract.
     /// @param _shifterAddress The address of the Shifter contract.
     function setShifter(ERC20Shifted _tokenAddress, address _shifterAddress) external onlyOwner {
-        shifterBySymbols[_tokenAddress.symbol()] = _shifterAddress;
+        shiftersBySymbols[_tokenAddress.symbol()] = _shifterAddress;
         shifters[_tokenAddress] = _shifterAddress;
     }
 
@@ -30,6 +30,6 @@ contract ShifterRegistry is Claimable {
     ///         symbol.
     /// @param _tokenAddress The address of the ERC20Shifted token contract.
     function getShifterBySymbol(string memory _tokenSymbol) view external returns (address) {
-        return shifterBySymbols[_tokenSymbol];
+        return shiftersBySymbols[_tokenSymbol];
     }
 }
