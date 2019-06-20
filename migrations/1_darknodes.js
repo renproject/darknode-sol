@@ -1,6 +1,7 @@
 /// <reference types="../types/truffle-contracts" />
 
 const BN = require("bn.js");
+const { execSync } = require("child_process")
 
 const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
@@ -11,13 +12,15 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 const networks = require("./networks.js");
 
+const gitCommit = () => execSync("git describe --always --long").toString().trim();
+
 module.exports = async function (deployer, network) {
     deployer.logger.log(`Deploying to ${network}...`);
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
 
-    const VERSION_STRING = `${network}-${config.VERSION}`;
+    const VERSION_STRING = `${network}-${config.VERSION}-${gitCommit()}`;
 
     RenToken.address = addresses.RenToken || "";
     DarknodeSlasher.address = addresses.DarknodeSlasher || "";
