@@ -28,7 +28,9 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const networks = require("./networks.js");
 
 module.exports = async function (deployer, network, accounts) {
-    deployer.logger.log(`Deploying to ${network}...`);
+    deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
+
+    network = network.replace("-fork", "");
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
@@ -89,7 +91,7 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     if ((await registry.getShifter(zBTC.address)) === NULL) {
-        console.log(`Registring BTC shifter`);
+        console.log(`Registering BTC shifter`);
         await registry.setShifter(zBTC.address, BTCShifter.address);
     } else {
         console.log(`BTC shifter is already registered: ${await registry.getShifter(zBTC.address)}`);
@@ -126,7 +128,7 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     if ((await registry.getShifter(zZEC.address)) === NULL) {
-        console.log(`Registring ZEC shifter`);
+        console.log(`Registering ZEC shifter`);
         await registry.setShifter(zZEC.address, ZECShifter.address);
     } else {
         console.log(`ZEC shifter is already registered: ${await registry.getShifter(zZEC.address)}`);
@@ -140,5 +142,6 @@ module.exports = async function (deployer, network, accounts) {
         ZECShifter: ZECShifter.address,
         zBTC: zBTC.address,
         zZEC: zZEC.address,
+        ShifterRegistry: ShifterRegistry.address,
     });
 }

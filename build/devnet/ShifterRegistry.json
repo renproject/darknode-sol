@@ -1,0 +1,1770 @@
+{
+  "contractName": "ShifterRegistry",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_tokenAddress",
+          "type": "address"
+        },
+        {
+          "name": "_shifterAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setShifter",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getShifter",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_tokenSymbol",
+          "type": "string"
+        }
+      ],
+      "name": "getShifterBySymbol",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"getShifter\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"claimOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_tokenSymbol\",\"type\":\"string\"}],\"name\":\"getShifterBySymbol\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"name\":\"_shifterAddress\",\"type\":\"address\"}],\"name\":\"setShifter\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{\"claimOwnership()\":{\"details\":\"Allows the pendingOwner address to finalize the transfer.\"},\"getShifter(address)\":{\"params\":{\"_tokenAddress\":\"The address of the ERC20Shifted token contract.\"}},\"getShifterBySymbol(string)\":{\"params\":{\"_tokenSymbol\":\"The symbol of the ERC20Shifted token contract.\"}},\"isOwner()\":{\"return\":\"true if `msg.sender` is the owner of the contract.\"},\"owner()\":{\"return\":\"the address of the owner.\"},\"renounceOwnership()\":{\"details\":\"Allows the current owner to relinquish control of the contract. It will not be possible to call the functions with the `onlyOwner` modifier anymore.\"},\"setShifter(address,address)\":{\"params\":{\"_shifterAddress\":\"The address of the Shifter contract.\",\"_tokenAddress\":\"The address of the ERC20Shifted token contract.\"}},\"transferOwnership(address)\":{\"details\":\"Allows the current owner to set the pendingOwner address.\",\"params\":{\"newOwner\":\"The address to transfer ownership to.\"}}}},\"userdoc\":{\"methods\":{\"getShifter(address)\":{\"notice\":\"Returns the Shifter address for the given ERC20Shifted token         contract address.\"},\"getShifterBySymbol(string)\":{\"notice\":\"Returns the Shifter address for the given ERC20Shifted token         symbol.\"},\"renounceOwnership()\":{\"notice\":\"Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"setShifter(address,address)\":{\"notice\":\"Allow the owner to update shifter address for a given         ERC20Shifted token contract.\"}}}},\"settings\":{\"compilationTarget\":{\"/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol\":\"ShifterRegistry\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/noah/github/renproject/darknode-sol/contracts/Shifter/ERC20Shifted.sol\":{\"keccak256\":\"0x709d74b45c3da97750300a49f14891cecf0aa4508b21eb9bb7bdde941b0d2825\",\"urls\":[\"bzzr://6d127237549773fb77ab60aa2f09b82b1476ce623014d3fad7bd3f7518f067d7\"]},\"/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol\":{\"keccak256\":\"0x25cec2d8d1feb9a3e0cb9ed8492cf5c102cc5833b0a1b0765a70c6343e0926c4\",\"urls\":[\"bzzr://7923d233de1ab5a9b0d5f68e4dc7e71709a44f4de5d07355855add5d2a059445\"]},\"/home/noah/github/renproject/darknode-sol/contracts/libraries/Claimable.sol\":{\"keccak256\":\"0xfa4c3545747ccd03b8733406f39af690ef1a4fee3498c9fafd75373d31998fbc\",\"urls\":[\"bzzr://85d1cb19ca945d1bdf0930ed2b58b48d02a40af6f3941d564e7b1756afb81ea2\"]},\"openzeppelin-solidity/contracts/math/SafeMath.sol\":{\"keccak256\":\"0x4ccf2d7b51873db1ccfd54ca2adae5eac3b184f9699911ed4490438419f1c690\",\"urls\":[\"bzzr://1604f5b6d6e916c154efd8c6720cda069e5ba32dfa0a9dedf2b42e5b02d07f89\"]},\"openzeppelin-solidity/contracts/token/ERC20/ERC20.sol\":{\"keccak256\":\"0x852793a3c2f86d336a683b30d688ec3dcfc57451af5a2bf5975cda3b7191a901\",\"urls\":[\"bzzr://07fb42206812a17c1f71e548cfa5cec6f9aa1ae0ca5df870718ca4aa9759d1a5\"]},\"openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol\":{\"keccak256\":\"0xc61b3603089b09a730d8ca72e9133a496cc4405da40e9b87c12f073245d774bf\",\"urls\":[\"bzzr://f280f38d5ab6e1b89fd898ccd3901054a56572c141d91d30302e2db1db4cc6ff\"]},\"openzeppelin-solidity/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0x90e8c2521653bbb1768b05889c5760031e688d9cd361f167489b89215e201b95\",\"urls\":[\"bzzr://aa8b45b57edafc3d67bc5d916327ea16807fae33f753ca163ae0c4061b789766\"]}},\"version\":1}",
+  "bytecode": "0x60806040819052600180546001600160a01b0319163317908190556001600160a01b0316906000907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a36105f18061005b6000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80638f32d59b1161005b5780638f32d59b146100e957806392a29e3014610105578063a904d13d14610175578063f2fde38b146101a357610088565b806322101d1f1461008d5780634e71e0c8146100cf578063715018a6146100d95780638da5cb5b146100e1575b600080fd5b6100b3600480360360208110156100a357600080fd5b50356001600160a01b03166101c9565b604080516001600160a01b039092168252519081900360200190f35b6100d76101e7565b005b6100d76102ae565b6100b3610347565b6100f1610356565b604080519115158252519081900360200190f35b6100b36004803603602081101561011b57600080fd5b81019060208101813564010000000081111561013657600080fd5b82018360208201111561014857600080fd5b8035906020019184600183028401116401000000008311171561016a57600080fd5b509092509050610367565b6100d76004803603604081101561018b57600080fd5b506001600160a01b03813581169160200135166103a1565b6100d7600480360360208110156101b957600080fd5b50356001600160a01b0316610554565b6001600160a01b039081166000908152600260205260409020541690565b6000546001600160a01b031633146102495760408051600160e51b62461bcd02815260206004820152601560248201527f6d7573742062652070656e64696e67206f776e65720000000000000000000000604482015290519081900360640190fd5b600080546001546040516001600160a01b039283169392909116917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a360008054600180546001600160a01b03199081166001600160a01b03841617909155169055565b6102b6610356565b6102fd5760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b6001546040516000916001600160a01b0316907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600180546001600160a01b0319169055565b6001546001600160a01b031690565b6001546001600160a01b0316331490565b6000600383836040518083838082843791909101948552505060405192839003602001909220546001600160a01b03169250505092915050565b6103a9610356565b6103f05760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b806003836001600160a01b03166395d89b416040518163ffffffff1660e01b815260040160006040518083038186803b15801561042c57600080fd5b505afa158015610440573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f19168201604052602081101561046957600080fd5b81019080805164010000000081111561048157600080fd5b8201602081018481111561049457600080fd5b81516401000000008111828201871017156104ae57600080fd5b50509291905050506040518082805190602001908083835b602083106104e55780518252601f1990920191602091820191016104c6565b51815160209384036101000a60001901801990921691161790529201948552506040805194859003820190942080546001600160a01b03199081166001600160a01b03978816179091559685166000908152600290915292909220805490951693909216929092179092555050565b61055c610356565b6105a35760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b600080546001600160a01b0319166001600160a01b039290921691909117905556fea165627a7a72305820eaa12383249a984da476df20544118d43e13d50ea7c85f1cb4f56b4b7c004e690029",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100885760003560e01c80638f32d59b1161005b5780638f32d59b146100e957806392a29e3014610105578063a904d13d14610175578063f2fde38b146101a357610088565b806322101d1f1461008d5780634e71e0c8146100cf578063715018a6146100d95780638da5cb5b146100e1575b600080fd5b6100b3600480360360208110156100a357600080fd5b50356001600160a01b03166101c9565b604080516001600160a01b039092168252519081900360200190f35b6100d76101e7565b005b6100d76102ae565b6100b3610347565b6100f1610356565b604080519115158252519081900360200190f35b6100b36004803603602081101561011b57600080fd5b81019060208101813564010000000081111561013657600080fd5b82018360208201111561014857600080fd5b8035906020019184600183028401116401000000008311171561016a57600080fd5b509092509050610367565b6100d76004803603604081101561018b57600080fd5b506001600160a01b03813581169160200135166103a1565b6100d7600480360360208110156101b957600080fd5b50356001600160a01b0316610554565b6001600160a01b039081166000908152600260205260409020541690565b6000546001600160a01b031633146102495760408051600160e51b62461bcd02815260206004820152601560248201527f6d7573742062652070656e64696e67206f776e65720000000000000000000000604482015290519081900360640190fd5b600080546001546040516001600160a01b039283169392909116917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a360008054600180546001600160a01b03199081166001600160a01b03841617909155169055565b6102b6610356565b6102fd5760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b6001546040516000916001600160a01b0316907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600180546001600160a01b0319169055565b6001546001600160a01b031690565b6001546001600160a01b0316331490565b6000600383836040518083838082843791909101948552505060405192839003602001909220546001600160a01b03169250505092915050565b6103a9610356565b6103f05760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b806003836001600160a01b03166395d89b416040518163ffffffff1660e01b815260040160006040518083038186803b15801561042c57600080fd5b505afa158015610440573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f19168201604052602081101561046957600080fd5b81019080805164010000000081111561048157600080fd5b8201602081018481111561049457600080fd5b81516401000000008111828201871017156104ae57600080fd5b50509291905050506040518082805190602001908083835b602083106104e55780518252601f1990920191602091820191016104c6565b51815160209384036101000a60001901801990921691161790529201948552506040805194859003820190942080546001600160a01b03199081166001600160a01b03978816179091559685166000908152600290915292909220805490951693909216929092179092555050565b61055c610356565b6105a35760408051600160e51b62461bcd02815260206004820152600d6024820152600160991b6c36bab9ba1031329037bbb732b902604482015290519081900360640190fd5b600080546001600160a01b0319166001600160a01b039290921691909117905556fea165627a7a72305820eaa12383249a984da476df20544118d43e13d50ea7c85f1cb4f56b4b7c004e690029",
+  "sourceMap": "92:1427:8:-;;;;;528:6:10;:19;;-1:-1:-1;;;;;;528:19:10;537:10;528:19;;;;;-1:-1:-1;;;;;595:6:10;;528;;562:40;;528:6;;562:40;92:1427:8;;;;;;",
+  "deployedSourceMap": "92:1427:8:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;92:1427:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1068:122;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1068:122:8;-1:-1:-1;;;;;1068:122:8;;:::i;:::-;;;;-1:-1:-1;;;;;1068:122:8;;;;;;;;;;;;;;2146:177:10;;;:::i;:::-;;1668:137;;;:::i;672:77::-;;;:::i;1224:90::-;;;:::i;:::-;;;;;;;;;;;;;;;;;;1372:145:8;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1372:145:8;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;1372:145:8;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;1372:145:8;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;-1:-1;1372:145:8;;-1:-1:-1;1372:145:8;-1:-1:-1;1372:145:8;:::i;646:228::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;;;;;;646:228:8;;;;;;;;;;:::i;1955:101:10:-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1955:101:10;-1:-1:-1;;;;;1955:101:10;;:::i;1068:122:8:-;-1:-1:-1;;;;;1160:23:8;;;1134:7;1160:23;;;:8;:23;;;;;;;;1068:122::o;2146:177:10:-;1081:13;;-1:-1:-1;;;;;1081:13:10;1067:10;:27;1059:61;;;;;-1:-1:-1;;;;;1059:61:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;2238:13;;;;2230:6;2209:43;;-1:-1:-1;;;;;2238:13:10;;;;2230:6;;;;;2209:43;;;2269:13;;;;2260:22;;-1:-1:-1;;;;;;2260:22:10;;;-1:-1:-1;;;;;2269:13:10;;2260:22;;;;2290:26;;;2146:177::o;1668:137::-;876:9;:7;:9::i;:::-;868:35;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;;;;1750:6;;1729:40;;1766:1;;-1:-1:-1;;;;;1750:6:10;;1729:40;;1766:1;;1729:40;1779:6;:19;;-1:-1:-1;;;;;;1779:19:10;;;1668:137::o;672:77::-;736:6;;-1:-1:-1;;;;;736:6:10;672:77;:::o;1224:90::-;1301:6;;-1:-1:-1;;;;;1301:6:10;1287:10;:20;;1224:90::o;1372:145:8:-;1453:7;1479:17;1497:12;;1479:31;;;;;30:3:-1;22:6;14;1:33;45:16;;;;1479:31:8;;;-1:-1:-1;;1479:31:8;;;;;;;;;;;;-1:-1:-1;;;;;1479:31:8;;-1:-1:-1;;;1372:145:8;;;;:::o;646:228::-;876:9:10;:7;:9::i;:::-;868:35;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;;;;801:15:8;743:17;774:13;-1:-1:-1;;;;;761:34:8;;:36;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;761:36:8;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;761:36:8;;;;;;39:16:-1;36:1;17:17;2:54;101:4;761:36:8;80:15:-1;;;-1:-1;;76:31;65:43;;120:4;113:20;13:2;5:11;;2:2;;;29:1;26;19:12;2:2;761:36:8;;;;;;19:11:-1;14:3;11:20;8:2;;;44:1;41;34:12;8:2;62:21;;123:4;114:14;;138:31;;;135:2;;;182:1;179;172:12;135:2;213:10;;261:11;244:29;;285:43;;;282:58;-1:-1;233:115;230:2;;;361:1;358;351:12;230:2;0:372;;761:36:8;;;;;;743:55;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;36:153;;176:10;;164:23;;-1:-1;;139:12;;;;98:2;89:12;;;;114;36:153;;;299:10;344;;263:2;259:12;;;254:3;250:22;-1:-1;;246:30;311:9;;295:26;;;340:21;;377:20;365:33;;743:55:8;;;;;-1:-1:-1;743:55:8;;;;;;;;;;;;:73;;-1:-1:-1;;;;;;743:73:8;;;-1:-1:-1;;;;;743:73:8;;;;;;;826:23;;;-1:-1:-1;826:23:8;;;:8;:23;;;;;;;:41;;;;;;;;;;;;;;;;-1:-1:-1;;646:228:8:o;1955:101:10:-;876:9;:7;:9::i;:::-;868:35;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;-1:-1:-1;;;;;868:35:10;;;;;;;;;;;;;;;2025:13;:24;;-1:-1:-1;;;;;;2025:24:10;-1:-1:-1;;;;;2025:24:10;;;;;;;;;;1955:101::o",
+  "source": "pragma solidity ^0.5.8;\n\nimport \"../libraries/Claimable.sol\";\nimport \"./ERC20Shifted.sol\";\n\ncontract ShifterRegistry is Claimable {\n    /// @notice A map of token addresses to canonical shifter addresses\n    mapping (address=>address) private shifters;\n\n    /// @notice A map of token symbols to canonical shifter addresses\n    mapping (string=>address) private shiftersBySymbols;\n\n    /// @notice Allow the owner to update shifter address for a given\n    ///         ERC20Shifted token contract.\n    /// @param _tokenAddress The address of the ERC20Shifted token contract.\n    /// @param _shifterAddress The address of the Shifter contract.\n    function setShifter(address _tokenAddress, address _shifterAddress) external onlyOwner {\n        shiftersBySymbols[ERC20Shifted(_tokenAddress).symbol()] = _shifterAddress;\n        shifters[_tokenAddress] = _shifterAddress;\n    }\n\n    /// @notice Returns the Shifter address for the given ERC20Shifted token\n    ///         contract address.\n    /// @param _tokenAddress The address of the ERC20Shifted token contract.\n    function getShifter(address _tokenAddress) external view returns (address) {\n        return shifters[_tokenAddress];\n    }\n\n    /// @notice Returns the Shifter address for the given ERC20Shifted token\n    ///         symbol.\n    /// @param _tokenSymbol The symbol of the ERC20Shifted token contract.\n    function getShifterBySymbol(string calldata _tokenSymbol) external view returns (address) {\n        return shiftersBySymbols[_tokenSymbol];\n    }\n}",
+  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
+  "ast": {
+    "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
+    "exportedSymbols": {
+      "ShifterRegistry": [
+        3554
+      ]
+    },
+    "id": 3555,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3491,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".8"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:8"
+      },
+      {
+        "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/libraries/Claimable.sol",
+        "file": "../libraries/Claimable.sol",
+        "id": 3492,
+        "nodeType": "ImportDirective",
+        "scope": 3555,
+        "sourceUnit": 3684,
+        "src": "25:36:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ERC20Shifted.sol",
+        "file": "./ERC20Shifted.sol",
+        "id": 3493,
+        "nodeType": "ImportDirective",
+        "scope": 3555,
+        "sourceUnit": 2866,
+        "src": "62:28:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3494,
+              "name": "Claimable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 3683,
+              "src": "120:9:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Claimable_$3683",
+                "typeString": "contract Claimable"
+              }
+            },
+            "id": 3495,
+            "nodeType": "InheritanceSpecifier",
+            "src": "120:9:8"
+          }
+        ],
+        "contractDependencies": [
+          3683
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 3554,
+        "linearizedBaseContracts": [
+          3554,
+          3683
+        ],
+        "name": "ShifterRegistry",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 3499,
+            "name": "shifters",
+            "nodeType": "VariableDeclaration",
+            "scope": 3554,
+            "src": "208:43:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+              "typeString": "mapping(address => address)"
+            },
+            "typeName": {
+              "id": 3498,
+              "keyType": {
+                "id": 3496,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "217:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "208:26:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                "typeString": "mapping(address => address)"
+              },
+              "valueType": {
+                "id": 3497,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "226:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "constant": false,
+            "id": 3503,
+            "name": "shiftersBySymbols",
+            "nodeType": "VariableDeclaration",
+            "scope": 3554,
+            "src": "328:51:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+              "typeString": "mapping(string => address)"
+            },
+            "typeName": {
+              "id": 3502,
+              "keyType": {
+                "id": 3500,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "337:6:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "328:25:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                "typeString": "mapping(string => address)"
+              },
+              "valueType": {
+                "id": 3501,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "345:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 3528,
+              "nodeType": "Block",
+              "src": "733:141:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3520,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3512,
+                        "name": "shiftersBySymbols",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3503,
+                        "src": "743:17:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                          "typeString": "mapping(string memory => address)"
+                        }
+                      },
+                      "id": 3518,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "expression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "id": 3514,
+                                "name": "_tokenAddress",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 3505,
+                                "src": "774:13:8",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              ],
+                              "id": 3513,
+                              "name": "ERC20Shifted",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 2853,
+                              "src": "761:12:8",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_ERC20Shifted_$2853_$",
+                                "typeString": "type(contract ERC20Shifted)"
+                              }
+                            },
+                            "id": 3515,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "761:27:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_ERC20Shifted_$2853",
+                              "typeString": "contract ERC20Shifted"
+                            }
+                          },
+                          "id": 3516,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "symbol",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 6988,
+                          "src": "761:34:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_external_view$__$returns$_t_string_memory_ptr_$",
+                            "typeString": "function () view external returns (string memory)"
+                          }
+                        },
+                        "id": 3517,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "761:36:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "743:55:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 3519,
+                      "name": "_shifterAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3507,
+                      "src": "801:15:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "743:73:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3521,
+                  "nodeType": "ExpressionStatement",
+                  "src": "743:73:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3526,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3522,
+                        "name": "shifters",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3499,
+                        "src": "826:8:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                          "typeString": "mapping(address => address)"
+                        }
+                      },
+                      "id": 3524,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 3523,
+                        "name": "_tokenAddress",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3505,
+                        "src": "835:13:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "826:23:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 3525,
+                      "name": "_shifterAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3507,
+                      "src": "852:15:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "826:41:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3527,
+                  "nodeType": "ExpressionStatement",
+                  "src": "826:41:8"
+                }
+              ]
+            },
+            "documentation": "@notice Allow the owner to update shifter address for a given\n         ERC20Shifted token contract.\n @param _tokenAddress The address of the ERC20Shifted token contract.\n @param _shifterAddress The address of the Shifter contract.",
+            "id": 3529,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 3510,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 3509,
+                  "name": "onlyOwner",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 3607,
+                  "src": "723:9:8",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "723:9:8"
+              }
+            ],
+            "name": "setShifter",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3508,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3505,
+                  "name": "_tokenAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3529,
+                  "src": "666:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3504,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "666:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3507,
+                  "name": "_shifterAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3529,
+                  "src": "689:23:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3506,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "689:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "665:48:8"
+            },
+            "returnParameters": {
+              "id": 3511,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "733:0:8"
+            },
+            "scope": 3554,
+            "src": "646:228:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3540,
+              "nodeType": "Block",
+              "src": "1143:47:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 3536,
+                      "name": "shifters",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3499,
+                      "src": "1160:8:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                        "typeString": "mapping(address => address)"
+                      }
+                    },
+                    "id": 3538,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 3537,
+                      "name": "_tokenAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3531,
+                      "src": "1169:13:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1160:23:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 3535,
+                  "id": 3539,
+                  "nodeType": "Return",
+                  "src": "1153:30:8"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the Shifter address for the given ERC20Shifted token\n         contract address.\n @param _tokenAddress The address of the ERC20Shifted token contract.",
+            "id": 3541,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getShifter",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3532,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3531,
+                  "name": "_tokenAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3541,
+                  "src": "1088:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3530,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1088:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1087:23:8"
+            },
+            "returnParameters": {
+              "id": 3535,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3534,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3541,
+                  "src": "1134:7:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3533,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1134:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1133:9:8"
+            },
+            "scope": 3554,
+            "src": "1068:122:8",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3552,
+              "nodeType": "Block",
+              "src": "1462:55:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 3548,
+                      "name": "shiftersBySymbols",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3503,
+                      "src": "1479:17:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                        "typeString": "mapping(string memory => address)"
+                      }
+                    },
+                    "id": 3550,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 3549,
+                      "name": "_tokenSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3543,
+                      "src": "1497:12:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_calldata_ptr",
+                        "typeString": "string calldata"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1479:31:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 3547,
+                  "id": 3551,
+                  "nodeType": "Return",
+                  "src": "1472:38:8"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the Shifter address for the given ERC20Shifted token\n         symbol.\n @param _tokenSymbol The symbol of the ERC20Shifted token contract.",
+            "id": 3553,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getShifterBySymbol",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3544,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3543,
+                  "name": "_tokenSymbol",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3553,
+                  "src": "1400:28:8",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3542,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1400:6:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1399:30:8"
+            },
+            "returnParameters": {
+              "id": 3547,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3546,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3553,
+                  "src": "1453:7:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3545,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1453:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1452:9:8"
+            },
+            "scope": 3554,
+            "src": "1372:145:8",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3555,
+        "src": "92:1427:8"
+      }
+    ],
+    "src": "0:1519:8"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
+    "exportedSymbols": {
+      "ShifterRegistry": [
+        3554
+      ]
+    },
+    "id": 3555,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3491,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".8"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:8"
+      },
+      {
+        "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/libraries/Claimable.sol",
+        "file": "../libraries/Claimable.sol",
+        "id": 3492,
+        "nodeType": "ImportDirective",
+        "scope": 3555,
+        "sourceUnit": 3684,
+        "src": "25:36:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ERC20Shifted.sol",
+        "file": "./ERC20Shifted.sol",
+        "id": 3493,
+        "nodeType": "ImportDirective",
+        "scope": 3555,
+        "sourceUnit": 2866,
+        "src": "62:28:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3494,
+              "name": "Claimable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 3683,
+              "src": "120:9:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Claimable_$3683",
+                "typeString": "contract Claimable"
+              }
+            },
+            "id": 3495,
+            "nodeType": "InheritanceSpecifier",
+            "src": "120:9:8"
+          }
+        ],
+        "contractDependencies": [
+          3683
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 3554,
+        "linearizedBaseContracts": [
+          3554,
+          3683
+        ],
+        "name": "ShifterRegistry",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 3499,
+            "name": "shifters",
+            "nodeType": "VariableDeclaration",
+            "scope": 3554,
+            "src": "208:43:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+              "typeString": "mapping(address => address)"
+            },
+            "typeName": {
+              "id": 3498,
+              "keyType": {
+                "id": 3496,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "217:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "208:26:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                "typeString": "mapping(address => address)"
+              },
+              "valueType": {
+                "id": 3497,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "226:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "constant": false,
+            "id": 3503,
+            "name": "shiftersBySymbols",
+            "nodeType": "VariableDeclaration",
+            "scope": 3554,
+            "src": "328:51:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+              "typeString": "mapping(string => address)"
+            },
+            "typeName": {
+              "id": 3502,
+              "keyType": {
+                "id": 3500,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "337:6:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "328:25:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                "typeString": "mapping(string => address)"
+              },
+              "valueType": {
+                "id": 3501,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "345:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 3528,
+              "nodeType": "Block",
+              "src": "733:141:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3520,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3512,
+                        "name": "shiftersBySymbols",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3503,
+                        "src": "743:17:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                          "typeString": "mapping(string memory => address)"
+                        }
+                      },
+                      "id": 3518,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "expression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "id": 3514,
+                                "name": "_tokenAddress",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 3505,
+                                "src": "774:13:8",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              ],
+                              "id": 3513,
+                              "name": "ERC20Shifted",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 2853,
+                              "src": "761:12:8",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_ERC20Shifted_$2853_$",
+                                "typeString": "type(contract ERC20Shifted)"
+                              }
+                            },
+                            "id": 3515,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "761:27:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_ERC20Shifted_$2853",
+                              "typeString": "contract ERC20Shifted"
+                            }
+                          },
+                          "id": 3516,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "symbol",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 6988,
+                          "src": "761:34:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_external_view$__$returns$_t_string_memory_ptr_$",
+                            "typeString": "function () view external returns (string memory)"
+                          }
+                        },
+                        "id": 3517,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "761:36:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "743:55:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 3519,
+                      "name": "_shifterAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3507,
+                      "src": "801:15:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "743:73:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3521,
+                  "nodeType": "ExpressionStatement",
+                  "src": "743:73:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3526,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3522,
+                        "name": "shifters",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3499,
+                        "src": "826:8:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                          "typeString": "mapping(address => address)"
+                        }
+                      },
+                      "id": 3524,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 3523,
+                        "name": "_tokenAddress",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3505,
+                        "src": "835:13:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "826:23:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 3525,
+                      "name": "_shifterAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3507,
+                      "src": "852:15:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "826:41:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3527,
+                  "nodeType": "ExpressionStatement",
+                  "src": "826:41:8"
+                }
+              ]
+            },
+            "documentation": "@notice Allow the owner to update shifter address for a given\n         ERC20Shifted token contract.\n @param _tokenAddress The address of the ERC20Shifted token contract.\n @param _shifterAddress The address of the Shifter contract.",
+            "id": 3529,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 3510,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 3509,
+                  "name": "onlyOwner",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 3607,
+                  "src": "723:9:8",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "723:9:8"
+              }
+            ],
+            "name": "setShifter",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3508,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3505,
+                  "name": "_tokenAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3529,
+                  "src": "666:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3504,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "666:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3507,
+                  "name": "_shifterAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3529,
+                  "src": "689:23:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3506,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "689:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "665:48:8"
+            },
+            "returnParameters": {
+              "id": 3511,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "733:0:8"
+            },
+            "scope": 3554,
+            "src": "646:228:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3540,
+              "nodeType": "Block",
+              "src": "1143:47:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 3536,
+                      "name": "shifters",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3499,
+                      "src": "1160:8:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_address_$",
+                        "typeString": "mapping(address => address)"
+                      }
+                    },
+                    "id": 3538,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 3537,
+                      "name": "_tokenAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3531,
+                      "src": "1169:13:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1160:23:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 3535,
+                  "id": 3539,
+                  "nodeType": "Return",
+                  "src": "1153:30:8"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the Shifter address for the given ERC20Shifted token\n         contract address.\n @param _tokenAddress The address of the ERC20Shifted token contract.",
+            "id": 3541,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getShifter",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3532,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3531,
+                  "name": "_tokenAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3541,
+                  "src": "1088:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3530,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1088:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1087:23:8"
+            },
+            "returnParameters": {
+              "id": 3535,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3534,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3541,
+                  "src": "1134:7:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3533,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1134:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1133:9:8"
+            },
+            "scope": 3554,
+            "src": "1068:122:8",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3552,
+              "nodeType": "Block",
+              "src": "1462:55:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 3548,
+                      "name": "shiftersBySymbols",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3503,
+                      "src": "1479:17:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                        "typeString": "mapping(string memory => address)"
+                      }
+                    },
+                    "id": 3550,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 3549,
+                      "name": "_tokenSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3543,
+                      "src": "1497:12:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_calldata_ptr",
+                        "typeString": "string calldata"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1479:31:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 3547,
+                  "id": 3551,
+                  "nodeType": "Return",
+                  "src": "1472:38:8"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the Shifter address for the given ERC20Shifted token\n         symbol.\n @param _tokenSymbol The symbol of the ERC20Shifted token contract.",
+            "id": 3553,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getShifterBySymbol",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3544,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3543,
+                  "name": "_tokenSymbol",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3553,
+                  "src": "1400:28:8",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 3542,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1400:6:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1399:30:8"
+            },
+            "returnParameters": {
+              "id": 3547,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3546,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3553,
+                  "src": "1453:7:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3545,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1453:7:8",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1452:9:8"
+            },
+            "scope": 3554,
+            "src": "1372:145:8",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3555,
+        "src": "92:1427:8"
+      }
+    ],
+    "src": "0:1519:8"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+  },
+  "networks": {
+    "42": {
+      "events": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        }
+      },
+      "links": {},
+      "address": "0xda67a63aAf771c4Cef589B164337FBcB93C65034",
+      "transactionHash": "0xfee10050b97078b6af6ecc5ff5513cc73408b1bddf7fbaa651e6a5e448fefab4"
+    }
+  },
+  "schemaVersion": "3.0.9",
+  "updatedAt": "2019-06-20T01:21:48.579Z",
+  "devdoc": {
+    "methods": {
+      "claimOwnership()": {
+        "details": "Allows the pendingOwner address to finalize the transfer."
+      },
+      "getShifter(address)": {
+        "params": {
+          "_tokenAddress": "The address of the ERC20Shifted token contract."
+        }
+      },
+      "getShifterBySymbol(string)": {
+        "params": {
+          "_tokenSymbol": "The symbol of the ERC20Shifted token contract."
+        }
+      },
+      "isOwner()": {
+        "return": "true if `msg.sender` is the owner of the contract."
+      },
+      "owner()": {
+        "return": "the address of the owner."
+      },
+      "renounceOwnership()": {
+        "details": "Allows the current owner to relinquish control of the contract. It will not be possible to call the functions with the `onlyOwner` modifier anymore."
+      },
+      "setShifter(address,address)": {
+        "params": {
+          "_shifterAddress": "The address of the Shifter contract.",
+          "_tokenAddress": "The address of the ERC20Shifted token contract."
+        }
+      },
+      "transferOwnership(address)": {
+        "details": "Allows the current owner to set the pendingOwner address.",
+        "params": {
+          "newOwner": "The address to transfer ownership to."
+        }
+      }
+    }
+  },
+  "userdoc": {
+    "methods": {
+      "getShifter(address)": {
+        "notice": "Returns the Shifter address for the given ERC20Shifted token         contract address."
+      },
+      "getShifterBySymbol(string)": {
+        "notice": "Returns the Shifter address for the given ERC20Shifted token         symbol."
+      },
+      "renounceOwnership()": {
+        "notice": "Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "setShifter(address,address)": {
+        "notice": "Allow the owner to update shifter address for a given         ERC20Shifted token contract."
+      }
+    }
+  }
+}
