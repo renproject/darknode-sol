@@ -728,9 +728,9 @@ chai-as-promised@^7.1.1:
   dependencies:
     check-error "^1.0.2"
 
-"chai-bignumber@git://github.com/negaex/chai-bignumber.git#master":
+"chai-bignumber@git://github.com/noiach/chai-bignumber.git#master":
   version "2.0.2"
-  resolved "git://github.com/negaex/chai-bignumber.git#fd75e47b2980c3a151d2a05b070293b18a9bddce"
+  resolved "git://github.com/noiach/chai-bignumber.git#fd75e47b2980c3a151d2a05b070293b18a9bddce"
 
 chai@^4.2.0:
   version "4.2.0"
