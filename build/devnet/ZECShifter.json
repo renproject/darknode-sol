@@ -15124,12 +15124,12 @@
         }
       },
       "links": {},
-      "address": "0xb12C42bf450478DbbfeAEa211de769dcb5fbcA9A",
-      "transactionHash": "0x1f05a30801f1657834ad829fbf73cc3df3629580aef4e2aa1e9f82c547614678"
+      "address": "0xE89544881bB15116Bc414101df9268CeF959E7F5",
+      "transactionHash": "0xa89d40bb7765cf0f46bacc5b39bdd8878260b06b8d38b4fd16e17b6c87ae0708"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-06-20T23:38:28.931Z",
+  "updatedAt": "2019-06-22T00:04:57.728Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

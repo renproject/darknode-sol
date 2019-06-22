@@ -70,15 +70,15 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x6056c4e0b45C694005385126aB1b85dcdF6b670F",
-        ZECShifter: "0xb12C42bf450478DbbfeAEa211de769dcb5fbcA9A",
-        zBTC: "0xCe92B8568f9027e9cDb26A36009cE1FaaEF46a83",
-        zZEC: "0x4CA4929830e29f915AC767207963E3B212C8f876",
-        ShifterRegistry: "0x542812A37239E14B112e663E809A4A93C9011456",
+        BTCShifter: "0xa9942497710E0FBdFAC162830Fa5e594f1f870c9",
+        ZECShifter: "0xE89544881bB15116Bc414101df9268CeF959E7F5",
+        zBTC: "0xbE392CA86D69FCd25b628D076e6C1f0681AD07da",
+        zZEC: "0xf5d9285adD35a68D3d92aBB68175104bBe31fbBD",
+        ShifterRegistry: "0x62CA86fcc5163fE6346C6ddf21C65745ef55479C",
 
         config: {
             ...config,
-            owner: "0xefe8a83e301d2785356311e233cbbfe7d8efc1d0",
+            owner: "0x723eb4380E03dF6a6f98Cc1338b00cfBE5E45218",
         },
     },
     config,
