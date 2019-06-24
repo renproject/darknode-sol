@@ -17,6 +17,9 @@ contract ShifterRegistry is Claimable {
     /// @notice A list of shifter contracts
     LinkedList.List private shifterList;
 
+    /// @notice A list of shifted token contracts
+    LinkedList.List private shiftedTokenList;
+
     /// @notice A map of token addresses to canonical shifter addresses
     mapping (address=>address) private shifterByToken;
 
@@ -37,6 +40,9 @@ contract ShifterRegistry is Claimable {
 
         // Add to list of shifters
         LinkedList.append(shifterList, _shifterAddress);
+        
+        // Add to list of shifted tokens
+        LinkedList.append(shiftedTokenList, _tokenAddress);
 
         tokenBySymbol[symbol] = _tokenAddress;
         shifterByToken[_tokenAddress] = _shifterAddress;
@@ -60,6 +66,7 @@ contract ShifterRegistry is Claimable {
         shifterByToken[tokenAddress] = address(0x0);
         tokenBySymbol[_symbol] = address(0x0);
         LinkedList.remove(shifterList, shifterAddress);
+        LinkedList.remove(shiftedTokenList, tokenAddress);
 
         emit LogShifterDeregistered(_symbol, _symbol, tokenAddress, shifterAddress);
     }
@@ -83,6 +90,27 @@ contract ShifterRegistry is Claimable {
             n += 1;
         }
         return shifters;
+    }
+
+    function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
+        address[] memory shiftedTokens = new address[](_count);
+
+        // Begin with the first node in the list
+        uint256 n = 0;
+        address next = _start;
+        if (next == address(0)) {
+            next = LinkedList.begin(shiftedTokenList);
+        }
+
+        while (n < _count) {
+            if (next == address(0)) {
+                break;
+            }
+            shiftedTokens[n] = next;
+            next = LinkedList.next(shiftedTokenList, next);
+            n += 1;
+        }
+        return shiftedTokens;
     }
 
     /// @notice Returns the Shifter address for the given ERC20Shifted token
