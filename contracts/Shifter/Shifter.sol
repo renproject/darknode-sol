@@ -1,5 +1,6 @@
 pragma solidity ^0.5.8;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
@@ -9,6 +10,7 @@ import "./ERC20Shifted.sol";
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
 contract Shifter is Ownable {
+    using SafeMath for uint256;
 
     /// @notice Shifter can be upgraded by setting a `nextShifter`.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
@@ -169,15 +171,16 @@ contract Shifter is Ownable {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
-        token.mint(_to, _amount-absoluteFee);
+        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
+        uint256 receivedAmount = _amount.sub(absoluteFee);
+        token.mint(_to, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftIn(_to, _amount, nextShiftID);
+        emit LogShiftIn(_to, receivedAmount, nextShiftID);
         nextShiftID += 1;
 
-        return _amount-absoluteFee;
+        return receivedAmount;
     }
 
     function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
@@ -191,15 +194,16 @@ contract Shifter is Ownable {
         require(_to.length != 0, "to address is empty");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount * fee)/bipsDenominator;
+        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
         token.burn(_from, _amount);
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftOut(_to, _amount-absoluteFee, nextShiftID);
+        uint256 receivedValue = _amount.sub(absoluteFee);
+        emit LogShiftOut(_to, receivedValue, nextShiftID);
         nextShiftID += 1;
 
-        return _amount-absoluteFee;
+        return receivedValue;
     }
 }
 
