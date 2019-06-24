@@ -138,6 +138,42 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             await burnTest(btcShifter, value, new Buffer([]) as any as string)
                 .should.be.rejectedWith(/to address is empty/);
         });
+
+        it("won't mint for a signature's complement", async () => {
+            // If (r,s,v) is a valid ECDSA signature, then so is (r, -s % n, 1-v)
+            // This means that a second signature for a message can be generated
+            // without access to the private key. This test checks that the
+            // Shifter contract won't accept two complementary signatures and
+            // mint twice. See "Signature Malleability" at
+            // https://yondon.blog/2019/01/01/how-not-to-use-ecdsa/
+
+            const nHash = `0x${randomBytes(32).toString("hex")}`;
+            const pHash = `0x${randomBytes(32).toString("hex")}`;
+
+            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+
+            let sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
+
+            // Invalid signature
+            const altSig = {
+                ...sig,
+                s: new BN("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", "hex").sub(new BN(sig.s)).toArrayLike(Buffer, "be", 32),
+                v: sig.v === 27 ? 28 : 27,
+            };
+            const altSigString = `0x${altSig.r.toString("hex")}${altSig.s.toString("hex")}${(altSig.v).toString(16)}`;
+            await btcShifter.shiftIn(value.toNumber(), nHash, altSigString, pHash, { from: user })
+                .should.be.rejectedWith(/signature's s is in the wrong range/);
+
+            // Valid signature
+            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user });
+
+            // Using the invalid signature after the valid one should throw
+            // before checking the signature because the nonce hash has already
+            // been used
+            await btcShifter.shiftIn(value.toNumber(), nHash, altSigString, pHash, { from: user })
+                .should.be.rejectedWith(/nonce hash already spent/);
+        });
     });
 
     describe("upgrading shifter", () => {
