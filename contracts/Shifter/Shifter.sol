@@ -44,7 +44,7 @@ contract Shifter is Ownable {
     // the mint or burn event.
     uint256 public nextShiftID = 0;
     event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
-    event LogShiftOut(bytes indexed _to, uint256 _amount, uint256 indexed _shiftID);
+    event LogShiftOut(bytes _to, uint256 _amount, uint256 indexed _shiftID, bytes indexed _indexedTo);
 
     /// @param _previousShifter An optional contract that can burn and mint on
     ///        behalf of users. This is required for the contract's
@@ -200,7 +200,7 @@ contract Shifter is Ownable {
 
         // Emit a log with a unique shift ID
         uint256 receivedValue = _amount.sub(absoluteFee);
-        emit LogShiftOut(_to, receivedValue, nextShiftID);
+        emit LogShiftOut(_to, receivedValue, nextShiftID, _to);
         nextShiftID += 1;
 
         return receivedValue;

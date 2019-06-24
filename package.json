@@ -37,7 +37,7 @@
     "solc": "0.5.9",
     "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
     "truffle": "5.0.15",
-    "truffle-hdwallet-provider": "1.0.11",
+    "truffle-hdwallet-provider": "^1.0.11",
     "truffle-plugin-verify": "github:vinceau/truffle-plugin-verify#c1bbe423f33989a479c04d6a9049beee4793b435",
     "truffle-typings": "^1.0.8",
     "ts-node": "^8.3.0",

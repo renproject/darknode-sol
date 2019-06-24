@@ -77,7 +77,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         const _shiftID = await shifter.nextShiftID();
         (await shifter.shiftOut(btcAddress, value, { from: user }) as any)
             .should.emit.logs([
-                log("LogShiftOut", { _to: keccak256(btcAddress), _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID }),
+                log("LogShiftOut", { _to: btcAddress, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID, _indexedTo: keccak256(btcAddress) }),
             ]);
         (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.sub(value));
     }
