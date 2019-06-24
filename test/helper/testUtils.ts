@@ -1,4 +1,3 @@
-
 import * as chai from "chai";
 import * as crypto from "crypto";
 
@@ -8,6 +7,7 @@ import chaiAsPromised from "chai-as-promised";
 import chaiBigNumber from "chai-bignumber";
 import BigNumber from "bignumber.js";
 import BN from "bn.js";
+import { keccak256, toChecksumAddress, toHex } from "web3-utils";
 
 import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
 // Import chai log helper
@@ -27,12 +27,12 @@ export const ETHEREUM_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEe
 
 // Makes an ID for a darknode
 export function ID(i: string | number) {
-    return web3.utils.toChecksumAddress(web3.utils.sha3(i.toString()).slice(0, 42));
+    return toChecksumAddress(keccak256(i.toString()).slice(0, 42));
 }
 
 // Makes a public key for a darknode
 export function PUBK(i: string | number) {
-    return web3.utils.sha3(i.toString());
+    return keccak256(i.toString());
 }
 
 export const NULL = "0x0000000000000000000000000000000000000000";
@@ -43,7 +43,7 @@ export const randomBytes = (bytes: number): string => {
 };
 
 export const randomAddress = (): string => {
-    return web3.utils.toChecksumAddress(randomBytes(20));
+    return toChecksumAddress(randomBytes(20));
 };
 
 const increaseTimeHelper = async (seconds: number) => {
@@ -100,8 +100,8 @@ export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
 }
 
 export const randomID = () => {
-    return web3.utils.sha3(Math.random().toString());
+    return keccak256(Math.random().toString());
 };
 
-export const openPrefix = web3.utils.toHex("Republic Protocol: open: ");
-export const closePrefix = web3.utils.toHex("Republic Protocol: cancel: ");
+export const openPrefix = toHex("Republic Protocol: open: ");
+export const closePrefix = toHex("Republic Protocol: cancel: ");

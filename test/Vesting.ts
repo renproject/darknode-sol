@@ -1,8 +1,8 @@
 import BN from "bn.js";
 import { randomBytes } from "crypto";
-import { ecsign } from "ethereumjs-util";
-import { soliditySHA3 } from "ethereumjs-abi";
+import { ecsign, keccak256 } from "ethereumjs-util";
 import BigNumber from "bignumber.js";
+import { rawEncode } from "ethereumjs-abi";
 
 import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
 import { increaseTime, NULL } from "./helper/testUtils";
@@ -50,12 +50,12 @@ contract("Vesting", (accounts) => {
             const nonce = `0x${randomBytes(32).toString("hex")}`;
 
             const startTime = 0;
-            const phash = soliditySHA3(
+            const pHash = keccak256(rawEncode(
                 ["address", "uint256", "uint16"],
-                [new BN(beneficiary, 16), startTime, duration]
-            ).toString("hex");
+                [beneficiary, startTime, duration]
+            )).toString("hex");
 
-            const hashForSignature = await btcShifter.hashForSignature(vesting.address, amount.toNumber(), nonce, `0x${phash}`);
+            const hashForSignature = await btcShifter.hashForSignature(vesting.address, amount.toNumber(), nonce, `0x${pHash}`);
             const sig = ecsign(Buffer.from(hashForSignature.slice(2), "hex"), privKey);
             const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
 

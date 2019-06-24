@@ -79,7 +79,7 @@ contract Vesting is Ownable {
         // Construct the payload hash and mint new tokens using the Shifter
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
-        bytes32 pHash = keccak256(abi.encodePacked(_beneficiary, _startTime, _duration));
+        bytes32 pHash = keccak256(abi.encode(_beneficiary, _startTime, _duration));
         btc.shiftIn(_amount, _nHash, _sig, pHash);
     }
 
