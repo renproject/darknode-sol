@@ -301,13 +301,23 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
                 shifters[0].should.equal(btcShifter.address);
                 shifters[1].should.equal(NULL);
                 shifters.length.should.equal(10);
+
+                const shiftedTokens = await registry.getShiftedTokens(NULL, 10);
+                shiftedTokens[0].should.equal(zbtc.address);
+                shiftedTokens[1].should.equal(NULL);
+                shiftedTokens.length.should.equal(10);
             }
 
-            { // Starting from btcShifter.address
+            { // Starting from first entry
                 const shifters = await registry.getShifters(btcShifter.address, 10);
                 shifters[0].should.equal(btcShifter.address);
                 shifters[1].should.equal(NULL);
                 shifters.length.should.equal(10);
+
+                const shiftedTokens = await registry.getShiftedTokens(zbtc.address, 10);
+                shiftedTokens[0].should.equal(zbtc.address);
+                shiftedTokens[1].should.equal(NULL);
+                shiftedTokens.length.should.equal(10);
             }
         });
 
