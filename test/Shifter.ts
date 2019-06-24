@@ -215,6 +215,9 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("can't upgrade to an invalid shifter", async () => {
             await (newShifter.upgradeShifter(malicious, { from: defaultAcc }))
                 .should.be.rejectedWith(/revert/);
+
+            await zbtc.claimOwnership({ from: malicious })
+                .should.be.rejectedWith(/caller is not the pending owner/);
         });
 
         it("can reset the upgrade", async () => {
@@ -231,17 +234,19 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     });
 
 
-    describe("updating fee recipient", () => {
+    describe("updating fee recipient and mint authority", () => {
         it("can upgrade fee recipient", async () => {
-            // // Fund and unlock the mintAuthority
-            // await web3.eth.sendTransaction({ to: mintAuthority.address, from: defaultAcc, value: web3.utils.toWei("1") });
-            // await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
-            // await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
-
             await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
                 .should.be.rejectedWith(/caller is not the owner/);
             await btcShifter.updateFeeRecipient(user, { from: defaultAcc });
             await btcShifter.updateFeeRecipient(feeRecipient, { from: defaultAcc });
+        });
+
+        it("can upgrade mint authority", async () => {
+            await (btcShifter.updateMintAuthority(malicious, { from: malicious }))
+                .should.be.rejectedWith(/caller is not the owner/);
+            await btcShifter.updateMintAuthority(user, { from: defaultAcc });
+            await btcShifter.updateMintAuthority(mintAuthority.address, { from: defaultAcc });
         });
     });
 
