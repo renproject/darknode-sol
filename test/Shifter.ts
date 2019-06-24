@@ -6,7 +6,7 @@ import { keccak256 } from "web3-utils";
 
 import { BTCShifterInstance, ShifterInstance, zBTCInstance } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
-import { increaseTime, NULL } from "./helper/testUtils";
+import { increaseTime, NULL, Ox } from "./helper/testUtils";
 
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
@@ -43,24 +43,24 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     const removeFee = (value, bips) => value.sub(value.mul(new BN(bips)).div(new BN(10000)))
 
     const mintTest = async (shifter: ShifterInstance, value: BN, shiftID = undefined) => {
-        const nHash = `0x${randomBytes(32).toString("hex")}`;
-        const pHash = `0x${randomBytes(32).toString("hex")}`;
+        const nHash = Ox(randomBytes(32).toString("hex"));
+        const pHash = Ox(randomBytes(32).toString("hex"));
 
-        const hash = await shifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+        const hash = await shifter.hashForSignature(pHash, value.toNumber(), user, nHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
         pubToAddress(ecrecover(Buffer.from(hash.slice(2), "hex"), sig.v, sig.r, sig.s)).toString("hex")
             .should.equal(mintAuthority.address.slice(2).toLowerCase());
 
-        const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+        const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-        const hashForSignature = await shifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+        const hashForSignature = await shifter.hashForSignature(pHash, value.toNumber(), user, nHash);
         (await shifter.verifySignature(hashForSignature, sigString))
             .should.be.true;
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
         const _shiftID = await shifter.nextShiftID();
-        (await shifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user }) as any)
+        (await shifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user }) as any)
             .should.emit.logs([
                 log("LogShiftIn", { _to: user, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID }),
             ]);
@@ -71,7 +71,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
     const burnTest = async (shifter: ShifterInstance, value: BN, btcAddress?: string, shiftID = undefined) => {
         // Note: we don't use `||` because we want to pass in `""`
-        btcAddress = btcAddress !== undefined ? btcAddress : `0x${randomBytes(35).toString("hex")}`;
+        btcAddress = btcAddress !== undefined ? btcAddress : Ox(randomBytes(35).toString("hex"));
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
         const _shiftID = await shifter.nextShiftID();
@@ -89,59 +89,59 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("won't mint for the same nHash and pHash twice", async () => {
             const [pHash, nHash] = await mintTest(btcShifter, value);
 
-            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user })
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user })
                 .should.be.rejectedWith(/nonce hash already spent/);
         });
 
         it("can mint for the same pHash with a different nHash", async () => {
             const [pHash, _] = await mintTest(btcShifter, value);
 
-            const nHash = `0x${randomBytes(32).toString("hex")}`;
+            const nHash = Ox(randomBytes(32).toString("hex"));
 
-            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user });
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user });
             (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
             await burnTest(btcShifter, removeFee(value, 10));
         });
 
-        it("won't mind with an invalid signature", async () => {
-            const nHash1 = `0x${randomBytes(32).toString("hex")}`;
-            const nHash2 = `0x${randomBytes(32).toString("hex")}`;
-            const pHash = `0x${randomBytes(32).toString("hex")}`;
+        it("won't mint with an invalid signature", async () => {
+            const nHash1 = Ox(randomBytes(32).toString("hex"));
+            const nHash2 = Ox(randomBytes(32).toString("hex"));
+            const pHash = Ox(randomBytes(32).toString("hex"));
 
-            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash1, pHash);
+            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash1);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-            await btcShifter.shiftIn(value.toNumber(), nHash2, sigString, pHash, { from: user })
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash2, sigString, { from: user })
                 .should.be.rejectedWith(/invalid signature/);
         });
 
         it("can't call forwardShiftIn", async () => {
-            const nHash = `0x${randomBytes(32).toString("hex")}`;
-            const pHash = `0x${randomBytes(32).toString("hex")}`;
+            const nHash = Ox(randomBytes(32).toString("hex"));
+            const pHash = Ox(randomBytes(32).toString("hex"));
 
-            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-            await btcShifter.forwardShiftIn(user, value.toNumber(), nHash, sigString, pHash, { from: malicious })
+            await btcShifter.forwardShiftIn(pHash, value.toNumber(), user, nHash, sigString, { from: malicious })
                 .should.be.rejectedWith(/not authorized to mint on behalf of user/);
         });
 
         it("can't call forwardShiftOut", async () => {
-            const btcAddress = `0x${randomBytes(35).toString("hex")}`;
+            const btcAddress = Ox(randomBytes(35).toString("hex"));
             await btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious })
                 .should.be.rejectedWith(/not authorized to burn on behalf of user/);
         });
@@ -160,10 +160,10 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             // mint twice. See "Signature Malleability" at
             // https://yondon.blog/2019/01/01/how-not-to-use-ecdsa/
 
-            const nHash = `0x${randomBytes(32).toString("hex")}`;
-            const pHash = `0x${randomBytes(32).toString("hex")}`;
+            const nHash = Ox(randomBytes(32).toString("hex"));
+            const pHash = Ox(randomBytes(32).toString("hex"));
 
-            const hash = await btcShifter.hashForSignature(user, value.toNumber(), nHash, pHash);
+            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
 
             let sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
@@ -173,18 +173,18 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
                 s: new BN("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", "hex").sub(new BN(sig.s)).toArrayLike(Buffer, "be", 32),
                 v: sig.v === 27 ? 28 : 27,
             };
-            const altSigString = `0x${altSig.r.toString("hex")}${altSig.s.toString("hex")}${(altSig.v).toString(16)}`;
-            await btcShifter.shiftIn(value.toNumber(), nHash, altSigString, pHash, { from: user })
+            const altSigString = Ox(`${altSig.r.toString("hex")}${altSig.s.toString("hex")}${(altSig.v).toString(16)}`);
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash, altSigString, { from: user })
                 .should.be.rejectedWith(/signature's s is in the wrong range/);
 
             // Valid signature
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
-            await btcShifter.shiftIn(value.toNumber(), nHash, sigString, pHash, { from: user });
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user });
 
             // Using the invalid signature after the valid one should throw
             // before checking the signature because the nonce hash has already
             // been used
-            await btcShifter.shiftIn(value.toNumber(), nHash, altSigString, pHash, { from: user })
+            await btcShifter.shiftIn(pHash, value.toNumber(), nHash, altSigString, { from: user })
                 .should.be.rejectedWith(/nonce hash already spent/);
         });
     });

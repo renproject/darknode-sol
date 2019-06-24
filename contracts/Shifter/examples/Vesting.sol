@@ -51,12 +51,14 @@ contract Vesting is Ownable {
     ///                   period should begin.
     /// @param _duration The number of months for the vesting period.
     function addVestingSchedule(
-        uint256        _amount,
-        bytes32        _nHash,
-        bytes calldata _sig,
+        // Payload
         address        _beneficiary,
         uint256        _startTime,
-        uint16         _duration
+        uint16         _duration,
+        // Required
+        uint256        _amount,
+        bytes32        _nHash,
+        bytes calldata _sig
     ) external onlyOwner {
         require(schedules[_beneficiary].startTime == 0, "vesting schedule already exists");
         require(_amount > 0, "amount must be greater than 0");
@@ -80,7 +82,7 @@ contract Vesting is Ownable {
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
         bytes32 pHash = keccak256(abi.encode(_beneficiary, _startTime, _duration));
-        btc.shiftIn(_amount, _nHash, _sig, pHash);
+        btc.shiftIn(pHash, _amount, _nHash, _sig);
     }
 
     /// @notice Allows a beneficiary to withdraw their vested Bitcoin.
