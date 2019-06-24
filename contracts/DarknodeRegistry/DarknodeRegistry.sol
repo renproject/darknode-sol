@@ -92,8 +92,8 @@ contract DarknodeRegistry is Ownable {
         _;
     }
 
-    /// @notice Restrict a function toed registered nodes without a pending deregistration to
-    /// deregister
+    /// @notice Restrict a function to registered nodes without a pending
+    /// deregistration.
     modifier onlyDeregisterable(address _darknodeID) {
         require(isDeregisterable(_darknodeID), "must be deregisterable");
         _;
