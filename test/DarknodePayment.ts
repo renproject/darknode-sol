@@ -1,13 +1,13 @@
 import BN from "bn.js";
 
+import { config } from "../migrations/networks";
 import {
-    MINIMUM_BOND, PUBK, waitForEpoch, increaseTime, ETHEREUM_TOKEN_ADDRESS, NULL,
+    CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
+    DarknodeRegistryInstance, ERC20Instance, RenTokenInstance,
+} from "../types/truffle-contracts";
+import {
+    ETHEREUM_TOKEN_ADDRESS, increaseTime, MINIMUM_BOND, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-
-
-import { RenTokenInstance, DarknodePaymentStoreInstance, ERC20Instance, DarknodeRegistryInstance, DarknodePaymentInstance, CycleChangerInstance } from "../types/truffle-contracts";
-
-import { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } from "../migrations/config";
 
 const CycleChanger = artifacts.require("CycleChanger");
 const RenToken = artifacts.require("RenToken");
@@ -16,6 +16,8 @@ const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
+
+const { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } = config;
 
 const hour = 60 * 60;
 const day = 24 * hour;
@@ -69,6 +71,19 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     describe("Token registration", async () => {
 
+        const tokenCount = async () => {
+            let i = 0;
+            while (true) {
+                try {
+                    await dnp.registeredTokens(i);
+                    i++;
+                } catch (error) {
+                    break;
+                }
+            }
+            return i;
+        }
+
         const printTokens = async () => {
             console.log(`Registered tokens: [`);
             let i = 0;
@@ -106,18 +121,20 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("can register tokens", async () => {
+            const lengthBefore = await tokenCount();
+
             await dnp.registerToken(dai.address);
             await dnp.registerToken(dai.address).should.be.rejectedWith(/token already pending registration/);
             await dnp.registerToken(erc20Token.address); // .should.not.be.rejectedWith(/token already pending registration/);
             // complete token registration
             await waitForCycle();
-            (await dnp.registeredTokens(0)).should.equal(dai.address);
-            (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(1));
+            (await dnp.registeredTokens(lengthBefore)).should.equal(dai.address);
+            (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(lengthBefore + 1));
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
             await waitForCycle();
-            (await dnp.registeredTokens(2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
-            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(3);
+            (await dnp.registeredTokens(lengthBefore + 2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
+            (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(lengthBefore + 3);
             await checkTokenIndexes();
         });
 
@@ -226,7 +243,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot deposit ERC20 with ETH attached", async () => {
             const amount = new BN("100000000000000000");
-            await dnp.deposit(amount, dai.address, { value: 1, from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
+            await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
         });
     });
 

@@ -21,6 +21,6 @@ contract CycleChanger {
     }
 
     function time() public view returns (uint256) {
-        return now;
+        return block.timestamp;
     }
 }

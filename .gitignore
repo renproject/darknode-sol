@@ -8,13 +8,8 @@ coverageEnv
 coverage.json
 .coveralls.yml
 .env
-/build
-/.merged
+build/development
 local_*
 bindings.go
 
 types
-
-!node_modules/openzeppelin-solidity/
-node_modules/openzeppelin-solidity/*
-!node_modules/openzeppelin-solidity/contracts/

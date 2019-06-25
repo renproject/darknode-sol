@@ -1,9 +1,9 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "../RenToken.sol";
+import "../RenToken/RenToken.sol";
 import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
 
@@ -74,32 +74,32 @@ contract DarknodeRegistry is Ownable {
     event LogMinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
     event LogSlasherUpdated(address previousSlasher, address nextSlasher);
 
-    /// @notice Only allow the owner that registered the darknode to pass.
+    /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
         require(store.darknodeOwner(_darknodeID) == msg.sender, "must be darknode owner");
         _;
     }
 
-    /// @notice Only allow unregistered darknodes.
+    /// @notice Restrict a function to unregistered darknodes.
     modifier onlyRefunded(address _darknodeID) {
         require(isRefunded(_darknodeID), "must be refunded or never registered");
         _;
     }
 
-    /// @notice Only allow refundable darknodes.
+    /// @notice Restrict a function to refundable darknodes.
     modifier onlyRefundable(address _darknodeID) {
         require(isRefundable(_darknodeID), "must be deregistered for at least one epoch");
         _;
     }
 
-    /// @notice Only allowed registered nodes without a pending deregistration to
-    /// deregister
+    /// @notice Restrict a function to registered nodes without a pending
+    /// deregistration.
     modifier onlyDeregisterable(address _darknodeID) {
         require(isDeregisterable(_darknodeID), "must be deregisterable");
         _;
     }
 
-    /// @notice Only allow the Slasher contract.
+    /// @notice Restrict a function to the Slasher contract.
     modifier onlySlasher() {
         require(address(slasher) == msg.sender, "must be slasher");
         _;

@@ -1,7 +1,6 @@
 import * as chai from "chai";
 
 import BigNumber from "bignumber.js";
-
 import BN from "bn.js";
 
 interface Log {
@@ -36,6 +35,11 @@ interface TransactionReceipt {
         args: object,
     }>;
 }
+
+export const log = (event: string, args: object) => ({
+    event,
+    args,
+});
 
 // Chai helper for comparing logs
 // tslint:disable:only-arrow-functions
@@ -90,8 +94,8 @@ chai.use(function (newChai: any, utils: any): void {
                     sameValues,
                     `expected ${arg} to be #{exp} instead of #{act} in log ${expectedLog.event}`,
                     `expected ${arg} to be different from #{exp} in log ${expectedLog.event}`,
-                    expectedLog.args[arg].toString(),
-                    actualLog.args[arg].toString(),
+                    expectedLog.args[arg],
+                    actualLog.args[arg],
                 );
             }
         }

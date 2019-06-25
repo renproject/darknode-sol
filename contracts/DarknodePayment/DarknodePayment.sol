@@ -1,10 +1,10 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
-import "../CompatibleERC20Functions.sol";
+import "../libraries/CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./DarknodePaymentStore.sol";
 
@@ -121,19 +121,19 @@ contract DarknodePayment is Ownable {
     /// @param _token The token that was deregistered
     event LogTokenDeregistered(address _token);
 
-    /// @notice Only allow registered dark nodes.
+    /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
         require(darknodeRegistry.isRegistered(_darknode), "darknode is not registered");
         _;
     }
 
-    /// @notice Only allow the Darknode Payment contract.
+    /// @notice Restrict a function the blacklister.
     modifier onlyBlacklister() {
         require(blacklister == msg.sender, "not Blacklister");
         _;
     }
 
-    /// @notice Only allow darknodes which haven't been blacklisted
+    /// @notice Restrict a function darknodes which haven't been blacklisted
     modifier notBlacklisted(address _darknode) {
         require(!store.isBlacklisted(_darknode), "darknode is blacklisted");
         _;
@@ -162,7 +162,7 @@ contract DarknodePayment is Ownable {
 
         // Start the current cycle
         currentCycle = block.number;
-        cycleStartTime = now;
+        cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
     }
 
@@ -218,7 +218,7 @@ contract DarknodePayment is Ownable {
         // Start a new cycle
         previousCycle = currentCycle;
         currentCycle = block.number;
-        cycleStartTime = now;
+        cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
 
         // Update the share size for next cycle

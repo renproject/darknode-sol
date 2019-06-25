@@ -1,10 +1,10 @@
 pragma solidity ^0.5.8;
 
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-import "../Claimable.sol";
-import "../LinkedList.sol";
-import "../RenToken.sol";
+import "../libraries/Claimable.sol";
+import "../libraries/LinkedList.sol";
+import "../RenToken/RenToken.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been separated to improve

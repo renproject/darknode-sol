@@ -1,9 +1,9 @@
 pragma solidity ^0.5.8;
 
-import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
 contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
 
@@ -19,7 +19,8 @@ contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
     }
 
     function transferTokens(address beneficiary, uint256 amount) public onlyOwner returns (bool) {
-        /* solium-disable error-reason */
+        // Note: The deployed version has no revert reason
+        /* solium-disable-next-line error-reason */
         require(amount > 0);
 
         _transfer(msg.sender, beneficiary, amount);
