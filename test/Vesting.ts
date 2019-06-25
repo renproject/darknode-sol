@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js";
 import { rawEncode } from "ethereumjs-abi";
 
 import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
-import { increaseTime, NULL } from "./helper/testUtils";
+import { increaseTime, NULL, Ox } from "./helper/testUtils";
 
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
@@ -47,7 +47,7 @@ contract("Vesting", (accounts) => {
         const duration = 6;
 
         const addVestingSchedule = async () => {
-            const nonce = `0x${randomBytes(32).toString("hex")}`;
+            const nonce = Ox(randomBytes(32).toString("hex"));
 
             const startTime = 0;
             const pHash = keccak256(rawEncode(
@@ -55,15 +55,20 @@ contract("Vesting", (accounts) => {
                 [beneficiary, startTime, duration]
             )).toString("hex");
 
-            const hashForSignature = await btcShifter.hashForSignature(vesting.address, amount.toNumber(), nonce, `0x${pHash}`);
+            const hashForSignature = await btcShifter.hashForSignature(Ox(pHash), amount.toNumber(), vesting.address, nonce);
             const sig = ecsign(Buffer.from(hashForSignature.slice(2), "hex"), privKey);
-            const sigString = `0x${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`;
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             // User should have no schedules prior to adding.
             let schedule = await vesting.schedules(beneficiary);
             (schedule as any).startTime.should.bignumber.equal(new BN(0));
 
-            await vesting.addVestingSchedule(amount, nonce, sigString, beneficiary, startTime, duration);
+            await vesting.addVestingSchedule(
+                // Payload
+                beneficiary, startTime, duration,
+                // Required
+                amount, nonce, sigString,
+            );
         }
 
         it("can add a vesting schedule", async () => {
