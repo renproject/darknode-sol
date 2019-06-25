@@ -34,7 +34,7 @@ contract Shifter is Ownable {
     /// a fee recipient.
     address public feeRecipient;
 
-    /// @notice The burning fee in bips.
+    /// @notice The minting and burning fee in bips.
     uint16 public fee;
 
     /// @notice Each nHash can only be seen once.
@@ -43,6 +43,7 @@ contract Shifter is Ownable {
     // LogShiftIn and LogShiftOut contain a unique `shiftID` that identifies
     // the mint or burn event.
     uint256 public nextShiftID = 0;
+
     event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
     event LogShiftOut(bytes _to, uint256 _amount, uint256 indexed _shiftID, bytes indexed _indexedTo);
 
