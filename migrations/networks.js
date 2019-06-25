@@ -5,9 +5,8 @@ const config = {
     MINIMUM_POD_SIZE: 3, // 24 in production
     MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
     DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS: 300, // 300 for testnet (5 minutes in seconds), 86400 in mainnet testing (1 day), 2628000 in production (1 month in seconds)
-    owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111", // Darknode public key
-    shifterFees: 0,
-    renExFees: 0,
+    mintAuthority: "", // Darknode public key
+    shifterFees: 10,
 }
 
 module.exports = {
@@ -31,7 +30,7 @@ module.exports = {
 
         config: {
             ...config,
-            owner: "TODO",
+            mintAuthority: "TODO",
         },
     },
     testnet: {
@@ -46,15 +45,15 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "",
-        ZECShifter: "",
-        ShifterRegistry: "",
-        zZEC: "",
-        zBTC: "",
+        BTCShifter: "0xcAEd211A141BfbC7244F17a6dABeA7456b5E2Af5",
+        ZECShifter: "0x65E967F51be974d002090BdC604C088B8b79Dbb3",
+        zBTC: "0x7cf9A2de7D5e81e6d4372D9b20D27AB8267295d5",
+        zZEC: "0x47b8941De0B214E0d18154B4fDa1DbE0d1484215",
+        ShifterRegistry: "0x89aB0D4e64b1cb7F961228b70595a46BF0761546",
 
         config: {
             ...config,
-            owner: "0xe02cabac3a62655335b1227dfdecfff27b5f6111",
+            mintAuthority: "0xfEEA966136A436e44c96335455771943452728Fc",
         },
     },
 
@@ -78,7 +77,7 @@ module.exports = {
 
         config: {
             ...config,
-            owner: "0x723eb4380E03dF6a6f98Cc1338b00cfBE5E45218",
+            mintAuthority: "0x723eb4380E03dF6a6f98Cc1338b00cfBE5E45218",
         },
     },
     config,

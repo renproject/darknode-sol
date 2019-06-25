@@ -7,7 +7,7 @@ const { execSync } = require("child_process")
 const GWEI = 1000000000;
 const commitHash = execSync("git describe --always --long").toString().trim();
 
-if (["devnet", "testnet", "mainnet"].indexOf(process.env.NETWORK) !== -1 && process.env.INFURA_KEY === undefined) {
+if ((process.env.NETWORK || "").match(/devnet|testnet|mainnet/) && process.env.INFURA_KEY === undefined) {
   throw new Error("Must set INFURA_KEY");
 }
 
