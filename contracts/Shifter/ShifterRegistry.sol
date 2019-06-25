@@ -13,6 +13,7 @@ contract ShifterRegistry is Claimable {
     /// first in order to be used as a log index/topic.
     event LogShifterRegistered(string _symbol, string indexed _indexedSymbol, address indexed _tokenAddress, address indexed _shifterAddress);
     event LogShifterDeregistered(string _symbol, string indexed _indexedSymbol, address indexed _tokenAddress, address indexed _shifterAddress);
+    event LogShifterUpdated(address indexed _tokenAddress, address indexed _currentShifterAddress, address indexed _newShifterAddress);
 
     /// @notice A list of shifter contracts
     LinkedList.List private shifterList;
@@ -48,6 +49,28 @@ contract ShifterRegistry is Claimable {
         shifterByToken[_tokenAddress] = _shifterAddress;
 
         emit LogShifterRegistered(symbol, symbol, _tokenAddress, _shifterAddress);
+    }
+
+    /// @notice Allow the owner to update the shifter address for a given
+    ///         ERC20Shifted token contract.
+    ///
+    /// @param _tokenAddress The address of the ERC20Shifted token contract.
+    /// @param _newShifterAddress The updated address of the Shifter contract.
+    function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
+        // Check that token, shifter and symbol haven't already been registered
+        require(!LinkedList.isInList(shifterList, _newShifterAddress), "shifter is registered with a different token");
+        address currentShifter = shifterByToken[_tokenAddress];
+        require(shifterByToken[_tokenAddress] != address(0x0), "token not registered");
+
+        // Remove to list of shifters
+        LinkedList.remove(shifterList, currentShifter);
+        
+        // Add to list of shifted tokens
+        LinkedList.append(shifterList, _newShifterAddress);
+
+        shifterByToken[_tokenAddress] = _newShifterAddress;
+
+        emit LogShifterUpdated(_tokenAddress, currentShifter, _newShifterAddress);
     }
 
     /// @notice Allows the owner to remove the shifter address for a given
