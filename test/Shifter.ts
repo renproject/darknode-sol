@@ -5,7 +5,7 @@ import { keccak256 } from "web3-utils";
 
 import { BTCShifterInstance, ShifterInstance, zBTCInstance, ShifterRegistryInstance } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
-import { increaseTime, NULL, Ox } from "./helper/testUtils";
+import { increaseTime, NULL, Ox, ETHEREUM_TOKEN_ADDRESS, randomAddress } from './helper/testUtils';
 
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
@@ -343,19 +343,26 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         });
 
         it("can update shifter for a token", async () => {
-            (await registry.getShifterByToken(zbtc.address)).should.equal(btcShifter.address);
-            
-            const newBtcShifter = await BTCShifter.new(
-                NULL,
-                zbtc.address,
-                feeRecipient,
-                mintAuthority.address,
-                feeInBips,
-            );
+            {
+                await registry.updateShifter(ETHEREUM_TOKEN_ADDRESS, randomAddress())
+                    .should.be.rejectedWith(/token not registered/);
+            }
 
-            await registry.updateShifter(zbtc.address, newBtcShifter.address);
+            {
+                (await registry.getShifterByToken(zbtc.address)).should.equal(btcShifter.address);
             
-            (await registry.getShifterByToken(zbtc.address)).should.equal(newBtcShifter.address);
+                const newBtcShifter = await BTCShifter.new(
+                    NULL,
+                    zbtc.address,
+                    feeRecipient,
+                    mintAuthority.address,
+                    feeInBips,
+                );
+
+                await registry.updateShifter(zbtc.address, newBtcShifter.address);
+                
+                (await registry.getShifterByToken(zbtc.address)).should.equal(newBtcShifter.address);
+            }
         })
 
         it("can deregister shifters", async () => {
