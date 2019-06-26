@@ -53,7 +53,7 @@ module.exports = {
 
         config: {
             ...config,
-            mintAuthority: "0xfEEA966136A436e44c96335455771943452728Fc",
+            mintAuthority: "0x44Bb4eF43408072bC888Afd1a5986ba0Ce35Cb54",
         },
     },
 
