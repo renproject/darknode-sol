@@ -59,13 +59,11 @@ contract Shifter is Ownable {
     /// @param _fee The amount subtracted each burn and mint request and
     ///        forwarded to the feeRecipient. In BIPS.
     constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
-        // ShiftIn and ShiftOut will fail if the feeRecipient is 0x0
-        require(_feeRecipient != address(0x0), "fee recipient cannot be 0x0");
         authorizedWrapper[_previousShifter] = true;
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
-        feeRecipient = _feeRecipient;
+        updateFeeRecipient(_feeRecipient);
     }
 
     // Public functions ////////////////////////////////////////////////////////
