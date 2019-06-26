@@ -95,6 +95,13 @@ contract Shifter is Ownable {
         feeRecipient = _nextFeeRecipient;
     }
 
+    /// @notice Allow the mint authority to update the fee.
+    ///
+    /// @param _nextFee The new fee for minting and burning.
+    function updateFee(uint16 _nextFee) public onlyOwner {
+        fee = _nextFee;
+    }
+
     /// @notice Allows the mint authority to initiate an ownership transfer of
     ///         the token.
     ///
