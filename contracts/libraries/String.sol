@@ -1,8 +1,10 @@
 pragma solidity ^0.5.2;
 
 library String {
-    function fromBytes32(bytes32 _addr) internal pure returns(string memory) {
-        bytes32 value = bytes32(uint256(_addr));
+
+    /// @notice Convert a bytes32 value to its hex string representation
+    function fromBytes32(bytes32 _value) internal pure returns(string memory) {
+        bytes32 value = bytes32(uint256(_value));
         bytes memory alphabet = "0123456789abcdef";
 
         bytes memory str = new bytes(32 * 2 + 2);
@@ -15,7 +17,7 @@ library String {
         return string(str);
     }
 
-
+    /// @notice Convert an address to its hex string representation
     function fromAddress(address _addr) internal pure returns(string memory) {
         bytes32 value = bytes32(uint256(_addr));
         bytes memory alphabet = "0123456789abcdef";
@@ -30,19 +32,8 @@ library String {
         return string(str);
     }
 
-    // function add2(string memory a, string memory b) internal pure returns (string memory) {
-    //     return string(abi.encodePacked(a, b));
-    // }
-
-    // function add3(string memory a, string memory b, string memory c) internal pure returns (string memory) {
-    //     return string(abi.encodePacked(a, b, c));
-    // }
-
+    /// @notice Append four strings
     function add4(string memory a, string memory b, string memory c, string memory d) internal pure returns (string memory) {
         return string(abi.encodePacked(a, b, c, d));
     }
-
-    // function add5(string memory a, string memory b, string memory c, string memory d, string memory e) internal pure returns (string memory) {
-    //     return string(abi.encodePacked(a, b, c, d, e));
-    // }
 }
