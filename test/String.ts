@@ -11,6 +11,8 @@ contract("String", (accounts) => {
         String = await StringTest.new();
     });
 
+    // Skipped for now due to an issue with the coverage tool.
+    // The tests pass when run without coverage.
     it.skip("can add strings", async () => {
         (await String.add4("1", "2", "3", "4"))
             .should.equal("1234");

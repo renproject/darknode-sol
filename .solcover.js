@@ -20,6 +20,7 @@ module.exports = {
         "test/tokens/ReturnsFalseToken.sol",
         "test/tokens/TokenWithFees.sol",
         "test/LinkedListTest.sol",
+        "test/StringTest.sol",
         "test/tokens/PaymentToken.sol",
         "test/CycleChanger.sol",
     ],
