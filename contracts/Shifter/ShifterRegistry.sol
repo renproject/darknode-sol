@@ -61,8 +61,7 @@ contract ShifterRegistry is Claimable {
     /// @param _tokenAddress The address of the ERC20Shifted token contract.
     /// @param _newShifterAddress The updated address of the Shifter contract.
     function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
-        // Check that token, shifter and symbol haven't already been registered
-        require(!LinkedList.isInList(shifterList, _newShifterAddress), "shifter is registered with a different token");
+        // Check that token, shifter are registered
         address currentShifter = shifterByToken[_tokenAddress];
         require(shifterByToken[_tokenAddress] != address(0x0), "token not registered");
 
