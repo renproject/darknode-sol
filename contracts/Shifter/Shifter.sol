@@ -30,8 +30,10 @@ contract Shifter is Ownable {
     /// @notice The mintAuthority is an address that can sign mint requests.
     address public mintAuthority;
 
-    /// @notice When tokens a burnt, a portion of the tokens are forwarded to
-    /// a fee recipient.
+    /// @dev feeRecipient is assumed to be an address (or a contract) that can 
+    /// accept erc20 payments it cannot be 0x0.
+    /// @notice When tokens are mint or burnt, a portion of the tokens are 
+    /// forwarded to a fee recipient.
     address public feeRecipient;
 
     /// @notice The minting and burning fee in bips.
@@ -61,7 +63,7 @@ contract Shifter is Ownable {
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
-        feeRecipient = _feeRecipient;
+        updateFeeRecipient(_feeRecipient);
     }
 
     // Public functions ////////////////////////////////////////////////////////
@@ -84,6 +86,9 @@ contract Shifter is Ownable {
     ///
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
+        // ShiftIn and ShiftOut will fail if the feeRecipient is 0x0
+        require(_nextFeeRecipient != address(0x0), "fee recipient cannot be 0x0");
+
         feeRecipient = _nextFeeRecipient;
     }
 
@@ -213,8 +218,6 @@ contract Shifter is Ownable {
 
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
-
-/* solium-disable no-empty-blocks */
 contract BTCShifter is Shifter {
     constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
         Shifter(_previousShifter, _token, _feeRecipient, _mintAuthority, _fee) public {
