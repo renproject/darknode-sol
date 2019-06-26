@@ -2,6 +2,7 @@ pragma solidity ^0.5.2;
 
 import "../libraries/String.sol";
 
+/// @dev StringTest exposes the internal functions of String.sol
 library StringTest {
 
     function fromBytes32(bytes32 _value) public pure returns(string memory) {
