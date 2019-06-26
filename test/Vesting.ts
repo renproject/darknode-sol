@@ -1,11 +1,10 @@
 import BN from "bn.js";
-import { randomBytes } from "crypto";
 import { ecsign, keccak256 } from "ethereumjs-util";
 import BigNumber from "bignumber.js";
 import { rawEncode } from "ethereumjs-abi";
 
 import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
-import { increaseTime, NULL, Ox } from "./helper/testUtils";
+import { increaseTime, NULL, Ox, randomBytes } from "./helper/testUtils";
 
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
@@ -47,7 +46,7 @@ contract("Vesting", (accounts) => {
         const duration = 6;
 
         const addVestingSchedule = async () => {
-            const nonce = Ox(randomBytes(32).toString("hex"));
+            const nonce = randomBytes(32);
 
             const startTime = 0;
             const pHash = keccak256(rawEncode(

@@ -38,11 +38,14 @@ export function PUBK(i: string | number) {
 export const NULL = "0x0000000000000000000000000000000000000000";
 export const NULL32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-// Add a 0x prefix from a hex string
-export const Ox = (hex: string) => hex.substring(0, 2) === "0x" ? hex : `0x${hex}`;
+// Add a 0x prefix to a hex value, converting to a string first
+export const Ox = (hex: string | BN | Buffer) => {
+    const hexString = typeof hex === "string" ? hex : hex.toString("hex");
+    return hexString.substring(0, 2) === "0x" ? hexString : `0x${hexString}`;
+};
 
 export const randomBytes = (bytes: number): string => {
-    return Ox(crypto.randomBytes(bytes).toString("hex"));
+    return Ox(crypto.randomBytes(bytes));
 };
 
 export const randomAddress = (): string => {

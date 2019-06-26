@@ -1,12 +1,10 @@
 import BN from "bn.js";
-import { randomBytes } from "crypto";
 import { ecrecover, ecsign, pubToAddress } from "ethereumjs-util";
-import { Registry } from "web3-eth-ens";
 import { keccak256 } from "web3-utils";
 
 import { BTCShifterInstance, ShifterInstance, zBTCInstance } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
-import { increaseTime, NULL, Ox } from "./helper/testUtils";
+import { NULL, Ox, randomBytes } from "./helper/testUtils";
 
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
@@ -43,8 +41,8 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     const removeFee = (value, bips) => value.sub(value.mul(new BN(bips)).div(new BN(10000)))
 
     const mintTest = async (shifter: ShifterInstance, value: BN, shiftID = undefined) => {
-        const nHash = Ox(randomBytes(32).toString("hex"));
-        const pHash = Ox(randomBytes(32).toString("hex"));
+        const nHash = randomBytes(32);
+        const pHash = randomBytes(32);
 
         const hash = await shifter.hashForSignature(pHash, value.toNumber(), user, nHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
@@ -71,7 +69,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
 
     const burnTest = async (shifter: ShifterInstance, value: BN, btcAddress?: string, shiftID = undefined) => {
         // Note: we don't use `||` because we want to pass in `""`
-        btcAddress = btcAddress !== undefined ? btcAddress : Ox(randomBytes(35).toString("hex"));
+        btcAddress = btcAddress !== undefined ? btcAddress : randomBytes(35);
 
         const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
         const _shiftID = await shifter.nextShiftID();
@@ -100,7 +98,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("can mint for the same pHash with a different nHash", async () => {
             const [pHash, _] = await mintTest(btcShifter, value);
 
-            const nHash = Ox(randomBytes(32).toString("hex"));
+            const nHash = randomBytes(32);
 
             const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
@@ -114,9 +112,9 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         });
 
         it("won't mint with an invalid signature", async () => {
-            const nHash1 = Ox(randomBytes(32).toString("hex"));
-            const nHash2 = Ox(randomBytes(32).toString("hex"));
-            const pHash = Ox(randomBytes(32).toString("hex"));
+            const nHash1 = randomBytes(32);
+            const nHash2 = randomBytes(32);
+            const pHash = randomBytes(32);
 
             const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash1);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
@@ -128,8 +126,8 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         });
 
         it("can't call forwardShiftIn", async () => {
-            const nHash = Ox(randomBytes(32).toString("hex"));
-            const pHash = Ox(randomBytes(32).toString("hex"));
+            const nHash = randomBytes(32);
+            const pHash = randomBytes(32);
 
             const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
@@ -141,7 +139,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         });
 
         it("can't call forwardShiftOut", async () => {
-            const btcAddress = Ox(randomBytes(35).toString("hex"));
+            const btcAddress = randomBytes(35);
             await btcShifter.forwardShiftOut(user, btcAddress, removeFee(value, 10).toNumber(), { from: malicious })
                 .should.be.rejectedWith(/not authorized to burn on behalf of user/);
         });
@@ -160,8 +158,8 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             // mint twice. See "Signature Malleability" at
             // https://yondon.blog/2019/01/01/how-not-to-use-ecdsa/
 
-            const nHash = Ox(randomBytes(32).toString("hex"));
-            const pHash = Ox(randomBytes(32).toString("hex"));
+            const nHash = randomBytes(32);
+            const pHash = randomBytes(32);
 
             const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
 
