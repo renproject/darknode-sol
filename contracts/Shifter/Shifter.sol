@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
+import "../libraries/String.sol";
 import "./ERC20Shifted.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
@@ -11,6 +12,8 @@ import "./ERC20Shifted.sol";
 /// of an asset can request for it to be burnt.
 contract Shifter is Ownable {
     using SafeMath for uint256;
+
+    uint8 public version = 1;
 
     /// @notice Shifter can be upgraded by setting a `nextShifter`.
     /// This upgradability pattern is not as sophisticated as a DelegateProxy,
@@ -175,7 +178,19 @@ contract Shifter is Ownable {
         // Verify signature
         bytes32 signedMessageHash = hashForSignature(_pHash, _amount, _to, _nHash);
         require(status[signedMessageHash] == false, "nonce hash already spent");
-        require(verifySignature(signedMessageHash, _sig), "invalid signature");
+        if (!verifySignature(signedMessageHash, _sig)) {
+            // Return a detailed string containing the hash and recovered
+            // signer. This is a costly operation but is only run in the revert
+            // branch.
+            revert(
+                String.add4(
+                    "invalid signature - hash: ",
+                    String.fromBytes32(signedMessageHash),
+                    ", signer: ",
+                    String.fromAddress(ECDSA.recover(signedMessageHash, _sig))
+                )
+            );
+        }
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
