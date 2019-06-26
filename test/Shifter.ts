@@ -1,12 +1,11 @@
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import { ecrecover, ecsign, pubToAddress } from "ethereumjs-util";
-import { Registry } from "web3-eth-ens";
 import { keccak256 } from "web3-utils";
 
-import { BTCShifterInstance, ShifterInstance, zBTCInstance } from "../types/truffle-contracts";
+import { BTCShifterInstance, ShifterInstance, zBTCInstance, ShifterRegistryInstance } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
-import { increaseTime, NULL, Ox } from "./helper/testUtils";
+import { increaseTime, NULL, Ox, ETHEREUM_TOKEN_ADDRESS, randomAddress } from './helper/testUtils';
 
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
@@ -253,6 +252,8 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
         it("can upgrade fee recipient", async () => {
             await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
                 .should.be.rejectedWith(/caller is not the owner/);
+            await (btcShifter.updateFeeRecipient(NULL, { from: defaultAcc }))
+                .should.be.rejectedWith(/fee recipient cannot be 0x0/);
             await btcShifter.updateFeeRecipient(user, { from: defaultAcc });
             await btcShifter.updateFeeRecipient(feeRecipient, { from: defaultAcc });
         });
@@ -266,7 +267,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
     });
 
     describe("shifter registry", () => {
-        let registry;
+        let registry: ShifterRegistryInstance;
 
         before(async () => {
             registry = await ShifterRegistry.new();
@@ -296,7 +297,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             (await registry.getTokenBySymbol("zBTC"))
                 .should.equal(zbtc.address);
 
-            { // Starting from NULL
+            { // The first 10 shifters starting from NULL
                 const shifters = await registry.getShifters(NULL, 10);
                 shifters[0].should.equal(btcShifter.address);
                 shifters[1].should.equal(NULL);
@@ -306,6 +307,16 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
                 shiftedTokens[0].should.equal(zbtc.address);
                 shiftedTokens[1].should.equal(NULL);
                 shiftedTokens.length.should.equal(10);
+            }
+
+            { // Get all the shifters starting from NULL
+                const shifters = await registry.getShifters(NULL, 0);
+                shifters[0].should.equal(btcShifter.address);
+                shifters.length.should.equal(1);
+
+                const shiftedTokens = await registry.getShiftedTokens(NULL, 0);
+                shiftedTokens[0].should.equal(zbtc.address);
+                shiftedTokens.length.should.equal(1);
             }
 
             { // Starting from first entry
@@ -319,7 +330,40 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
                 shiftedTokens[1].should.equal(NULL);
                 shiftedTokens.length.should.equal(10);
             }
+
+            { // Get all the shifters starting from first entry
+                const shifters = await registry.getShifters(btcShifter.address, 0);
+                shifters[0].should.equal(btcShifter.address);
+                shifters.length.should.equal(1);
+
+                const shiftedTokens = await registry.getShiftedTokens(zbtc.address, 0);
+                shiftedTokens[0].should.equal(zbtc.address);
+                shiftedTokens.length.should.equal(1);
+            }
         });
+
+        it("can update shifter for a token", async () => {
+            {
+                await registry.updateShifter(ETHEREUM_TOKEN_ADDRESS, randomAddress())
+                    .should.be.rejectedWith(/token not registered/);
+            }
+
+            {
+                (await registry.getShifterByToken(zbtc.address)).should.equal(btcShifter.address);
+            
+                const newBtcShifter = await BTCShifter.new(
+                    NULL,
+                    zbtc.address,
+                    feeRecipient,
+                    mintAuthority.address,
+                    feeInBips,
+                );
+
+                await registry.updateShifter(zbtc.address, newBtcShifter.address);
+                
+                (await registry.getShifterByToken(zbtc.address)).should.equal(newBtcShifter.address);
+            }
+        })
 
         it("can deregister shifters", async () => {
             await registry.removeShifter("zBTC");
@@ -327,5 +371,7 @@ contract("Shifter", ([defaultAcc, feeRecipient, user, malicious]) => {
             await registry.removeShifter("zBTC")
                 .should.be.rejectedWith(/symbol not registered/);
         })
+
+        
     });
 });

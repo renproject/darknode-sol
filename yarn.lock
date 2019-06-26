@@ -4613,7 +4613,7 @@ tree-kill@^1.2.0:
   resolved "https://registry.yarnpkg.com/tree-kill/-/tree-kill-1.2.1.tgz#5398f374e2f292b9dcc7b2e71e30a5c3bb6c743a"
   integrity sha512-4hjqbObwlh2dLyW4tcz0Ymw0ggoaVDMveUB9w8kFSQScdRLo0gxO9J7WFcUBo+W3C1TLdFIEwNOWebgZZ0RH9Q==
 
-truffle-hdwallet-provider@1.0.11:
+truffle-hdwallet-provider@^1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/truffle-hdwallet-provider/-/truffle-hdwallet-provider-1.0.11.tgz#caa18fc0770068662dc00988578b2b1baaf2a764"
   integrity sha512-4J+cB//8zGDWnsU5i6nSQG0BET2NkN+9TuraS61FkhSsYtYcDvKr23ZjvI44XzKnxvB2i8sMr+WGfzNDtZme0A==

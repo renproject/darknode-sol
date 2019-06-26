@@ -13,6 +13,10 @@ contract ShifterRegistry is Claimable {
     /// first in order to be used as a log index/topic.
     event LogShifterRegistered(string _symbol, string indexed _indexedSymbol, address indexed _tokenAddress, address indexed _shifterAddress);
     event LogShifterDeregistered(string _symbol, string indexed _indexedSymbol, address indexed _tokenAddress, address indexed _shifterAddress);
+    event LogShifterUpdated(address indexed _tokenAddress, address indexed _currentShifterAddress, address indexed _newShifterAddress);
+
+    /// @notice The number of shifters registered
+    uint256 numShifters = 0;
 
     /// @notice A list of shifter contracts
     LinkedList.List private shifterList;
@@ -46,8 +50,30 @@ contract ShifterRegistry is Claimable {
 
         tokenBySymbol[symbol] = _tokenAddress;
         shifterByToken[_tokenAddress] = _shifterAddress;
+        numShifters += 1;
 
         emit LogShifterRegistered(symbol, symbol, _tokenAddress, _shifterAddress);
+    }
+
+    /// @notice Allow the owner to update the shifter address for a given
+    ///         ERC20Shifted token contract.
+    ///
+    /// @param _tokenAddress The address of the ERC20Shifted token contract.
+    /// @param _newShifterAddress The updated address of the Shifter contract.
+    function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
+        // Check that token, shifter are registered
+        address currentShifter = shifterByToken[_tokenAddress];
+        require(shifterByToken[_tokenAddress] != address(0x0), "token not registered");
+
+        // Remove to list of shifters
+        LinkedList.remove(shifterList, currentShifter);
+        
+        // Add to list of shifted tokens
+        LinkedList.append(shifterList, _newShifterAddress);
+
+        shifterByToken[_tokenAddress] = _newShifterAddress;
+
+        emit LogShifterUpdated(_tokenAddress, currentShifter, _newShifterAddress);
     }
 
     /// @notice Allows the owner to remove the shifter address for a given
@@ -67,12 +93,21 @@ contract ShifterRegistry is Claimable {
         tokenBySymbol[_symbol] = address(0x0);
         LinkedList.remove(shifterList, shifterAddress);
         LinkedList.remove(shiftedTokenList, tokenAddress);
+        numShifters -= 1;
 
         emit LogShifterDeregistered(_symbol, _symbol, tokenAddress, shifterAddress);
     }
 
+    /// @dev To get all the registered shifters use count = 0.
     function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
-        address[] memory shifters = new address[](_count);
+        uint256 count;
+        if (_count == 0) {
+            count = numShifters;
+        } else {
+            count = _count;
+        }
+        
+        address[] memory shifters = new address[](count);
 
         // Begin with the first node in the list
         uint256 n = 0;
@@ -81,7 +116,7 @@ contract ShifterRegistry is Claimable {
             next = LinkedList.begin(shifterList);
         }
 
-        while (n < _count) {
+        while (n < count) {
             if (next == address(0)) {
                 break;
             }
@@ -92,8 +127,16 @@ contract ShifterRegistry is Claimable {
         return shifters;
     }
 
+    /// @dev To get all the registered shifted tokens use count = 0.
     function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
-        address[] memory shiftedTokens = new address[](_count);
+        uint256 count;
+        if (_count == 0) {
+            count = numShifters;
+        } else {
+            count = _count;
+        }
+
+        address[] memory shiftedTokens = new address[](count);
 
         // Begin with the first node in the list
         uint256 n = 0;
@@ -102,7 +145,7 @@ contract ShifterRegistry is Claimable {
             next = LinkedList.begin(shiftedTokenList);
         }
 
-        while (n < _count) {
+        while (n < count) {
             if (next == address(0)) {
                 break;
             }
