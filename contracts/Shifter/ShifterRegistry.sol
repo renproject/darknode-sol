@@ -2,8 +2,8 @@ pragma solidity ^0.5.8;
 
 import "../libraries/Claimable.sol";
 import "./ERC20Shifted.sol";
-
 import "../libraries/LinkedList.sol";
+import "./IShifter.sol";
 
 /// @notice ShifterRegistry is a mapping from assets to their associated
 /// ERC20Shifted and Shifter contracts.
@@ -160,16 +160,16 @@ contract ShifterRegistry is Claimable {
     ///         contract address.
     ///
     /// @param _tokenAddress The address of the ERC20Shifted token contract.
-    function getShifterByToken(address _tokenAddress) external view returns (address) {
-        return shifterByToken[_tokenAddress];
+    function getShifterByToken(address _tokenAddress) external view returns (IShifter) {
+        return IShifter(shifterByToken[_tokenAddress]);
     }
 
     /// @notice Returns the Shifter address for the given ERC20Shifted token
     ///         symbol.
     ///
     /// @param _tokenSymbol The symbol of the ERC20Shifted token contract.
-    function getShifterBySymbol(string calldata _tokenSymbol) external view returns (address) {
-        return shifterByToken[tokenBySymbol[_tokenSymbol]];
+    function getShifterBySymbol(string calldata _tokenSymbol) external view returns (IShifter) {
+        return IShifter(shifterByToken[tokenBySymbol[_tokenSymbol]]);
     }
 
     /// @notice Returns the ERC20Shifted address for the given token symbol.
