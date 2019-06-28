@@ -296,5 +296,9 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await registry.removeShifter("zBTC")
                 .should.be.rejectedWith(/symbol not registered/);
         });
+
+        it("can renounce ownership of a shifter", async () => {
+            await btcShifter.renounceOwnership();
+        });
     });
 });
