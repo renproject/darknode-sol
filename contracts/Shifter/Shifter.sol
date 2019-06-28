@@ -15,7 +15,7 @@ contract Shifter is Ownable {
 
     uint8 public version = 2;
 
-    uint256 constant bipsDenominator = 10000;
+    uint256 constant BIPS_DENOMINATOR = 10000;
 
     /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
@@ -117,7 +117,7 @@ contract Shifter is Ownable {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
+        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
         uint256 receivedAmount = _amount.sub(absoluteFee);
         token.mint(msg.sender, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
@@ -128,18 +128,6 @@ contract Shifter is Ownable {
 
         return receivedAmount;
     }
-
-        /// @notice verifySignature checks the the provided signature matches the provided
-    /// parameters.
-    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
-        return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
-    }
-
-    /// @notice hashForSignature hashes the parameters so that they can be signed.
-    function hashForSignature(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash) public view returns (bytes32) {
-        return keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
-        }
-
 
     /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
     ///
@@ -155,7 +143,7 @@ contract Shifter is Ownable {
         require(_to.length != 0, "to address is empty");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
+        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
         token.burn(msg.sender, _amount);
         token.mint(feeRecipient, absoluteFee);
 
@@ -166,6 +154,17 @@ contract Shifter is Ownable {
 
         return receivedValue;
     }
+
+    /// @notice verifySignature checks the the provided signature matches the provided
+    /// parameters.
+    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
+        return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
+    }
+
+    /// @notice hashForSignature hashes the parameters so that they can be signed.
+    function hashForSignature(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash) public view returns (bytes32) {
+        return keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
+    }
 }
 
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
@@ -173,11 +172,11 @@ contract Shifter is Ownable {
 contract BTCShifter is Shifter {
     constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
         Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
-    }
+        }
 }
 
 contract ZECShifter is Shifter {
     constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
         Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
-    }
+        }
 }
