@@ -1,6 +1,6 @@
 pragma solidity ^0.5.8;
 
-import "../Shifter.sol";
+import "../ShifterRegistry.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Vesting is Ownable {
     using SafeMath for uint256;
 
-    BTCShifter public btc;
+    ShifterRegistry public registry;
 
     uint256 private constant SECONDS_PER_MONTH = 365 days / 12;
 
@@ -36,9 +36,9 @@ contract Vesting is Ownable {
     mapping (address => VestingSchedule) public schedules;
 
     /// @notice The contract constructor.
-    /// @param _btc A BTCShifter contract address.
-    constructor(BTCShifter _btc) public {
-        btc = _btc;
+    /// @param _registry The Shifter registry contract address.
+    constructor(ShifterRegistry _registry) public {
+        registry = _registry;
     }
 
     /// @notice Allows the contract owner to add a vesting schedule for a
@@ -64,8 +64,11 @@ contract Vesting is Ownable {
         require(_amount > 0, "amount must be greater than 0");
         require(_duration > 0, "duration must be at least 1 month");
 
-        uint256 fee = _amount.mul(btc.fee()).div(10000);
-        uint256 finalAmount = _amount.sub(fee);
+        // Construct the payload hash and mint new tokens using the Shifter
+        // contract. This will verify the signature to ensure the Darknodes have
+        // received the Bitcoin.
+        bytes32 pHash = keccak256(abi.encode(_beneficiary, _startTime, _duration));
+        uint256 finalAmount = registry.getShifterBySymbol("zBTC").shiftIn(pHash, _amount, _nHash, _sig);
 
         // Construct a vesting schedule and assign it to the beneficiary.
         VestingSchedule memory schedule = VestingSchedule({
@@ -77,12 +80,6 @@ contract Vesting is Ownable {
         });
 
         schedules[_beneficiary] = schedule;
-
-        // Construct the payload hash and mint new tokens using the Shifter
-        // contract. This will verify the signature to ensure the Darknodes have
-        // received the Bitcoin.
-        bytes32 pHash = keccak256(abi.encode(_beneficiary, _startTime, _duration));
-        btc.shiftIn(pHash, _amount, _nHash, _sig);
     }
 
     /// @notice Allows a beneficiary to withdraw their vested Bitcoin.
@@ -104,7 +101,7 @@ contract Vesting is Ownable {
         // Shift out the tokens using the Shifter contract. This will burn the
         // tokens after taking a fee. The Darknodes will watch for this event to
         // transfer the user the Bitcoin.
-        btc.shiftOut(_to, amountClaimable);
+        registry.getShifterBySymbol("zBTC").shiftOut(_to, amountClaimable);
     }
 
     /// @notice Retrieves the claimable amount for a given beneficiary.

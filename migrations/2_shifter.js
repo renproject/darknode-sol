@@ -70,7 +70,6 @@ module.exports = async function (deployer, network, accounts) {
     if (!BTCShifter.address) {
         await deployer.deploy(
             BTCShifter,
-            NULL,
             zBTC.address,
             _feeRecipient,
             _mintAuthority,
@@ -107,7 +106,6 @@ module.exports = async function (deployer, network, accounts) {
     if (!ZECShifter.address) {
         await deployer.deploy(
             ZECShifter,
-            NULL,
             zZEC.address,
             _feeRecipient,
             _mintAuthority,

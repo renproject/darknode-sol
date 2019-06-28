@@ -13,19 +13,9 @@ import "./ERC20Shifted.sol";
 contract Shifter is Ownable {
     using SafeMath for uint256;
 
-    uint8 public version = 1;
+    uint8 public version = 2;
 
-    /// @notice Shifter can be upgraded by setting a `nextShifter`.
-    /// This upgradability pattern is not as sophisticated as a DelegateProxy,
-    /// but is less error prone. It's downsides are higher gas fees when using
-    /// the old address, and every function needing to forward the call,
-    /// including storage getters.
-    address public nextShifter;
-
-    uint256 constant bipsDenominator = 10000;
-
-    /// @notice A set of contracts that can call burn on behalf of a user
-    mapping (address=>bool) public authorizedWrapper;
+    uint256 constant BIPS_DENOMINATOR = 10000;
 
     /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
@@ -52,17 +42,13 @@ contract Shifter is Ownable {
     event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
     event LogShiftOut(bytes _to, uint256 _amount, uint256 indexed _shiftID, bytes indexed _indexedTo);
 
-    /// @param _previousShifter An optional contract that can burn and mint on
-    ///        behalf of users. This is required for the contract's
-    ///        upgradability.
     /// @param _token The ERC20Shifted this Shifter is responsible for.
     /// @param _feeRecipient The recipient of burning and minting fees.
     /// @param _mintAuthority The address of the key that can sign mint
     ///        requests.
     /// @param _fee The amount subtracted each burn and mint request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
-        authorizedWrapper[_previousShifter] = true;
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
@@ -102,21 +88,6 @@ contract Shifter is Ownable {
         fee = _nextFee;
     }
 
-    /// @notice Allows the mint authority to initiate an ownership transfer of
-    ///         the token.
-    ///
-    /// @param _nextShifter The address to transfer the ownership to, or 0x0.
-    function upgradeShifter(address _nextShifter) public onlyOwner {
-        nextShifter = _nextShifter;
-
-        if (_nextShifter == address(0x0)) {
-            require(token.owner() == address(this), "caller is not the owner of token to reset upgrade");
-        } else {
-            token.transferOwnership(address(nextShifter));
-            Shifter(nextShifter).claimTokenOwnership();
-        }
-    }
-
     /// @notice shiftIn mints tokens after taking a fee for the `_feeRecipient`.
     ///
     /// @param _pHash (payload hash) The hash of the payload associated with the
@@ -127,63 +98,8 @@ contract Shifter is Ownable {
     /// @param _sig The signature of the hash of the following values:
     ///        (pHash, amount, msg.sender, nHash), signed by the mintAuthority.
     function shiftIn(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes memory _sig) public returns (uint256) {
-        // Use msg.sender as the _to address
-        return _shiftIn(_pHash, _amount, msg.sender, _nHash, _sig);
-    }
-
-    /// @notice Callable by the previous Shifter if it has been upgraded.
-    function forwardShiftIn(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash, bytes memory _sig) public returns (uint256) {
-        require(authorizedWrapper[msg.sender], "not authorized to mint on behalf of user");
-        return _shiftIn(_pHash, _amount, _to, _nHash, _sig);
-    }
-
-    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
-    ///
-    /// @param _to The address to receive the unshifted digital asset. The
-    ///        format of this address should be of the destination chain.
-    ///        For example, when shifting out to Bitcoin, _to should be a
-    ///        Bitcoin address.
-    /// @param _amount The amount of the token being shifted out, in its
-    ///        smallest value. (e.g. satoshis for BTC)
-    function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
-        return _shiftOut(msg.sender, _to, _amount);
-    }
-
-    /// @notice Callable by the previous Shifter if it has been upgraded.
-    function forwardShiftOut(address _from, bytes memory _to, uint256 _amount) public returns (uint256) {
-        require(authorizedWrapper[msg.sender], "not authorized to burn on behalf of user");
-        return _shiftOut(_from, _to, _amount);
-    }
-
-    /// @notice verifySignature checks the the provided signature matches the provided
-    /// parameters.
-    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
-        return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
-    }
-
-    /// @notice hashForSignature hashes the parameters so that they can be signed.
-    function hashForSignature(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash) public view returns (bytes32) {
-        // Check if the contract has been upgraded and forward the call
-        if (nextShifter != address(0x0)) {
-            return Shifter(nextShifter).hashForSignature(_pHash, _amount, _to, _nHash);
-        }
-
-        return keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
-    }
-
-    // Internal functions //////////////////////////////////////////////////////
-
-    /// @notice _shiftIn mints new tokens after verifying the signature and
-    /// transfers the tokens to `_to`.
-    /// The `_to` parameter is set by `shiftIn` or `forwardShiftIn`.
-    function _shiftIn(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash, bytes memory _sig) internal returns (uint256) {
-        // Check if the contract has been upgraded and forward the call
-        if (nextShifter != address(0x0)) {
-            return Shifter(nextShifter).forwardShiftIn(_pHash, _amount, _to, _nHash, _sig);
-        }
-
         // Verify signature
-        bytes32 signedMessageHash = hashForSignature(_pHash, _amount, _to, _nHash);
+        bytes32 signedMessageHash = hashForSignature(_pHash, _amount, msg.sender, _nHash);
         require(status[signedMessageHash] == false, "nonce hash already spent");
         if (!verifySignature(signedMessageHash, _sig)) {
             // Return a detailed string containing the hash and recovered
@@ -201,32 +117,34 @@ contract Shifter is Ownable {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
+        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
         uint256 receivedAmount = _amount.sub(absoluteFee);
-        token.mint(_to, receivedAmount);
+        token.mint(msg.sender, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftIn(_to, receivedAmount, nextShiftID);
+        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID);
         nextShiftID += 1;
 
         return receivedAmount;
     }
 
-    /// The `_from` parameter is set by `shiftOut` or `forwardShiftOut`.
-    function _shiftOut(address _from, bytes memory _to, uint256 _amount) internal returns (uint256) {
-        // Check if the contract has been upgraded and forward the call
-        if (nextShifter != address(0x0)) {
-            return Shifter(nextShifter).forwardShiftOut(_from, _to, _amount);
-        }
-
+    /// @notice shiftOut burns tokens after taking a fee for the `_feeRecipient`.
+    ///
+    /// @param _to The address to receive the unshifted digital asset. The
+    ///        format of this address should be of the destination chain.
+    ///        For example, when shifting out to Bitcoin, _to should be a
+    ///        Bitcoin address.
+    /// @param _amount The amount of the token being shifted out, in its
+    ///        smallest value. (e.g. satoshis for BTC)
+    function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "to address is empty");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount.mul(fee)).div(bipsDenominator);
-        token.burn(_from, _amount);
+        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
+        token.burn(msg.sender, _amount);
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
@@ -236,18 +154,29 @@ contract Shifter is Ownable {
 
         return receivedValue;
     }
+
+    /// @notice verifySignature checks the the provided signature matches the provided
+    /// parameters.
+    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
+        return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
+    }
+
+    /// @notice hashForSignature hashes the parameters so that they can be signed.
+    function hashForSignature(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash) public view returns (bytes32) {
+        return keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
+    }
 }
 
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
 contract BTCShifter is Shifter {
-    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
-        Shifter(_previousShifter, _token, _feeRecipient, _mintAuthority, _fee) public {
-    }
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
+        }
 }
 
 contract ZECShifter is Shifter {
-    constructor(address _previousShifter, ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
-        Shifter(_previousShifter, _token, _feeRecipient, _mintAuthority, _fee) public {
-    }
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
+        }
 }

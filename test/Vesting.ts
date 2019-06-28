@@ -3,10 +3,11 @@ import { ecsign, keccak256 } from "ethereumjs-util";
 import BigNumber from "bignumber.js";
 import { rawEncode } from "ethereumjs-abi";
 
-import { BTCShifterInstance, VestingInstance, zBTCInstance } from "../types/truffle-contracts";
+import { BTCShifterInstance, VestingInstance, zBTCInstance, ShifterRegistryInstance } from "../types/truffle-contracts";
 import { increaseTime, NULL, Ox, randomBytes } from "./helper/testUtils";
 
 const BTCShifter = artifacts.require("BTCShifter");
+const ShifterRegistry = artifacts.require("ShifterRegistry");
 const zBTC = artifacts.require("zBTC");
 const Vesting = artifacts.require("Vesting");
 
@@ -14,6 +15,7 @@ contract("Vesting", (accounts) => {
     let btcShifter: BTCShifterInstance;
     let zbtc: zBTCInstance;
     let vesting: VestingInstance;
+    let registry: ShifterRegistryInstance;
 
     const mintAuthority = web3.eth.accounts.create();
     const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
@@ -23,20 +25,24 @@ contract("Vesting", (accounts) => {
     const month = 24 * 60 * 60 * 365 / 12;
 
     beforeEach(async () => {
+        // Setup the environment
         zbtc = await zBTC.new();
 
         btcShifter = await BTCShifter.new(
-            NULL,
             zbtc.address,
             feeRecipient,
             mintAuthority.address,
             feeInBips,
         );
-
-        vesting = await Vesting.new(btcShifter.address);
-
+            
         await zbtc.transferOwnership(btcShifter.address);
         await btcShifter.claimTokenOwnership();
+
+        registry = await ShifterRegistry.new();
+        await registry.setShifter(zbtc.address, btcShifter.address);
+
+        // Setup the contracts for testing
+        vesting = await Vesting.new(registry.address);
     });
 
     describe("can vest bitcoin", () => {
