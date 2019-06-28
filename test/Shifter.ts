@@ -297,8 +297,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 .should.be.rejectedWith(/symbol not registered/);
         });
 
-        it("can renounce ownership of a shifter", async () => {
-            await btcShifter.renounceOwnership();
+        it("can renounce ownership of the registry", async () => {
+            await registry.renounceOwnership();
         });
     });
 });
