@@ -1,12 +1,10 @@
 import * as chai from "chai";
 import * as crypto from "crypto";
 
-// @ts-ignore
-import chaiAsPromised from "chai-as-promised";
-// @ts-ignore
-import chaiBigNumber from "chai-bignumber";
 import BigNumber from "bignumber.js";
 import BN from "bn.js";
+import chaiAsPromised from "chai-as-promised";
+import chaiBigNumber from "chai-bignumber";
 import { keccak256, toChecksumAddress, toHex } from "web3-utils";
 
 import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
@@ -56,27 +54,28 @@ const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
         web3.currentProvider.send(
             { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 } as any,
-            ((err, _) => {
+            ((err: Error) => {
                 if (err) {
                     reject(err);
                 }
                 web3.currentProvider.send({
-                    jsonrpc: '2.0',
-                    method: 'evm_mine',
+                    jsonrpc: "2.0",
+                    method: "evm_mine",
                     params: [],
-                    id: new Date().getSeconds()
-                } as any, ((err, _) => {
-                    if (err) {
+                    id: new Date().getSeconds(),
+                } as any, ((innerErr: Error) => {
+                    if (innerErr) {
                         reject();
                     }
                     resolve();
                 }) as any);
-            }) as any
-        )
+            }) as any,
+        );
     });
-}
+};
 
-const getCurrentTimestamp = async (): Promise<number> => parseInt((await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp.toString(), 10);
+const getCurrentTimestamp = async (): Promise<number> =>
+    parseInt((await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp.toString(), 10);
 
 export const increaseTime = async (seconds: number) => {
     let currentTimestamp = await getCurrentTimestamp();
@@ -85,7 +84,6 @@ export const increaseTime = async (seconds: number) => {
         const increase = Math.ceil(target - currentTimestamp + 1);
         await increaseTimeHelper(increase);
         currentTimestamp = await getCurrentTimestamp();
-        // console.log(`Increased by ${increase} to ${currentTimestamp}. Target is ${target}. Reached: ${currentTimestamp >= target}`);
     } while (currentTimestamp < target);
 };
 

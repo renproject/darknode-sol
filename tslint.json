@@ -4,13 +4,27 @@
     ],
     "linterOptions": {
         "exclude": [
-            "node_modules",
+            "node_modules"
         ]
     },
     "rules": {
         "quotemark": [
             true,
             "double"
+        ],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-leading-underscore",
+            "allow-trailing-underscore",
+            "allow-pascal-case"
+        ],
+        "no-shadowed-variable": [
+            true,
+            {
+                "underscore": false
+            }
         ],
         "interface-name": false,
         "max-classes-per-file": false,

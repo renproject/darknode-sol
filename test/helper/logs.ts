@@ -83,7 +83,7 @@ chai.use(function (newChai: any, utils: any): void {
                 const expectedArg = expectedLog.args[arg];
                 const actualArg = actualLog.args[arg];
 
-                let sameValues;
+                let sameValues: boolean;
                 if (BN.isBN(expectedArg) || expectedArg.isBigNumber) {
                     sameValues = (new BigNumber(expectedArg).eq(new BigNumber(actualArg)));
                 } else {
@@ -105,11 +105,11 @@ chai.use(function (newChai: any, utils: any): void {
 
 // Pretty-print logs
 const logsToString = (logs: Log[]): string => {
-    return `[${logs.map((log: Log) => log.event).join(", ")}]`;
+    return `[${logs.map((logItem: Log) => logItem.event).join(", ")}]`;
 };
-const logToString = (log: Log): string => {
-    return `${log.event} ${JSON.stringify(log.args)}`;
-};
+// const logToString = (logItem: Log): string => {
+//     return `${logItem.event} ${JSON.stringify(logItem.args)}`;
+// };
 
 // Compare logs
 const compareArrayOfLogs = (expected: Log[], actual: Log[]): boolean => {
@@ -127,18 +127,18 @@ const compareArrayOfLogs = (expected: Log[], actual: Log[]): boolean => {
 
 // Extract logs from transaction receipt in correct format.s
 export const getLogsFromTx = (tx: TransactionReceipt): Log[] => {
-    return tx.logs.map((log) => {
+    return tx.logs.map((logItem) => {
         const args = {};
-        for (const arg in log.args) {
+        for (const arg in logItem.args) {
             // skip if the property is from prototype
-            if (!log.args.hasOwnProperty(arg)) { continue; }
+            if (!logItem.args.hasOwnProperty(arg)) { continue; }
 
             if (isNaN(parseInt(arg, 10)) && arg !== "__length__") {
-                args[arg] = log.args[arg];
+                args[arg] = logItem.args[arg];
             }
         }
         return {
-            event: log.event,
+            event: logItem.event,
             args,
         };
     });

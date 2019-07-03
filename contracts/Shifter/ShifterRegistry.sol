@@ -44,7 +44,7 @@ contract ShifterRegistry is Claimable {
 
         // Add to list of shifters
         LinkedList.append(shifterList, _shifterAddress);
-        
+
         // Add to list of shifted tokens
         LinkedList.append(shiftedTokenList, _tokenAddress);
 
@@ -67,7 +67,7 @@ contract ShifterRegistry is Claimable {
 
         // Remove to list of shifters
         LinkedList.remove(shifterList, currentShifter);
-        
+
         // Add to list of shifted tokens
         LinkedList.append(shifterList, _newShifterAddress);
 
@@ -106,7 +106,7 @@ contract ShifterRegistry is Claimable {
         } else {
             count = _count;
         }
-        
+
         address[] memory shifters = new address[](count);
 
         // Begin with the first node in the list

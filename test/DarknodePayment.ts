@@ -82,7 +82,7 @@ contract("DarknodePayment", (accounts: string[]) => {
                 }
             }
             return i;
-        }
+        };
 
         const printTokens = async () => {
             console.log(`Registered tokens: [`);
@@ -97,7 +97,7 @@ contract("DarknodePayment", (accounts: string[]) => {
                 }
             }
             console.log(`]`);
-        }
+        };
 
         const checkTokenIndexes = async () => {
             let i = 0;
@@ -114,7 +114,7 @@ contract("DarknodePayment", (accounts: string[]) => {
                     throw error;
                 }
             }
-        }
+        };
 
         it("cannot register token if not owner", async () => {
             await dnp.registerToken(dai.address, { from: accounts[1] }).should.be.rejected;
@@ -125,7 +125,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
             await dnp.registerToken(dai.address);
             await dnp.registerToken(dai.address).should.be.rejectedWith(/token already pending registration/);
-            await dnp.registerToken(erc20Token.address); // .should.not.be.rejectedWith(/token already pending registration/);
+            await dnp.registerToken(erc20Token.address);
             // complete token registration
             await waitForCycle();
             (await dnp.registeredTokens(lengthBefore)).should.equal(dai.address);
@@ -161,7 +161,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         it("can deregister tokens", async () => {
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(/token not registered/);
-            await dnp.deregisterToken(erc20Token.address).should.not.be.rejectedWith(/token not registered/);
+            await dnp.deregisterToken(erc20Token.address);
             // check token deregistration
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
             (await dnp.registeredTokenIndex(erc20Token.address)).should.bignumber.equal(0);
@@ -213,7 +213,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS, { value: amount.toString(), from: accounts[0] });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
-            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
+                .should.bignumber.equal(previousReward.add(amount));
         });
 
         it("can deposit ETH via direct payment to DarknodePayment contract", async () => {
@@ -227,7 +228,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             await web3.eth.sendTransaction({ to: dnp.address, from: owner, value: amount.toString() });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
-            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
+                .should.bignumber.equal(previousReward.add(amount));
         });
 
         it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
@@ -238,24 +240,25 @@ contract("DarknodePayment", (accounts: string[]) => {
             await web3.eth.sendTransaction({ to: store.address, from: owner, value: amount.toString() });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
-            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(previousReward.add(amount));
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
+                .should.bignumber.equal(previousReward.add(amount));
         });
 
         it("cannot deposit ERC20 with ETH attached", async () => {
             const amount = new BN("100000000000000000");
-            await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] }).should.be.rejectedWith(/unexpected ether transfer/);
+            await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] })
+                .should.be.rejectedWith(/unexpected ether transfer/);
         });
     });
-
 
     describe("Claiming rewards", async () => {
         it("cannot tick if not registered", async () => {
             await dnp.claim(accounts[0]).should.be.rejectedWith(/darknode is not registered/);
-        })
+        });
 
         it("cannot withdraw if there is no balance", async () => {
             await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(/nothing to withdraw/);
-        })
+        });
 
         it("can whitelist darknodes", async () => {
             await waitForCycle();
@@ -266,8 +269,9 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.claim(darknode1).should.be.rejectedWith(/cannot claim for this cycle/);
             await store.isWhitelisted(darknode1).should.eventually.be.true;
             await waitForCycle();
-            new BN(await store.darknodeWhitelistLength()).should.bignumber.equal(new BN(whitelistLength).add(new BN(1)));
-        })
+            new BN(await store.darknodeWhitelistLength())
+                .should.bignumber.equal(new BN(whitelistLength).add(new BN(1)));
+        });
 
         it("can be paid DAI from a payee", async () => {
             // darknode1 is whitelisted and can participate in rewards
@@ -354,7 +358,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             postWithdrawRewards.should.bignumber.equal(new BN(0));
 
             // Deregister ETH
-            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS); // .should.not.be.rejectedWith(/token already pending deregistration/);
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
             await waitForCycle();
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
         });
@@ -363,18 +367,18 @@ contract("DarknodePayment", (accounts: string[]) => {
             const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1, dai.address));
             darknode1Balance.gt(new BN(0)).should.be.true;
             await withdraw(darknode1);
-        })
+        });
 
         it("cannot call tick twice in the same cycle", async () => {
             await dnp.claim(darknode1);
             await dnp.claim(darknode1).should.be.rejectedWith(/reward already claimed/);
-        })
+        });
 
         it("can tick again after a cycle has passed", async () => {
             await dnp.claim(darknode1);
             await waitForCycle();
-            await dnp.claim(darknode1); // .should.not.be.rejectedWith(/reward already claimed/);
-        })
+            await dnp.claim(darknode1);
+        });
 
         it("should evenly split reward pool between ticked darknodes", async () => {
             const numDarknodes = 3;
@@ -399,7 +403,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             await multiTick(startDarknode, numDarknodes);
 
             for (let i = startDarknode; i < startDarknode + numDarknodes; i++) {
-                (new BN(await dnp.darknodeBalances(accounts[i], dai.address))).should.bignumber.equal(rewards.div(new BN(await dnp.shareCount())));
+                (new BN(await dnp.darknodeBalances(accounts[i], dai.address)))
+                    .should.bignumber.equal(rewards.div(new BN(await dnp.shareCount())));
             }
 
             // Withdraw for each darknode
@@ -437,7 +442,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.withdraw(NULL, dai.address).should.eventually.be.rejectedWith(/invalid darknode owner/);
             // accounts[0] is not a registered darknode
             await dnp.withdraw(accounts[0], dai.address).should.eventually.be.rejectedWith(/invalid darknode owner/);
-        })
+        });
 
         it("cannot withdraw more than once in a cycle", async () => {
             const numDarknodes = 4;
@@ -453,7 +458,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await multiTick(1, numDarknodes);
 
             // First withdraw should pass
-            await withdraw(darknode1); // .should.not.be.rejectedWith(/nothing to withdraw/);
+            await withdraw(darknode1);
 
             // Rest should fail
             await dnp.withdraw(darknode1, dai.address).should.be.rejectedWith(/nothing to withdraw/);
@@ -509,25 +514,25 @@ contract("DarknodePayment", (accounts: string[]) => {
             await store.isBlacklisted(darknode1).should.eventually.be.false;
             await dnp.blacklist(darknode1, { from: accounts[2] }).should.be.rejectedWith(/not Blacklister/);
             await store.isBlacklisted(darknode1).should.eventually.be.false;
-        })
+        });
 
         it("should disallow unauthorized updates to blacklister address", async () => {
             await dnp.updateBlacklister(accounts[2], { from: accounts[2] }).should.be.rejected;
-        })
+        });
 
         it("can update the blacklister address", async () => {
             await store.isBlacklisted(darknode4).should.eventually.be.false;
             await dnp.updateBlacklister(accounts[2]).should.be.not.rejectedWith(/invalid contract address/);
             await waitForCycle();
-            await dnp.blacklist(darknode4, { from: accounts[2] }); // .should.not.be.rejectedWith(/not Blacklister/);
+            await dnp.blacklist(darknode4, { from: accounts[2] });
             await store.isBlacklisted(darknode4).should.eventually.be.true;
             await dnp.updateBlacklister(owner).should.be.not.rejectedWith(/invalid contract address/);
             await waitForCycle();
-        })
+        });
 
         it("cannot update the blacklister address to an invalid address", async () => {
             await dnp.updateBlacklister(NULL).should.be.rejectedWith(/invalid contract address/);
-        })
+        });
 
         it("cannot blacklist invalid addresses", async () => {
             const invalidAddress = NULL;
@@ -535,7 +540,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.blacklist(invalidAddress).should.be.rejectedWith(/darknode is not registered/);
             await store.isBlacklisted(owner).should.eventually.be.false;
             await dnp.blacklist(owner).should.be.rejectedWith(/darknode is not registered/);
-        })
+        });
 
         it("should reject white/blacklist attempts from non-store contract", async () => {
             await store.isBlacklisted(darknode1).should.eventually.be.false;
@@ -544,19 +549,19 @@ contract("DarknodePayment", (accounts: string[]) => {
             await store.isWhitelisted(darknode5).should.eventually.be.false;
             await store.whitelist(darknode5, { from: darknode1 }).should.be.rejected;
             await store.isWhitelisted(darknode5).should.eventually.be.false;
-        })
+        });
 
         it("can blacklist darknodes", async () => {
             await store.isBlacklisted(darknode5).should.eventually.be.false;
             await dnp.blacklist(darknode5);
             await store.isBlacklisted(darknode5).should.eventually.be.true;
-        })
+        });
 
         it("cannot blacklist already blacklisted darknodes", async () => {
             await store.isBlacklisted(darknode5).should.eventually.be.true;
             await dnp.blacklist(darknode5).should.be.rejectedWith(/darknode already blacklisted/);
             await store.isBlacklisted(darknode5).should.eventually.be.true;
-        })
+        });
 
         it("cannot whitelist blacklisted darknodes", async () => {
             await store.isBlacklisted(darknode5).should.eventually.be.true;
@@ -569,7 +574,8 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("Changing cycles", async () => {
 
         it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS / 4).should.eventually.be.rejectedWith(/cannot cycle yet: too early/);
+            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS / 4)
+                .should.eventually.be.rejectedWith(/cannot cycle yet: too early/);
         });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
@@ -646,26 +652,31 @@ contract("DarknodePayment", (accounts: string[]) => {
         it("cannot whitelist already whitelisted darknodes", async () => {
             await store.isWhitelisted(darknode1).should.eventually.be.true;
             await store.whitelist(darknode1).should.eventually.be.rejectedWith(/darknode already whitelisted/);
-        })
+        });
 
         it("cannot increment balances by an invalid amounts", async () => {
-            await store.incrementDarknodeBalance(darknode1, dai.address, 0).should.eventually.be.rejectedWith(/invalid amount/);
+            await store.incrementDarknodeBalance(darknode1, dai.address, 0)
+                .should.eventually.be.rejectedWith(/invalid amount/);
             const invalidAmount = new BN(await store.availableBalance(dai.address)).add(new BN(1));
-            await store.incrementDarknodeBalance(darknode1, dai.address, invalidAmount).should.eventually.be.rejectedWith(/insufficient contract balance/);
-        })
+            await store.incrementDarknodeBalance(darknode1, dai.address, invalidAmount)
+                .should.eventually.be.rejectedWith(/insufficient contract balance/);
+        });
 
         it("cannot transfer more than is in the balance", async () => {
             const invalidAmount = new BN(await dnp.darknodeBalances(darknode1, dai.address)).add(new BN(1));
-            await store.transfer(darknode1, dai.address, invalidAmount, darknode1).should.eventually.be.rejectedWith(/insufficient darknode balance/);
-        })
+            await store.transfer(darknode1, dai.address, invalidAmount, darknode1)
+                .should.eventually.be.rejectedWith(/insufficient darknode balance/);
+        });
 
         it("cannot call functions from non-owner", async () => {
             await store.blacklist(darknode1, { from: accounts[2] }).should.eventually.be.rejected;
             await store.whitelist(darknode1, { from: accounts[2] }).should.eventually.be.rejected;
-            await store.incrementDarknodeBalance(darknode1, dai.address, new BN(0), { from: accounts[2] }).should.eventually.be.rejected;
-            await store.transfer(darknode1, dai.address, new BN(0), darknode1, { from: accounts[2] }).should.eventually.be.rejected;
+            await store.incrementDarknodeBalance(darknode1, dai.address, new BN(0), { from: accounts[2] })
+                .should.eventually.be.rejected;
+            await store.transfer(darknode1, dai.address, new BN(0), darknode1, { from: accounts[2] })
+                .should.eventually.be.rejected;
             await store.transferOwnership(dnp.address, { from: accounts[2] }).should.eventually.be.rejected;
-        })
+        });
 
         // Transfer the ownership back to DNP
         after(async () => {
@@ -678,17 +689,17 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
     });
 
-    const tick = async (address) => {
+    const tick = async (address: string) => {
         return dnp.claim(address);
-    }
+    };
 
     const multiTick = async (start = 1, numberOfDarknodes = 1) => {
         for (let i = start; i < start + numberOfDarknodes; i++) {
             await tick(accounts[i]);
         }
-    }
+    };
 
-    const withdraw = async (address) => {
+    const withdraw = async (address: string) => {
         // Our claimed amount should be positive
         const earnedDAIRewards = new BN(await dnp.darknodeBalances(address, dai.address));
         earnedDAIRewards.gt(new BN(0)).should.be.true;
@@ -704,15 +715,15 @@ contract("DarknodePayment", (accounts: string[]) => {
         // We should have nothing left to withdraw
         const postWithdrawRewards = new BN(await dnp.darknodeBalances(address, dai.address));
         postWithdrawRewards.should.bignumber.equal(new BN(0));
-    }
+    };
 
     const multiWithdraw = async (start = 1, numberOfDarknodes = 1) => {
         for (let i = start; i < start + numberOfDarknodes; i++) {
             await withdraw(accounts[i]);
         }
-    }
+    };
 
-    const depositDai = async (amount) => {
+    const depositDai = async (amount: number | BN | string) => {
         const amountBN = new BN(amount);
         const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
         // Approve the contract to use DAI
@@ -720,7 +731,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dnp.deposit(amountBN, dai.address);
         // We should expect the DAI balance to have increased by what we deposited
         (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
-    }
+    };
 
     const changeCycleDuration = async (timeInSeconds: number) => {
         const currentCycleDurationInSeconds = new BN(await dnp.cycleDuration()).toNumber();
@@ -730,9 +741,9 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         // put into effect the new cycle duration
         await increaseTime(currentCycleDurationInSeconds);
-        await dnp.changeCycle().should.not.eventually.be.rejectedWith(/cannot cycle yet: too early/);
-        if (timeInSeconds == 0) {
-            await dnp.changeCycle().should.not.eventually.be.rejectedWith(/cannot cycle yet: too early/);
+        await dnp.changeCycle();
+        if (timeInSeconds === 0) {
+            await dnp.changeCycle();
             return;
         }
 
@@ -740,25 +751,23 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         if (timeInSeconds < currentCycleDurationInSeconds) {
             await increaseTime(timeInSeconds);
-            await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
+            await dnp.changeCycle();
         } else {
             await increaseTime(currentCycleDurationInSeconds);
-            await dnp.changeCycle().should.eventually.be.rejected; //With(null, /cannot cycle yet: too early/);
+            await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
             await increaseTime(timeInSeconds - currentCycleDurationInSeconds);
-            await dnp.changeCycle().should.not.eventually.be.rejected; // With(null, /cannot cycle yet: too early/);
+            await dnp.changeCycle();
         }
-    }
+    };
 
-    const waitForCycle = async (seconds?) => {
-        let retry = seconds === undefined;
-
+    const waitForCycle = async (seconds?: number) => {
         const timeout = new BN(await dnp.cycleTimeout());
         const now = new BN(await cc.time());
-        if (retry) {
+        if (seconds === undefined) {
             // seconds = (new BN(await dnp.cycleDuration()).toNumber());
             seconds = Math.max(1, (timeout).sub(now).toNumber());
         }
         await increaseTime(seconds);
         await dnp.changeCycle();
-    }
+    };
 });
