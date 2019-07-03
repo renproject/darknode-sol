@@ -65,7 +65,6 @@ contract Shifter is Ownable {
     }
 
     /// @notice Allow the owner to update the owner of the ERC20Shifted token.
-    /// The next token owner should then call `claimOwnership` on the token.
     function transferTokenOwnership(Shifter _nextTokenOwner) public onlyOwner {
         token.transferOwnership(address(_nextTokenOwner));
         _nextTokenOwner.claimTokenOwnership();
