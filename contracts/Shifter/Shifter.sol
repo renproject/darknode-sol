@@ -58,20 +58,27 @@ contract Shifter is Ownable {
     // Public functions ////////////////////////////////////////////////////////
 
     /// @notice Claims ownership of the token passed in to the constructor.
-    ///         `transferStoreOwnership` must have previously been called.
-    ///         Anyone can call this function.
+    /// `transferStoreOwnership` must have previously been called.
+    /// Anyone can call this function.
     function claimTokenOwnership() public {
         token.claimOwnership();
     }
 
-    /// @notice Allow the mint authority to update the fee recipient.
+    /// @notice Allow the owner to update the owner of the ERC20Shifted token.
+    /// The next token owner should then call `claimOwnership` on the token.
+    function transferTokenOwnership(Shifter _nextTokenOwner) public onlyOwner {
+        token.transferOwnership(address(_nextTokenOwner));
+        _nextTokenOwner.claimTokenOwnership();
+    }
+
+    /// @notice Allow the owner to update the fee recipient.
     ///
     /// @param _nextMintAuthority The address to start paying fees to.
     function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
         mintAuthority = _nextMintAuthority;
     }
 
-    /// @notice Allow the mint authority to update the fee recipient.
+    /// @notice Allow the owner to update the fee recipient.
     ///
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
@@ -81,7 +88,7 @@ contract Shifter is Ownable {
         feeRecipient = _nextFeeRecipient;
     }
 
-    /// @notice Allow the mint authority to update the fee.
+    /// @notice Allow the owner to update the fee.
     ///
     /// @param _nextFee The new fee for minting and burning.
     function updateFee(uint16 _nextFee) public onlyOwner {
