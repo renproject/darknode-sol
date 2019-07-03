@@ -1,10 +1,12 @@
-import BN from "bn.js";
-import { ecsign, keccak256 } from "ethereumjs-util";
 import BigNumber from "bignumber.js";
+import BN from "bn.js";
 import { rawEncode } from "ethereumjs-abi";
+import { ecsign, keccak256 } from "ethereumjs-util";
 
-import { BTCShifterInstance, VestingInstance, zBTCInstance, ShifterRegistryInstance } from "../types/truffle-contracts";
-import { increaseTime, NULL, Ox, randomBytes } from "./helper/testUtils";
+import {
+    BTCShifterInstance, ShifterRegistryInstance, VestingInstance, zBTCInstance,
+} from "../types/truffle-contracts";
+import { increaseTime, Ox, randomBytes } from "./helper/testUtils";
 
 const BTCShifter = artifacts.require("BTCShifter");
 const ShifterRegistry = artifacts.require("ShifterRegistry");
@@ -34,7 +36,7 @@ contract("Vesting", (accounts) => {
             mintAuthority.address,
             feeInBips,
         );
-            
+
         await zbtc.transferOwnership(btcShifter.address);
         await btcShifter.claimTokenOwnership();
 
@@ -57,15 +59,20 @@ contract("Vesting", (accounts) => {
             const startTime = 0;
             const pHash = keccak256(rawEncode(
                 ["address", "uint256", "uint16"],
-                [beneficiary, startTime, duration]
+                [beneficiary, startTime, duration],
             )).toString("hex");
 
-            const hashForSignature = await btcShifter.hashForSignature(Ox(pHash), amount.toNumber(), vesting.address, nonce);
+            const hashForSignature = await btcShifter.hashForSignature(
+                Ox(pHash),
+                amount.toNumber(),
+                vesting.address,
+                nonce,
+            );
             const sig = ecsign(Buffer.from(hashForSignature.slice(2), "hex"), privKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             // User should have no schedules prior to adding.
-            let schedule = await vesting.schedules(beneficiary);
+            const schedule = await vesting.schedules(beneficiary);
             (schedule as any).startTime.should.bignumber.equal(new BN(0));
 
             await vesting.addVestingSchedule(
@@ -74,7 +81,7 @@ contract("Vesting", (accounts) => {
                 // Required
                 amount, nonce, sigString,
             );
-        }
+        };
 
         it("can add a vesting schedule", async () => {
             await addVestingSchedule();
@@ -90,7 +97,7 @@ contract("Vesting", (accounts) => {
             const amountBN = new BigNumber(amountAfterFee.toString());
             const resultBN = amountBN.times(new BigNumber(elapsedMonths)).dividedToIntegerBy(new BigNumber(duration));
             return new BN(resultBN.toString());
-        }
+        };
 
         it("can check claimable amount", async () => {
             let claimable = await vesting.calculateClaimable(beneficiary);

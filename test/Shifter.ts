@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { ecrecover, ecsign, pubToAddress } from "ethereumjs-util";
+import { Account } from "web3-eth-accounts";
 import { keccak256 } from "web3-utils";
 
 import {
@@ -18,15 +19,15 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
     // We generate a new account so that we have access to its private key for
     // `ecsign`. Web3's sign functions all prefix the message being signed.
-    let mintAuthority;
-    let privKey;
+    let mintAuthority: Account;
+    let privKey: Buffer;
 
     const feeInBips = new BN(10);
 
     before(async () => {
         zbtc = await zBTC.new();
         mintAuthority = web3.eth.accounts.create();
-        privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex")
+        privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
         btcShifter = await BTCShifter.new(
             zbtc.address,
@@ -39,7 +40,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         await btcShifter.claimTokenOwnership();
     });
 
-    const removeFee = (value: number | BN, bips: number | BN) => new BN(value).sub(new BN(value).mul(new BN(bips)).div(new BN(10000)));
+    const removeFee = (value: number | BN, bips: number | BN) =>
+        new BN(value).sub(new BN(value).mul(new BN(bips)).div(new BN(10000)));
 
     const mintTest = async (shifter: ShifterInstance, value: number | BN, shiftID = undefined) => {
         const nHash = randomBytes(32);
@@ -61,12 +63,15 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         const _shiftID = await shifter.nextShiftID();
         (await shifter.shiftIn(pHash, value, nHash, sigString, { from: user }) as any)
             .should.emit.logs([
-                log("LogShiftIn", { _to: user, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID }),
+                log(
+                    "LogShiftIn",
+                    { _to: user, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID },
+                ),
             ]);
         (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
 
         return [pHash, nHash];
-    }
+    };
 
     const burnTest = async (shifter: ShifterInstance, value: number | BN, btcAddress?: string, shiftID = undefined) => {
         // Note: we don't use `||` because we want to pass in `""`
@@ -76,10 +81,18 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         const _shiftID = await shifter.nextShiftID();
         (await shifter.shiftOut(btcAddress, value, { from: user }) as any)
             .should.emit.logs([
-                log("LogShiftOut", { _to: btcAddress, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID, _indexedTo: keccak256(btcAddress) }),
+                log(
+                    "LogShiftOut",
+                    {
+                        _to: btcAddress,
+                        _amount: removeFee(value, 10),
+                        _shiftID: shiftID !== undefined ? shiftID : _shiftID,
+                        _indexedTo: keccak256(btcAddress),
+                    },
+                ),
             ]);
         (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.sub(new BN(value)));
-    }
+    };
 
     describe("can mint and burn", () => {
         const value = new BN(20000);
@@ -144,12 +157,13 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
 
-            let sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
+            const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
             // Invalid signature
             const altSig = {
                 ...sig,
-                s: new BN("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", "hex").sub(new BN(sig.s)).toArrayLike(Buffer, "be", 32),
+                s: new BN("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", "hex")
+                    .sub(new BN(sig.s)).toArrayLike(Buffer, "be", 32),
                 v: sig.v === 27 ? 28 : 27,
             };
             const altSigString = Ox(`${altSig.r.toString("hex")}${altSig.s.toString("hex")}${(altSig.v).toString(16)}`);
@@ -194,6 +208,57 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         });
     });
 
+    describe("upgrading shifter", () => {
+        let newShifter: ShifterInstance;
+
+        it("can upgrade the shifter", async () => {
+            newShifter = await BTCShifter.new(
+                zbtc.address,
+                feeRecipient,
+                mintAuthority.address,
+                feeInBips,
+            );
+
+            // Fund and unlock the mintAuthority - not used currently but
+            // may be needed in the future.
+            /* await web3.eth.sendTransaction({ to: mintAuthority.address, from: owner, value: web3.utils.toWei("1") });
+             * await web3.eth.personal.importRawKey(mintAuthority.privateKey, "");
+             * await web3.eth.personal.unlockAccount(mintAuthority.address, "", 6000);
+             */
+
+            await (btcShifter.transferTokenOwnership(newShifter.address, { from: malicious }))
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            await btcShifter.transferTokenOwnership(newShifter.address, { from: owner });
+            (await zbtc.owner()).should.equal(newShifter.address);
+        });
+
+        it("can mint and burn using new shifter", async () => {
+            const value = new BN(200000);
+            await mintTest(newShifter, value);
+            await burnTest(newShifter, removeFee(value, 10));
+        });
+
+        it("can't upgrade to an invalid shifter", async () => {
+            await (newShifter.transferTokenOwnership(malicious, { from: owner }))
+                .should.be.rejectedWith(/revert/);
+
+            await zbtc.claimOwnership({ from: malicious })
+                .should.be.rejectedWith(/caller is not the pending owner/);
+        });
+
+        it("can reset the upgrade", async () => {
+            // Trying to reset upgrade in btcShifter without owning the token
+            await (btcShifter.transferTokenOwnership(NULL, { from: owner }))
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            // Upgrade newShifter to point to btcShifter
+            await newShifter.transferTokenOwnership(btcShifter.address, { from: owner });
+
+            (await zbtc.owner()).should.equal(btcShifter.address);
+        });
+    });
+
     describe("shifter registry", () => {
         let registry: ShifterRegistryInstance;
 
@@ -211,7 +276,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
         it("can retrieve shifters", async () => {
             { // Try to register token with an existing symbol
-                const altZbtc = await zBTC.new()
+                const altZbtc = await zBTC.new();
                 await registry.setShifter(altZbtc.address, NULL)
                     .should.be.rejectedWith(/symbol already registered/);
             }

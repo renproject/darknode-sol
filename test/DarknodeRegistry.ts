@@ -1,10 +1,12 @@
 import BN from "bn.js";
 
 import {
-    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE,
-    NULL, PUBK, waitForEpoch,
+    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
+    RenTokenInstance,
+} from "../types/truffle-contracts";
+import {
+    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-import { RenTokenInstance, DarknodeRegistryStoreInstance, DarknodeRegistryInstance, DarknodeSlasherInstance } from "../types/truffle-contracts";
 
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");

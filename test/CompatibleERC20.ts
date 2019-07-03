@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
-import "./helper/testUtils";
 import { CompatibleERC20TestInstance, ReturnsFalseTokenInstance } from "../types/truffle-contracts";
+import "./helper/testUtils";
 
 const CompatibleERC20Test = artifacts.require("CompatibleERC20Test");
 const NormalToken = artifacts.require("NormalToken");
@@ -32,7 +32,7 @@ contract("CompatibleERC20", (accounts) => {
             const FEE = VALUE.mul(new BN(testCase.fees)).div(new BN(1000));
 
             before(async () => {
-                token = await testCase.contract.new();
+                token = await testCase.contract.new() as ReturnsFalseTokenInstance;
             });
 
             it("approve and transferFrom", async () => {
