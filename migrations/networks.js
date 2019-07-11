@@ -80,5 +80,30 @@ module.exports = {
             mintAuthority: "0x723eb4380E03dF6a6f98Cc1338b00cfBE5E45218",
         },
     },
+
+    localnet: {
+        RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
+        DarknodeSlasher: "",
+        DarknodeRegistry: "",
+        DarknodeRegistryStore: "",
+        DarknodePaymentStore: "",
+        DarknodePayment: "",
+        tokens: {
+            DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+
+        BTCShifter: "",
+        ZECShifter: "",
+        zBTC: "",
+        zZEC: "",
+        ShifterRegistry: "",
+
+        config: {
+            ...config,
+            mintAuthority: "0x04084f1cACCB87Dcab9a29a084281294dA96Bf44",
+        },
+    },
+
     config,
 }

@@ -7,8 +7,11 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
+/**
+ * @param {string} question
+ */
 function ask(question) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         rl.question(question, (input) => resolve(input));
     });
 }
@@ -27,6 +30,11 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 
 const networks = require("./networks.js");
 
+/**
+ * @param {any} deployer
+ * @param {string} network
+ * @param {any[]} accounts
+ */
 module.exports = async function (deployer, network, accounts) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
@@ -45,7 +53,7 @@ module.exports = async function (deployer, network, accounts) {
     zZEC.address = addresses.zZEC || "";
     zBTC.address = addresses.zBTC || "";
 
-    if (network.match(/devnet|testnet|mainnet/)) {
+    if (network.match(/localnet|devnet|testnet|main/)) {
         await ask(`\n\nUsing DarknodePayment at ${DarknodePayment.address}. Press any key to continue.`);
     }
 

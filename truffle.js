@@ -7,27 +7,24 @@ const { execSync } = require("child_process")
 const GWEI = 1000000000;
 const commitHash = execSync("git describe --always --long").toString().trim();
 
-if ((process.env.NETWORK || "").match(/devnet|testnet|mainnet/) && process.env.INFURA_KEY === undefined) {
+if ((process.env.NETWORK || "").match(/localnet|devnet|testnet|main/) && process.env.INFURA_KEY === undefined) {
   throw new Error("Must set INFURA_KEY");
 }
 
+const kovanNetwork = {
+  // @ts-ignore
+  provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
+  network_id: 42,
+  gas: 6721975,
+  gasPrice: 6.5 * GWEI,
+};
+
 module.exports = {
   networks: {
-    devnet: {
-      // @ts-ignore
-      provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
-      network_id: 42,
-      gas: 6721975,
-      gasPrice: 6.5 * GWEI,
-    },
-    testnet: {
-      // @ts-ignore
-      provider: () => new HDWalletProvider(process.env.MNEMONIC_KOVAN, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
-      network_id: 42,
-      gas: 6721975,
-      gasPrice: 6.5 * GWEI,
-    },
-    mainnet: {
+    localnet: kovanNetwork,
+    devnet: kovanNetwork,
+    testnet: kovanNetwork,
+    main: {
       // @ts-ignore
       provider: () => new HDWalletProvider(process.env.MNEMONIC_MAINNET, `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`),
       network_id: 1,
