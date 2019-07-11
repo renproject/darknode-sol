@@ -14,6 +14,10 @@ const networks = require("./networks.js");
 
 const gitCommit = () => execSync("git describe --always --long").toString().trim();
 
+/**
+ * @param {any} deployer
+ * @param {string} network
+ */
 module.exports = async function (deployer, network) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
