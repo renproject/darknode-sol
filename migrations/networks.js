@@ -49,7 +49,7 @@ module.exports = {
         ZECShifter: "0xEeC88ec22E6582409631530F44E48057E7Ed9bBa",
         zBTC: "0x1aFf7F90Bab456637a17d666D647Ea441A189F2d",
         zZEC: "0x51f41985134842Aa009CACdD28B2C69fA97C4738",
-        ShifterRegistry: "0x40C605FF27411d3a2ea5A114D365a314cb7AC5f2",
+        ShifterRegistry: "0x1a62cE8d00d061A05A70dB318f7dfE9Ecd9fFcB0",
 
         config: {
             ...config,
@@ -73,7 +73,7 @@ module.exports = {
         ZECShifter: "0x5345425363A49904De0746E7c991B05380E42E27",
         zBTC: "0x4eB1403f565c3e3145Afc3634F16e2F092545C2a",
         zZEC: "0x92E9aC7c07bb40eD9DAF1DbD88E7Dd77f5754529",
-        ShifterRegistry: "0x7E1E8698bDB429D63B492D7795af039926006386",
+        ShifterRegistry: "0x797029C0e76Bb9c8827802c68a5df6e6D93aC14f",
 
         config: {
             ...config,
