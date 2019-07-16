@@ -164,7 +164,7 @@ module.exports = async function (deployer, network) {
         DarknodeSlasher: DarknodeSlasher.address,
         DarknodeRegistry: DarknodeRegistry.address,
         DarknodeRegistryStore: DarknodeRegistryStore.address,
-        DarknodePaymentStore: DarknodePaymentStore.address,
         DarknodePayment: DarknodePayment.address,
+        DarknodePaymentStore: DarknodePaymentStore.address,
     });
 }
