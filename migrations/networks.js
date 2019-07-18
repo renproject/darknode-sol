@@ -69,15 +69,15 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        ShifterRegistry: "0x797029C0e76Bb9c8827802c68a5df6e6D93aC14f",
-        zBTC: "0x4eB1403f565c3e3145Afc3634F16e2F092545C2a",
-        BTCShifter: "0x7a40fE9FB464510215C41Eae1216973514eeEBB1",
-        zZEC: "0x92E9aC7c07bb40eD9DAF1DbD88E7Dd77f5754529",
-        ZECShifter: "0x5345425363A49904De0746E7c991B05380E42E27",
+        ShifterRegistry: "",
+        zBTC: "",
+        BTCShifter: "",
+        zZEC: "",
+        ZECShifter: "",
 
         config: {
             ...config,
-            mintAuthority: "0x723eb4380E03dF6a6f98Cc1338b00cfBE5E45218",
+            mintAuthority: "0x1B9d58208879AA9aa9E10040b34cF2b684237621",
         },
     },
 

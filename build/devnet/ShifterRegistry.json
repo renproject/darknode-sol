@@ -13141,12 +13141,12 @@
         }
       },
       "links": {},
-      "address": "0x797029C0e76Bb9c8827802c68a5df6e6D93aC14f",
-      "transactionHash": "0xc676b0c3a96b9e5cbe7411a647f295223390273c8da99e1785d92171736a99eb"
+      "address": "0x34bf39541C5Dc071bb8a2d8BE8032671188A0956",
+      "transactionHash": "0x10724943674c427af0f87def09040bf17b3f7ff622a93a3cfd014c715e4e8b08"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-16T00:06:17.011Z",
+  "updatedAt": "2019-07-18T06:05:57.150Z",
   "devdoc": {
     "methods": {
       "claimOwnership()": {
