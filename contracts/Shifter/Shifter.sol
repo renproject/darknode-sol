@@ -16,7 +16,7 @@ contract Shifter is Ownable {
     uint8 public version = 2;
 
     uint256 constant BIPS_DENOMINATOR = 10000;
-    uint256 public MIN_SHIFT_OUT_AMOUNT;
+    uint256 public minShiftAmount;
 
     /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
@@ -50,7 +50,7 @@ contract Shifter is Ownable {
     /// @param _fee The amount subtracted each burn and mint request and
     ///        forwarded to the feeRecipient. In BIPS.
     constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount) public {
-        MIN_SHIFT_OUT_AMOUNT = _minShiftOutAmount;
+        minShiftAmount = _minShiftOutAmount;
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
@@ -77,6 +77,13 @@ contract Shifter is Ownable {
     /// @param _nextMintAuthority The address to start paying fees to.
     function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
         mintAuthority = _nextMintAuthority;
+    }
+
+    /// @notice Allow the owner to update the minimum shiftOut amount.
+    ///
+    /// @param _minShiftOutAmount The new min shiftOut amount.
+    function updateMinimumShiftOutAmount(uint256 _minShiftOutAmount) public onlyOwner {
+        minShiftAmount = _minShiftOutAmount;
     }
 
     /// @notice Allow the owner to update the fee recipient.
@@ -149,7 +156,7 @@ contract Shifter is Ownable {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "to address is empty");
-        require(_amount > MIN_SHIFT_OUT_AMOUNT, "amount is less than the minimum shiftOut amount");
+        require(_amount > minShiftAmount, "amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
         uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
