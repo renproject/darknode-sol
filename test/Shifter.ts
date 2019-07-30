@@ -34,6 +34,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             feeRecipient,
             mintAuthority.address,
             feeInBips,
+            10000,
         );
 
         await zbtc.transferOwnership(btcShifter.address);
@@ -144,6 +145,11 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 .should.be.rejectedWith(/to address is empty/);
         });
 
+        it("can't burn less than minimum shiftOut amount", async () => {
+            await burnTest(btcShifter, 5000)
+                .should.be.rejectedWith(/amount is less than the minimum shiftOut amount/);
+        });
+
         it("won't mint for a signature's complement", async () => {
             // If (r,s,v) is a valid ECDSA signature, then so is (r, -s % n, 1-v)
             // This means that a second signature for a message can be generated
@@ -217,6 +223,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 feeRecipient,
                 mintAuthority.address,
                 feeInBips,
+                10000,
             );
 
             // Fund and unlock the mintAuthority - not used currently but
@@ -343,6 +350,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 feeRecipient,
                 mintAuthority.address,
                 feeInBips,
+                10000,
             );
 
             await registry.updateShifter(zbtc.address, newBtcShifter.address);

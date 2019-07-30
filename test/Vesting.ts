@@ -35,6 +35,7 @@ contract("Vesting", (accounts) => {
             feeRecipient,
             mintAuthority.address,
             feeInBips,
+            10000,
         );
 
         await zbtc.transferOwnership(btcShifter.address);
