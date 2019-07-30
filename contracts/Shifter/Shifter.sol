@@ -16,6 +16,7 @@ contract Shifter is Ownable {
     uint8 public version = 2;
 
     uint256 constant BIPS_DENOMINATOR = 10000;
+    uint256 public MIN_SHIFT_OUT_AMOUNT;
 
     /// @notice Each Shifter token is tied to a specific shifted token.
     ERC20Shifted public token;
@@ -23,9 +24,9 @@ contract Shifter is Ownable {
     /// @notice The mintAuthority is an address that can sign mint requests.
     address public mintAuthority;
 
-    /// @dev feeRecipient is assumed to be an address (or a contract) that can 
+    /// @dev feeRecipient is assumed to be an address (or a contract) that can
     /// accept erc20 payments it cannot be 0x0.
-    /// @notice When tokens are mint or burnt, a portion of the tokens are 
+    /// @notice When tokens are mint or burnt, a portion of the tokens are
     /// forwarded to a fee recipient.
     address public feeRecipient;
 
@@ -48,7 +49,8 @@ contract Shifter is Ownable {
     ///        requests.
     /// @param _fee The amount subtracted each burn and mint request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount) public {
+        MIN_SHIFT_OUT_AMOUNT = _minShiftOutAmount;
         token = _token;
         mintAuthority = _mintAuthority;
         fee = _fee;
@@ -147,6 +149,7 @@ contract Shifter is Ownable {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "to address is empty");
+        require(_amount > MIN_SHIFT_OUT_AMOUNT, "amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
         uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
@@ -176,13 +179,13 @@ contract Shifter is Ownable {
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
 contract BTCShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
         }
 }
 
 contract ZECShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
         }
 }
