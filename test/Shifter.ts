@@ -212,6 +212,13 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await btcShifter.updateMintAuthority(user, { from: owner });
             await btcShifter.updateMintAuthority(mintAuthority.address, { from: owner });
         });
+
+        it("can upgrade min shiftOut amount", async () => {
+            await (btcShifter.updateMinimumShiftOutAmount(malicious, { from: malicious }))
+                .should.be.rejectedWith(/caller is not the owner/);
+            await btcShifter.updateMinimumShiftOutAmount(8000, { from: owner });
+            await btcShifter.updateMinimumShiftOutAmount(10000, { from: owner });
+        });
     });
 
     describe("upgrading shifter", () => {
