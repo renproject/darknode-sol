@@ -45,7 +45,7 @@ module.exports = async function (deployer, network, accounts) {
     const _mintAuthority = config.mintAuthority || accounts[0];
     // TODO: _feeRecipient should be the DarknodePayment contract
     // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
-    const _feeRecipient = addresses.DarknodePayment || accounts[0];
+    const _feeRecipient = addresses.DarknodePaymentStore || accounts[0];
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
