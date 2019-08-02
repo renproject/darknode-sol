@@ -156,7 +156,7 @@ contract Shifter is Ownable {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "to address is empty");
-        require(_amount > minShiftAmount, "amount is less than the minimum shiftOut amount");
+        require(_amount >= minShiftAmount, "amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
         uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
