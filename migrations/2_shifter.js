@@ -82,6 +82,7 @@ module.exports = async function (deployer, network, accounts) {
             _feeRecipient,
             _mintAuthority,
             config.shifterFees,
+            config.zBTCMinShiftOutAmount,
         );
     }
     const btcShifter = await BTCShifter.at(BTCShifter.address);
@@ -129,6 +130,7 @@ module.exports = async function (deployer, network, accounts) {
             _feeRecipient,
             _mintAuthority,
             config.shifterFees,
+            config.zZECMinShiftOutAmount,
         );
     }
     const zecShifter = await ZECShifter.at(ZECShifter.address);
