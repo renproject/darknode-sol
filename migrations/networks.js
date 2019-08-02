@@ -47,11 +47,11 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        ShifterRegistry: "0x1a62cE8d00d061A05A70dB318f7dfE9Ecd9fFcB0",
-        zBTC: "0x1aFf7F90Bab456637a17d666D647Ea441A189F2d",
-        BTCShifter: "0x8a0E8dfC2389726DF1c0bAB874dd2C9A6031b28f",
-        zZEC: "0x51f41985134842Aa009CACdD28B2C69fA97C4738",
-        ZECShifter: "0xEeC88ec22E6582409631530F44E48057E7Ed9bBa",
+        BTCShifter: "0x0FF2f25691b95b9fF1e33086230d94d21BDf2144",
+        ZECShifter: "0x9eb8a87f1ea993dEfD31197c86133d00ac5e2B4C",
+        zBTC: "0x98056BEB82DE29E2a486FC7FA8C4773adCdE39f0",
+        zZEC: "0x403b993c43a00DF0F6209eEb78943B59d85F2a8D",
+        ShifterRegistry: "0xAFAaD3849A9bf3e91Bdb263c4eFCb864347F7658",
 
         config: {
             ...config,
@@ -71,11 +71,11 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        ShifterRegistry: "",
-        zBTC: "",
-        BTCShifter: "",
-        zZEC: "",
-        ZECShifter: "",
+        BTCShifter: '0x8fB4F7D1ea9329697127F2784399301c0F8E6866',
+        ZECShifter: '0x19Fe91276a992c2E85544C627583fcc535ff0661',
+        zBTC: '0x916B8012E1813E5924a3Eca400dBE6C7055a8484',
+        zZEC: '0x71b6A19Fc832bD9C739489EcBEa67ab41261026F',
+        ShifterRegistry: '0xc7B310c18D78f175812CFfD8896d3cC959aC28d6',
 
         config: {
             ...config,
