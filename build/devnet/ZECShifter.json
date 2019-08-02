@@ -11502,12 +11502,12 @@
         }
       },
       "links": {},
-      "address": "0x0Fea18e3D9745C590d2112441DDFC0C2CDA91880",
-      "transactionHash": "0xf4a440154178ad25fc1ac758cc639e121ccafe4a37fbbf30e59f2dbb57bb80a9"
+      "address": "0x19Fe91276a992c2E85544C627583fcc535ff0661",
+      "transactionHash": "0xdb866397bb5be1fbec857576470b5c4dc1670ded7e2d442f569a52e81c752187"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-18T06:05:57.170Z",
+  "updatedAt": "2019-08-02T03:55:13.604Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

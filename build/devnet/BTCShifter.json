@@ -11502,12 +11502,12 @@
         }
       },
       "links": {},
-      "address": "0x9Ece07afe7b33537aE12121284780ad2Fd3E5554",
-      "transactionHash": "0x683ad4f0a644d04a1103e894de22fd065837018803dc0d72b046919045856808"
+      "address": "0x8fB4F7D1ea9329697127F2784399301c0F8E6866",
+      "transactionHash": "0x2aec7edaca6eb03c77140c4dc1d2b09a1d3e6d9739174ed3e638303f62a87aac"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-18T06:05:57.160Z",
+  "updatedAt": "2019-08-02T03:55:13.594Z",
   "devdoc": {
     "details": "The following are not necessary for deploying BTCShifter or ZECShifter contracts, but are used to track deployments.",
     "methods": {

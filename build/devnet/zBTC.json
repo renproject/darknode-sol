@@ -2202,12 +2202,12 @@
         }
       },
       "links": {},
-      "address": "0xe429B2287D5B15e1849F5F2697697c185D8C8339",
-      "transactionHash": "0x9c0debd5396e08a17030524d1991289a0fb128f00bd4493674897ee4a8d24cb4"
+      "address": "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
+      "transactionHash": "0x75957caa1836308f5570e8a4106f1d6d4e0118e448250108dcd2791a5ff998ee"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-07-18T06:05:57.165Z",
+  "updatedAt": "2019-08-02T03:55:13.600Z",
   "devdoc": {
     "details": "The following are not necessary for deploying zBTC or zZEC contracts, but are used to track deployments.",
     "methods": {
