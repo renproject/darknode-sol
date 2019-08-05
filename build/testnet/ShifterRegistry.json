@@ -419,10 +419,10 @@
         }
       },
       "links": {},
-      "address": "0xAFAaD3849A9bf3e91Bdb263c4eFCb864347F7658",
-      "transactionHash": "0x80ce999ac0a01277db8e02c420ed908e015ccea773445c131f0dc79ad71cd571"
+      "address": "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
+      "transactionHash": "0x9d58f423376a14074f63791088395bc1402429f301dac3748d384d2c387311bb"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-02T06:30:23.228Z"
+  "updatedAt": "2019-08-05T05:51:06.476Z"
 }

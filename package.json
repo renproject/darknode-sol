@@ -11,7 +11,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
     "deploy": "truffle migrate --skipDryRun --network $NETWORK",
-    "clean-build": "grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm",
+    "clean-build": "grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm && node build/clean.js",
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
