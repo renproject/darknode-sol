@@ -1,4 +1,4 @@
-# `darknode-sol`
+# `⚖️ darknode-sol`
 ## Solidity smart contracts used by Ren Darknodes
 
 [![CircleCI](https://circleci.com/gh/renproject/darknode-sol.svg?style=shield)](https://circleci.com/gh/renproject/darknode-sol)

@@ -40,8 +40,17 @@ contract Shifter is Ownable {
     // the mint or burn event.
     uint256 public nextShiftID = 0;
 
-    event LogShiftIn(address indexed _to, uint256 _amount, uint256 indexed _shiftID);
-    event LogShiftOut(bytes _to, uint256 _amount, uint256 indexed _shiftID, bytes indexed _indexedTo);
+    event LogShiftIn(
+        address indexed _to,
+        uint256 _amount,
+        uint256 indexed _shiftID
+    );
+    event LogShiftOut(
+        bytes _to,
+        uint256 _amount,
+        uint256 indexed _shiftID,
+        bytes indexed _indexedTo
+    );
 
     /// @param _token The ERC20Shifted this Shifter is responsible for.
     /// @param _feeRecipient The recipient of burning and minting fees.

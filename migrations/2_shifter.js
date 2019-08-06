@@ -45,7 +45,7 @@ module.exports = async function (deployer, network, accounts) {
     const _mintAuthority = config.mintAuthority || accounts[0];
     // TODO: _feeRecipient should be the DarknodePayment contract
     // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
-    const _feeRecipient = addresses.DarknodePayment || accounts[0];
+    const _feeRecipient = addresses.DarknodePaymentStore || accounts[0];
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
@@ -92,7 +92,18 @@ module.exports = async function (deployer, network, accounts) {
         await btcShifter.claimTokenOwnership();
     }
 
-    const zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
+    // Try to change the payment cycle in case the token is pending registration
+    let zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
+    if (zBTCRegistered.toString() === "0") {
+        try {
+            deployer.logger.log("Attempting to change cycle");
+            await darknodePayment.changeCycle();
+        } catch (error) {
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+        }
+    }
+
+    zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
     if (zBTCRegistered.toString() === "0") {
         deployer.logger.log(`Registering token zBTC in DarknodePayment`);
         await darknodePayment.registerToken(zBTC.address);

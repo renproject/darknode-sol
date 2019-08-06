@@ -628,14 +628,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await dnr.register(ID(i), PUBK(i));
         }
 
-        console.log("");
+        console.debug("");
 
         await waitForEpoch(dnr);
 
         let start = NULL;
         do {
             const nodes = await dnr.getDarknodes(start, 50);
-            console.log(nodes);
+            console.debug(nodes);
             start = nodes[nodes.length - 1];
         } while (start !== NULL);
 
@@ -647,7 +647,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await dnr.deregister(ID(i));
         }
 
-        console.log("");
+        console.debug("");
 
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
@@ -657,7 +657,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await dnr.refund(ID(i));
         }
 
-        console.log("");
+        console.debug("");
     });
 
 });

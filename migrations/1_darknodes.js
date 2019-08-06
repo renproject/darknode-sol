@@ -85,7 +85,9 @@ module.exports = async function (deployer, network) {
     }
 
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-    if ((await darknodeRegistry.slasher()) != DarknodeSlasher.address) {
+    const currentSlasher = await darknodeRegistry.slasher();
+    const nextSlasher = await darknodeRegistry.nextSlasher();
+    if (currentSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase() && nextSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase()) {
         deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry")
         // Update slasher address
         await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
@@ -162,7 +164,7 @@ module.exports = async function (deployer, network) {
         DarknodeSlasher: DarknodeSlasher.address,
         DarknodeRegistry: DarknodeRegistry.address,
         DarknodeRegistryStore: DarknodeRegistryStore.address,
-        DarknodePaymentStore: DarknodePaymentStore.address,
         DarknodePayment: DarknodePayment.address,
+        DarknodePaymentStore: DarknodePaymentStore.address,
     });
 }
