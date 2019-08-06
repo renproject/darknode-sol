@@ -3,20 +3,24 @@
  * "schemaVersion" and "updatedAt".
  */
 
-var glob = require("glob");
-var fs = require("fs");
+const glob = require("glob");
+const fs = require("fs");
 
 const networks = ["testnet", "devnet", "localnet"];
 
+const path = require('path');
+const dirname = path.dirname(__filename);
+
 for (const network of networks) {
-    glob(`./build/${network}/*.json`, function (err, files) { // read the folder or folders if you want: example json/**/*.json
+    const directory = path.join(dirname, `./${network}/*.json`);
+    glob(directory, function (err, files) { // read the folder or folders if you want: example json/**/*.json
         if (err) {
-            console.log("cannot read the folder, something goes wrong with glob", err);
+            console.log(`error while reading the files in ${directory}`, err);
         }
         files.forEach(function (file) {
             fs.readFile(file, 'utf8', function (err, data) { // Read each file
                 if (err) {
-                    console.log("cannot read the file, something goes wrong with the file", err);
+                    console.log(`error while reading the contents of ${file}`, err);
                 }
                 var obj = JSON.parse(data);
                 const newObj = {
@@ -26,13 +30,15 @@ for (const network of networks) {
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,
-                    updatedAt: obj.updatedAt,
                 }
+                const newData = JSON.stringify(newObj, null, "  ");
 
-                fs.writeFile(file, JSON.stringify(newObj, null, "  "), function (err) {
-                    if (err) return console.log(err);
-                    console.log(` Updated \x1b[33m${file}\x1b[0m.`);
-                });
+                if (data !== newData) {
+                    fs.writeFile(file, JSON.stringify(newObj, null, "  "), function (err) {
+                        if (err) return console.log(err);
+                        console.log(` Updated \x1b[33m${file}\x1b[0m.`);
+                    });
+                }
             });
         });
     });
