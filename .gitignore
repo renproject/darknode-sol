@@ -11,5 +11,5 @@ coverage.json
 build/development
 local_*
 bindings.go
-
+yarn-error.log
 types
