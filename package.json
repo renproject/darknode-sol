@@ -12,7 +12,8 @@
     "prepare": "patch-package",
     "deploy": "truffle migrate --skipDryRun --network $NETWORK",
     "clean-build": "grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
-    "verify": "truffle run verify --network $NETWORK"
+    "verify": "truffle run verify --network $NETWORK",
+    "lint": "solhint contracts/**/*.sol"
   },
   "dependencies": {
     "openzeppelin-solidity": "2.3.0"
@@ -35,6 +36,7 @@
     "ganache-cli": "^6.4.5",
     "patch-package": "^6.1.2",
     "solc": "0.5.10",
+    "solhint": "^2.2.0",
     "solidity-coverage": "^0.6.2",
     "truffle": "5.0.27",
     "truffle-hdwallet-provider": "^1.0.14",
