@@ -205,3 +205,9 @@ contract ZECShifter is Shifter {
         Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
         }
 }
+
+contract BCHShifter is Shifter {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+        }
+}

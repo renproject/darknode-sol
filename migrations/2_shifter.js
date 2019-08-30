@@ -26,6 +26,9 @@ const zBTC = artifacts.require("zBTC");
 const ZECShifter = artifacts.require("ZECShifter");
 const zZEC = artifacts.require("zZEC");
 
+const BCHShifter = artifacts.require("BCHShifter");
+const zBCH = artifacts.require("zBCH");
+
 const DarknodePayment = artifacts.require("DarknodePayment");
 
 const networks = require("./networks.js");
@@ -49,8 +52,10 @@ module.exports = async function (deployer, network, accounts) {
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
+    BCHShifter.address = addresses.BCHShifter || "";
     ShifterRegistry.address = addresses.ShifterRegistry || "";
     zZEC.address = addresses.zZEC || "";
+    zBCH.address = addresses.zBCH || "";
     zBTC.address = addresses.zBTC || "";
 
     if (network.match(/localnet|devnet|testnet|main/)) {
@@ -152,6 +157,44 @@ module.exports = async function (deployer, network, accounts) {
     } else {
         deployer.logger.log(`ZEC shifter is already registered: ${await registry.getShifterByToken(zZEC.address)}`);
     }
+    
+
+    /** BCH *******************************************************************/
+
+    if (!zBCH.address) {
+        await deployer.deploy(zBCH, "Shifted Bitcoin", "zBCH", 8);
+    }
+    const zbch = await zBCH.at(zBCH.address);
+
+    if (!BCHShifter.address) {
+        await deployer.deploy(
+            BCHShifter,
+            zBCH.address,
+            _feeRecipient,
+            _mintAuthority,
+            config.shifterFees,
+            config.zBCHMinShiftOutAmount,
+        );
+    }
+    const bchShifter = await BCHShifter.at(BCHShifter.address);
+
+    if (await zbch.owner() !== BCHShifter.address) {
+        await zbch.transferOwnership(BCHShifter.address);
+        await bchShifter.claimTokenOwnership();
+    }
+
+    const zBCHRegistered = await darknodePayment.registeredTokenIndex(zBCH.address);
+    if (zBCHRegistered.toString() === "0") {
+        deployer.logger.log(`Registering token zBCH in DarknodePayment`);
+        await darknodePayment.registerToken(zBCH.address);
+    }
+
+    if ((await registry.getShifterByToken(zBCH.address)) === NULL) {
+        deployer.logger.log(`Registering BCH shifter`);
+        await registry.setShifter(zBCH.address, BCHShifter.address);
+    } else {
+        deployer.logger.log(`BCH shifter is already registered: ${await registry.getShifterByToken(zBTC.address)}`);
+    }
 
 
     /** LOG *******************************************************************/
@@ -159,8 +202,10 @@ module.exports = async function (deployer, network, accounts) {
     deployer.logger.log({
         BTCShifter: BTCShifter.address,
         ZECShifter: ZECShifter.address,
+        BCHShifter: BCHShifter.address,
         zBTC: zBTC.address,
         zZEC: zZEC.address,
+        zBCH: zBCH.address,
         ShifterRegistry: ShifterRegistry.address,
     });
 }
