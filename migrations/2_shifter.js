@@ -98,18 +98,19 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     // Try to change the payment cycle in case the token is pending registration
-    let zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
-    if (zBTCRegistered.toString() === "0") {
+    let zBTCRegistered = (await darknodePayment.registeredTokenIndex(zBTC.address)).toString() !== "0";
+    if (!zBTCRegistered) {
         try {
             deployer.logger.log("Attempting to change cycle");
             await darknodePayment.changeCycle();
         } catch (error) {
             deployer.logger.log("Unable to call darknodePayment.changeCycle()");
         }
+        zBTCRegistered = (await darknodePayment.registeredTokenIndex(zBTC.address)).toString() !== "0";
     }
 
-    zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
-    if (zBTCRegistered.toString() === "0") {
+
+    if (!zBTCRegistered) {
         deployer.logger.log(`Registering token zBTC in DarknodePayment`);
         await darknodePayment.registerToken(zBTC.address);
     }
@@ -145,8 +146,19 @@ module.exports = async function (deployer, network, accounts) {
         await zecShifter.claimTokenOwnership();
     }
 
-    const zZECRegistered = await darknodePayment.registeredTokenIndex(zZEC.address);
-    if (zZECRegistered.toString() === "0") {
+    // Try to change the payment cycle in case the token is pending registration
+    let zZECRegistered = (await darknodePayment.registeredTokenIndex(zZEC.address)).toString() !== "0";
+    if (zBTCRegistered && !zZECRegistered) {
+        try {
+            deployer.logger.log("Attempting to change cycle");
+            await darknodePayment.changeCycle();
+        } catch (error) {
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+        }
+        zZECRegistered = (await darknodePayment.registeredTokenIndex(zZEC.address)).toString() !== "0";
+    }
+
+    if (!zZECRegistered) {
         deployer.logger.log(`Registering token zZEC in DarknodePayment`);
         await darknodePayment.registerToken(zZEC.address);
     }
@@ -157,12 +169,12 @@ module.exports = async function (deployer, network, accounts) {
     } else {
         deployer.logger.log(`ZEC shifter is already registered: ${await registry.getShifterByToken(zZEC.address)}`);
     }
-    
+
 
     /** BCH *******************************************************************/
 
     if (!zBCH.address) {
-        await deployer.deploy(zBCH, "Shifted Bitcoin", "zBCH", 8);
+        await deployer.deploy(zBCH, "Shifted Bitcoin Cash", "zBCH", 8);
     }
     const zbch = await zBCH.at(zBCH.address);
 
@@ -183,8 +195,19 @@ module.exports = async function (deployer, network, accounts) {
         await bchShifter.claimTokenOwnership();
     }
 
-    const zBCHRegistered = await darknodePayment.registeredTokenIndex(zBCH.address);
-    if (zBCHRegistered.toString() === "0") {
+    // Try to change the payment cycle in case the token is pending registration
+    let zBCHRegistered = (await darknodePayment.registeredTokenIndex(zBCH.address)).toString() !== "0";
+    if (zBTCRegistered && zZECRegistered && !zBCHRegistered) {
+        try {
+            deployer.logger.log("Attempting to change cycle");
+            await darknodePayment.changeCycle();
+        } catch (error) {
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+        }
+        zBCHRegistered = (await darknodePayment.registeredTokenIndex(zBCH.address)).toString() !== "0";
+    }
+
+    if (!zBCHRegistered) {
         deployer.logger.log(`Registering token zBCH in DarknodePayment`);
         await darknodePayment.registerToken(zBCH.address);
     }
@@ -193,7 +216,7 @@ module.exports = async function (deployer, network, accounts) {
         deployer.logger.log(`Registering BCH shifter`);
         await registry.setShifter(zBCH.address, BCHShifter.address);
     } else {
-        deployer.logger.log(`BCH shifter is already registered: ${await registry.getShifterByToken(zBTC.address)}`);
+        deployer.logger.log(`BCH shifter is already registered: ${await registry.getShifterByToken(zBCH.address)}`);
     }
 
 

@@ -1,5 +1,5 @@
 {
-  "contractName": "ZECShifter",
+  "contractName": "BCHShifter",
   "abi": [
     {
       "constant": false,
@@ -529,8 +529,8 @@
         }
       },
       "links": {},
-      "address": "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
-      "transactionHash": "0xc949fed89edf01ed55fd2b6bb73abf32678cd55f9a3911e825c8258b2d6356f9"
+      "address": "0x9b74517b18D8D0581df70dc6376db5f4974ebfbD",
+      "transactionHash": "0x5f9b3319ec488c4ec79c7e5665ed8557d8aabd231ad4e20557f51fb9e43a3e47"
     }
   },
   "schemaVersion": "3.0.11"
