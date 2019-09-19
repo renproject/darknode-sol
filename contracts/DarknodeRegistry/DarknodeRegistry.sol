@@ -113,15 +113,14 @@ contract DarknodeRegistry is Ownable {
     /// @param _minimumBond The minimum bond amount that can be submitted by a
     ///        Darknode.
     /// @param _minimumPodSize The minimum size of a Darknode pod.
-    /// @param _minimumEpochInterval The minimum number of blocks between
-    ///        epochs.
+    /// @param _minimumEpochIntervalSeconds The minimum number of seconds between epochs.
     constructor(
         string memory _VERSION,
         RenToken _renAddress,
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
-        uint256 _minimumEpochInterval
+        uint256 _minimumEpochIntervalSeconds
     ) public {
         VERSION = _VERSION;
 
@@ -134,7 +133,7 @@ contract DarknodeRegistry is Ownable {
         minimumPodSize = _minimumPodSize;
         nextMinimumPodSize = minimumPodSize;
 
-        minimumEpochInterval = _minimumEpochInterval;
+        minimumEpochInterval = _minimumEpochIntervalSeconds;
         nextMinimumEpochInterval = minimumEpochInterval;
 
         currentEpoch = Epoch({
