@@ -19,7 +19,7 @@ contract DarknodeRegistry is Ownable {
     /// blocknumber which restricts when the next epoch can be called.
     struct Epoch {
         uint256 epochhash;
-        uint256 blocknumber;
+        uint256 blocktime;
     }
 
     uint256 public numDarknodes;
@@ -139,7 +139,7 @@ contract DarknodeRegistry is Ownable {
 
         currentEpoch = Epoch({
             epochhash: uint256(blockhash(block.number - 1)),
-            blocknumber: block.number
+            blocktime: block.timestamp
         });
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
@@ -169,7 +169,7 @@ contract DarknodeRegistry is Ownable {
             msg.sender,
             bond,
             _publicKey,
-            currentEpoch.blocknumber.add(minimumEpochInterval),
+            currentEpoch.blocktime.add(minimumEpochInterval),
             0
         );
 
@@ -193,20 +193,20 @@ contract DarknodeRegistry is Ownable {
     /// the current timestamp and current blockhash and overrides the current
     /// epoch.
     function epoch() external {
-        if (previousEpoch.blocknumber == 0) {
+        if (previousEpoch.blocktime == 0) {
             // The first epoch must be called by the owner of the contract
             require(msg.sender == owner(), "not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed
-        require(block.number >= currentEpoch.blocknumber.add(minimumEpochInterval), "epoch interval has not passed");
+        require(block.timestamp >= currentEpoch.blocktime.add(minimumEpochInterval), "epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
         previousEpoch = currentEpoch;
         currentEpoch = Epoch({
             epochhash: epochhash,
-            blocknumber: block.number
+            blocktime: block.timestamp
         });
 
         // Update the registry information
@@ -236,7 +236,7 @@ contract DarknodeRegistry is Ownable {
     }
 
     /// @notice Allows the contract owner to initiate an ownership transfer of
-    /// the DarknodeRegistryStore. 
+    /// the DarknodeRegistryStore.
     /// @param _newOwner The address to transfer the ownership to.
     function transferStoreOwnership(address _newOwner) external onlyOwner {
         store.transferOwnership(_newOwner);
@@ -382,20 +382,20 @@ contract DarknodeRegistry is Ownable {
     /// @param _darknodeID The ID of the darknode to return
     function isPendingRegistration(address _darknodeID) external view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
-        return registeredAt != 0 && registeredAt > currentEpoch.blocknumber;
+        return registeredAt != 0 && registeredAt > currentEpoch.blocktime;
     }
 
     /// @notice Returns if a darknode is in the pending deregistered state. In
     /// this state a darknode is still considered registered.
     function isPendingDeregistration(address _darknodeID) external view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        return deregisteredAt != 0 && deregisteredAt > currentEpoch.blocknumber;
+        return deregisteredAt != 0 && deregisteredAt > currentEpoch.blocktime;
     }
 
     /// @notice Returns if a darknode is in the deregistered state.
     function isDeregistered(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocknumber;
+        return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocktime;
     }
 
     /// @notice Returns if a darknode can be deregistered. This is true if the
@@ -420,7 +420,7 @@ contract DarknodeRegistry is Ownable {
     /// @notice Returns if a darknode is refundable. This is true for darknodes
     /// that have been in the deregistered state for one full epoch.
     function isRefundable(address _darknodeID) public view returns (bool) {
-        return isDeregistered(_darknodeID) && store.darknodeDeregisteredAt(_darknodeID) <= previousEpoch.blocknumber;
+        return isDeregistered(_darknodeID) && store.darknodeDeregisteredAt(_darknodeID) <= previousEpoch.blocktime;
     }
 
     /// @notice Returns if a darknode is in the registered state.
@@ -440,8 +440,8 @@ contract DarknodeRegistry is Ownable {
     function isRegisteredInEpoch(address _darknodeID, Epoch memory _epoch) private view returns (bool) {
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        bool registered = registeredAt != 0 && registeredAt <= _epoch.blocknumber;
-        bool notDeregistered = deregisteredAt == 0 || deregisteredAt > _epoch.blocknumber;
+        bool registered = registeredAt != 0 && registeredAt <= _epoch.blocktime;
+        bool notDeregistered = deregisteredAt == 0 || deregisteredAt > _epoch.blocktime;
         // The Darknode has been registered and has not yet been deregistered,
         // although it might be pending deregistration
         return registered && notDeregistered;
@@ -493,7 +493,7 @@ contract DarknodeRegistry is Ownable {
     /// Private function called by `deregister` and `slash`
     function deregisterDarknode(address _darknodeID) private {
         // Flag the darknode for deregistration
-        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocknumber.add(minimumEpochInterval));
+        store.updateDarknodeDeregisteredAt(_darknodeID, currentEpoch.blocktime.add(minimumEpochInterval));
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
         // Emit an event
