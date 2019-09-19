@@ -5,7 +5,7 @@ import {
     RenTokenInstance,
 } from "../types/truffle-contracts";
 import {
-    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
+    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
 const RenToken = artifacts.require("RenToken");
@@ -67,12 +67,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateMinimumEpochInterval(0x0);
         await waitForEpoch(dnr);
         (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
-        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL, { from: accounts[1] })
+        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS, { from: accounts[1] })
             .should.be.rejectedWith(/revert/); // not owner
-        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL);
+        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS);
         (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
         await waitForEpoch(dnr);
-        (await dnr.minimumEpochInterval()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL);
+        (await dnr.minimumEpochInterval()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL_SECONDS);
     });
 
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
@@ -82,7 +82,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can not call epoch before the minimum time interval", async () => {
-        await dnr.epoch();
+        await waitForEpoch(dnr);
         // TODO: Why isn't reason returned?
         await dnr.epoch().should.be.rejectedWith(/revert/);
     });
@@ -264,7 +264,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
-        await dnr.epoch();
+        await waitForEpoch(dnr);
     });
 
     it("can not register a node twice", async () => {

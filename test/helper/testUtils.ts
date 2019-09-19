@@ -17,7 +17,7 @@ chai.should();
 
 const networkAddresses = require("../../migrations/networks.js");
 const config = networkAddresses.config;
-export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL_SECONDS } = config;
 
 export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
 
@@ -88,7 +88,7 @@ export const increaseTime = async (seconds: number) => {
 };
 
 export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
-    const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
+    const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {

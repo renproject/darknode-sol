@@ -60,7 +60,7 @@ module.exports = async function (deployer, network) {
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL
+            config.MINIMUM_EPOCH_INTERVAL_SECONDS
         );
     }
 
