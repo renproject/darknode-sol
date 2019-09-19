@@ -65,6 +65,12 @@ contract DarknodePayment is Ownable {
     /// @notice The earliest timestamp that changeCycle() can be called.
     uint256 public cycleTimeout;
 
+    /// @notice The staged payout percentage to the darknodes per cycle
+    uint256 public payoutPercent;
+
+    /// @notice The current cycle payout percentage to the darknodes
+    uint256 public currentCyclePayoutPercent;
+
     /// @notice Mapping of darknode -> cycle -> already_claimed
     ///         Used to keep track of which darknodes have already claimed their
     ///         rewards.
@@ -108,6 +114,11 @@ contract DarknodePayment is Ownable {
     /// @param _oldDuration The old duration
     event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
 
+    /// @notice Emitted when the payout percent changes
+    /// @param _newPercent The new percent
+    /// @param _oldPercent The old percent
+    event LogPayoutPercentChanged(uint256 _newPercent, uint256 _oldPercent);
+
     /// @notice Emitted when the Blacklister contract changes
     /// @param _newBlacklister The new Blacklister
     /// @param _oldBlacklister The old Blacklister
@@ -139,6 +150,12 @@ contract DarknodePayment is Ownable {
         _;
     }
 
+    /// @notice Restrict a function to have a valid percentage
+    modifier validPercent(uint8 _percent) {
+        require(_percent <= 100, "invalid percentage");
+        _;
+    }
+
     /// @notice The contract constructor. Starts the current cycle using the
     ///         time of deploy.
     ///
@@ -151,12 +168,14 @@ contract DarknodePayment is Ownable {
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint256 _cycleDurationSeconds
-    ) public {
+        uint256 _cycleDurationSeconds,
+        uint8 _cyclePayoutPercent
+    ) public validPercent(_cyclePayoutPercent) {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
         cycleDuration = _cycleDurationSeconds;
+        payoutPercent = _cyclePayoutPercent;
         // Default the blacklister to owner
         blacklister = msg.sender;
 
@@ -164,6 +183,7 @@ contract DarknodePayment is Ownable {
         currentCycle = block.number;
         cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
+        currentCyclePayoutPercent = payoutPercent;
     }
 
     /// @notice Transfers the funds allocated to the darknode to the darknode
@@ -197,7 +217,8 @@ contract DarknodePayment is Ownable {
     /// @notice The current balance of the contract available as reward for the
     ///         current cycle
     function currentCycleRewardPool(address _token) external view returns (uint256) {
-        return store.availableBalance(_token).sub(unclaimedRewards[_token]);
+        uint256 total = store.availableBalance(_token).sub(unclaimedRewards[_token]);
+        return total.div(100).mul(currentCyclePayoutPercent);
     }
 
     function darknodeBalances(address _darknodeID, address _token) external view returns (uint256) {
@@ -220,6 +241,7 @@ contract DarknodePayment is Ownable {
         currentCycle = block.number;
         cycleStartTime = block.timestamp;
         cycleTimeout = cycleStartTime.add(cycleDuration);
+        currentCyclePayoutPercent = payoutPercent;
 
         // Update the share size for next cycle
         shareCount = store.darknodeWhitelistLength();
@@ -320,6 +342,15 @@ contract DarknodePayment is Ownable {
         emit LogCycleDurationChanged(cycleDuration, oldDuration);
     }
 
+    /// @notice Updates payout percentage
+    ///
+    /// @param _payoutPercentage The percentage of payout for darknodes.
+    function updatePayoutPercentage(uint8 _percent) external onlyOwner validPercent(_percent) {
+        uint256 oldPayoutPercent = payoutPercent;
+        payoutPercent = _percent;
+        emit LogPayoutPercentChanged(payoutPercent, oldPayoutPercent);
+    }
+
     /// @notice Allows the contract owner to initiate an ownership transfer of
     ///         the DarknodePaymentStore.
     ///
@@ -365,7 +396,8 @@ contract DarknodePayment is Ownable {
             previousCycleRewardShare[_token] = 0;
         } else {
             // Lock up the current balance for darknode reward allocation
-            unclaimedRewards[_token] = store.availableBalance(_token);
+            uint256 total = store.availableBalance(_token);
+            unclaimedRewards[_token] = total.div(100).mul(currentCyclePayoutPercent);
             previousCycleRewardShare[_token] = unclaimedRewards[_token].div(shareCount);
         }
     }
