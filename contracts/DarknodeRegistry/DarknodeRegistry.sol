@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../RenToken/RenToken.sol";
 import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
+import "../DarknodePayment/DarknodePayment.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
@@ -46,6 +47,9 @@ contract DarknodeRegistry is Ownable {
 
     /// Darknode Registry Store is the storage contract for darknodes.
     DarknodeRegistryStore public store;
+
+    /// The Darknode Payment contract for changing cycle
+    DarknodePayment public darknodePayment;
 
     /// Darknode Slasher allows darknodes to vote on bond slashing.
     DarknodeSlasher public slasher;
@@ -229,6 +233,9 @@ contract DarknodeRegistry is Ownable {
             slasher = nextSlasher;
             emit LogSlasherUpdated(address(slasher), address(nextSlasher));
         }
+        if (address(darknodePayment) != address(0x0)) {
+            darknodePayment.changeCycle();
+        }
 
         // Emit an event
         emit LogNewEpoch(epochhash);
@@ -284,28 +291,29 @@ contract DarknodeRegistry is Ownable {
     ///   1/8 is rewarded to the first challenger
     ///   1/8 is rewarded to the second challenger
     ///   1/4 becomes unassigned
-    /// @param _prover The guilty prover whose bond is being slashed
-    /// @param _challenger1 The first of the two darknodes who submitted the challenge
-    /// @param _challenger2 The second of the two darknodes who submitted the challenge
-    function slash(address _prover, address _challenger1, address _challenger2)
+    /// @param _guilty The guilty prover whose bond is being slashed
+    /// @param _challenger The challenger who should receive half the bond as reward
+    /// @param _percentage The percentage amount of bond to reward the challenger
+    function slash(address _guilty, address _challenger, uint8 _percentage)
         external
         onlySlasher
     {
-        uint256 penalty = store.darknodeBond(_prover) / 2;
-        uint256 reward = penalty / 4;
+        require(_percentage <= 100, "invalid percent");
+        uint256 totalBond = store.darknodeBond(_guilty);
+        uint256 penalty = totalBond.div(100).mul(_percentage);
+        uint256 rewardLeft = totalBond.sub(penalty);
 
         // Slash the bond of the failed prover in half
-        store.updateDarknodeBond(_prover, penalty);
+        store.updateDarknodeBond(_guilty, penalty);
 
         // If the darknode has not been deregistered then deregister it
-        if (isDeregisterable(_prover)) {
-            deregisterDarknode(_prover);
+        if (isDeregisterable(_guilty)) {
+            deregisterDarknode(_guilty);
         }
 
-        // Reward the challengers with less than the penalty so that it is not
-        // worth challenging yourself
-        require(ren.transfer(store.darknodeOwner(_challenger1), reward), "reward transfer failed");
-        require(ren.transfer(store.darknodeOwner(_challenger2), reward), "reward transfer failed");
+        // Distribute the remaining bond into the darknode payment reward pool
+        require(address(darknodePayment) != address(0x0), "invalid payment address");
+        require(ren.transfer(address(darknodePayment.store()), rewardLeft), "reward transfer failed");
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
