@@ -301,7 +301,7 @@ contract DarknodeRegistry is Ownable {
         require(_percentage <= 100, "invalid percent");
         uint256 totalBond = store.darknodeBond(_guilty);
         uint256 penalty = totalBond.div(100).mul(_percentage);
-        uint256 rewardLeft = totalBond.sub(penalty);
+        uint256 reward = penalty.div(2);
 
         // Slash the bond of the failed prover in half
         store.updateDarknodeBond(_guilty, penalty);
@@ -313,7 +313,8 @@ contract DarknodeRegistry is Ownable {
 
         // Distribute the remaining bond into the darknode payment reward pool
         require(address(darknodePayment) != address(0x0), "invalid payment address");
-        require(ren.transfer(address(darknodePayment.store()), rewardLeft), "reward transfer failed");
+        require(ren.transfer(address(darknodePayment.store()), reward), "reward transfer failed");
+        require(ren.transfer(_challenger, reward), "reward transfer failed");
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
