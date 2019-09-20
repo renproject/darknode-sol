@@ -62,9 +62,6 @@ contract DarknodePayment is Ownable {
     /// @notice The minimum duration that the current cycle must go for.
     uint256 public cycleDuration;
 
-    /// @notice The earliest timestamp that changeCycle() can be called.
-    uint256 public cycleTimeout;
-
     /// @notice The staged payout percentage to the darknodes per cycle
     uint256 public payoutPercent;
 
@@ -102,12 +99,6 @@ contract DarknodePayment is Ownable {
     /// @param _value The amount of DAI withdrawn
     /// @param _token The address of the token that was withdrawn
     event LogDarknodeWithdrew(address indexed _payee, uint256 _value, address _token);
-
-    /// @notice Emitted when a new cycle happens
-    /// @param _newCycle The new, current cycle
-    /// @param _lastCycle The previous cycle
-    /// @param _cycleTimeout The earliest a new cycle can be called
-    event LogNewCycle(uint256 _newCycle, uint256 _lastCycle, uint256 _cycleTimeout);
 
     /// @notice Emitted when the cycle duration changes
     /// @param _newDuration The new duration
@@ -180,9 +171,8 @@ contract DarknodePayment is Ownable {
         blacklister = msg.sender;
 
         // Start the current cycle
-        currentCycle = block.number;
-        cycleStartTime = block.timestamp;
-        cycleTimeout = cycleStartTime.add(cycleDuration);
+        currentCycle = darknodeRegistry.currentEpoch().blockhash;
+        cycleStartTime = darknodeRegistry.currentEpoch().blocktime;
         currentCyclePayoutPercent = payoutPercent;
     }
 
@@ -227,8 +217,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
-        require(now >= cycleTimeout, "cannot cycle yet: too early");
-        require(block.number != currentCycle, "no new block");
+        require(msg.sender == address(darknodeRegistry), "not darknode registry");
 
         // Snapshot balances for the past cycle
         uint arrayLength = registeredTokens.length;
@@ -238,17 +227,14 @@ contract DarknodePayment is Ownable {
 
         // Start a new cycle
         previousCycle = currentCycle;
-        currentCycle = block.number;
-        cycleStartTime = block.timestamp;
-        cycleTimeout = cycleStartTime.add(cycleDuration);
+        currentCycle = darknodeRegistry.currentEpoch().blockhash;
+        cycleStartTime = darknodeRegistry.currentEpoch().blocktime;
         currentCyclePayoutPercent = payoutPercent;
 
         // Update the share size for next cycle
         shareCount = store.darknodeWhitelistLength();
         // Update the list of registeredTokens
         _updateTokenList();
-
-        emit LogNewCycle(currentCycle, previousCycle, cycleTimeout);
         return currentCycle;
     }
 
