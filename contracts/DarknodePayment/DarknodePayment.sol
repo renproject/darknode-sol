@@ -328,7 +328,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Updates payout percentage
     ///
-    /// @param _payoutPercentage The percentage of payout for darknodes.
+    /// @param _percent The percentage of payout for darknodes.
     function updatePayoutPercentage(uint8 _percent) external onlyOwner validPercent(_percent) {
         uint256 oldPayoutPercent = payoutPercent;
         payoutPercent = _percent;
