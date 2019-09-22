@@ -171,8 +171,7 @@ contract DarknodePayment is Ownable {
         blacklister = msg.sender;
 
         // Start the current cycle
-        currentCycle = darknodeRegistry.currentEpoch().blockhash;
-        cycleStartTime = darknodeRegistry.currentEpoch().blocktime;
+        (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
         currentCyclePayoutPercent = payoutPercent;
     }
 
@@ -227,8 +226,7 @@ contract DarknodePayment is Ownable {
 
         // Start a new cycle
         previousCycle = currentCycle;
-        currentCycle = darknodeRegistry.currentEpoch().blockhash;
-        cycleStartTime = darknodeRegistry.currentEpoch().blocktime;
+        (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
         currentCyclePayoutPercent = payoutPercent;
 
         // Update the share size for next cycle
