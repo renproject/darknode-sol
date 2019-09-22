@@ -258,9 +258,9 @@ contract DarknodeRegistry is Ownable {
     /// @notice Allows the contract owner to update the address of the
     /// darknode payment contract.
     /// @param _dnpAddress The address of the DNP contract.
-    function updateDarknodePayment(address _dnpAddress) external onlyOwner {
-        require(_dnpAddress != address(0x0), "invalid dnp address");
-        darknodePayment = DarknodePayment(address);
+    function updateDarknodePayment(DarknodePayment _dnpAddress) external onlyOwner {
+        require(address(_dnpAddress) != address(0x0), "invalid dnp address");
+        darknodePayment = _dnpAddress;
     }
 
     /// @notice Allows the contract owner to update the minimum bond.
