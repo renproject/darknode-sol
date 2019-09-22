@@ -112,6 +112,7 @@ module.exports = async function (deployer, network) {
             DarknodeRegistry.address,
             DarknodePaymentStore.address,
             0, // Cycle Duration (updated below, after a cycle has been called)
+            50, // Reward payout percentage (50% is paid out at any given cycle)
         );
         changeCycle = true;
     }
