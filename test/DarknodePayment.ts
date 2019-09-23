@@ -214,12 +214,11 @@ contract("DarknodePayment", (accounts: string[]) => {
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
-                .should.bignumber.equal(previousReward.add(amount));
+                .should.bignumber.equal(await asRewardPoolBalance(previousReward.add(amount)));
         });
 
         it("can deposit ETH via direct payment to DarknodePayment contract", async () => {
             // deposit using direct deposit to dnp
-            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
             // make sure we have enough balance
@@ -229,19 +228,18 @@ contract("DarknodePayment", (accounts: string[]) => {
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
-                .should.bignumber.equal(previousReward.add(amount));
+                .should.bignumber.equal(await asRewardPoolBalance(oldETHBalance.add(amount)));
         });
 
         it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
             // deposit using direct deposit to store
-            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
             await web3.eth.sendTransaction({ to: store.address, from: owner, value: amount.toString() });
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS)))
-                .should.bignumber.equal(previousReward.add(amount));
+                .should.bignumber.equal(await asRewardPoolBalance(oldETHBalance.add(amount)));
         });
 
         it("cannot deposit ERC20 with ETH attached", async () => {
@@ -758,6 +756,12 @@ contract("DarknodePayment", (accounts: string[]) => {
             await increaseTime(timeInSeconds - currentCycleDurationInSeconds);
             await dnp.changeCycle();
         }
+    };
+
+    const asRewardPoolBalance = async (balance: BN): Promise<BN> => {
+        const payoutPercent = new BN(await dnp.currentCyclePayoutPercent()); 
+        const rewardPool = balance.div(new BN(100)).mul(payoutPercent);
+        return rewardPool;
     };
 
     const waitForCycle = async () => {
