@@ -64,7 +64,7 @@ contract DarknodePayment is Ownable {
     uint256 public cycleStartTime;
 
     /// @notice The staged payout percentage to the darknodes per cycle
-    uint256 public payoutPercent;
+    uint256 public nextCyclePayoutPercent;
 
     /// @notice The current cycle payout percentage to the darknodes
     uint256 public currentCyclePayoutPercent;
@@ -164,7 +164,7 @@ contract DarknodePayment is Ownable {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        payoutPercent = _cyclePayoutPercent;
+        nextCyclePayoutPercent = _cyclePayoutPercent;
         // Default the blacklister to owner
         blacklister = msg.sender;
         // Default the cycleChanger to owner
@@ -172,7 +172,7 @@ contract DarknodePayment is Ownable {
 
         // Start the current cycle
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
-        currentCyclePayoutPercent = payoutPercent;
+        currentCyclePayoutPercent = nextCyclePayoutPercent;
     }
 
     /// @notice Transfers the funds allocated to the darknode to the darknode
@@ -227,7 +227,7 @@ contract DarknodePayment is Ownable {
         // Start a new cycle
         previousCycle = currentCycle;
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
-        currentCyclePayoutPercent = payoutPercent;
+        currentCyclePayoutPercent = nextCyclePayoutPercent;
 
         // Update the share size for next cycle
         shareCount = store.darknodeWhitelistLength();
@@ -329,9 +329,9 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _percent The percentage of payout for darknodes.
     function updatePayoutPercentage(uint8 _percent) external onlyOwner validPercent(_percent) {
-        uint256 oldPayoutPercent = payoutPercent;
-        payoutPercent = _percent;
-        emit LogPayoutPercentChanged(payoutPercent, oldPayoutPercent);
+        uint256 oldPayoutPercent = nextCyclePayoutPercent;
+        nextCyclePayoutPercent = _percent;
+        emit LogPayoutPercentChanged(nextCyclePayoutPercent, oldPayoutPercent);
     }
 
     /// @notice Allows the contract owner to initiate an ownership transfer of
