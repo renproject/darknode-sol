@@ -28,6 +28,10 @@ contract DarknodePayment is Ownable {
     /// @notice The address that can call blacklist()
     address public blacklister;
 
+    /// @notice The address that can call changeCycle()
+    //          This defaults to the owner but should be changed to the DarknodeRegistry.
+    address public cycleChanger;
+
     uint256 public currentCycle;
     uint256 public previousCycle;
 
@@ -58,9 +62,6 @@ contract DarknodePayment is Ownable {
 
     /// @notice The time that the current cycle started.
     uint256 public cycleStartTime;
-
-    /// @notice The minimum duration that the current cycle must go for.
-    uint256 public cycleDuration;
 
     /// @notice The staged payout percentage to the darknodes per cycle
     uint256 public payoutPercent;
@@ -100,11 +101,6 @@ contract DarknodePayment is Ownable {
     /// @param _token The address of the token that was withdrawn
     event LogDarknodeWithdrew(address indexed _payee, uint256 _value, address _token);
 
-    /// @notice Emitted when the cycle duration changes
-    /// @param _newDuration The new duration
-    /// @param _oldDuration The old duration
-    event LogCycleDurationChanged(uint256 _newDuration, uint256 _oldDuration);
-
     /// @notice Emitted when the payout percent changes
     /// @param _newPercent The new percent
     /// @param _oldPercent The old percent
@@ -114,6 +110,11 @@ contract DarknodePayment is Ownable {
     /// @param _newBlacklister The new Blacklister
     /// @param _oldBlacklister The old Blacklister
     event LogBlacklisterChanged(address _newBlacklister, address _oldBlacklister);
+
+    /// @notice Emitted when the CycleChanger address changes
+    /// @param _newCycleChanger The new CycleChanger
+    /// @param _oldCycleChanger The old CycleChanger
+    event LogCycleChangerChanged(address _newCycleChanger, address _oldCycleChanger);
 
     /// @notice Emitted when a new token is registered
     /// @param _token The token that was registered
@@ -154,21 +155,20 @@ contract DarknodePayment is Ownable {
     /// @param _darknodeRegistry The address of the DarknodeRegistry contract
     /// @param _darknodePaymentStore The address of the DarknodePaymentStore
     ///        contract
-    /// @param _cycleDurationSeconds The minimum time before a new cycle can occur in seconds
     constructor(
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint256 _cycleDurationSeconds,
         uint8 _cyclePayoutPercent
     ) public validPercent(_cyclePayoutPercent) {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
-        cycleDuration = _cycleDurationSeconds;
         payoutPercent = _cyclePayoutPercent;
         // Default the blacklister to owner
         blacklister = msg.sender;
+        // Default the cycleChanger to owner
+        cycleChanger = msg.sender;
 
         // Start the current cycle
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
@@ -216,7 +216,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
-        require(msg.sender == address(darknodeRegistry), "not darknode registry");
+        require(msg.sender == cycleChanger, "not cycle changer");
 
         // Snapshot balances for the past cycle
         uint arrayLength = registeredTokens.length;
@@ -316,14 +316,13 @@ contract DarknodePayment is Ownable {
         blacklister = _addr;
     }
 
-    /// @notice Updates cycle duration
+    /// @notice Updates the CycleChanger contract address.
     ///
-    /// @param _durationSeconds The amount of time (in seconds) that should have
-    ///        passed before a new cycle can be called.
-    function updateCycleDuration(uint256 _durationSeconds) external onlyOwner {
-        uint256 oldDuration = cycleDuration;
-        cycleDuration = _durationSeconds;
-        emit LogCycleDurationChanged(cycleDuration, oldDuration);
+    /// @param _addr The new CycleChanger contract address.
+    function updateCycleChanger(address _addr) external onlyOwner {
+        require(_addr != address(0), "invalid contract address");
+        emit LogCycleChangerChanged(_addr, cycleChanger);
+        cycleChanger = _addr;
     }
 
     /// @notice Updates payout percentage
