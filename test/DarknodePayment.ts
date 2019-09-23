@@ -573,10 +573,10 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     describe("Changing cycles", async () => {
 
-        it("cannot change cycle if insufficient time has passed", async () => {
-            await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS / 4)
-                .should.eventually.be.rejectedWith(/cannot cycle yet: too early/);
-        });
+        // it("cannot change cycle if insufficient time has passed", async () => {
+        //     await waitForCycle(DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS / 4)
+        //         .should.eventually.be.rejectedWith(/cannot cycle yet: too early/);
+        // });
 
         it("should disallow unauthorized changes to cycle duration", async () => {
             await dnp.updateCycleDuration(4, { from: accounts[3] }).should.eventually.be.rejected;
@@ -760,14 +760,20 @@ contract("DarknodePayment", (accounts: string[]) => {
         }
     };
 
-    const waitForCycle = async (seconds?: number) => {
-        const timeout = new BN(await dnp.cycleTimeout());
-        const now = new BN(await cc.time());
-        if (seconds === undefined) {
-            // seconds = (new BN(await dnp.cycleDuration()).toNumber());
-            seconds = Math.max(1, (timeout).sub(now).toNumber());
-        }
-        await increaseTime(seconds);
-        await dnp.changeCycle();
+    const waitForCycle = async () => {
+        const currentCycle = new BN(await dnp.currentCycle());
+        await waitForEpoch(dnr);
+        const nextCycle = new BN(await dnp.currentCycle());
+        currentCycle.should.not.bignumber.equal(nextCycle);
+        // const [_, startTime] = await dnr.currentEpoch()
+        // const minInterval = new BN(await dnr.minimumEpochInterval());
+        // const timeout = new BN(startTime).add(minInterval);
+        // const now = new BN(await cc.time());
+        // if (seconds === undefined) {
+        //     // seconds = (new BN(await dnp.cycleDuration()).toNumber());
+        //     seconds = Math.max(1, (timeout).sub(now).toNumber());
+        // }
+        // await increaseTime(seconds);
+        // await dnp.changeCycle();
     };
 });
