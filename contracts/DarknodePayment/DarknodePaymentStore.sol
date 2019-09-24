@@ -7,7 +7,7 @@ import "../libraries/Claimable.sol";
 import "../libraries/CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
-/// @notice DarknodePaymentStore is responsible for tracking black/whitelisted
+/// @notice DarknodePaymentStore is responsible for tracking blacklisted
 ///         darknodes as well as the balances which have been allocated to the
 ///         darknodes. It is also responsible for holding the tokens to be paid
 ///         out to darknodes.
@@ -20,9 +20,6 @@ contract DarknodePaymentStore is Claimable {
     /// @notice The special address for Ether.
     address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    /// @notice The size of the whitelist
-    uint256 public darknodeWhitelistLength;
-
     /// @notice Mapping of darknode -> token -> balance
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
@@ -31,9 +28,6 @@ contract DarknodePaymentStore is Claimable {
 
     /// @notice mapping of darknode -> blacklistTimestamp
     mapping(address => uint256) public darknodeBlacklist;
-
-    /// @notice mapping of darknode -> whitelistTimestamp
-    mapping(address => uint256) public darknodeWhitelist;
 
     /// @notice The contract constructor.
     ///
@@ -54,14 +48,6 @@ contract DarknodePaymentStore is Claimable {
     /// @return true if the darknode is blacklisted
     function isBlacklisted(address _darknode) public view returns (bool) {
         return darknodeBlacklist[_darknode] != 0;
-    }
-
-    /// @notice Checks to see if a darknode is whitelisted
-    ///
-    /// @param _darknode The address of the darknode
-    /// @return true if the darknode is whitelisted
-    function isWhitelisted(address _darknode) public view returns (bool) {
-        return darknodeWhitelist[_darknode] != 0;
     }
 
     /// @notice Get the total balance of the contract for a particular token
@@ -87,32 +73,10 @@ contract DarknodePaymentStore is Claimable {
     }
 
     /// @notice Blacklists a darknode from participating in reward allocation.
-    ///         If the darknode is whitelisted, it is removed from the whitelist
-    ///         and the number of whitelisted nodes is decreased.
-    ///
     /// @param _darknode The address of the darknode to blacklist
     function blacklist(address _darknode) external onlyOwner {
         require(!isBlacklisted(_darknode), "darknode already blacklisted");
         darknodeBlacklist[_darknode] = block.timestamp;
-
-        // Unwhitelist if necessary
-        if (isWhitelisted(_darknode)) {
-            darknodeWhitelist[_darknode] = 0;
-            // Use SafeMath when subtracting to avoid underflows
-            darknodeWhitelistLength = darknodeWhitelistLength.sub(1);
-        }
-    }
-
-    /// @notice Whitelists a darknode allowing it to participate in reward
-    ///         allocation.
-    ///
-    /// @param _darknode The address of the darknode to whitelist
-    function whitelist(address _darknode) external onlyOwner {
-        require(!isBlacklisted(_darknode), "darknode is blacklisted");
-        require(!isWhitelisted(_darknode), "darknode already whitelisted");
-
-        darknodeWhitelist[_darknode] = block.timestamp;
-        darknodeWhitelistLength++;
     }
 
     /// @notice Increments the amount of funds allocated to a particular
