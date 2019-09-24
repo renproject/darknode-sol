@@ -35,9 +35,6 @@ contract DarknodePayment is Ownable {
     uint256 public currentCycle;
     uint256 public previousCycle;
 
-    /// @notice The number of whitelisted darknodes this cycle
-    uint256 public shareCount;
-
     /// @notice The list of tokens that will be registered next cycle.
     ///         We only update the shareCount at the change of cycle to
     ///         prevent the number of shares from changing.
@@ -78,11 +75,6 @@ contract DarknodePayment is Ownable {
     /// @param _darknode The address of the darknode which was blacklisted
     /// @param _time The time at which the darknode was blacklisted
     event LogDarknodeBlacklisted(address indexed _darknode, uint256 _time);
-
-    /// @notice Emitted when a darknode is whitelisted to receive rewards
-    /// @param _darknode The address of the darknode which was whitelisted
-    /// @param _time The time at which the darknode was whitelisted
-    event LogDarknodeWhitelisted(address indexed _darknode, uint256 _time);
 
     /// @notice Emitted when a darknode claims their share of reward
     /// @param _darknode The darknode which claimed
@@ -229,8 +221,6 @@ contract DarknodePayment is Ownable {
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
         currentCyclePayoutPercent = nextCyclePayoutPercent;
 
-        // Update the share size for next cycle
-        shareCount = store.darknodeWhitelistLength();
         // Update the list of registeredTokens
         _updateTokenList();
         return currentCycle;
@@ -254,24 +244,10 @@ contract DarknodePayment is Ownable {
         emit LogPaymentReceived(msg.sender, receivedValue, _token);
     }
 
-    /// @notice Claims the rewards allocated to the darknode last cycle and
-    ///         increments the darknode balances. Whitelists the darknode if it
-    ///         hasn't already been whitelisted. If a darknode does not call
-    ///         claim() then the rewards for the previous cycle is lost.
-    ///
+    /// @notice Claims the rewards allocated to the darknode last epoch.
     /// @param _darknode The address of the darknode to claim
     function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
-        uint256 whitelistedTime = store.darknodeWhitelist(_darknode);
-
-        // The darknode hasn't been whitelisted before
-        if (whitelistedTime == 0) {
-            store.whitelist(_darknode);
-            emit LogDarknodeWhitelisted(_darknode, now);
-            return;
-        }
-
-        require(whitelistedTime < cycleStartTime, "cannot claim for this cycle");
-
+        require(darknodeRegistry.isRegisteredInPreviousEpoch(_darknode), "cannot claim for this epoch");
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
         emit LogDarknodeClaim(_darknode, previousCycle);
@@ -374,6 +350,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address the token to snapshot.
     function _snapshotBalance(address _token) private {
+        uint256 shareCount = darknodeRegistry.numDarknodesPreviousEpoch();
         if (shareCount == 0) {
             unclaimedRewards[_token] = 0;
             previousCycleRewardShare[_token] = 0;
