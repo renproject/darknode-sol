@@ -293,36 +293,34 @@ contract DarknodeRegistry is Ownable {
         nextSlasher = _slasher;
     }
 
-    /// @notice Allow the DarknodeSlasher contract to slash half of a darknode's
-    /// bond and deregister it. The bond is distributed as follows:
-    ///   1/2 is kept by the guilty prover
-    ///   1/8 is rewarded to the first challenger
-    ///   1/8 is rewarded to the second challenger
-    ///   1/4 becomes unassigned
+    /// @notice Allow the DarknodeSlasher contract to slash a portion of darknode's
+    ///         bond and deregister it.
     /// @param _guilty The guilty prover whose bond is being slashed
-    /// @param _challenger The challenger who should receive half the bond as reward
-    /// @param _percentage The percentage amount of bond to reward the challenger
+    /// @param _challenger The challenger who should a portion of the bond as reward
+    /// @param _percentage The total percentage  of bond to be slashed
     function slash(address _guilty, address _challenger, uint8 _percentage)
         external
         onlySlasher
     {
         require(_percentage <= 100, "invalid percent");
-        uint256 totalBond = store.darknodeBond(_guilty);
-        uint256 penalty = totalBond.div(100).mul(_percentage);
-        uint256 reward = penalty.div(2);
-
-        // Slash the bond of the failed prover in half
-        store.updateDarknodeBond(_guilty, penalty);
 
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_guilty)) {
             deregisterDarknode(_guilty);
         }
 
-        // Distribute the remaining bond into the darknode payment reward pool
-        require(address(darknodePayment) != address(0x0), "invalid payment address");
-        require(ren.transfer(address(darknodePayment.store()), reward), "reward transfer failed");
-        require(ren.transfer(_challenger, reward), "reward transfer failed");
+        uint256 totalBond = store.darknodeBond(_guilty);
+        uint256 penalty = totalBond.div(100).mul(_percentage);
+        uint256 reward = penalty.div(2);
+        if (reward > 0) {
+            // Slash the bond of the failed prover
+            store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
+
+            // Distribute the remaining bond into the darknode payment reward pool
+            require(address(darknodePayment) != address(0x0), "invalid payment address");
+            require(ren.transfer(address(darknodePayment.store()), reward), "reward transfer failed");
+            require(ren.transfer(_challenger, reward), "reward transfer failed");
+        }
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
