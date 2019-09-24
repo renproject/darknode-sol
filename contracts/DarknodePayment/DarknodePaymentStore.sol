@@ -7,10 +7,9 @@ import "../libraries/Claimable.sol";
 import "../libraries/CompatibleERC20Functions.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
-/// @notice DarknodePaymentStore is responsible for tracking blacklisted
-///         darknodes as well as the balances which have been allocated to the
-///         darknodes. It is also responsible for holding the tokens to be paid
-///         out to darknodes.
+/// @notice DarknodePaymentStore is responsible for tracking balances which have
+///         been allocated to the darknodes. It is also responsible for holding
+///         the tokens to be paid out to darknodes.
 contract DarknodePaymentStore is Claimable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for ERC20;
@@ -26,9 +25,6 @@ contract DarknodePaymentStore is Claimable {
     /// @notice Mapping of token -> lockedAmount
     mapping(address => uint256) public lockedBalances;
 
-    /// @notice mapping of darknode -> blacklistTimestamp
-    mapping(address => uint256) public darknodeBlacklist;
-
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
@@ -38,16 +34,8 @@ contract DarknodePaymentStore is Claimable {
         VERSION = _VERSION;
     }
 
-    /// @notice Allow direct payments to be made to the DarknodePaymentStore.
+    /// @notice Allow direct ETH payments to be made to the DarknodePaymentStore.
     function () external payable {
-    }
-
-    /// @notice Checks to see if a darknode is blacklisted
-    ///
-    /// @param _darknode The address of the darknode
-    /// @return true if the darknode is blacklisted
-    function isBlacklisted(address _darknode) public view returns (bool) {
-        return darknodeBlacklist[_darknode] != 0;
     }
 
     /// @notice Get the total balance of the contract for a particular token
@@ -70,13 +58,6 @@ contract DarknodePaymentStore is Claimable {
     /// @return The available balance of the contract
     function availableBalance(address _token) public view returns (uint256) {
         return totalBalance(_token).sub(lockedBalances[_token]);
-    }
-
-    /// @notice Blacklists a darknode from participating in reward allocation.
-    /// @param _darknode The address of the darknode to blacklist
-    function blacklist(address _darknode) external onlyOwner {
-        require(!isBlacklisted(_darknode), "darknode already blacklisted");
-        darknodeBlacklist[_darknode] = block.timestamp;
     }
 
     /// @notice Increments the amount of funds allocated to a particular
