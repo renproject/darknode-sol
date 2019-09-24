@@ -25,9 +25,6 @@ contract DarknodePayment is Ownable {
     ///         payments.
     DarknodePaymentStore public store; // Passed in as a constructor parameter.
 
-    /// @notice The address that can call blacklist()
-    address public blacklister;
-
     /// @notice The address that can call changeCycle()
     //          This defaults to the owner but should be changed to the DarknodeRegistry.
     address public cycleChanger;
@@ -71,11 +68,6 @@ contract DarknodePayment is Ownable {
     ///         rewards.
     mapping(address => mapping(uint256 => bool)) public rewardClaimed;
 
-    /// @notice Emitted when a darknode is blacklisted from receiving rewards
-    /// @param _darknode The address of the darknode which was blacklisted
-    /// @param _time The time at which the darknode was blacklisted
-    event LogDarknodeBlacklisted(address indexed _darknode, uint256 _time);
-
     /// @notice Emitted when a darknode claims their share of reward
     /// @param _darknode The darknode which claimed
     /// @param _cycle The cycle that the darknode claimed for
@@ -98,11 +90,6 @@ contract DarknodePayment is Ownable {
     /// @param _oldPercent The old percent
     event LogPayoutPercentChanged(uint256 _newPercent, uint256 _oldPercent);
 
-    /// @notice Emitted when the Blacklister contract changes
-    /// @param _newBlacklister The new Blacklister
-    /// @param _oldBlacklister The old Blacklister
-    event LogBlacklisterChanged(address _newBlacklister, address _oldBlacklister);
-
     /// @notice Emitted when the CycleChanger address changes
     /// @param _newCycleChanger The new CycleChanger
     /// @param _oldCycleChanger The old CycleChanger
@@ -119,18 +106,6 @@ contract DarknodePayment is Ownable {
     /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
         require(darknodeRegistry.isRegistered(_darknode), "darknode is not registered");
-        _;
-    }
-
-    /// @notice Restrict a function the blacklister.
-    modifier onlyBlacklister() {
-        require(blacklister == msg.sender, "not Blacklister");
-        _;
-    }
-
-    /// @notice Restrict a function darknodes which haven't been blacklisted
-    modifier notBlacklisted(address _darknode) {
-        require(!store.isBlacklisted(_darknode), "darknode is blacklisted");
         _;
     }
 
@@ -157,8 +132,6 @@ contract DarknodePayment is Ownable {
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
         nextCyclePayoutPercent = _cyclePayoutPercent;
-        // Default the blacklister to owner
-        blacklister = msg.sender;
         // Default the cycleChanger to owner
         cycleChanger = msg.sender;
 
@@ -246,19 +219,11 @@ contract DarknodePayment is Ownable {
 
     /// @notice Claims the rewards allocated to the darknode last epoch.
     /// @param _darknode The address of the darknode to claim
-    function claim(address _darknode) external onlyDarknode(_darknode) notBlacklisted(_darknode) {
+    function claim(address _darknode) external onlyDarknode(_darknode) {
         require(darknodeRegistry.isRegisteredInPreviousEpoch(_darknode), "cannot claim for this epoch");
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
         emit LogDarknodeClaim(_darknode, previousCycle);
-    }
-
-    /// @notice Blacklists a darknode from participating in rewards.
-    ///
-    /// @param _darknode The address of the darknode to blacklist
-    function blacklist(address _darknode) external onlyBlacklister onlyDarknode(_darknode) {
-        store.blacklist(_darknode);
-        emit LogDarknodeBlacklisted(_darknode, now);
     }
 
     /// @notice Adds tokens to be payable. Registration is pending until next
@@ -281,15 +246,6 @@ contract DarknodePayment is Ownable {
     function deregisterToken(address _token) external onlyOwner {
         require(registeredTokenIndex[_token] > 0, "token not registered");
         _deregisterToken(_token);
-    }
-
-    /// @notice Updates the Blacklister contract address.
-    ///
-    /// @param _addr The new Blacklister contract address.
-    function updateBlacklister(address _addr) external onlyOwner {
-        require(_addr != address(0), "invalid contract address");
-        emit LogBlacklisterChanged(_addr, blacklister);
-        blacklister = _addr;
     }
 
     /// @notice Updates the CycleChanger contract address.
