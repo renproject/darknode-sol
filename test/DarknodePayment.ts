@@ -736,12 +736,12 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const depositDai = async (amount: number | BN | string) => {
         const amountBN = new BN(amount);
-        const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
+        const previousBalance = new BN(await store.availableBalance(dai.address));
         // Approve the contract to use DAI
         await dai.approve(dnp.address, amountBN);
         await dnp.deposit(amountBN, dai.address);
         // We should expect the DAI balance to have increased by what we deposited
-        (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(await asRewardPoolBalance(previousBalance.add(amountBN)));
+        (await store.availableBalance(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     };
 
     const changeCycleDuration = async (timeInSeconds: number) => {
