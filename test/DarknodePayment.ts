@@ -273,12 +273,18 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can be paid DAI from a payee", async () => {
             // darknode1 is whitelisted and can participate in rewards
-            const previousBalance = new BN(await dnp.currentCycleRewardPool(dai.address));
+            const previousBalance = new BN(await store.totalBalance(dai.address));
+            previousBalance.should.bignumber.equal(new BN(0));
+            // sanity check that the reward pool is also zero
+            (await fetchRewardPool(dai.address)).should.bignumber.equal(new BN(0));
+
+
+            // amount we're going to top up
             const amount = new BN("100000000000000000");
             await depositDai(amount);
-
             // We should have increased the reward pool
-            (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(previousBalance.add(amount));
+            const newRewardPool = await fetchRewardPool(dai.address);
+            newRewardPool.should.bignumber.equal(await asRewardPoolBalance(amount));
 
             // We should have zero claimed balance before ticking
             (new BN(await dnp.darknodeBalances(darknode1, dai.address))).should.bignumber.equal(new BN(0));
@@ -288,19 +294,23 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.claim(darknode1);
             await waitForCycle();
 
+            const lastCycleRewards = await asRewardPoolBalance(amount);
             // We should be the only one who participated last cycle
             (new BN(await dnp.shareCount())).should.bignumber.equal(1);
             // We should be allocated all the rewards
-            (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(amount);
-            (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(amount);
+            (new BN(await dnp.unclaimedRewards(dai.address))).should.bignumber.equal(lastCycleRewards);
+            (new BN(await dnp.previousCycleRewardShare(dai.address))).should.bignumber.equal(lastCycleRewards);
 
             // Claim the rewards for last cycle
             await dnp.claim(darknode1);
             await waitForCycle();
-            // There should be nothing left in the reward pool
-            (new BN(await dnp.currentCycleRewardPool(dai.address))).should.bignumber.equal(new BN(0));
+
+            const pool = await fetchRewardPool(dai.address);
+            const entireDAIPool = new BN(await dnp.unclaimedRewards(dai.address));
+            entireDAIPool.should.bignumber.equal(await asRewardPoolBalance(lastCycleRewards));
+            pool.should.bignumber.equal(await asRewardPoolBalance(entireDAIPool));
             const darknode1Balance = new BN(await dnp.darknodeBalances(darknode1, dai.address));
-            darknode1Balance.should.bignumber.equal(amount);
+            darknode1Balance.should.bignumber.equal(lastCycleRewards);
 
             // store.darknodeBalances should return the same as dnp.darknodeBalances
             (await store.darknodeBalances(darknode1, dai.address))
@@ -311,8 +321,8 @@ contract("DarknodePayment", (accounts: string[]) => {
             // register ETH
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             await waitForCycle();
+            // ETH is now a registered token, claiming should now allocate balances
 
-            const previousReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
             const amount = new BN("1000000000");
             await dnp.deposit(amount, ETHEREUM_TOKEN_ADDRESS).should.be.rejectedWith(/mismatched deposit value/);
@@ -320,7 +330,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(oldETHBalance.add(amount));
             // We should have increased the reward pool
             const newReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
-            newReward.should.bignumber.equal(previousReward.add(amount));
+            newReward.should.bignumber.equal(await asRewardPoolBalance(oldETHBalance.add(amount)));
 
             // We should have zero claimed balance before ticking
             (new BN(await dnp.darknodeBalances(darknode1, ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(new BN(0));
@@ -334,15 +344,18 @@ contract("DarknodePayment", (accounts: string[]) => {
             (new BN(await dnp.shareCount())).should.bignumber.equal(1);
             // We should be allocated all the rewards
             (new BN(await dnp.unclaimedRewards(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
-            (new BN(await dnp.previousCycleRewardShare(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newReward);
+            const rewardShare = new BN(await dnp.previousCycleRewardShare(ETHEREUM_TOKEN_ADDRESS));
+            rewardShare.should.bignumber.equal(newReward);
+            const lastCycleReward = new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS));
 
             // Claim the rewards for last cycle
             await dnp.claim(darknode1);
             await waitForCycle();
+            const newPool = await asRewardPoolBalance(lastCycleReward);
             // There should be nothing left in the reward pool
-            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(new BN(0));
+            (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newPool);
             const earnedRewards = new BN(await dnp.darknodeBalances(darknode1, ETHEREUM_TOKEN_ADDRESS));
-            earnedRewards.should.bignumber.equal(newReward);
+            earnedRewards.should.bignumber.equal(rewardShare);
 
             const oldBalance = new BN(await web3.eth.getBalance(darknode1));
             await dnp.withdraw(darknode1, ETHEREUM_TOKEN_ADDRESS);
@@ -728,7 +741,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         await dai.approve(dnp.address, amountBN);
         await dnp.deposit(amountBN, dai.address);
         // We should expect the DAI balance to have increased by what we deposited
-        (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
+        (await dnp.currentCycleRewardPool(dai.address)).should.bignumber.equal(await asRewardPoolBalance(previousBalance.add(amountBN)));
     };
 
     const changeCycleDuration = async (timeInSeconds: number) => {
@@ -762,6 +775,10 @@ contract("DarknodePayment", (accounts: string[]) => {
         const payoutPercent = new BN(await dnp.currentCyclePayoutPercent()); 
         const rewardPool = balance.div(new BN(100)).mul(payoutPercent);
         return rewardPool;
+    };
+
+    const fetchRewardPool = async (token: string): Promise<BN> => {
+        return new BN(await dnp.currentCycleRewardPool(token));
     };
 
     const waitForCycle = async () => {
