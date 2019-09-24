@@ -21,4 +21,8 @@ contract DarknodeSlasher is Ownable {
     {
         darknodeRegistry.slash(_guilty, _challenger, _percentage);
     }
+
+    function blacklist(address _guilty) external onlyOwner {
+        darknodeRegistry.slash(_guilty, owner(), 0);
+    }
 }
