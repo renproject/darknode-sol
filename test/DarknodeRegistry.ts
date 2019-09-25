@@ -481,36 +481,6 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith("invalid dnp address");
     });
 
-    it("cannot slash if darknode payment is not set", async () => {
-        // Deploy a new DNR and DNR store
-        const newDNRstore = await DarknodeRegistryStore.new("test", RenToken.address);
-        const newDNR = await DarknodeRegistry.new(
-            "test",
-            RenToken.address,
-            newDNRstore.address,
-            config.MINIMUM_BOND,
-            config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL_SECONDS
-        );
-        if ((await newDNRstore.owner()) !== newDNR.address) {
-            // Initiate ownership transfer of DNR store
-            await newDNRstore.transferOwnership(newDNR.address);
-            // Claim ownership
-            await newDNR.claimStoreOwnership();
-        }
-
-        (await newDNR.owner()).should.equal(accounts[0]);
-        const newSlasher = accounts[0]
-        await newDNR.updateSlasher(newSlasher);
-        await waitForEpoch(newDNR);
-        (await newDNR.slasher()).should.equal(newSlasher);
-
-        await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
-        await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
-        await newDNR.slash(ID("8"), newSlasher, new BN(10)).should.eventually.be.rejectedWith(/invalid payment address/);
-    });
-
-
     it("cannot slash with an invalid percent", async () => {
         // [ACTION] Update slasher address
         const newSlasher = accounts[0]
@@ -656,6 +626,46 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [RESET] Transfer store back to DNR
         await dnrs.transferOwnership(dnr.address);
         await dnr.claimStoreOwnership();
+    });
+
+
+    describe("when darknode payment is not set", async () => {
+        let newDNRstore;
+        let newDNR;
+
+        before(async () => {
+            // Deploy a new DNR and DNR store
+            newDNRstore = await DarknodeRegistryStore.new("test", RenToken.address);
+            newDNR = await DarknodeRegistry.new(
+                "test",
+                RenToken.address,
+                newDNRstore.address,
+                config.MINIMUM_BOND,
+                config.MINIMUM_POD_SIZE,
+                config.MINIMUM_EPOCH_INTERVAL_SECONDS
+            );
+            // Initiate ownership transfer of DNR store
+            await newDNRstore.transferOwnership(newDNR.address);
+            // Claim ownership
+            await newDNR.claimStoreOwnership();
+        });
+
+        it("can still call epoch", async () => {
+            await waitForEpoch(newDNR);
+            await waitForEpoch(newDNR);
+        });
+
+        it("cannot slash", async () => {
+            (await newDNR.owner()).should.equal(accounts[0]);
+            const newSlasher = accounts[0]
+            await newDNR.updateSlasher(newSlasher);
+            await waitForEpoch(newDNR);
+            (await newDNR.slasher()).should.equal(newSlasher);
+
+            await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
+            await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
+            await newDNR.slash(ID("8"), newSlasher, new BN(10)).should.eventually.be.rejectedWith(/invalid payment address/);
+        });
     });
 
     // Takes 30 minutes - keep as it.skip when not running
