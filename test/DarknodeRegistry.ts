@@ -662,6 +662,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await waitForEpoch(newDNR);
             (await newDNR.slasher()).should.equal(newSlasher);
 
+            // We should have enough balance to register a darknode
+            if (new BN(await ren.balanceOf(accounts[8])).lt(MINIMUM_BOND)) {
+                await ren.transfer(accounts[8], MINIMUM_BOND);
+            }
             await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
             await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
             await newDNR.slash(ID("8"), newSlasher, new BN(10)).should.eventually.be.rejectedWith(/invalid payment address/);
