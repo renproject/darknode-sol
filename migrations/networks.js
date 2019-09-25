@@ -4,7 +4,7 @@ const config = {
     MINIMUM_BOND: new BN(100000).mul(new BN(10).pow(new BN(18))),
     MINIMUM_POD_SIZE: 3, // 24 in production
     MINIMUM_EPOCH_INTERVAL_SECONDS: 30, // 216000 in production, 1 month
-    DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS: 300, // 300 for testnet (5 minutes in seconds), 86400 in mainnet testing (1 day), 2628000 in production (1 month in seconds)
+    DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
     mintAuthority: "", // Darknode public key
     shifterFees: 10,
     zBTCMinShiftOutAmount: 10000,
