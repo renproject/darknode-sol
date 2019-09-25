@@ -110,7 +110,7 @@ contract DarknodePayment is Ownable {
     }
 
     /// @notice Restrict a function to have a valid percentage
-    modifier validPercent(uint8 _percent) {
+    modifier validPercent(uint256 _percent) {
         require(_percent <= 100, "invalid percentage");
         _;
     }
@@ -126,7 +126,7 @@ contract DarknodePayment is Ownable {
         string memory _VERSION,
         DarknodeRegistry _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
-        uint8 _cyclePayoutPercent
+        uint256 _cyclePayoutPercent
     ) public validPercent(_cyclePayoutPercent) {
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
@@ -260,7 +260,7 @@ contract DarknodePayment is Ownable {
     /// @notice Updates payout percentage
     ///
     /// @param _percent The percentage of payout for darknodes.
-    function updatePayoutPercentage(uint8 _percent) external onlyOwner validPercent(_percent) {
+    function updatePayoutPercentage(uint256 _percent) external onlyOwner validPercent(_percent) {
         uint256 oldPayoutPercent = nextCyclePayoutPercent;
         nextCyclePayoutPercent = _percent;
         emit LogPayoutPercentChanged(nextCyclePayoutPercent, oldPayoutPercent);
