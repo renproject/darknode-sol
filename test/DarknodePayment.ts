@@ -602,7 +602,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot update cycleChanger to an invalid address", async () => {
-            await dnp.updateCycleChanger("0").should.eventually.be.rejected;
+            await dnp.updateCycleChanger(NULL).should.eventually.be.rejectedWith(/invalid contract address/);
         });
 
         it("can update cycleChanger to different address", async () => {
