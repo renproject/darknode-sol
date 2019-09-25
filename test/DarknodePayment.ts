@@ -595,6 +595,25 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
     });
 
+    describe("when updating cycle changer", async () => {
+        it("cannot update cycleChanger if unauthorized", async () => {
+            await dnp.updateCycleChanger(accounts[2], { from: accounts[2] }).should.be.rejectedWith(/Ownable: caller is not the owner./);
+            await dnp.updateCycleChanger(accounts[3], { from: accounts[3] }).should.be.rejectedWith(/Ownable: caller is not the owner./);
+        });
+
+        it("cannot update cycleChanger to an invalid address", async () => {
+            await dnp.updateCycleChanger("0").should.eventually.be.rejected;
+        });
+
+        it("can update cycleChanger to different address", async () => {
+            await dnp.updateCycleChanger(accounts[2]).should.not.eventually.be.rejected;
+            await dnp.changeCycle({ from: accounts[2] }).should.not.eventually.be.rejected;
+            await dnp.changeCycle().should.eventually.be.rejectedWith(/not cycle changer/);
+            // Restore the cycle changer to the dnr address
+            await dnp.updateCycleChanger(dnr.address).should.not.eventually.be.rejected;
+        });
+    });
+
     describe("when changing payout percent", async () => {
         it("cannot change payout percent unless authorized", async () => {
             await dnp.updatePayoutPercentage(new BN(10), { from: accounts[2] }).should.be.rejectedWith(/Ownable: caller is not the owner./);
@@ -614,6 +633,37 @@ contract("DarknodePayment", (accounts: string[]) => {
             await updatePayoutPercent(new BN(10));
             await updatePayoutPercent(new BN(12));
             await updatePayoutPercent(new BN(73));
+        });
+
+        it("should not payout anything if payout percent is zero", async () => {
+            new BN(await dnp.currentCycleRewardPool(dai.address)).gte(new BN(0)).should.be.true;
+            const oldBal = new BN(await dnp.darknodeBalances(darknode1, dai.address));
+            await updatePayoutPercent(new BN(0));
+            // current epoch payment amount is zero but previous is not
+            await waitForEpoch(dnr);
+            // now the current and previous payment amount should be zero
+            // claiming the rewards for last epoch should be zero
+            await tick(darknode1);
+            const newBal = new BN(await dnp.darknodeBalances(darknode1, dai.address));
+            newBal.should.bignumber.equal(oldBal);
+        });
+
+        it("should payout the correct amount", async () => {
+            new BN(await dnp.currentCycleRewardPool(dai.address)).gte(new BN(0)).should.be.true;
+            const oldBal = new BN(await dnp.darknodeBalances(darknode1, dai.address));
+            const percent = new BN(20);
+            await updatePayoutPercent(percent);
+            // current epoch payment amount is twenty but previous is not
+            await waitForEpoch(dnr);
+            // now the current and previous payment amount should be twenty
+            // claiming the rewards for last epoch should be twenty percent
+            const rewardPool = new BN(await store.availableBalance(dai.address)).div(new BN(100)).mul(percent);
+            const rewardShare = rewardPool.div(new BN(await dnr.numDarknodes()));
+            await tick(darknode1);
+            const newBal = new BN(await dnp.darknodeBalances(darknode1, dai.address));
+            newBal.should.bignumber.equal(oldBal.add(rewardShare));
+            await updatePayoutPercent(config.DARKNODE_PAYOUT_PERCENT);
+            await waitForEpoch(dnr);
         });
 
     });
