@@ -9,6 +9,7 @@ const config = {
     shifterFees: 10,
     zBTCMinShiftOutAmount: 10000,
     zZECMinShiftOutAmount: 10000,
+    zBCHMinShiftOutAmount: 10000,
 }
 
 module.exports = {
@@ -29,6 +30,8 @@ module.exports = {
         BTCShifter: "",
         zBTC: "",
         ZECShifter: "",
+        zBCH: "",
+        BCHShifter: "",
 
         config: {
             ...config,
@@ -51,6 +54,8 @@ module.exports = {
         ZECShifter: '0xD0B7E226e7605c0436D37AabE44668F89f941E70',
         zBTC: '0xc6069E8DeA210C937A846db2CEbC0f58ca111f26',
         zZEC: '0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E',
+        zBCH: "",
+        BCHShifter: "",
         ShifterRegistry: '0xbA563a8510d86dE95F5a50007E180d6d4966ad12',
 
         config: {
@@ -75,6 +80,8 @@ module.exports = {
         ZECShifter: '0x19Fe91276a992c2E85544C627583fcc535ff0661',
         zBTC: '0x916B8012E1813E5924a3Eca400dBE6C7055a8484',
         zZEC: '0x71b6A19Fc832bD9C739489EcBEa67ab41261026F',
+        zBCH: "",
+        BCHShifter: "",
         ShifterRegistry: '0xc7B310c18D78f175812CFfD8896d3cC959aC28d6',
 
         config: {
@@ -100,6 +107,8 @@ module.exports = {
         BTCShifter: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
         zZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
         ZECShifter: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
+        zBCH: "",
+        BCHShifter: "",
 
         config: {
             ...config,

@@ -26,6 +26,9 @@ const zBTC = artifacts.require("zBTC");
 const ZECShifter = artifacts.require("ZECShifter");
 const zZEC = artifacts.require("zZEC");
 
+const BCHShifter = artifacts.require("BCHShifter");
+const zBCH = artifacts.require("zBCH");
+
 const DarknodePayment = artifacts.require("DarknodePayment");
 
 const networks = require("./networks.js");
@@ -49,8 +52,10 @@ module.exports = async function (deployer, network, accounts) {
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
+    BCHShifter.address = addresses.BCHShifter || "";
     ShifterRegistry.address = addresses.ShifterRegistry || "";
     zZEC.address = addresses.zZEC || "";
+    zBCH.address = addresses.zBCH || "";
     zBTC.address = addresses.zBTC || "";
 
     if (network.match(/localnet|devnet|testnet|main/)) {
@@ -93,18 +98,19 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     // Try to change the payment cycle in case the token is pending registration
-    let zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
-    if (zBTCRegistered.toString() === "0") {
+    let zBTCRegistered = (await darknodePayment.registeredTokenIndex(zBTC.address)).toString() !== "0";
+    if (!zBTCRegistered) {
         try {
             deployer.logger.log("Attempting to change cycle");
             await darknodePayment.changeCycle();
         } catch (error) {
             deployer.logger.log("Unable to call darknodePayment.changeCycle()");
         }
+        zBTCRegistered = (await darknodePayment.registeredTokenIndex(zBTC.address)).toString() !== "0";
     }
 
-    zBTCRegistered = await darknodePayment.registeredTokenIndex(zBTC.address);
-    if (zBTCRegistered.toString() === "0") {
+
+    if (!zBTCRegistered) {
         deployer.logger.log(`Registering token zBTC in DarknodePayment`);
         await darknodePayment.registerToken(zBTC.address);
     }
@@ -140,8 +146,19 @@ module.exports = async function (deployer, network, accounts) {
         await zecShifter.claimTokenOwnership();
     }
 
-    const zZECRegistered = await darknodePayment.registeredTokenIndex(zZEC.address);
-    if (zZECRegistered.toString() === "0") {
+    // Try to change the payment cycle in case the token is pending registration
+    let zZECRegistered = (await darknodePayment.registeredTokenIndex(zZEC.address)).toString() !== "0";
+    if (zBTCRegistered && !zZECRegistered) {
+        try {
+            deployer.logger.log("Attempting to change cycle");
+            await darknodePayment.changeCycle();
+        } catch (error) {
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+        }
+        zZECRegistered = (await darknodePayment.registeredTokenIndex(zZEC.address)).toString() !== "0";
+    }
+
+    if (!zZECRegistered) {
         deployer.logger.log(`Registering token zZEC in DarknodePayment`);
         await darknodePayment.registerToken(zZEC.address);
     }
@@ -154,13 +171,64 @@ module.exports = async function (deployer, network, accounts) {
     }
 
 
+    /** BCH *******************************************************************/
+
+    if (!zBCH.address) {
+        await deployer.deploy(zBCH, "Shifted Bitcoin Cash", "zBCH", 8);
+    }
+    const zbch = await zBCH.at(zBCH.address);
+
+    if (!BCHShifter.address) {
+        await deployer.deploy(
+            BCHShifter,
+            zBCH.address,
+            _feeRecipient,
+            _mintAuthority,
+            config.shifterFees,
+            config.zBCHMinShiftOutAmount,
+        );
+    }
+    const bchShifter = await BCHShifter.at(BCHShifter.address);
+
+    if (await zbch.owner() !== BCHShifter.address) {
+        await zbch.transferOwnership(BCHShifter.address);
+        await bchShifter.claimTokenOwnership();
+    }
+
+    // Try to change the payment cycle in case the token is pending registration
+    let zBCHRegistered = (await darknodePayment.registeredTokenIndex(zBCH.address)).toString() !== "0";
+    if (zBTCRegistered && zZECRegistered && !zBCHRegistered) {
+        try {
+            deployer.logger.log("Attempting to change cycle");
+            await darknodePayment.changeCycle();
+        } catch (error) {
+            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+        }
+        zBCHRegistered = (await darknodePayment.registeredTokenIndex(zBCH.address)).toString() !== "0";
+    }
+
+    if (!zBCHRegistered) {
+        deployer.logger.log(`Registering token zBCH in DarknodePayment`);
+        await darknodePayment.registerToken(zBCH.address);
+    }
+
+    if ((await registry.getShifterByToken(zBCH.address)) === NULL) {
+        deployer.logger.log(`Registering BCH shifter`);
+        await registry.setShifter(zBCH.address, BCHShifter.address);
+    } else {
+        deployer.logger.log(`BCH shifter is already registered: ${await registry.getShifterByToken(zBCH.address)}`);
+    }
+
+
     /** LOG *******************************************************************/
 
     deployer.logger.log({
         BTCShifter: BTCShifter.address,
         ZECShifter: ZECShifter.address,
+        BCHShifter: BCHShifter.address,
         zBTC: zBTC.address,
         zZEC: zZEC.address,
+        zBCH: zBCH.address,
         ShifterRegistry: ShifterRegistry.address,
     });
 }

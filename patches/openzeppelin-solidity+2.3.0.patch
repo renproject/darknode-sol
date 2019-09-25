@@ -21,7 +21,7 @@ index 6303621..fe54c91 100644
  
          if (v != 27 && v != 28) {
 -            return address(0);
-+            revert("signatuere's v is in the wrong range");
++            revert("signature's v is in the wrong range");
          }
  
          // If the signature is valid (and not malleable), return the signer address

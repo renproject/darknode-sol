@@ -43,7 +43,8 @@ contract Shifter is Ownable {
     event LogShiftIn(
         address indexed _to,
         uint256 _amount,
-        uint256 indexed _shiftID
+        uint256 indexed _shiftID,
+        bytes32 indexed _signedMessageHash
     );
     event LogShiftOut(
         bytes _to,
@@ -147,7 +148,7 @@ contract Shifter is Ownable {
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID);
+        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID, signedMessageHash);
         nextShiftID += 1;
 
         return receivedAmount;
@@ -201,6 +202,12 @@ contract BTCShifter is Shifter {
 }
 
 contract ZECShifter is Shifter {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+        }
+}
+
+contract BCHShifter is Shifter {
     constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
         Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
         }

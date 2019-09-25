@@ -30,3 +30,6 @@ contract zBTC is ERC20Shifted("Shifted BTC", "zBTC", 8) {}
 
 /* solium-disable-next-line no-empty-blocks */
 contract zZEC is ERC20Shifted("Shifted ZEC", "zZEC", 8) {}
+
+/* solium-disable-next-line no-empty-blocks */
+contract zBCH is ERC20Shifted("Shifted BCH", "zBCH", 8) {}

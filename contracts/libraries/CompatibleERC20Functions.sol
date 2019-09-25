@@ -77,7 +77,7 @@ library CompatibleERC20Functions {
 
         require(address(token).isContract(), "token not found");
 
-        // solhint-disable-next-line avoid-low-level-calls
+        // solium-disable-next-line security/no-low-level-calls
         (bool success, bytes memory returndata) = address(token).call(data);
         require(success, "token call failed");
 
