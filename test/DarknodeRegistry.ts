@@ -1,5 +1,6 @@
 import BN from "bn.js";
 
+import { config } from "../migrations/networks";
 import {
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
     RenTokenInstance,
@@ -479,6 +480,36 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateDarknodePayment(NULL)
             .should.be.rejectedWith("invalid dnp address");
     });
+
+    it("cannot slash if darknode payment is not set", async () => {
+        // Deploy a new DNR and DNR store
+        const newDNRstore = await DarknodeRegistryStore.new("test", RenToken.address);
+        const newDNR = await DarknodeRegistry.new(
+            "test",
+            RenToken.address,
+            newDNRstore.address,
+            config.MINIMUM_BOND,
+            config.MINIMUM_POD_SIZE,
+            config.MINIMUM_EPOCH_INTERVAL_SECONDS
+        );
+        if ((await newDNRstore.owner()) !== newDNR.address) {
+            // Initiate ownership transfer of DNR store
+            await newDNRstore.transferOwnership(newDNR.address);
+            // Claim ownership
+            await newDNR.claimStoreOwnership();
+        }
+
+        (await newDNR.owner()).should.equal(accounts[0]);
+        const newSlasher = accounts[0]
+        await newDNR.updateSlasher(newSlasher);
+        await waitForEpoch(newDNR);
+        (await newDNR.slasher()).should.equal(newSlasher);
+
+        await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
+        await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
+        await newDNR.slash(ID("8"), newSlasher, new BN(10)).should.eventually.be.rejectedWith(/invalid payment address/);
+    });
+
 
     it("cannot slash with an invalid percent", async () => {
         // [ACTION] Update slasher address
