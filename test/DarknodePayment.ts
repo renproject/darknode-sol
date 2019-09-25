@@ -595,6 +595,21 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
     });
 
+    describe("when changing payout percent", async () => {
+        it("cannot change payout percent unless authorized", async () => {
+            await dnp.updatePayoutPercentage(new BN(10), { from: accounts[2] }).should.be.rejectedWith(/Ownable: caller is not the owner./);
+        });
+
+        it("cannot change payout percent to an invalid percent", async () => {
+            dnp.updatePayoutPercentage(new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
+            dnp.updatePayoutPercentage(new BN(201)).should.eventually.be.rejectedWith(/invalid percent/);
+            dnp.updatePayoutPercentage(new BN(255)).should.eventually.be.rejectedWith(/invalid percent/);
+            dnp.updatePayoutPercentage(new BN(256)).should.eventually.be.rejectedWith(/invalid percent/);
+            dnp.updatePayoutPercentage(new BN(32782)).should.eventually.be.rejectedWith(/invalid percent/);
+        });
+
+    });
+
     const tick = async (address: string) => {
         return dnp.claim(address);
     };
