@@ -6,7 +6,7 @@ import {
     DarknodeRegistryInstance, ERC20Instance, RenTokenInstance, DarknodeSlasherInstance,
 } from "../types/truffle-contracts";
 import {
-    ETHEREUM_TOKEN_ADDRESS, increaseTime, MINIMUM_BOND, NULL, PUBK, waitForEpoch,
+    ETHEREUM_TOKEN_ADDRESS, MINIMUM_BOND, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
 const CycleChanger = artifacts.require("CycleChanger");
@@ -18,11 +18,6 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
-const { DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS } = config;
-
-const hour = 60 * 60;
-const day = 24 * hour;
-
 contract("DarknodePayment", (accounts: string[]) => {
 
     let store: DarknodePaymentStoreInstance;
@@ -31,7 +26,6 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnr: DarknodeRegistryInstance;
     let dnp: DarknodePaymentInstance;
     let ren: RenTokenInstance;
-    let cc: CycleChangerInstance;
     let slasher: DarknodeSlasherInstance;
 
     const owner = accounts[0];
@@ -52,25 +46,13 @@ contract("DarknodePayment", (accounts: string[]) => {
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
 
-        cc = await CycleChanger.new(dnp.address);
-
-        // [ACTION] Register
-        // Don't register a darknode under account[0]
-        // for (let i = 1; i < accounts.length; i++) {
-        //     await ren.transfer(accounts[i], MINIMUM_BOND);
-        //     await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
-        //     // Register the darknodes under the account address
-        //     await dnr.register(accounts[i], PUBK(i), { from: accounts[i] });
-        // }
-
-        // await waitForEpoch(dnr);
         await waitForEpoch(dnr);
 
         new BN(await dnr.numDarknodes()).should.bignumber.equal(new BN(0));
     });
 
     afterEach(async () => {
-        await waitForCycle();
+        await waitForEpoch(dnr);
     });
 
     describe("Token registration", async () => {
@@ -131,12 +113,12 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.registerToken(dai.address).should.be.rejectedWith(/token already pending registration/);
             await dnp.registerToken(erc20Token.address);
             // complete token registration
-            await waitForCycle();
+            await waitForEpoch(dnr);
             (await dnp.registeredTokens(lengthBefore)).should.equal(dai.address);
             (await dnp.registeredTokenIndex(dai.address)).should.bignumber.equal(new BN(lengthBefore + 1));
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
-            await waitForCycle();
+            await waitForEpoch(dnr);
             (await dnp.registeredTokens(lengthBefore + 2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(lengthBefore + 3);
             await checkTokenIndexes();
@@ -150,10 +132,10 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.claim(darknode6);
             const sdt = await SelfDestructingToken.new();
             await dnp.registerToken(sdt.address);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await sdt.destruct();
             await dnp.deregisterToken(sdt.address);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await slasher.blacklist(darknode6);
         });
 
@@ -191,18 +173,18 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.registerToken(one);
             await dnp.registerToken(two);
             await dnp.registerToken(three);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await checkTokenIndexes();
 
             // const expected = await dnp.registeredTokenIndex(one);
             await dnp.deregisterToken(one);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await checkTokenIndexes();
             // (await dnp.registeredTokenIndex(two)).should.bignumber.equal(expected);
             await dnp.deregisterToken(two);
             await dnp.deregisterToken(three);
             await checkTokenIndexes();
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await checkTokenIndexes();
         });
     });
@@ -289,7 +271,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // We don't need to claim since we weren't allocated rewards last cycle
             // But claim shouldn't revert
             await dnp.claim(darknode1);
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             const lastCycleRewards = await asRewardPoolBalance(amount);
             // We should be the only one who participated last cycle
@@ -300,7 +282,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
             // Claim the rewards for last cycle
             await dnp.claim(darknode1);
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             const pool = await fetchRewardPool(dai.address);
             const entireDAIPool = new BN(await dnp.unclaimedRewards(dai.address));
@@ -317,7 +299,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         it("can be paid ETH from a payee", async () => {
             // register ETH
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             // ETH is now a registered token, claiming should now allocate balances
 
             const oldETHBalance = new BN(await store.totalBalance(ETHEREUM_TOKEN_ADDRESS));
@@ -335,7 +317,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // We don't need to claim since we weren't allocated rewards last cycle
             // But claim shouldn't revert
             await dnp.claim(darknode1);
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             // We should be the only one who participated last cycle
             (new BN(await dnr.numDarknodesPreviousEpoch())).should.bignumber.equal(1);
@@ -347,7 +329,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
             // Claim the rewards for last cycle
             await dnp.claim(darknode1);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             const newPool = await asRewardPoolBalance(lastCycleReward);
             // There should be nothing left in the reward pool
             (new BN(await dnp.currentCycleRewardPool(ETHEREUM_TOKEN_ADDRESS))).should.bignumber.equal(newPool);
@@ -367,7 +349,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
             // Deregister ETH
             await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             (await dnp.registeredTokenIndex(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(0);
         });
 
@@ -384,7 +366,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can tick again after a cycle has passed", async () => {
             await dnp.claim(darknode1);
-            await waitForCycle();
+            await waitForEpoch(dnr);
             await dnp.claim(darknode1);
         });
 
@@ -446,12 +428,12 @@ contract("DarknodePayment", (accounts: string[]) => {
             // Participate in rewards
             await tick(darknode1);
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             // Claim rewards for past epoch
             await tick(darknode1);
 
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             // Claim rewards for past epoch
             await tick(darknode1);
@@ -474,7 +456,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await depositDai(rewards);
             await multiTick(1, numDarknodes);
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             // Claim rewards for past cycle
             await multiTick(1, numDarknodes);
@@ -494,7 +476,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await slasher.blacklist(darknode2);
 
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
 
             // Tick should fail
             await tick(darknode2).should.be.rejected;
@@ -502,15 +484,15 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("can still withdraw allocated rewards when blacklisted", async () => {
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
             // Add rewards into the next cycle's pool
             const previousBalance = (new BN(await dnp.darknodeBalances(darknode3, dai.address)));
             const rewards = new BN("300000000000000000");
             await depositDai(rewards);
             // Change the epoch
-            await waitForCycle();
+            await waitForEpoch(dnr);
             const rewardPool = await asRewardPoolBalance(await store.availableBalance(dai.address));
 
             // Claim the rewards for the pool
@@ -657,33 +639,6 @@ contract("DarknodePayment", (accounts: string[]) => {
         (await store.availableBalance(dai.address)).should.bignumber.equal(previousBalance.add(amountBN));
     };
 
-    const changeCycleDuration = async (timeInSeconds: number) => {
-        const currentCycleDurationInSeconds = new BN(await dnp.cycleDuration()).toNumber();
-
-        await dnp.updateCycleDuration(timeInSeconds);
-        (await dnp.cycleDuration()).should.bignumber.equal(timeInSeconds);
-
-        // put into effect the new cycle duration
-        await increaseTime(currentCycleDurationInSeconds);
-        await dnp.changeCycle();
-        if (timeInSeconds === 0) {
-            await dnp.changeCycle();
-            return;
-        }
-
-        await dnp.changeCycle().should.eventually.be.rejectedWith(/cannot cycle yet: too early/);
-
-        if (timeInSeconds < currentCycleDurationInSeconds) {
-            await increaseTime(timeInSeconds);
-            await dnp.changeCycle();
-        } else {
-            await increaseTime(currentCycleDurationInSeconds);
-            await dnp.changeCycle().should.eventually.be.rejectedWith(null, /cannot cycle yet: too early/);
-            await increaseTime(timeInSeconds - currentCycleDurationInSeconds);
-            await dnp.changeCycle();
-        }
-    };
-
     const asRewardPoolBalance = async (amount: BN | string | number): Promise<BN> => {
         const balance = new BN(amount);
         const payoutPercent = new BN(await dnp.currentCyclePayoutPercent()); 
@@ -693,23 +648,6 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const fetchRewardPool = async (token: string): Promise<BN> => {
         return new BN(await dnp.currentCycleRewardPool(token));
-    };
-
-    const waitForCycle = async () => {
-        const currentCycle = new BN(await dnp.currentCycle());
-        await waitForEpoch(dnr);
-        const nextCycle = new BN(await dnp.currentCycle());
-        currentCycle.should.not.bignumber.equal(nextCycle);
-        // const [_, startTime] = await dnr.currentEpoch()
-        // const minInterval = new BN(await dnr.minimumEpochInterval());
-        // const timeout = new BN(startTime).add(minInterval);
-        // const now = new BN(await cc.time());
-        // if (seconds === undefined) {
-        //     // seconds = (new BN(await dnp.cycleDuration()).toNumber());
-        //     seconds = Math.max(1, (timeout).sub(now).toNumber());
-        // }
-        // await increaseTime(seconds);
-        // await dnp.changeCycle();
     };
 
     const registerDarknode = async (i: number) => {
