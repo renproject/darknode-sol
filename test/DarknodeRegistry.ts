@@ -480,6 +480,20 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith("invalid dnp address");
     });
 
+    it("cannot slash with an invalid percent", async () => {
+        // [ACTION] Update slasher address
+        const newSlasher = accounts[0]
+        await dnr.updateSlasher(newSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(newSlasher);
+        await dnr.slash(ID("2"), newSlasher, new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(328293)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(923)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.updateSlasher(slasher.address);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(slasher.address);
+    });
+
     it("can update slasher address", async () => {
         // [CHECK] This test assumes different previous and new slashers
         const previousSlasher = await dnr.slasher();
