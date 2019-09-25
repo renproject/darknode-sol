@@ -601,11 +601,19 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot change payout percent to an invalid percent", async () => {
-            dnp.updatePayoutPercentage(new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
-            dnp.updatePayoutPercentage(new BN(201)).should.eventually.be.rejectedWith(/invalid percent/);
-            dnp.updatePayoutPercentage(new BN(255)).should.eventually.be.rejectedWith(/invalid percent/);
-            dnp.updatePayoutPercentage(new BN(256)).should.eventually.be.rejectedWith(/invalid percent/);
-            dnp.updatePayoutPercentage(new BN(32782)).should.eventually.be.rejectedWith(/invalid percent/);
+            await dnp.updatePayoutPercentage(new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
+            await dnp.updatePayoutPercentage(new BN(201)).should.eventually.be.rejectedWith(/invalid percent/);
+            await dnp.updatePayoutPercentage(new BN(255)).should.eventually.be.rejectedWith(/invalid percent/);
+            await dnp.updatePayoutPercentage(new BN(256)).should.eventually.be.rejectedWith(/invalid percent/);
+            await dnp.updatePayoutPercentage(new BN(32782)).should.eventually.be.rejectedWith(/invalid percent/);
+        });
+
+        it("can change payout percent to a valid percent", async () => {
+            await updatePayoutPercent(new BN(100));
+            await updatePayoutPercent(new BN(0));
+            await updatePayoutPercent(new BN(10));
+            await updatePayoutPercent(new BN(12));
+            await updatePayoutPercent(new BN(73));
         });
 
     });
@@ -671,4 +679,12 @@ contract("DarknodePayment", (accounts: string[]) => {
         // Register the darknodes under the account address
         await dnr.register(accounts[i], PUBK(i), { from: accounts[i] });
     };
+
+    const updatePayoutPercent = async (percent: number | string | BN) => {
+        const p = new BN(percent);
+        await dnp.updatePayoutPercentage(p).should.eventually.not.be.rejected;
+        new BN(await dnp.nextCyclePayoutPercent()).should.bignumber.equal(p);
+        await waitForEpoch(dnr);
+        new BN(await dnp.currentCyclePayoutPercent()).should.bignumber.equal(p);
+    }
 });
