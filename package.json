@@ -33,6 +33,7 @@
     "eth-gas-reporter": "^0.2.10",
     "ethereumjs-abi": "^0.6.7",
     "ganache-cli": "^6.5.1",
+    "hash.js": "^1.1.7",
     "patch-package": "^6.1.2",
     "solc": "0.5.11",
     "solidity-coverage": "^0.6.4",

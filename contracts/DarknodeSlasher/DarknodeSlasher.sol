@@ -26,6 +26,16 @@ contract DarknodeSlasher is Ownable {
         darknodeRegistry.slash(_guilty, owner(), 0);
     }
 
+    function recoverPropose(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash,
+        uint256 _validRound,
+        bytes memory _signature
+    ) public pure returns (address) {
+        return recover(sha256(proposeMessage(_height, _round, _blockhash, _validRound)), _signature);
+    }
+
     function proposeMessage(
         uint256 _height,
         uint256 _round,
@@ -59,5 +69,38 @@ contract DarknodeSlasher is Ownable {
         }
         return string(bstr);
     }
+
+
+  /**
+   * @dev Recover signer address from a message by using their signature
+   * @param _hash bytes32 message, the hash is the signed message. What is recovered is the signer address.
+   * @param _signature bytes signature, the signature is generated using web3.eth.sign()
+   */
+  function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
+    bytes32 r;
+    bytes32 s;
+    uint8 v;
+
+    // Check the signature length
+    require(_signature.length == 65, "invalid sig length");
+
+    // Divide the signature in r, s and v variables with inline assembly.
+    assembly { /* solium-disable-line security/no-inline-assembly */
+      r := mload(add(_signature, 0x20))
+      s := mload(add(_signature, 0x40))
+      v := byte(0, mload(add(_signature, 0x60)))
+    }
+
+    // Version of signature should be 27 or 28, but 0 and 1 are also possible versions
+    if (v < 27) {
+      v += 27;
+    }
+
+    // If the version is correct return the signer address
+    require(v == 27 || v == 28, "incorrect sig version");
+
+    // solium-disable-next-line arg-overflow
+    return ecrecover(_hash, v, r, s);
+  }
 
 }
