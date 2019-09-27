@@ -177,9 +177,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
             const caller = accounts[1];
-            const callerBalance = new BN(await ren.balanceOf(caller));
             const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
-            const storeBalance = new BN(await store.availableBalance(ren.address));
 
             // first slash should pass
             await slasher.slashDuplicatePropose(
@@ -196,16 +194,11 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 }
             ).should.eventually.not.be.rejected;
 
-            const slashedAmount = darknodeBond.div(new BN(2));
-            const challengerReward = slashedAmount.div(new BN(2));
-            const paymentReward = slashedAmount.div(new BN(2));
+            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
 
-            const newCallerBalance = new BN(await ren.balanceOf(caller));
-            newCallerBalance.should.bignumber.equal(callerBalance.add(challengerReward));
             const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
             newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
-            const newStoreBalance = new BN(await store.availableBalance(ren.address));
-            newStoreBalance.should.bignumber.equal(storeBalance.add(paymentReward));
 
             // second slash should fail
             await slasher.slashDuplicatePropose(
