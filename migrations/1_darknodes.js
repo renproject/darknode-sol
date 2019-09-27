@@ -81,6 +81,8 @@ module.exports = async function (deployer, network) {
         await deployer.deploy(
             DarknodeSlasher,
             DarknodeRegistry.address,
+            config.BLACKLIST_SLASH_PERCENT,
+            config.MALICIOUS_SLASH_PERCENT
         );
     }
 

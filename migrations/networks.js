@@ -5,6 +5,8 @@ const config = {
     MINIMUM_POD_SIZE: 3, // 24 in production
     MINIMUM_EPOCH_INTERVAL_SECONDS: 30, // 216000 in production, 1 month
     DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
+    BLACKLIST_SLASH_PERCENT: 0, // Don't slash bond for blacklisting
+    MALICIOUS_SLASH_PERCENT: 50, // Slash 50% of the bond
     mintAuthority: "", // Darknode public key
     shifterFees: 10,
     zBTCMinShiftOutAmount: 10000,

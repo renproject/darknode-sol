@@ -11,12 +11,35 @@ contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public darknodeRegistry;
 
+    uint256 public blacklistSlashPercent;
+    uint256 public maliciousSlashPercent;
+
     // Malicious Darknodes can be slashed for each height and round
     // mapping of height -> round -> guilty address -> slashed
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public slashed;
 
-    constructor(DarknodeRegistry _darknodeRegistry) public {
+    /// @notice Restrict a function to have a valid percentage
+    modifier validPercent(uint256 _percent) {
+        require(_percent <= 100, "invalid percentage");
+        _;
+    }
+
+    constructor(
+        DarknodeRegistry _darknodeRegistry,
+        uint256 _blacklistSlashPercent,
+        uint256 _maliciousSlashPercent
+    ) public {
         darknodeRegistry = _darknodeRegistry;
+        setBlacklistSlashPercent(_blacklistSlashPercent);
+        setMaliciousSlashPercent(_maliciousSlashPercent);
+    }
+
+    function setBlacklistSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+        blacklistSlashPercent = _percentage;
+    }
+
+    function setMaliciousSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+        maliciousSlashPercent = _percentage;
     }
 
     function slash(address _guilty, address _challenger, uint256 _percentage)
@@ -27,7 +50,7 @@ contract DarknodeSlasher is Ownable {
     }
 
     function blacklist(address _guilty) external onlyOwner {
-        darknodeRegistry.slash(_guilty, owner(), 0);
+        darknodeRegistry.slash(_guilty, owner(), blacklistSlashPercent);
     }
 
     function slashDuplicatePropose(
@@ -52,7 +75,7 @@ contract DarknodeSlasher is Ownable {
         );
         require(!slashed[_height][_round][signer], "already slashed");
         slashed[_height][_round][signer] = true;
-        darknodeRegistry.slash(signer, msg.sender, 50);
+        darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
 
     function validateDuplicatePropose(
