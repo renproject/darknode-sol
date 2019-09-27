@@ -11,6 +11,10 @@ contract DarknodeSlasher is Ownable {
 
     DarknodeRegistry public darknodeRegistry;
 
+    // Malicious Darknodes can be slashed for each height and round
+    // mapping of height -> round -> guilty address -> slashed
+    mapping(uint256 => mapping(uint256 => mapping(address => bool))) public slashed;
+
     constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
     }
