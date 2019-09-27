@@ -5,6 +5,7 @@ import hashjs from 'hash.js';
 import {
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
     RenTokenInstance,
+    DarknodePaymentStoreInstance,
 } from "../types/truffle-contracts";
 import { Account } from "web3-eth-accounts";
 import { ecsign } from "ethereumjs-util";
@@ -13,6 +14,7 @@ import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -27,6 +29,7 @@ const numDarknodes = 2;
 
 contract("DarknodeSlasher", (accounts: string[]) => {
 
+    let store: DarknodePaymentStoreInstance;
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
     let dnr: DarknodeRegistryInstance;
@@ -39,6 +42,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         dnr = await DarknodeRegistry.deployed();
+        store = await DarknodePaymentStore.deployed();
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
         await waitForEpoch(dnr);
@@ -172,6 +176,11 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
+            const caller = accounts[1];
+            const callerBalance = new BN(await ren.balanceOf(caller));
+            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const storeBalance = new BN(await store.availableBalance(ren.address));
+
             // first slash should pass
             await slasher.slashDuplicatePropose(
                 height,
@@ -181,8 +190,22 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString1,
                 hexBlockhash2,
                 validRound2,
-                sigString2
+                sigString2,
+                {
+                    from: caller,
+                }
             ).should.eventually.not.be.rejected;
+
+            const slashedAmount = darknodeBond.div(new BN(2));
+            const challengerReward = slashedAmount.div(new BN(2));
+            const paymentReward = slashedAmount.div(new BN(2));
+
+            const newCallerBalance = new BN(await ren.balanceOf(caller));
+            newCallerBalance.should.bignumber.equal(callerBalance.add(challengerReward));
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
+            const newStoreBalance = new BN(await store.availableBalance(ren.address));
+            newStoreBalance.should.bignumber.equal(storeBalance.add(paymentReward));
 
             // second slash should fail
             await slasher.slashDuplicatePropose(
@@ -193,7 +216,10 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString1,
                 hexBlockhash2,
                 validRound2,
-                sigString2
+                sigString2,
+                {
+                    from: caller,
+                }
             ).should.eventually.be.rejectedWith(/already slashed/);
         });
 
