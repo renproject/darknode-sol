@@ -51,8 +51,8 @@ contract DarknodeSlasher is Ownable {
             _signature2
         );
         require(!slashed[_height][_round][signer], "already slashed");
-        darknodeRegistry.slash(signer, msg.sender, 50);
         slashed[_height][_round][signer] = true;
+        darknodeRegistry.slash(signer, msg.sender, 50);
     }
 
     function validateDuplicatePropose(
