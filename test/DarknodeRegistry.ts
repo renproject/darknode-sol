@@ -539,19 +539,21 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
 
+        const slashPercent = 20;
+
         // [CHECK] Only the slasher can call `slash`
-        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
+        await dnr.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
             .should.be.rejectedWith(/must be slasher/);
-        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner })
+        await dnr.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner })
             .should.be.rejectedWith(/must be slasher/);
-        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
+        await slasher.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
             .should.be.rejectedWith(/revert/);
 
-        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner });
-        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
+        await slasher.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
 
         // // NOTE: The darknode doesn't prevent slashing a darknode twice
-        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
     });
 
     it("transfer ownership of the dark node store", async () => {
