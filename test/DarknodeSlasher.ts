@@ -56,6 +56,9 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const rawMsg = await slasher.proposeMessage(height, round, hexBlockhash, validRound);
             proposeMsg.should.be.equal(web3.utils.hexToAscii(rawMsg));
         });
+    });
+
+    describe("when handling propose messages", async () => {
 
         it("should recover the signer of a message", async () => {
             const height = new BN("6349374925919561232");
@@ -69,6 +72,73 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
             const signer = await slasher.recoverPropose(height, round, hexBlockhash, validRound, sigString);
             signer.should.equal(darknode1.address);
+        });
+
+        it("cannot slash when the same data is given twice", async () => {
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const validRound1 = new BN("6345888412984379713");
+            const proposeMsg1 = generateProposeMessage(height, round, blockhash1, validRound1);
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), privKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            await slasher.slashDuplicatePropose(
+                height,
+                round,
+                hexBlockhash1,
+                validRound1,
+                sigString1,
+                hexBlockhash1,
+                validRound1,
+                sigString1
+            ).should.eventually.be.rejected;
+        });
+
+        it("should slash duplicate proposals for the same height and round", async () => {
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const validRound1 = new BN("6345888412984379713");
+            const proposeMsg1 = generateProposeMessage(height, round, blockhash1, validRound1);
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), privKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
+            const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
+            const validRound2 = new BN("5327204637322492082");
+            const proposeMsg2 = generateProposeMessage(height, round, blockhash2, validRound2);
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex')
+            const sig2 = ecsign(Buffer.from(hash2, "hex"), privKey);
+            const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
+
+            // first slash should pass
+            await slasher.slashDuplicatePropose(
+                height,
+                round,
+                hexBlockhash1,
+                validRound1,
+                sigString1,
+                hexBlockhash2,
+                validRound2,
+                sigString2
+            ).should.eventually.not.be.rejected;
+
+            // second slash should fail
+            await slasher.slashDuplicatePropose(
+                height,
+                round,
+                hexBlockhash1,
+                validRound1,
+                sigString1,
+                hexBlockhash2,
+                validRound2,
+                sigString2
+            ).should.eventually.be.rejectedWith(/already slashed/);
         });
 
     });

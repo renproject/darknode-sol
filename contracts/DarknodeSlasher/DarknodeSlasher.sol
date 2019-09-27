@@ -26,6 +26,48 @@ contract DarknodeSlasher is Ownable {
         darknodeRegistry.slash(_guilty, owner(), 0);
     }
 
+    function slashDuplicatePropose(
+        uint256 _height,
+        uint256 _round,
+        bytes calldata _blockhash1,
+        uint256 _validRound1,
+        bytes calldata _signature1,
+        bytes calldata _blockhash2,
+        uint256 _validRound2,
+        bytes calldata _signature2
+    ) external {
+        address signer = validateDuplicatePropose(
+            _height,
+            _round,
+            _blockhash1,
+            _validRound1,
+            _signature1,
+            _blockhash2,
+            _validRound2,
+            _signature2
+        );
+        require(!slashed[_height][_round][signer], "already slashed");
+        // darknodeRegistry.slash(signer, msg.sender, 50);
+        slashed[_height][_round][signer] = true;
+    }
+
+    function validateDuplicatePropose(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash1,
+        uint256 _validRound1,
+        bytes memory _signature1,
+        bytes memory _blockhash2,
+        uint256 _validRound2,
+        bytes memory _signature2
+    ) public pure returns (address) {
+        require(_validRound1 != _validRound2, "same valid round");
+        address signer1 = recoverPropose(_height, _round, _blockhash1, _validRound1, _signature1);
+        address signer2 = recoverPropose(_height, _round, _blockhash2, _validRound2, _signature2);
+        require(signer1 == signer2, "different signer");
+        return signer1;
+    }
+
     function recoverPropose(
         uint256 _height,
         uint256 _round,
