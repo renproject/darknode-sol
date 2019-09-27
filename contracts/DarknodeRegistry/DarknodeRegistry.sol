@@ -298,7 +298,7 @@ contract DarknodeRegistry is Ownable {
     /// @param _guilty The guilty prover whose bond is being slashed
     /// @param _challenger The challenger who should a portion of the bond as reward
     /// @param _percentage The total percentage  of bond to be slashed
-    function slash(address _guilty, address _challenger, uint8 _percentage)
+    function slash(address _guilty, address _challenger, uint256 _percentage)
         external
         onlySlasher
     {
