@@ -18,6 +18,9 @@ contract DarknodeSlasher is Ownable {
     // mapping of height -> round -> guilty address -> slashed
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public slashed;
 
+    // mapping of address to whether the darknode has been blacklisted
+    mapping(address => bool) public blacklisted;
+
     /// @notice Restrict a function to have a valid percentage
     modifier validPercent(uint256 _percent) {
         require(_percent <= 100, "invalid percentage");
@@ -50,6 +53,8 @@ contract DarknodeSlasher is Ownable {
     }
 
     function blacklist(address _guilty) external onlyOwner {
+        require(!blacklisted[_guilty], "already blacklisted");
+        blacklisted[_guilty] = true;
         darknodeRegistry.slash(_guilty, owner(), blacklistSlashPercent);
     }
 
