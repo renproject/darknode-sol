@@ -5,10 +5,6 @@ import "../libraries/Validate.sol";
 /// @notice Validate is a library for validating malicious darknode behaviour.
 contract ValidateTest {
 
-    /// @notice Recovers two propose messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if propose messages were different
     function duplicatePropose(
         uint256 _height,
         uint256 _round,
@@ -43,6 +39,70 @@ contract ValidateTest {
             _round,
             _blockhash,
             _validRound,
+            _signature
+        );
+    }
+
+    function duplicatePrevote(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash1,
+        bytes memory _signature1,
+        bytes memory _blockhash2,
+        bytes memory _signature2
+    ) public pure returns (address) {
+        return Validate.duplicatePrevote(
+            _height,
+            _round,
+            _blockhash1,
+            _signature1,
+            _blockhash2,
+            _signature2
+        );
+    }
+
+    function recoverPrevote(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash,
+        bytes memory _signature
+    ) public pure returns (address) {
+        return Validate.recoverPrevote(
+            _height,
+            _round,
+            _blockhash,
+            _signature
+        );
+    }
+
+    function duplicatePrecommit(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash1,
+        bytes memory _signature1,
+        bytes memory _blockhash2,
+        bytes memory _signature2
+    ) public pure returns (address) {
+        return Validate.duplicatePrecommit(
+            _height,
+            _round,
+            _blockhash1,
+            _signature1,
+            _blockhash2,
+            _signature2
+        );
+    }
+
+    function recoverPrecommit(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash,
+        bytes memory _signature
+    ) public pure returns (address) {
+        return Validate.recoverPrecommit(
+            _height,
+            _round,
+            _blockhash,
             _signature
         );
     }

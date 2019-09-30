@@ -68,9 +68,9 @@ contract("Validate", (accounts: string[]) => {
         });
     });
 
-    describe("when handling propose messages", async () => {
+    describe("when recovering signatures", async () => {
 
-        it("should recover the signer of a message", async () => {
+        it("can recover the signer of a propose message", async () => {
             const darknode = darknodes[0];
             const height = new BN("6349374925919561232");
             const round = new BN("3652381888914236532");
@@ -82,6 +82,34 @@ contract("Validate", (accounts: string[]) => {
             const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
             const signer = await validateTest.recoverPropose(height, round, hexBlockhash, validRound, sigString);
+            signer.should.equal(darknode.account.address);
+        });
+
+        it("can recover the signer of a prevote message", async () => {
+            const darknode = darknodes[0];
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash = web3.utils.asciiToHex(blockhash);
+            const proposeMsg = generatePrevoteMessage(height, round, blockhash);
+            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
+            const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
+            const signer = await validateTest.recoverPrevote(height, round, hexBlockhash, sigString);
+            signer.should.equal(darknode.account.address);
+        });
+
+        it("can recover the signer of a precommit message", async () => {
+            const darknode = darknodes[0];
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash = web3.utils.asciiToHex(blockhash);
+            const proposeMsg = generatePrecommitMessage(height, round, blockhash);
+            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
+            const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
+            const signer = await validateTest.recoverPrecommit(height, round, hexBlockhash, sigString);
             signer.should.equal(darknode.account.address);
         });
 
