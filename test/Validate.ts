@@ -1,11 +1,16 @@
 import BN from "bn.js";
-
 import hashjs from 'hash.js';
-import { ecsign } from "ethereumjs-util";
-import { Ox } from "./helper/testUtils";
 
+import { Account } from "web3-eth-accounts";
+import { ecsign } from "ethereumjs-util";
+
+import { Ox } from "./helper/testUtils";
 import { ValidateTestInstance } from "../types/truffle-contracts";
-import { Darknode, generateProposeMessage } from "./DarknodeSlasher";
+
+export interface Darknode {
+    account: Account;
+    privateKey: Buffer;
+}
 
 const ValidateTest = artifacts.require("ValidateTest");
 
@@ -63,3 +68,7 @@ contract("Validate", (accounts: string[]) => {
     });
 
 });
+
+export const generateProposeMessage = (height: BN, round: BN, blockHash: string, validRound: BN): string => {
+    return `Propose(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash},ValidRound=${validRound.toString()})`;
+}

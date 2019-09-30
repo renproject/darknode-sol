@@ -7,23 +7,18 @@ import {
     RenTokenInstance,
     DarknodePaymentStoreInstance,
 } from "../types/truffle-contracts";
-import { Account } from "web3-eth-accounts";
 import { ecsign } from "ethereumjs-util";
 import { Ox } from "./helper/testUtils";
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
+import { Darknode, generateProposeMessage } from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-
-export interface Darknode {
-    account: Account;
-    privateKey: Buffer;
-}
 
 const numDarknodes = 2;
 
@@ -201,7 +196,3 @@ contract("DarknodeSlasher", (accounts: string[]) => {
     // });
 
 });
-
-export const generateProposeMessage = (height: BN, round: BN, blockHash: string, validRound: BN): string => {
-    return `Propose(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash},ValidRound=${validRound.toString()})`;
-}
