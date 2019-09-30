@@ -2,6 +2,27 @@ pragma solidity ^0.5.2;
 
 library String {
 
+    /// @notice Convert a uint value to its decimal string representation
+    // solium-disable-next-line security/no-assign-params
+    function fromUint(uint _i) internal pure returns (string memory) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len - 1;
+        while (_i != 0) {
+            bstr[k--] = byte(uint8(48 + _i % 10));
+            _i /= 10;
+        }
+        return string(bstr);
+    }
+
     /// @notice Convert a bytes32 value to its hex string representation
     function fromBytes32(bytes32 _value) internal pure returns(string memory) {
         bytes32 value = bytes32(uint256(_value));

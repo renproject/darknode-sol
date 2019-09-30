@@ -1,7 +1,9 @@
 pragma solidity ^0.5.8;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
+import "../libraries/String.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
 /// @notice DarknodeSlasher will become a voting system for darknodes to
@@ -107,7 +109,7 @@ contract DarknodeSlasher is Ownable {
         uint256 _validRound,
         bytes memory _signature
     ) public pure returns (address) {
-        return recover(sha256(proposeMessage(_height, _round, _blockhash, _validRound)), _signature);
+        return ECDSA.recover(sha256(proposeMessage(_height, _round, _blockhash, _validRound)), _signature);
     }
 
     function proposeMessage(
@@ -117,66 +119,11 @@ contract DarknodeSlasher is Ownable {
         uint256 _validRound
     ) public pure returns (bytes memory) {
         return abi.encodePacked(
-            "Propose(Height=", _uint2str(_height),
-            ",Round=", _uint2str(_round),
+            "Propose(Height=", String.fromUint(_height),
+            ",Round=", String.fromUint(_round),
             ",BlockHash=", string(_blockhash),
-            ",ValidRound=", _uint2str(_validRound),
+            ",ValidRound=", String.fromUint(_validRound),
             ")"
         );
     }
-
-    // solium-disable-next-line security/no-assign-params
-    function _uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint j = _i;
-        uint len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len - 1;
-        while (_i != 0) {
-            bstr[k--] = byte(uint8(48 + _i % 10));
-            _i /= 10;
-        }
-        return string(bstr);
-    }
-
-
-    /**
-    * @dev Recover signer address from a message by using their signature
-    * @param _hash bytes32 message, the hash is the signed message. What is recovered is the signer address.
-    * @param _signature bytes signature, the signature is generated using web3.eth.sign()
-    */
-    function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-
-        // Check the signature length
-        require(_signature.length == 65, "invalid sig length");
-
-        // Divide the signature in r, s and v variables with inline assembly.
-        // solium-disable-next-line security/no-inline-assembly
-        assembly {
-            r := mload(add(_signature, 0x20))
-            s := mload(add(_signature, 0x40))
-            v := byte(0, mload(add(_signature, 0x60)))
-        }
-
-        // Version of signature should be 27 or 28, but 0 and 1 are also possible versions
-        if (v < 27) {
-            v += 27;
-        }
-
-        // If the version is correct return the signer address
-        require(v == 27 || v == 28, "incorrect sig version");
-
-        // solium-disable-next-line arg-overflow
-        return ecrecover(_hash, v, r, s);
-    }
-
 }
