@@ -22,6 +22,7 @@ module.exports = {
         "test/LinkedListTest.sol",
         "test/ValidateTest.sol",
         "test/StringTest.sol",
+        "test/CompareTest.sol",
         "test/tokens/PaymentToken.sol",
         "test/CycleChanger.sol",
     ],
