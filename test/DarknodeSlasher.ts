@@ -20,7 +20,7 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
-const numDarknodes = 2;
+const numDarknodes = 4;
 
 contract("DarknodeSlasher", (accounts: string[]) => {
 
@@ -169,8 +169,8 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         });
 
         it("should not slash for prevote messages", async () => {
-            const height = new BN("6349374925919561232");
-            const round = new BN("3652381888914236532");
+            const height = new BN("6349363483468961232");
+            const round = new BN("3652348943894236532");
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const prevoteMsg1 = generatePrevoteMessage(height, round, blockhash1);
@@ -197,8 +197,8 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         });
 
         it("should not slash for precommit messages", async () => {
-            const height = new BN("6349374925919561232");
-            const round = new BN("3652381888914236532");
+            const height = new BN("6348943938419561232");
+            const round = new BN("3652348939484336532");
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const precommitMsg1 = generatePrecommitMessage(height, round, blockhash1);
@@ -229,8 +229,8 @@ contract("DarknodeSlasher", (accounts: string[]) => {
 
         it("should slash duplicate proposals for the same height and round", async () => {
             const darknode = darknodes[0];
-            const height = new BN("6349374925919561232");
-            const round = new BN("3652381888914236532");
+            const height = new BN("6343893498349561232");
+            const round = new BN("3652348943983436532");
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const validRound1 = new BN("6345888412984379713");
@@ -280,6 +280,114 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString1,
                 hexBlockhash2,
                 validRound2,
+                sigString2,
+                {
+                    from: caller,
+                }
+            ).should.eventually.be.rejectedWith(/already slashed/);
+        });
+
+        it("should slash duplicate prevotes for the same height and round", async () => {
+            const darknode = darknodes[2];
+            const height = new BN("6343893498349561232");
+            const round = new BN("3652348943983436532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const proposeMsg1 = generatePrevoteMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
+            const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
+            const proposeMsg2 = generatePrevoteMessage(height, round, blockhash2);
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex')
+            const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
+            const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
+
+            const caller = accounts[1];
+            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+
+            // first slash should pass
+            await slasher.slashDuplicatePrevote(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
+                sigString2,
+                {
+                    from: caller,
+                }
+            ).should.eventually.not.be.rejected;
+
+            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
+
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
+
+            // second slash should fail
+            await slasher.slashDuplicatePrevote(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
+                sigString2,
+                {
+                    from: caller,
+                }
+            ).should.eventually.be.rejectedWith(/already slashed/);
+        });
+
+        it("should slash duplicate precommits for the same height and round", async () => {
+            const darknode = darknodes[3];
+            const height = new BN("4398348948349561232");
+            const round = new BN("3348934843983436532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const proposeMsg1 = generatePrecommitMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
+            const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
+            const proposeMsg2 = generatePrecommitMessage(height, round, blockhash2);
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex');
+            const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
+            const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
+
+            const caller = accounts[1];
+            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+
+            // first slash should pass
+            await slasher.slashDuplicatePrecommit(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
+                sigString2,
+                {
+                    from: caller,
+                }
+            ).should.eventually.not.be.rejected;
+
+            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
+
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
+
+            // second slash should fail
+            await slasher.slashDuplicatePrecommit(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
                 sigString2,
                 {
                     from: caller,
