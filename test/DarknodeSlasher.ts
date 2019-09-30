@@ -12,7 +12,7 @@ import { Ox } from "./helper/testUtils";
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-import { Darknode, generateProposeMessage } from "./Validate";
+import { Darknode, generateProposeMessage, generatePrevoteMessage, generatePrecommitMessage } from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
@@ -64,9 +64,9 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
-    describe("when handling propose messages", async () => {
+    describe("when the signatures are the same", async () => {
 
-        it("cannot slash when the same data is given twice", async () => {
+        it("should not slash identical propose messages", async () => {
             const darknode = darknodes[0];
             const height = new BN("6349374925919561232");
             const round = new BN("3652381888914236532");
@@ -90,7 +90,53 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             ).should.eventually.be.rejected;
         });
 
-        it("cannot slash when the signers are different", async () => {
+        it("should not slash identical prevote messages", async () => {
+            const darknode = darknodes[0];
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const prevoteMsg1 = generatePrevoteMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(prevoteMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            await slasher.slashDuplicatePrevote(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash1,
+                sigString1
+            ).should.eventually.be.rejected;
+        });
+
+        it("should not slash identical precommit messages", async () => {
+            const darknode = darknodes[0];
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const precommitMsg1 = generatePrecommitMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(precommitMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            await slasher.slashDuplicatePrecommit(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash1,
+                sigString1
+            ).should.eventually.be.rejected;
+        });
+
+    });
+
+    describe("when the signers are different", async () => {
+
+        it("should not slash for propose messages", async () => {
             const height = new BN("6349374925919561232");
             const round = new BN("3652381888914236532");
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
@@ -121,6 +167,65 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2
             ).should.eventually.be.rejectedWith(/different signer/);
         });
+
+        it("should not slash for prevote messages", async () => {
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const prevoteMsg1 = generatePrevoteMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(prevoteMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknodes[0].privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
+            const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
+            const prevoteMsg2 = generatePrevoteMessage(height, round, blockhash2);
+            const hash2 = hashjs.sha256().update(prevoteMsg2).digest('hex')
+            const sig2 = ecsign(Buffer.from(hash2, "hex"), darknodes[1].privateKey);
+            const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
+
+            // first slash should pass
+            await slasher.slashDuplicatePrevote(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
+                sigString2
+            ).should.eventually.be.rejectedWith(/different signer/);
+        });
+
+        it("should not slash for precommit messages", async () => {
+            const height = new BN("6349374925919561232");
+            const round = new BN("3652381888914236532");
+            const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
+            const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
+            const precommitMsg1 = generatePrecommitMessage(height, round, blockhash1);
+            const hash1 = hashjs.sha256().update(precommitMsg1).digest('hex')
+            const sig1 = ecsign(Buffer.from(hash1, "hex"), darknodes[0].privateKey);
+            const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
+
+            const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
+            const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
+            const precommitMsg2 = generatePrecommitMessage(height, round, blockhash2);
+            const hash2 = hashjs.sha256().update(precommitMsg2).digest('hex')
+            const sig2 = ecsign(Buffer.from(hash2, "hex"), darknodes[1].privateKey);
+            const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
+
+            // first slash should pass
+            await slasher.slashDuplicatePrecommit(
+                height,
+                round,
+                hexBlockhash1,
+                sigString1,
+                hexBlockhash2,
+                sigString2
+            ).should.eventually.be.rejectedWith(/different signer/);
+        });
+    });
+
+    describe("when malicious messages are received", async () => {
 
         it("should slash duplicate proposals for the same height and round", async () => {
             const darknode = darknodes[0];

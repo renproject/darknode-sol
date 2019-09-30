@@ -83,4 +83,46 @@ contract DarknodeSlasher is Ownable {
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
+
+    function slashDuplicatePrevote(
+        uint256 _height,
+        uint256 _round,
+        bytes calldata _blockhash1,
+        bytes calldata _signature1,
+        bytes calldata _blockhash2,
+        bytes calldata _signature2
+    ) external {
+        address signer = Validate.duplicatePrevote(
+            _height,
+            _round,
+            _blockhash1,
+            _signature1,
+            _blockhash2,
+            _signature2
+        );
+        require(!slashed[_height][_round][signer], "already slashed");
+        slashed[_height][_round][signer] = true;
+        darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
+    }
+
+    function slashDuplicatePrecommit(
+        uint256 _height,
+        uint256 _round,
+        bytes calldata _blockhash1,
+        bytes calldata _signature1,
+        bytes calldata _blockhash2,
+        bytes calldata _signature2
+    ) external {
+        address signer = Validate.duplicatePrecommit(
+            _height,
+            _round,
+            _blockhash1,
+            _signature1,
+            _blockhash2,
+            _signature2
+        );
+        require(!slashed[_height][_round][signer], "already slashed");
+        slashed[_height][_round][signer] = true;
+        darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
+    }
 }
