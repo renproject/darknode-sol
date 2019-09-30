@@ -52,4 +52,30 @@ library Validate {
             ")"
         );
     }
+
+    function prevoteMessage(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            "Prevote(Height=", String.fromUint(_height),
+            ",Round=", String.fromUint(_round),
+            ",BlockHash=", string(_blockhash),
+            ")"
+        );
+    }
+
+    function precommitMessage(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            "Precommit(Height=", String.fromUint(_height),
+            ",Round=", String.fromUint(_round),
+            ",BlockHash=", string(_blockhash),
+            ")"
+        );
+    }
 }

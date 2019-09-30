@@ -60,4 +60,28 @@ contract ValidateTest {
             _validRound
         );
     }
+
+    function prevoteMessage(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash
+    ) public pure returns (bytes memory) {
+        return Validate.prevoteMessage(
+            _height,
+            _round,
+            _blockhash
+        );
+    }
+
+    function precommitMessage(
+        uint256 _height,
+        uint256 _round,
+        bytes memory _blockhash
+    ) public pure returns (bytes memory) {
+        return Validate.precommitMessage(
+            _height,
+            _round,
+            _blockhash
+        );
+    }
 }
