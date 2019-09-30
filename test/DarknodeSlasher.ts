@@ -20,7 +20,7 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
-interface Darknode {
+export interface Darknode {
     account: Account;
     privateKey: Buffer;
 }
@@ -69,36 +69,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
-    describe("when generating messages", async () => {
-
-        it("should correctly generate the propose message", async () => {
-            const height = new BN("6349374925919561232");
-            const round = new BN("3652381888914236532");
-            const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
-            const hexBlockhash = web3.utils.asciiToHex(blockhash);
-            const validRound = new BN("6345888412984379713");
-            const proposeMsg = generateProposeMessage(height, round, blockhash, validRound);
-            const rawMsg = await slasher.proposeMessage(height, round, hexBlockhash, validRound);
-            proposeMsg.should.be.equal(web3.utils.hexToAscii(rawMsg));
-        });
-    });
-
     describe("when handling propose messages", async () => {
-
-        it("should recover the signer of a message", async () => {
-            const darknode = darknodes[0];
-            const height = new BN("6349374925919561232");
-            const round = new BN("3652381888914236532");
-            const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
-            const hexBlockhash = web3.utils.asciiToHex(blockhash);
-            const validRound = new BN("6345888412984379713");
-            const proposeMsg = generateProposeMessage(height, round, blockhash, validRound);
-            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
-            const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
-            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
-            const signer = await slasher.recoverPropose(height, round, hexBlockhash, validRound, sigString);
-            signer.should.equal(darknode.account.address);
-        });
 
         it("cannot slash when the same data is given twice", async () => {
             const darknode = darknodes[0];
@@ -229,8 +200,8 @@ contract("DarknodeSlasher", (accounts: string[]) => {
 
     // });
 
-    const generateProposeMessage = (height: BN, round: BN, blockHash: string, validRound: BN): string => {
-        return `Propose(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash},ValidRound=${validRound.toString()})`;
-    }
-
 });
+
+export const generateProposeMessage = (height: BN, round: BN, blockHash: string, validRound: BN): string => {
+    return `Propose(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash},ValidRound=${validRound.toString()})`;
+}
