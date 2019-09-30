@@ -125,7 +125,8 @@ contract DarknodeSlasher is Ownable {
         );
     }
 
-    function _uint2str(uint _i) internal pure returns (string memory _uintAsString) { /* solium-disable-line security/no-assign-params */
+    // solium-disable-next-line security/no-assign-params
+    function _uint2str(uint _i) internal pure returns (string memory _uintAsString) {
         if (_i == 0) {
             return "0";
         }
@@ -159,7 +160,8 @@ contract DarknodeSlasher is Ownable {
         require(_signature.length == 65, "invalid sig length");
 
         // Divide the signature in r, s and v variables with inline assembly.
-        assembly { /* solium-disable-line security/no-inline-assembly */
+        // solium-disable-next-line security/no-inline-assembly
+        assembly {
             r := mload(add(_signature, 0x20))
             s := mload(add(_signature, 0x40))
             v := byte(0, mload(add(_signature, 0x60)))
