@@ -20,7 +20,7 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
-const numDarknodes = 4;
+const numDarknodes = 5;
 
 contract("DarknodeSlasher", (accounts: string[]) => {
 
@@ -62,6 +62,21 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             });
         }
         await waitForEpoch(dnr);
+    });
+
+    describe("when blacklisting", async () => {
+
+        it("cannot set an invalid percentage", async () => {
+            await slasher.setBlacklistSlashPercent(new BN("1001")).should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setBlacklistSlashPercent(new BN("101")).should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setBlacklistSlashPercent(new BN("1234")).should.eventually.be.rejectedWith(/invalid percentage/);
+        });
+
+        it("cannot blacklist twice", async () => {
+            await slasher.blacklist(darknodes[4].account.address).should.eventually.not.be.rejected;
+            await slasher.blacklist(darknodes[4].account.address).should.eventually.be.rejectedWith(/already blacklisted/);
+        });
+
     });
 
     describe("when the signatures are the same", async () => {
