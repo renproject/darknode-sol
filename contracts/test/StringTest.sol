@@ -5,6 +5,10 @@ import { String } from "../libraries/String.sol";
 /// @dev StringTest exposes the internal functions of String.sol
 contract StringTest {
 
+    function fromUint(uint _i) public pure returns(string memory) {
+        return String.fromUint(_i);
+    }
+
     function fromBytes32(bytes32 _value) public pure returns(string memory) {
         return String.fromBytes32(_value);
     }

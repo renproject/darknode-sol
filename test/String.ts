@@ -1,5 +1,6 @@
 import { StringTestInstance } from "../types/truffle-contracts";
 import { randomBytes } from "./helper/testUtils";
+import BN = require("bn.js");
 
 const StringTest = artifacts.require("StringTest");
 
@@ -28,5 +29,11 @@ contract("String", (accounts) => {
 
         (await StringInstance.fromBytes32(bytes32))
             .should.equal(bytes32.toLowerCase());
+    });
+
+    it("can convert uint to strings", async () => {
+        (await StringInstance.fromUint(new BN(0))).should.equal("0");
+        (await StringInstance.fromUint(new BN(1))).should.equal("1");
+        (await StringInstance.fromUint(new BN(12345))).should.equal("12345");
     });
 });
