@@ -165,6 +165,20 @@
     {
       "constant": true,
       "inputs": [],
+      "name": "minShiftAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
       "name": "owner",
       "outputs": [
         {
@@ -290,6 +304,20 @@
       "constant": false,
       "inputs": [
         {
+          "name": "_minShiftOutAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateMinimumShiftOutAmount",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
           "name": "_nextFeeRecipient",
           "type": "address"
         }
@@ -345,6 +373,10 @@
         {
           "name": "_fee",
           "type": "uint16"
+        },
+        {
+          "name": "_minShiftOutAmount",
+          "type": "uint256"
         }
       ],
       "payable": false,

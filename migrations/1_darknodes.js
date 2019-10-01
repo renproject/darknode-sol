@@ -42,7 +42,7 @@ module.exports = async function (deployer, network) {
     }
 
     /** DARKNODE REGISTRY *****************************************************/
-    if (!DarknodeRegistry.address) {
+    if (!DarknodeRegistryStore.address) {
         deployer.logger.log("Deploying DarknodeRegistryStore");
         await deployer.deploy(
             DarknodeRegistryStore,
