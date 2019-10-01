@@ -12,8 +12,6 @@ contract("String", (accounts) => {
         StringInstance = await StringTest.new();
     });
 
-    // Skipped for now due to an issue with the coverage tool.
-    // The tests pass when run without coverage.
     it("can add strings", async () => {
         (await StringInstance.add4("1", "2", "3", "4"))
             .should.equal("1234");
@@ -32,8 +30,15 @@ contract("String", (accounts) => {
     });
 
     it("can convert uint to strings", async () => {
-        (await StringInstance.fromUint(new BN(0))).should.equal("0");
-        (await StringInstance.fromUint(new BN(1))).should.equal("1");
-        (await StringInstance.fromUint(new BN(12345))).should.equal("12345");
+        testNumString("0");
+        testNumString("1");
+        testNumString("12345");
+        testNumString("81804755166950992694975918889421430561708705428859269028015361660142001064486");
+        testNumString("90693014804679621771165998959262552553277008236216558633727798007697162314221");
+        testNumString("65631258835468800295340604864107498262349560547191423452833833494209803247319");
     });
+
+    const testNumString = async (numString: string) => {
+        (await StringInstance.fromUint(new BN(numString))).should.equal(numString);
+    }
 });
