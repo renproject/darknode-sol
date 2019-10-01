@@ -36,6 +36,20 @@ contract("Validate", (accounts: string[]) => {
 
     describe("when generating messages", async () => {
 
+        it("should correctly generate the dist priv key message", async () => {
+            const a = new BN("3");
+            const b = new BN("7");
+            const c = new BN("10");
+            const d = new BN("81804755166950992694975918889421430561708705428859269028015361660142001064486");
+            const e = new BN("90693014804679621771165998959262552553277008236216558633727798007697162314221");
+            const f = new BN("65631258835468800295340604864107498262349560547191423452833833494209803247319");
+            const msg = generateDistPrivKeyShareMessage(a, b, c, d, e, f);
+            msg.should.be.equal("DistPrivKeyShare(ShamirShare(3,7,S256N(10),S256PrivKey(S256N(81804755166950992694975918889421430561708705428859269028015361660142001064486),S256P(90693014804679621771165998959262552553277008236216558633727798007697162314221),S256P(65631258835468800295340604864107498262349560547191423452833833494209803247319))))");
+            const rawMsg = await validateTest.distPrivKeyShareMessage(a, b, c, d, e, f);
+            msg.should.be.equal(web3.utils.hexToAscii(rawMsg));
+        });
+
+
         it("should correctly generate the propose message", async () => {
             const height = new BN("6349374925919561232");
             const round = new BN("3652381888914236532");
@@ -127,4 +141,8 @@ export const generatePrevoteMessage = (height: BN, round: BN, blockHash: string)
 
 export const generatePrecommitMessage = (height: BN, round: BN, blockHash: string): string => {
     return `Precommit(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash})`;
+}
+
+export const generateDistPrivKeyShareMessage = (a: BN, b: BN, c: BN, d: BN, e: BN, f: BN): string => {
+    return `DistPrivKeyShare(ShamirShare(${a.toString()},${b.toString()},S256N(${c.toString()}),S256PrivKey(S256N(${d.toString()}),S256P(${e.toString()}),S256P(${f.toString()}))))`;
 }
