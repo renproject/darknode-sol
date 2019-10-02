@@ -43,8 +43,7 @@ contract Shifter is Ownable {
     event LogShiftIn(
         address indexed _to,
         uint256 _amount,
-        uint256 indexed _shiftID,
-        bytes32 indexed _signedMessageHash
+        uint256 indexed _shiftID
     );
     event LogShiftOut(
         bytes _to,
@@ -148,7 +147,7 @@ contract Shifter is Ownable {
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID, signedMessageHash);
+        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID);
         nextShiftID += 1;
 
         return receivedAmount;
