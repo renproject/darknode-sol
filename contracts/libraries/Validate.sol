@@ -136,6 +136,18 @@ library Validate {
         );
     }
 
+    function recoverSecret(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f,
+        bytes memory _signature
+    ) internal pure returns (address) {
+        return ECDSA.recover(sha256(secretMessage(_a, _b, _c, _d, _e, _f)), _signature);
+    }
+
     function secretMessage(
         uint256 _a,
         uint256 _b,
