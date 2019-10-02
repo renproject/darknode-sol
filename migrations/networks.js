@@ -7,6 +7,7 @@ const config = {
     DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
     BLACKLIST_SLASH_PERCENT: 0, // Don't slash bond for blacklisting
     MALICIOUS_SLASH_PERCENT: 50, // Slash 50% of the bond
+    SECRET_REVEAL_SLASH_PERCENT: 100, // Slash 100% of the bond
     mintAuthority: "", // Darknode public key
     shifterFees: 10,
     zBTCMinShiftOutAmount: 10000,

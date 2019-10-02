@@ -12,7 +12,7 @@ import { Ox } from "./helper/testUtils";
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-import { Darknode, generateProposeMessage, generatePrevoteMessage, generatePrecommitMessage } from "./Validate";
+import { Darknode, generateProposeMessage, generatePrevoteMessage, generatePrecommitMessage, generateSecretMessage } from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
@@ -408,6 +408,24 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                     from: caller,
                 }
             ).should.eventually.be.rejectedWith(/already slashed/);
+        });
+
+        it("should slash when a secret message is revealed", async () => {
+            const darknode = darknodes[0];
+            const a = new BN("3");
+            const b = new BN("7");
+            const c = new BN("10");
+            const d = new BN("81804755166950992694975918889421430561708705428859269028015361660142001064486");
+            const e = new BN("90693014804679621771165998959262552553277008236216558633727798007697162314221");
+            const f = new BN("65631258835468800295340604864107498262349560547191423452833833494209803247319");
+            const msg = generateSecretMessage(a, b, c, d, e, f);
+            const hash = hashjs.sha256().update(msg).digest('hex')
+            const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
+            // first slash should succeed
+            await slasher.slashSecretReveal(a, b, c, d, e, f, sigString).should.eventually.not.be.rejected;
+            // second slash should fail
+            await slasher.slashSecretReveal(a, b, c, d, e, f, sigString).should.eventually.be.rejectedWith(/already slashed/);
         });
 
     });

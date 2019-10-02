@@ -14,10 +14,14 @@ contract DarknodeSlasher is Ownable {
 
     uint256 public blacklistSlashPercent;
     uint256 public maliciousSlashPercent;
+    uint256 public secretRevealSlashPercent;
 
     // Malicious Darknodes can be slashed for each height and round
     // mapping of height -> round -> guilty address -> slashed
     mapping(uint256 => mapping(uint256 => mapping(address => bool))) public slashed;
+
+    // mapping of darknodes which have revealed their secret
+    mapping(address => bool) public secretRevealed;
 
     // mapping of address to whether the darknode has been blacklisted
     mapping(address => bool) public blacklisted;
@@ -44,6 +48,10 @@ contract DarknodeSlasher is Ownable {
 
     function setMaliciousSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
         maliciousSlashPercent = _percentage;
+    }
+
+    function setSecretRevealSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+        secretRevealSlashPercent = _percentage;
     }
 
     function slash(address _guilty, address _challenger, uint256 _percentage)
@@ -124,5 +132,28 @@ contract DarknodeSlasher is Ownable {
         require(!slashed[_height][_round][signer], "already slashed");
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
+    }
+
+    function slashSecretReveal(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f,
+        bytes calldata _signature
+    ) external {
+        address signer = Validate.recoverSecret(
+            _a,
+            _b,
+            _c,
+            _d,
+            _e,
+            _f,
+            _signature
+        );
+        require(!secretRevealed[signer], "already slashed");
+        secretRevealed[signer] = true;
+        darknodeRegistry.slash(signer, msg.sender, secretRevealSlashPercent);
     }
 }
