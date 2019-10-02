@@ -29,13 +29,9 @@ contract DarknodeSlasher is Ownable {
     }
 
     constructor(
-        DarknodeRegistry _darknodeRegistry,
-        uint256 _blacklistSlashPercent,
-        uint256 _maliciousSlashPercent
+        DarknodeRegistry _darknodeRegistry
     ) public {
         darknodeRegistry = _darknodeRegistry;
-        setBlacklistSlashPercent(_blacklistSlashPercent);
-        setMaliciousSlashPercent(_maliciousSlashPercent);
     }
 
     function setBlacklistSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
