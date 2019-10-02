@@ -92,6 +92,10 @@ module.exports = async function (deployer, network) {
     if (config.MALICIOUS_SLASH_PERCENT > 0) {
         await slasher.setMaliciousSlashPercent(new BN(config.MALICIOUS_SLASH_PERCENT));
     }
+    if (config.SECRET_REVEAL_SLASH_PERCENT > 0) {
+        await slasher.setSecretRevealSlashPercent(new BN(config.SECRET_REVEAL_SLASH_PERCENT));
+    }
+
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
     const currentSlasher = await darknodeRegistry.slasher();
     const nextSlasher = await darknodeRegistry.nextSlasher();
