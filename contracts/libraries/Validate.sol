@@ -136,7 +136,7 @@ library Validate {
         );
     }
 
-    function distPrivKeyShareMessage(
+    function secretMessage(
         uint256 _a,
         uint256 _b,
         uint256 _c,
@@ -145,7 +145,7 @@ library Validate {
         uint256 _f
     ) internal pure returns (bytes memory) {
         return abi.encodePacked(
-            "DistPrivKeyShare(",
+            "Secret(",
             "ShamirShare(",
             String.fromUint(_a),
             ",", String.fromUint(_b),

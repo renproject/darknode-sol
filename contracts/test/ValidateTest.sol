@@ -145,7 +145,7 @@ contract ValidateTest {
         );
     }
 
-    function distPrivKeyShareMessage(
+    function secretMessage(
         uint256 _a,
         uint256 _b,
         uint256 _c,
@@ -153,7 +153,7 @@ contract ValidateTest {
         uint256 _e,
         uint256 _f
     ) public pure returns (bytes memory) {
-        return Validate.distPrivKeyShareMessage(
+        return Validate.secretMessage(
             _a,
             _b,
             _c,
