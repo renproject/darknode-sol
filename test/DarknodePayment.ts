@@ -614,6 +614,37 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
     });
 
+    describe("when forwarding funds", async () => {
+        it("cannot forward the ethereum address", async () => {
+            await dnp.forward("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").should.eventually.be.rejectedWith(/not erc20/);
+        });
+
+        it("cannot forward when there's no funds", async () => {
+            const bal = await dai.balanceOf(dnp.address);
+            bal.should.bignumber.equal(new BN(0));
+            await dnp.forward(dai.address).should.eventually.be.rejectedWith(/nothing to forward/);
+        });
+
+        it("can forward funds to the store", async () => {
+            // DNP should have zero balance
+            new BN(await dai.balanceOf(dnp.address)).should.bignumber.equal(new BN(0));
+
+            const storeDaiBalance = new BN(await store.availableBalance(dai.address));
+            const amount = new BN("1000000");
+            new BN(await dai.balanceOf(owner)).gte(amount).should.be.true;
+            await dai.transfer(dnp.address, amount);
+
+            (await store.availableBalance(dai.address)).should.bignumber.equal(storeDaiBalance);
+            // DNP should have some balance
+            new BN(await dai.balanceOf(dnp.address)).should.bignumber.equal(amount);
+
+            // Forward the funds on
+            await dnp.forward(dai.address);
+            new BN(await dai.balanceOf(dnp.address)).should.bignumber.equal(new BN(0));
+            (await store.availableBalance(dai.address)).should.bignumber.equal(storeDaiBalance.add(amount));
+        });
+    });
+
     describe("when changing payout percent", async () => {
         it("cannot change payout percent unless authorized", async () => {
             await dnp.updatePayoutPercentage(new BN(10), { from: accounts[2] }).should.be.rejectedWith(/Ownable: caller is not the owner./);
