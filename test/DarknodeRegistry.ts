@@ -483,7 +483,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("cannot slash with an invalid percent", async () => {
         // [ACTION] Update slasher address
-        const newSlasher = accounts[0]
+        const newSlasher = accounts[0];
         await dnr.updateSlasher(newSlasher);
         await waitForEpoch(dnr);
         (await dnr.slasher()).should.equal(newSlasher);
@@ -630,7 +630,6 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.claimStoreOwnership();
     });
 
-
     describe("when darknode payment is not set", async () => {
         let newDNRstore;
         let newDNR;
@@ -644,7 +643,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 newDNRstore.address,
                 config.MINIMUM_BOND,
                 config.MINIMUM_POD_SIZE,
-                config.MINIMUM_EPOCH_INTERVAL_SECONDS
+                config.MINIMUM_EPOCH_INTERVAL_SECONDS,
             );
             // Initiate ownership transfer of DNR store
             await newDNRstore.transferOwnership(newDNR.address);
@@ -659,7 +658,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         it("cannot slash", async () => {
             (await newDNR.owner()).should.equal(accounts[0]);
-            const newSlasher = accounts[0]
+            const newSlasher = accounts[0];
             await newDNR.updateSlasher(newSlasher);
             await waitForEpoch(newDNR);
             (await newDNR.slasher()).should.equal(newSlasher);
@@ -670,7 +669,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             }
             await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
             await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
-            await newDNR.slash(ID("8"), newSlasher, new BN(10)).should.eventually.be.rejectedWith(/invalid payment address/);
+            await newDNR.slash(ID("8"), newSlasher, new BN(10))
+                .should.eventually.be.rejectedWith(/invalid payment address/);
         });
     });
 

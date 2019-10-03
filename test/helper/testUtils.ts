@@ -52,13 +52,13 @@ export const randomAddress = (): string => {
 
 const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
-        web3.currentProvider.send(
+        return web3.currentProvider.send(
             { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 } as any,
             ((err: Error) => {
                 if (err) {
                     reject(err);
                 }
-                web3.currentProvider.send({
+                return web3.currentProvider.send({
                     jsonrpc: "2.0",
                     method: "evm_mine",
                     params: [],
