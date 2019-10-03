@@ -217,6 +217,17 @@ contract DarknodePayment is Ownable {
         emit LogPaymentReceived(msg.sender, receivedValue, _token);
     }
 
+    /// @notice Forwards any tokens that have been sent to the DarknodePayment contract
+    ///         probably by mistake, to the DarknodePaymentStore.
+    ///
+    /// @param _token The token address
+    function forward(address _token) external {
+        require(_token != ETHEREUM, "not erc20");
+        uint256 balance = ERC20(_token).balanceOf(address(this));
+        require(balance != 0, "nothing to forward");
+        ERC20(_token).safeTransfer(address(store), balance);
+    }
+
     /// @notice Claims the rewards allocated to the darknode last epoch.
     /// @param _darknode The address of the darknode to claim
     function claim(address _darknode) external onlyDarknode(_darknode) {
