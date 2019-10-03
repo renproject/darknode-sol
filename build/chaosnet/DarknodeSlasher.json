@@ -151,7 +151,7 @@
         "id": 2685,
         "nodeType": "ImportDirective",
         "scope": 2722,
-        "sourceUnit": 7507,
+        "sourceUnit": 7537,
         "src": "25:63:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -176,10 +176,10 @@
               "id": 2687,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7506,
+              "referencedDeclaration": 7536,
               "src": "323:7:5",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$7506",
+                "typeIdentifier": "t_contract$_Ownable_$7536",
                 "typeString": "contract Ownable"
               }
             },
@@ -189,7 +189,7 @@
           }
         ],
         "contractDependencies": [
-          7506
+          7536
         ],
         "contractKind": "contract",
         "documentation": "@notice DarknodeSlasher will become a voting system for darknodes to\n deregister other misbehaving darknodes.\n Right now, it is a placeholder.",
@@ -197,7 +197,7 @@
         "id": 2721,
         "linearizedBaseContracts": [
           2721,
-          7506
+          7536
         ],
         "name": "DarknodeSlasher",
         "nodeType": "ContractDefinition",
@@ -464,7 +464,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 7439,
+                  "referencedDeclaration": 7469,
                   "src": "600:9:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -611,7 +611,7 @@
         "id": 2685,
         "nodeType": "ImportDirective",
         "scope": 2722,
-        "sourceUnit": 7507,
+        "sourceUnit": 7537,
         "src": "25:63:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -636,10 +636,10 @@
               "id": 2687,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7506,
+              "referencedDeclaration": 7536,
               "src": "323:7:5",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$7506",
+                "typeIdentifier": "t_contract$_Ownable_$7536",
                 "typeString": "contract Ownable"
               }
             },
@@ -649,7 +649,7 @@
           }
         ],
         "contractDependencies": [
-          7506
+          7536
         ],
         "contractKind": "contract",
         "documentation": "@notice DarknodeSlasher will become a voting system for darknodes to\n deregister other misbehaving darknodes.\n Right now, it is a placeholder.",
@@ -657,7 +657,7 @@
         "id": 2721,
         "linearizedBaseContracts": [
           2721,
-          7506
+          7536
         ],
         "name": "DarknodeSlasher",
         "nodeType": "ContractDefinition",
@@ -924,7 +924,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 7439,
+                  "referencedDeclaration": 7469,
                   "src": "600:9:5",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -1073,8 +1073,8 @@
       "address": "0x0000000000000000000000000000000000000000"
     }
   },
-  "schemaVersion": "3.0.16",
-  "updatedAt": "2019-10-01T23:55:26.119Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-10-02T06:57:29.572Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

@@ -877,9 +877,163 @@
   },
   "networks": {
     "42": {
-      "events": {},
+      "events": {
+        "0xd2819ba4c736158371edf0be38fd8d1fc435609832e392f118c4c79160e5bd7b": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "_darknodeID",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "_bond",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogDarknodeRegistered",
+          "type": "event",
+          "signature": "0xd2819ba4c736158371edf0be38fd8d1fc435609832e392f118c4c79160e5bd7b"
+        },
+        "0x2dc89de5703d2c341a22ebfc7c4d3f197e5e1f0c19bc2e1135f387163cb927e4": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "_darknodeID",
+              "type": "address"
+            }
+          ],
+          "name": "LogDarknodeDeregistered",
+          "type": "event",
+          "signature": "0x2dc89de5703d2c341a22ebfc7c4d3f197e5e1f0c19bc2e1135f387163cb927e4"
+        },
+        "0x96ab9e56c79eee4a72db6e2879cbfbecdba5c65b411f4861824e66b89df19764": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "_owner",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "_amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogDarknodeOwnerRefunded",
+          "type": "event",
+          "signature": "0x96ab9e56c79eee4a72db6e2879cbfbecdba5c65b411f4861824e66b89df19764"
+        },
+        "0xaf2fc4796f2932ce294c3684deffe5098d3ef65dc2dd64efa80ef94eed88b01e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "epochhash",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogNewEpoch",
+          "type": "event",
+          "signature": "0xaf2fc4796f2932ce294c3684deffe5098d3ef65dc2dd64efa80ef94eed88b01e"
+        },
+        "0x7c77c94944e9e4e5b0d46f1297127d060020792687cd743401d782346c68f655": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "previousMinimumBond",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "nextMinimumBond",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogMinimumBondUpdated",
+          "type": "event",
+          "signature": "0x7c77c94944e9e4e5b0d46f1297127d060020792687cd743401d782346c68f655"
+        },
+        "0x6d520e46e5714982ddf8cb6216bcb3e1c1d5b79d337afc305335f819394f5d6a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "previousMinimumPodSize",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "nextMinimumPodSize",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogMinimumPodSizeUpdated",
+          "type": "event",
+          "signature": "0x6d520e46e5714982ddf8cb6216bcb3e1c1d5b79d337afc305335f819394f5d6a"
+        },
+        "0xb218cde2730b79a0667ddf869466ee66a12ef56fe65fa4986a590f8a7108c9de": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "previousMinimumEpochInterval",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "nextMinimumEpochInterval",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogMinimumEpochIntervalUpdated",
+          "type": "event",
+          "signature": "0xb218cde2730b79a0667ddf869466ee66a12ef56fe65fa4986a590f8a7108c9de"
+        },
+        "0x933228a1c3ba8fadd3ce47a9db5b898be647f89af99ba7c1b9a655f59ea306c8": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "previousSlasher",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "nextSlasher",
+              "type": "address"
+            }
+          ],
+          "name": "LogSlasherUpdated",
+          "type": "event",
+          "signature": "0x933228a1c3ba8fadd3ce47a9db5b898be647f89af99ba7c1b9a655f59ea306c8"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        }
+      },
       "links": {},
-      "address": "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D"
+      "address": "0x39238ddCc6b301068f6D5B3DCa3A981EB20ba9A3",
+      "transactionHash": "0x4e5eb1a84dc3e2e7b182900c69a1af0435d073c71b190d762dbc5807354bc6c2"
     }
   },
   "schemaVersion": "3.0.11"

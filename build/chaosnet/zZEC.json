@@ -419,7 +419,7 @@
         "id": 2810,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 7931,
+        "sourceUnit": 7934,
         "src": "25:63:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -430,7 +430,7 @@
         "id": 2811,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 8020,
+        "sourceUnit": 8023,
         "src": "89:71:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -441,7 +441,7 @@
         "id": 2812,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 4345,
+        "sourceUnit": 4348,
         "src": "162:36:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -455,10 +455,10 @@
               "id": 2813,
               "name": "ERC20",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7930,
+              "referencedDeclaration": 7933,
               "src": "421:5:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_ERC20_$7930",
+                "typeIdentifier": "t_contract$_ERC20_$7933",
                 "typeString": "contract ERC20"
               }
             },
@@ -473,10 +473,10 @@
               "id": 2815,
               "name": "ERC20Detailed",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 8019,
+              "referencedDeclaration": 8022,
               "src": "428:13:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_ERC20Detailed_$8019",
+                "typeIdentifier": "t_contract$_ERC20Detailed_$8022",
                 "typeString": "contract ERC20Detailed"
               }
             },
@@ -491,10 +491,10 @@
               "id": 2817,
               "name": "Claimable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 4344,
+              "referencedDeclaration": 4347,
               "src": "443:9:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Claimable_$4344",
+                "typeIdentifier": "t_contract$_Claimable_$4347",
                 "typeString": "contract Claimable"
               }
             },
@@ -504,10 +504,10 @@
           }
         ],
         "contractDependencies": [
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": "@notice ERC20Shifted represents a digital asset that has been bridged on to\n the Ethereum ledger. It exposes mint and burn functions that can only be\n called by it's associated Shifter.",
@@ -515,10 +515,10 @@
         "id": 2864,
         "linearizedBaseContracts": [
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "ERC20Shifted",
         "nodeType": "ContractDefinition",
@@ -584,10 +584,10 @@
                   "name": "ERC20Detailed",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 8019,
+                  "referencedDeclaration": 8022,
                   "src": "591:13:7",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_type$_t_contract$_ERC20Detailed_$8019_$",
+                    "typeIdentifier": "t_type$_t_contract$_ERC20Detailed_$8022_$",
                     "typeString": "type(contract ERC20Detailed)"
                   }
                 },
@@ -746,7 +746,7 @@
                       "name": "_burn",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7859,
+                      "referencedDeclaration": 7862,
                       "src": "713:5:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -787,7 +787,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4268,
+                  "referencedDeclaration": 4271,
                   "src": "693:9:7",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -924,7 +924,7 @@
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7816,
+                      "referencedDeclaration": 7819,
                       "src": "818:5:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -965,7 +965,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4268,
+                  "referencedDeclaration": 4271,
                   "src": "798:9:7",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -1132,10 +1132,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": "@dev The following are not necessary for deploying zBTC or zZEC contracts,\n but are used to track deployments.",
@@ -1144,10 +1144,10 @@
         "linearizedBaseContracts": [
           2870,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zBTC",
         "nodeType": "ContractDefinition",
@@ -1233,10 +1233,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -1245,10 +1245,10 @@
         "linearizedBaseContracts": [
           2876,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zZEC",
         "nodeType": "ContractDefinition",
@@ -1334,10 +1334,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -1346,10 +1346,10 @@
         "linearizedBaseContracts": [
           2882,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zBCH",
         "nodeType": "ContractDefinition",
@@ -1396,7 +1396,7 @@
         "id": 2810,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 7931,
+        "sourceUnit": 7934,
         "src": "25:63:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1407,7 +1407,7 @@
         "id": 2811,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 8020,
+        "sourceUnit": 8023,
         "src": "89:71:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1418,7 +1418,7 @@
         "id": 2812,
         "nodeType": "ImportDirective",
         "scope": 2883,
-        "sourceUnit": 4345,
+        "sourceUnit": 4348,
         "src": "162:36:7",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1432,10 +1432,10 @@
               "id": 2813,
               "name": "ERC20",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7930,
+              "referencedDeclaration": 7933,
               "src": "421:5:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_ERC20_$7930",
+                "typeIdentifier": "t_contract$_ERC20_$7933",
                 "typeString": "contract ERC20"
               }
             },
@@ -1450,10 +1450,10 @@
               "id": 2815,
               "name": "ERC20Detailed",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 8019,
+              "referencedDeclaration": 8022,
               "src": "428:13:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_ERC20Detailed_$8019",
+                "typeIdentifier": "t_contract$_ERC20Detailed_$8022",
                 "typeString": "contract ERC20Detailed"
               }
             },
@@ -1468,10 +1468,10 @@
               "id": 2817,
               "name": "Claimable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 4344,
+              "referencedDeclaration": 4347,
               "src": "443:9:7",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Claimable_$4344",
+                "typeIdentifier": "t_contract$_Claimable_$4347",
                 "typeString": "contract Claimable"
               }
             },
@@ -1481,10 +1481,10 @@
           }
         ],
         "contractDependencies": [
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": "@notice ERC20Shifted represents a digital asset that has been bridged on to\n the Ethereum ledger. It exposes mint and burn functions that can only be\n called by it's associated Shifter.",
@@ -1492,10 +1492,10 @@
         "id": 2864,
         "linearizedBaseContracts": [
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "ERC20Shifted",
         "nodeType": "ContractDefinition",
@@ -1561,10 +1561,10 @@
                   "name": "ERC20Detailed",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 8019,
+                  "referencedDeclaration": 8022,
                   "src": "591:13:7",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_type$_t_contract$_ERC20Detailed_$8019_$",
+                    "typeIdentifier": "t_type$_t_contract$_ERC20Detailed_$8022_$",
                     "typeString": "type(contract ERC20Detailed)"
                   }
                 },
@@ -1723,7 +1723,7 @@
                       "name": "_burn",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7859,
+                      "referencedDeclaration": 7862,
                       "src": "713:5:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -1764,7 +1764,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4268,
+                  "referencedDeclaration": 4271,
                   "src": "693:9:7",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -1901,7 +1901,7 @@
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7816,
+                      "referencedDeclaration": 7819,
                       "src": "818:5:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -1942,7 +1942,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 4268,
+                  "referencedDeclaration": 4271,
                   "src": "798:9:7",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -2109,10 +2109,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": "@dev The following are not necessary for deploying zBTC or zZEC contracts,\n but are used to track deployments.",
@@ -2121,10 +2121,10 @@
         "linearizedBaseContracts": [
           2870,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zBTC",
         "nodeType": "ContractDefinition",
@@ -2210,10 +2210,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -2222,10 +2222,10 @@
         "linearizedBaseContracts": [
           2876,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zZEC",
         "nodeType": "ContractDefinition",
@@ -2311,10 +2311,10 @@
         ],
         "contractDependencies": [
           2864,
-          4344,
-          7930,
-          8019,
-          8190
+          4347,
+          7933,
+          8022,
+          8193
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -2323,10 +2323,10 @@
         "linearizedBaseContracts": [
           2882,
           2864,
-          4344,
-          8019,
-          7930,
-          8190
+          4347,
+          8022,
+          7933,
+          8193
         ],
         "name": "zBCH",
         "nodeType": "ContractDefinition",
@@ -2414,8 +2414,8 @@
       "transactionHash": "0x88fe2ef13ab6d4fa426a7c058875f988ded3aab1801d40532f2ef05c3e463587"
     }
   },
-  "schemaVersion": "3.0.16",
-  "updatedAt": "2019-10-02T00:03:29.083Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-10-02T06:59:09.433Z",
   "devdoc": {
     "methods": {
       "allowance(address,address)": {

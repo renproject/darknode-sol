@@ -52,7 +52,7 @@ module.exports = {
 
         BTCShifter: "0x2F4657e26D4887Ed9029FD5B97661FF4582D0cD6",
         ZECShifter: "0x8cb5e78CD53A6b994d5C1Cc52A4A773705A9599a",
-        BCHShifter: "0x2095BE01f9A30a8AC8302245fDFA524fb20DE6Cd",
+        BCHShifter: "0xE0926B2f1B37c2DAE0c5682F5Fd75ADf83CFe771",
         zBTC: "0xc04956C6472CDd58766614f8D47F6826aC477fB9",
         zZEC: "0x09aA07Ae98fdE91D66775C13107e9F082fF65295",
         zBCH: "0x0e68EE104c768078cB3624396AAf9285C58f1a73",
@@ -67,10 +67,10 @@ module.exports = {
     testnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x0000000000000000000000000000000000000000",
-        DarknodeRegistry: "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D",
-        DarknodeRegistryStore: "0x88e4477e4fdd677aee2dc9376471d45c198669fa",
-        DarknodePayment: "0x8E11B87547f4072CC8A094F2888201CAF4EA0B9e",
-        DarknodePaymentStore: "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9",
+        DarknodeRegistry: "0x39238ddCc6b301068f6D5B3DCa3A981EB20ba9A3",
+        DarknodeRegistryStore: "0xc24146aE71470C2f8749DA0738b09434E0220d92",
+        DarknodePayment: "0x7e4E9ECeD2ba1EE5051C3B17dd1F81E7C1AfBFb1",
+        DarknodePaymentStore: "0xF842CE0536B49898AC4f7D8aEb5c7764bd3DB443",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -78,10 +78,10 @@ module.exports = {
 
         BTCShifter: "0xe5c5dAe20CdE920AEEcaE132fB37321523e2fbA5",
         ZECShifter: "0xD0B7E226e7605c0436D37AabE44668F89f941E70",
+        BCHShifter: "0x0aFf3BCFD89453d22d38C32bC6b03041f244BB4b",
         zBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
         zZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
-        zBCH: "",
-        BCHShifter: "",
+        zBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
         ShifterRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
 
         config: {
@@ -106,8 +106,8 @@ module.exports = {
         ZECShifter: "0x19Fe91276a992c2E85544C627583fcc535ff0661",
         zBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
         zZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
-        zBCH: "",
-        BCHShifter: "",
+        zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
+        BCHShifter: "0x9b74517b18D8D0581df70dc6376db5f4974ebfbD",
         ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
 
         config: {

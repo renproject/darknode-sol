@@ -2920,8 +2920,8 @@
       "address": "0x408e41876cCCDC0F92210600ef50372656052a38"
     }
   },
-  "schemaVersion": "3.0.16",
-  "updatedAt": "2019-10-01T23:55:26.063Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-10-02T06:57:29.447Z",
   "devdoc": {
     "methods": {
       "allowance(address,address)": {

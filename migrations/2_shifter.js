@@ -94,11 +94,24 @@ module.exports = async function (deployer, network, accounts) {
             await darknodePayment.registerToken(Token.address);
         }
 
-        if ((await registry.getShifterByToken(Token.address)) === NULL) {
-            deployer.logger.log(`Registering ${symbol} shifter`);
-            await registry.setShifter(Token.address, Shifter.address);
+        const registered = (await registry.getShifterByToken(Token.address));
+        if (registered === NULL) {
+            const otherRegistration = (await registry.getShifterBySymbol(symbol));
+            if (otherRegistration === NULL) {
+                deployer.logger.log(`Registering ${symbol} shifter`);
+                await registry.setShifter(Token.address, Shifter.address);
+            } else {
+                deployer.logger.log(`Updating registered ${symbol} shifter`);
+                await registry.updateShifter(Token.address, Shifter.address);
+            }
         } else {
             deployer.logger.log(`${symbol} shifter is already registered: ${await registry.getShifterByToken(Token.address)}`);
+        }
+
+        const feeRecipient = await tokenShifter.feeRecipient();
+        if (feeRecipient.toLowerCase() !== _feeRecipient.toLowerCase()) {
+            deployer.logger.log(`Updating fee recipient for ${symbol} shifter`);
+            await tokenShifter.updateFeeRecipient(_feeRecipient);
         }
     }
 

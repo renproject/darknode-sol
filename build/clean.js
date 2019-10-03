@@ -30,6 +30,9 @@ for (const network of networks) {
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,
+
+                    // Included for Etherscan verification
+                    // bytecode: obj.bytecode,
                 }
                 const newData = JSON.stringify(newObj, null, "  ");
 

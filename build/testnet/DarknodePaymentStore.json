@@ -376,9 +376,29 @@
   },
   "networks": {
     "42": {
-      "events": {},
+      "events": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        }
+      },
       "links": {},
-      "address": "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9"
+      "address": "0xF842CE0536B49898AC4f7D8aEb5c7764bd3DB443",
+      "transactionHash": "0x2e32b243f43e1c4fd66254330f892d4ec72f124181e56669c0146dbf9ccbc375"
     }
   },
   "schemaVersion": "3.0.11"
