@@ -63,6 +63,8 @@ Deploy to Kovan:
 NETWORK=kovan yarn run deploy
 ```
 
+See `1_darknodes.js` for additional instructions.
+
 ## Verifying Contract Code
 
 Add an Etherscan API key to your `.env`:

@@ -82,8 +82,17 @@ module.exports = async function (deployer, network, accounts) {
         }
         const tokenShifter = await Shifter.at(Shifter.address);
 
+        const shifterAuthority = await tokenShifter.mintAuthority();
+        if (shifterAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
+            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority.toLowerCase()}, now is ${_mintAuthority.toLowerCase()}`);
+            deployer.logger.log(`Updating mint authority in ${symbol} shifter`);
+            await tokenShifter.updateMintAuthority(_mintAuthority);
+        }
+
         if (await token.owner() !== Shifter.address) {
+            deployer.logger.log(`Transferring ${symbol} ownership`);
             await token.transferOwnership(Shifter.address);
+            deployer.logger.log(`Claiming ${symbol} ownership in shifter`);
             await tokenShifter.claimTokenOwnership();
         }
 
@@ -110,7 +119,7 @@ module.exports = async function (deployer, network, accounts) {
 
         const feeRecipient = await tokenShifter.feeRecipient();
         if (feeRecipient.toLowerCase() !== _feeRecipient.toLowerCase()) {
-            deployer.logger.log(`Updating fee recipient for ${symbol} shifter`);
+            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
             await tokenShifter.updateFeeRecipient(_feeRecipient);
         }
     }

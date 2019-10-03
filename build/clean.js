@@ -6,7 +6,7 @@
 const glob = require("glob");
 const fs = require("fs");
 
-const networks = ["testnet", "devnet", "localnet"];
+const networks = ["testnet", "devnet", "localnet", "chaosnet"];
 
 const path = require('path');
 const dirname = path.dirname(__filename);
