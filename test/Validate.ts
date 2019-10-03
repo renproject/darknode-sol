@@ -1,11 +1,11 @@
 import BN from "bn.js";
-import hashjs from 'hash.js';
+import hashjs from "hash.js";
 
-import { Account } from "web3-eth-accounts";
 import { ecsign } from "ethereumjs-util";
+import { Account } from "web3-eth-accounts";
 
-import { Ox } from "./helper/testUtils";
 import { ValidateTestInstance } from "../types/truffle-contracts";
+import { Ox } from "./helper/testUtils";
 
 export interface Darknode {
     account: Account;
@@ -19,7 +19,7 @@ const numDarknodes = 2;
 contract("Validate", (accounts: string[]) => {
 
     let validateTest: ValidateTestInstance;
-    let darknodes = new Array<Darknode>();
+    const darknodes = new Array<Darknode>();
 
     before(async () => {
         validateTest = await ValidateTest.new();
@@ -78,7 +78,7 @@ contract("Validate", (accounts: string[]) => {
             const hexBlockhash = web3.utils.asciiToHex(blockhash);
             const validRound = new BN("6345888412984379713");
             const proposeMsg = generateProposeMessage(height, round, blockhash, validRound);
-            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
+            const hash = hashjs.sha256().update(proposeMsg).digest("hex");
             const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
             const signer = await validateTest.recoverPropose(height, round, hexBlockhash, validRound, sigString);
@@ -92,7 +92,7 @@ contract("Validate", (accounts: string[]) => {
             const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash = web3.utils.asciiToHex(blockhash);
             const proposeMsg = generatePrevoteMessage(height, round, blockhash);
-            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
+            const hash = hashjs.sha256().update(proposeMsg).digest("hex");
             const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
             const signer = await validateTest.recoverPrevote(height, round, hexBlockhash, sigString);
@@ -106,7 +106,7 @@ contract("Validate", (accounts: string[]) => {
             const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash = web3.utils.asciiToHex(blockhash);
             const proposeMsg = generatePrecommitMessage(height, round, blockhash);
-            const hash = hashjs.sha256().update(proposeMsg).digest('hex')
+            const hash = hashjs.sha256().update(proposeMsg).digest("hex");
             const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
             const signer = await validateTest.recoverPrecommit(height, round, hexBlockhash, sigString);
@@ -118,13 +118,14 @@ contract("Validate", (accounts: string[]) => {
 });
 
 export const generateProposeMessage = (height: BN, round: BN, blockHash: string, validRound: BN): string => {
+    // tslint:disable-next-line:max-line-length
     return `Propose(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash},ValidRound=${validRound.toString()})`;
-}
+};
 
 export const generatePrevoteMessage = (height: BN, round: BN, blockHash: string): string => {
     return `Prevote(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash})`;
-}
+};
 
 export const generatePrecommitMessage = (height: BN, round: BN, blockHash: string): string => {
     return `Precommit(Height=${height.toString()},Round=${round.toString()},BlockHash=${blockHash})`;
-}
+};

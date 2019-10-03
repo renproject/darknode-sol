@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect } from "chai";
 import { CompareTestInstance } from "../types/truffle-contracts";
 
 const CompareTest = artifacts.require("CompareTest");
@@ -41,4 +41,3 @@ contract("Compare", (accounts) => {
         });
     });
 });
-

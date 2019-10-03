@@ -1,18 +1,17 @@
 import BN from "bn.js";
 
-import hashjs from 'hash.js';
+import { ecsign } from "ethereumjs-util";
+import hashjs from "hash.js";
+
 // import { config } from "../migrations/networks";
 import {
-    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    RenTokenInstance,
-    DarknodePaymentStoreInstance,
-} from "../types/truffle-contracts";
-import { ecsign } from "ethereumjs-util";
+    DarknodePaymentStoreInstance, DarknodeRegistryInstance, DarknodeRegistryStoreInstance,
+    DarknodeSlasherInstance, RenTokenInstance } from "../types/truffle-contracts";
 import { Ox } from "./helper/testUtils";
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-import { Darknode, generateProposeMessage, generatePrevoteMessage, generatePrecommitMessage } from "./Validate";
+import { Darknode, generatePrecommitMessage, generatePrevoteMessage, generateProposeMessage } from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
@@ -29,7 +28,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
     let dnrs: DarknodeRegistryStoreInstance;
     let dnr: DarknodeRegistryInstance;
     let slasher: DarknodeSlasherInstance;
-    let darknodes = new Array<Darknode>();
+    const darknodes = new Array<Darknode>();
 
     const owner = accounts[0];
 
@@ -67,14 +66,18 @@ contract("DarknodeSlasher", (accounts: string[]) => {
     describe("when blacklisting", async () => {
 
         it("cannot set an invalid percentage", async () => {
-            await slasher.setBlacklistSlashPercent(new BN("1001")).should.eventually.be.rejectedWith(/invalid percentage/);
-            await slasher.setBlacklistSlashPercent(new BN("101")).should.eventually.be.rejectedWith(/invalid percentage/);
-            await slasher.setBlacklistSlashPercent(new BN("1234")).should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setBlacklistSlashPercent(new BN("1001"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setBlacklistSlashPercent(new BN("101"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setBlacklistSlashPercent(new BN("1234"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
         });
 
         it("cannot blacklist twice", async () => {
             await slasher.blacklist(darknodes[4].account.address).should.eventually.not.be.rejected;
-            await slasher.blacklist(darknodes[4].account.address).should.eventually.be.rejectedWith(/already blacklisted/);
+            await slasher.blacklist(darknodes[4].account.address)
+                .should.eventually.be.rejectedWith(/already blacklisted/);
         });
 
     });
@@ -89,7 +92,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const validRound1 = new BN("6345888412984379713");
             const proposeMsg1 = generateProposeMessage(height, round, blockhash1, validRound1);
-            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
@@ -101,7 +104,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString1,
                 hexBlockhash1,
                 validRound1,
-                sigString1
+                sigString1,
             ).should.eventually.be.rejected;
         });
 
@@ -112,7 +115,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const prevoteMsg1 = generatePrevoteMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(prevoteMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(prevoteMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
@@ -122,7 +125,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 hexBlockhash1,
                 sigString1,
                 hexBlockhash1,
-                sigString1
+                sigString1,
             ).should.eventually.be.rejected;
         });
 
@@ -133,7 +136,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const precommitMsg1 = generatePrecommitMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(precommitMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(precommitMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
@@ -143,7 +146,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 hexBlockhash1,
                 sigString1,
                 hexBlockhash1,
-                sigString1
+                sigString1,
             ).should.eventually.be.rejected;
         });
 
@@ -158,7 +161,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const validRound1 = new BN("6345888412984379713");
             const proposeMsg1 = generateProposeMessage(height, round, blockhash1, validRound1);
-            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknodes[0].privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
@@ -166,7 +169,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const validRound2 = new BN("5327204637322492082");
             const proposeMsg2 = generateProposeMessage(height, round, blockhash2, validRound2);
-            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex')
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknodes[1].privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -179,7 +182,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString1,
                 hexBlockhash2,
                 validRound2,
-                sigString2
+                sigString2,
             ).should.eventually.be.rejectedWith(/different signer/);
         });
 
@@ -189,14 +192,14 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const prevoteMsg1 = generatePrevoteMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(prevoteMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(prevoteMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknodes[0].privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
             const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const prevoteMsg2 = generatePrevoteMessage(height, round, blockhash2);
-            const hash2 = hashjs.sha256().update(prevoteMsg2).digest('hex')
+            const hash2 = hashjs.sha256().update(prevoteMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknodes[1].privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -207,7 +210,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 hexBlockhash1,
                 sigString1,
                 hexBlockhash2,
-                sigString2
+                sigString2,
             ).should.eventually.be.rejectedWith(/different signer/);
         });
 
@@ -217,14 +220,14 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const precommitMsg1 = generatePrecommitMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(precommitMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(precommitMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknodes[0].privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
             const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const precommitMsg2 = generatePrecommitMessage(height, round, blockhash2);
-            const hash2 = hashjs.sha256().update(precommitMsg2).digest('hex')
+            const hash2 = hashjs.sha256().update(precommitMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknodes[1].privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -235,7 +238,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 hexBlockhash1,
                 sigString1,
                 hexBlockhash2,
-                sigString2
+                sigString2,
             ).should.eventually.be.rejectedWith(/different signer/);
         });
     });
@@ -250,7 +253,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const validRound1 = new BN("6345888412984379713");
             const proposeMsg1 = generateProposeMessage(height, round, blockhash1, validRound1);
-            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
@@ -258,7 +261,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const validRound2 = new BN("5327204637322492082");
             const proposeMsg2 = generateProposeMessage(height, round, blockhash2, validRound2);
-            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex')
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -277,7 +280,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.not.be.rejected;
 
             const slashPercent = new BN(await slasher.maliciousSlashPercent());
@@ -298,7 +301,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.be.rejectedWith(/already slashed/);
         });
 
@@ -309,14 +312,14 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const proposeMsg1 = generatePrevoteMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
             const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const proposeMsg2 = generatePrevoteMessage(height, round, blockhash2);
-            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex')
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -333,7 +336,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.not.be.rejected;
 
             const slashPercent = new BN(await slasher.maliciousSlashPercent());
@@ -352,7 +355,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.be.rejectedWith(/already slashed/);
         });
 
@@ -363,14 +366,14 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const proposeMsg1 = generatePrecommitMessage(height, round, blockhash1);
-            const hash1 = hashjs.sha256().update(proposeMsg1).digest('hex')
+            const hash1 = hashjs.sha256().update(proposeMsg1).digest("hex");
             const sig1 = ecsign(Buffer.from(hash1, "hex"), darknode.privateKey);
             const sigString1 = Ox(`${sig1.r.toString("hex")}${sig1.s.toString("hex")}${(sig1.v).toString(16)}`);
 
             const blockhash2 = "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI";
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             const proposeMsg2 = generatePrecommitMessage(height, round, blockhash2);
-            const hash2 = hashjs.sha256().update(proposeMsg2).digest('hex');
+            const hash2 = hashjs.sha256().update(proposeMsg2).digest("hex");
             const sig2 = ecsign(Buffer.from(hash2, "hex"), darknode.privateKey);
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
@@ -387,7 +390,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.not.be.rejected;
 
             const slashPercent = new BN(await slasher.maliciousSlashPercent());
@@ -406,21 +409,10 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 sigString2,
                 {
                     from: caller,
-                }
+                },
             ).should.eventually.be.rejectedWith(/already slashed/);
         });
 
     });
-
-    // describe("when maliciously proposing", async () => {
-
-    //     it("should slash when 2 proposals have the same height and round", async () => {
-    //         const height=6349374925919561232;
-    //         const round=3652381888914236532;
-    //         const propose1 = generateProposeMessage(height, round, "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o", 6345888412984379713);
-    //         const propose2 = generateProposeMessage(height, round, "41RLyhshTwmPyAwjPM8AmReOB/q4LLdvYpDMKt1bEFI", 5327204637322492082);
-    //     });
-
-    // });
 
 });
