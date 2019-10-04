@@ -64,9 +64,54 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
-    describe("when blacklisting", async () => {
+    describe("when setting percentages", async () => {
 
-        it("cannot set an invalid percentage", async () => {
+        it("can set a valid blacklist percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setBlacklistSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setBlacklistSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setBlacklistSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("can set a valid malicious percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setMaliciousSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setMaliciousSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setMaliciousSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("can set a valid secret reveal percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setSecretRevealSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setSecretRevealSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setSecretRevealSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("cannot set an invalid blacklist percentage", async () => {
             await slasher.setBlacklistSlashPercent(new BN("1001"))
                 .should.eventually.be.rejectedWith(/invalid percentage/);
             await slasher.setBlacklistSlashPercent(new BN("101"))
@@ -74,6 +119,28 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             await slasher.setBlacklistSlashPercent(new BN("1234"))
                 .should.eventually.be.rejectedWith(/invalid percentage/);
         });
+
+        it("cannot set an invalid malicious percentage", async () => {
+            await slasher.setMaliciousSlashPercent(new BN("1001"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setMaliciousSlashPercent(new BN("101"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setMaliciousSlashPercent(new BN("1234"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+        });
+
+        it("cannot set an invalid secret reveal percentage", async () => {
+            await slasher.setSecretRevealSlashPercent(new BN("1001"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setSecretRevealSlashPercent(new BN("101"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setSecretRevealSlashPercent(new BN("1234"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+        });
+
+    });
+
+    describe("when blacklisting", async () => {
 
         it("cannot blacklist twice", async () => {
             await slasher.blacklist(darknodes[4].account.address).should.eventually.not.be.rejected;
