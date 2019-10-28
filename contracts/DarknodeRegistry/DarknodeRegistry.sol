@@ -64,7 +64,6 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Emitted when a refund has been made.
     /// @param _operator The owner of the darknode.
-    /// @param _owner The address that was refunded.
     /// @param _amount The amount of REN that was refunded.
     event LogDarknodeOwnerRefunded(address indexed _operator, uint256 _amount);
 
@@ -189,7 +188,7 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
-        emit LogDarknodeRegistered(_darknodeID, bond);
+        emit LogDarknodeRegistered(msg.sender, _darknodeID, bond);
     }
 
     /// @notice Deregister a darknode. The darknode will not be deregistered
@@ -510,6 +509,6 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
         // Emit an event
-        emit LogDarknodeDeregistered(_darknodeID);
+        emit LogDarknodeDeregistered(msg.sender, _darknodeID);
     }
 }
