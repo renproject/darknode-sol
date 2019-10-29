@@ -239,6 +239,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 feeRecipient,
                 mintAuthority.address,
                 feeInBips,
+                feeInBips,
                 10000,
             );
 
@@ -365,6 +366,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 zbtc.address,
                 feeRecipient,
                 mintAuthority.address,
+                feeInBips,
                 feeInBips,
                 10000,
             );
