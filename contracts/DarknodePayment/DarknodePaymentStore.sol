@@ -5,7 +5,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/CompatibleERC20Functions.sol";
-import "../DarknodeRegistry/DarknodeRegistry.sol";
 
 /// @notice DarknodePaymentStore is responsible for tracking black/whitelisted
 ///         darknodes as well as the balances which have been allocated to the

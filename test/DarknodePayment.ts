@@ -503,7 +503,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             const newBalances = (new BN(await dnp.darknodeBalances(darknode3, dai.address)));
             newBalances.should.bignumber.equal(previousBalances.add(rewards.div(rewardSplit)));
 
-            withdraw(darknode3);
+            await withdraw(darknode3);
         });
 
     });

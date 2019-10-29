@@ -13,6 +13,16 @@ contract ERC20Shifted is ERC20, ERC20Detailed, Claimable {
     /* solium-disable-next-line no-empty-blocks */
     constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {}
 
+    /// @notice Allow the owner of the contract to recover funds accidentally
+    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
+    function recoverTokens(address _token) external onlyOwner {
+        if (_token == address(0x0)) {
+            msg.sender.transfer(address(this).balance);
+        } else {
+            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
+        }
+    }
+
     function burn(address _from, uint256 _amount) public onlyOwner {
         _burn(_from, _amount);
     }

@@ -1,5 +1,5 @@
 {
-  "contractName": "BTCShifter",
+  "contractName": "BCHShifter",
   "abi": [
     {
       "constant": false,
@@ -461,7 +461,7 @@
     "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
-    "42": {
+    "1": {
       "events": {
         "0xd79c73d5d7701ff70ab30939dd980af7276ff21617d890ff2ce150f3b5ea3d94": {
           "anonymous": false,
@@ -534,8 +534,8 @@
         }
       },
       "links": {},
-      "address": "0xe5c5dAe20CdE920AEEcaE132fB37321523e2fbA5",
-      "transactionHash": "0x385b240390cc255edf51f42027c46c207b72571e9b30fa37affce34e9c720a8a"
+      "address": "0xE0926B2f1B37c2DAE0c5682F5Fd75ADf83CFe771",
+      "transactionHash": "0x2dfbf3eeb0217df8189cab34be8376532be8c1a4fb2627681432feddb6cd9a32"
     }
   },
   "schemaVersion": "3.0.11"

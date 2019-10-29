@@ -11,7 +11,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
     "deploy": "truffle migrate --skipDryRun --network $NETWORK",
-    "clean-build": "grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
+    "clean-build": "echo  \"Have all contracts been verified on Etherscan? Continuing in 10 seconds...\" && sleep 10 && grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
@@ -38,7 +38,7 @@
     "solidity-coverage": "^0.6.4",
     "truffle": "5.0.31",
     "truffle-hdwallet-provider": "^1.0.16",
-    "truffle-plugin-verify": "^0.3.2",
+    "truffle-plugin-verify": "0.3.0",
     "truffle-typings": "^1.0.8",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",

@@ -1,58 +1,6 @@
 {
-  "contractName": "DarknodePaymentStore",
+  "contractName": "DarknodeRegistryStore",
   "abi": [
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "lockedBalances",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "darknodeWhitelistLength",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeBlacklist",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
     {
       "constant": false,
       "inputs": [],
@@ -63,35 +11,26 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        },
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeBalances",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "ren",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -123,25 +62,6 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeWhitelist",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
@@ -153,20 +73,6 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "ETHEREUM",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -188,16 +94,15 @@
         {
           "name": "_VERSION",
           "type": "string"
+        },
+        {
+          "name": "_ren",
+          "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "constructor"
-    },
-    {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
     },
     {
       "anonymous": false,
@@ -217,18 +122,47 @@
       "type": "event"
     },
     {
-      "constant": true,
+      "constant": false,
       "inputs": [
         {
-          "name": "_darknode",
+          "name": "_darknodeID",
           "type": "address"
+        },
+        {
+          "name": "_darknodeOwner",
+          "type": "address"
+        },
+        {
+          "name": "_bond",
+          "type": "uint256"
+        },
+        {
+          "name": "_publicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "_registeredAt",
+          "type": "uint256"
+        },
+        {
+          "name": "_deregisteredAt",
+          "type": "uint256"
         }
       ],
-      "name": "isBlacklisted",
+      "name": "appendDarknode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "begin",
       "outputs": [
         {
           "name": "",
-          "type": "bool"
+          "type": "address"
         }
       ],
       "payable": false,
@@ -239,15 +173,84 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_darknode",
+          "name": "darknodeID",
           "type": "address"
         }
       ],
-      "name": "isWhitelisted",
+      "name": "next",
       "outputs": [
         {
           "name": "",
-          "type": "bool"
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "removeDarknode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "darknodeID",
+          "type": "address"
+        },
+        {
+          "name": "decreasedBond",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDarknodeBond",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "darknodeID",
+          "type": "address"
+        },
+        {
+          "name": "deregisteredAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDarknodeDeregisteredAt",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodeOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -258,11 +261,11 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_token",
+          "name": "darknodeID",
           "type": "address"
         }
       ],
-      "name": "totalBalance",
+      "name": "darknodeBond",
       "outputs": [
         {
           "name": "",
@@ -277,11 +280,11 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_token",
+          "name": "darknodeID",
           "type": "address"
         }
       ],
-      "name": "availableBalance",
+      "name": "darknodeRegisteredAt",
       "outputs": [
         {
           "name": "",
@@ -293,89 +296,51 @@
       "type": "function"
     },
     {
-      "constant": false,
+      "constant": true,
       "inputs": [
         {
-          "name": "_darknode",
+          "name": "darknodeID",
           "type": "address"
         }
       ],
-      "name": "blacklist",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
+      "name": "darknodeDeregisteredAt",
+      "outputs": [
         {
-          "name": "_darknode",
-          "type": "address"
-        }
-      ],
-      "name": "whitelist",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_darknode",
-          "type": "address"
-        },
-        {
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "name": "_amount",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "incrementDarknodeBalance",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": false,
+      "constant": true,
       "inputs": [
         {
-          "name": "_darknode",
-          "type": "address"
-        },
-        {
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "name": "_recipient",
+          "name": "darknodeID",
           "type": "address"
         }
       ],
-      "name": "transfer",
-      "outputs": [],
+      "name": "darknodePublicKey",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes"
+        }
+      ],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodePayment/DarknodePaymentStore.sol",
+  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
-    "42": {
+    "1": {
       "events": {
         "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
@@ -397,8 +362,8 @@
         }
       },
       "links": {},
-      "address": "0xF842CE0536B49898AC4f7D8aEb5c7764bd3DB443",
-      "transactionHash": "0x2e32b243f43e1c4fd66254330f892d4ec72f124181e56669c0146dbf9ccbc375"
+      "address": "0x14Add4Ca443E7445A3418bB572D6079bFC98897a",
+      "transactionHash": "0xe01fb109de8724dcc84e42ad8470dc40234dab708303fb64dce781e0becf824e"
     }
   },
   "schemaVersion": "3.0.11"

@@ -1,6 +1,5 @@
-import { ID, NULL } from "./helper/testUtils";
-
 import { LinkedListTestInstance } from "../types/truffle-contracts";
+import { ID, NULL } from "./helper/testUtils";
 
 const LinkedListTest = artifacts.require("LinkedListTest");
 
