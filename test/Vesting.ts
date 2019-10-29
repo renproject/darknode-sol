@@ -35,6 +35,7 @@ contract("Vesting", (accounts) => {
             feeRecipient,
             mintAuthority.address,
             feeInBips,
+            feeInBips,
             10000,
         );
 

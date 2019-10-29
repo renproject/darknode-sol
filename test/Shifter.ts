@@ -34,6 +34,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             feeRecipient,
             mintAuthority.address,
             feeInBips,
+            feeInBips,
             10000,
         );
 
@@ -198,12 +199,20 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await btcShifter.updateFeeRecipient(feeRecipient, { from: owner });
         });
 
-        it("can upgrade fee", async () => {
-            const currentFee = await btcShifter.fee();
-            await (btcShifter.updateFee(0, { from: malicious }))
+        it("can upgrade shiftIn fee", async () => {
+            const currentFee = await btcShifter.shiftInFee();
+            await (btcShifter.updateShiftInFee(0, { from: malicious }))
                 .should.be.rejectedWith(/caller is not the owner/);
-            await btcShifter.updateFee(0, { from: owner });
-            await btcShifter.updateFee(currentFee, { from: owner });
+            await btcShifter.updateShiftInFee(0, { from: owner });
+            await btcShifter.updateShiftInFee(currentFee, { from: owner });
+        });
+
+        it("can upgrade shiftOut fee", async () => {
+            const currentFee = await btcShifter.shiftOutFee();
+            await (btcShifter.updateShiftOutFee(0, { from: malicious }))
+                .should.be.rejectedWith(/caller is not the owner/);
+            await btcShifter.updateShiftOutFee(0, { from: owner });
+            await btcShifter.updateShiftOutFee(currentFee, { from: owner });
         });
 
         it("can upgrade mint authority", async () => {
