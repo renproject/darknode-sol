@@ -140,16 +140,6 @@ contract DarknodePayment is Ownable {
         currentCyclePayoutPercent = nextCyclePayoutPercent;
     }
 
-    /// @notice Allow the owner of the contract to recover funds accidentally
-    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
-    function recoverTokens(address _token) external onlyOwner {
-        if (_token == address(0x0)) {
-            msg.sender.transfer(address(this).balance);
-        } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
-        }
-    }
-
     /// @notice Transfers the funds allocated to the darknode to the darknode
     ///         owner.
     ///
@@ -232,10 +222,11 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The token address
     function forward(address _token) external {
-        require(_token != ETHEREUM, "not erc20");
-        uint256 balance = ERC20(_token).balanceOf(address(this));
-        require(balance != 0, "nothing to forward");
-        ERC20(_token).safeTransfer(address(store), balance);
+        if (_token == ETHEREUM) {
+            address(store).transfer(address(this).balance);
+        } else {
+            ERC20(_token).safeTransfer(address(store), ERC20(_token).balanceOf(address(this)));
+        }
     }
 
     /// @notice Claims the rewards allocated to the darknode last epoch.
