@@ -3,8 +3,9 @@ pragma solidity ^0.5.12;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
-import "../libraries/CompatibleERC20Functions.sol";
+import "../libraries/ERC20WithFees.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./DarknodePaymentStore.sol";
 
@@ -12,7 +13,8 @@ import "./DarknodePaymentStore.sol";
 ///         computation.
 contract DarknodePayment is Ownable {
     using SafeMath for uint256;
-    using CompatibleERC20Functions for ERC20;
+    using SafeERC20 for ERC20;
+    using ERC20WithFees for ERC20;
 
     string public VERSION; // Passed in as a constructor parameter.
 
@@ -223,6 +225,10 @@ contract DarknodePayment is Ownable {
     /// @param _token The token address
     function forward(address _token) external {
         if (_token == ETHEREUM) {
+            // Its unlikely that ETH will need to be forwarded, but it is
+            // possible. For example - if ETH had already been sent to the
+            // contract's address before it was deployed, or if funds are sent
+            // to it as part of a contract's self-destruct.
             address(store).transfer(address(this).balance);
         } else {
             ERC20(_token).safeTransfer(address(store), ERC20(_token).balanceOf(address(this)));

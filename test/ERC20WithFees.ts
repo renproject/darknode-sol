@@ -1,20 +1,20 @@
 import BN from "bn.js";
 
-import { CompatibleERC20TestInstance, ReturnsFalseTokenInstance } from "../types/truffle-contracts";
+import { ERC20WithFeesTestInstance, ReturnsFalseTokenInstance } from "../types/truffle-contracts";
 import "./helper/testUtils";
 
-const CompatibleERC20Test = artifacts.require("CompatibleERC20Test");
+const ERC20WithFeesTest = artifacts.require("ERC20WithFeesTest");
 const NormalToken = artifacts.require("NormalToken");
 const ReturnsFalseToken = artifacts.require("ReturnsFalseToken");
 const NonCompliantToken = artifacts.require("NonCompliantToken");
 const TokenWithFees = artifacts.require("TokenWithFees");
 
-contract("CompatibleERC20", (accounts) => {
+contract("ERC20WithFees", (accounts) => {
 
-    let mock: CompatibleERC20TestInstance;
+    let mock: ERC20WithFeesTestInstance;
 
     before(async () => {
-        mock = await CompatibleERC20Test.new();
+        mock = await ERC20WithFeesTest.new();
     });
 
     const testCases = [

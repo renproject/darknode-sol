@@ -2,12 +2,14 @@ pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
-import "../libraries/CompatibleERC20Functions.sol";
+import "../libraries/ERC20WithFees.sol";
 
-contract CompatibleERC20Test  {
+contract ERC20WithFeesTest  {
     using SafeMath for uint256;
-    using CompatibleERC20Functions for ERC20;
+    using SafeERC20 for ERC20;
+    using ERC20WithFees for ERC20;
 
     // Stores its own balance amount
     mapping(address => uint256) public balances;

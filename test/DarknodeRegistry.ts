@@ -1,6 +1,5 @@
 import BN from "bn.js";
 
-import { config } from "../migrations/networks";
 import {
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
     RenTokenInstance,
@@ -13,6 +12,8 @@ const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+
+const { config } = require("../migrations/networks");
 
 contract("DarknodeRegistry", (accounts: string[]) => {
 
@@ -631,8 +632,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     describe("when darknode payment is not set", async () => {
-        let newDNRstore;
-        let newDNR;
+        let newDNRstore: DarknodeRegistryStoreInstance;
+        let newDNR: DarknodeRegistryInstance;
 
         before(async () => {
             // Deploy a new DNR and DNR store
@@ -657,7 +658,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         it("cannot slash", async () => {
-            (await newDNR.owner()).should.equal(accounts[0]);
+            (await newDNR.owner.call()).should.equal(accounts[0]);
             const newSlasher = accounts[0];
             await newDNR.updateSlasher(newSlasher);
             await waitForEpoch(newDNR);

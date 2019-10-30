@@ -1,6 +1,5 @@
 import BN from "bn.js";
 
-import { config } from "../migrations/networks";
 import {
     CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
     DarknodeRegistryInstance, DarknodeSlasherInstance, ERC20Instance, RenTokenInstance,
@@ -15,6 +14,8 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+
+const { config } = require("../migrations/networks");
 
 contract("DarknodePayment", (accounts: string[]) => {
 
