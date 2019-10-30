@@ -52,12 +52,14 @@ export const randomAddress = (): string => {
 
 const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
+        // tslint:disable-next-line: no-floating-promises
         web3.currentProvider.send(
             { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 } as any,
             ((err: Error) => {
                 if (err) {
                     reject(err);
                 }
+                // tslint:disable-next-line: no-floating-promises
                 web3.currentProvider.send({
                     jsonrpc: "2.0",
                     method: "evm_mine",
@@ -68,9 +70,9 @@ const increaseTimeHelper = async (seconds: number) => {
                         reject();
                     }
                     resolve();
-                }) as any).catch(reject);
+                }) as any);
             }) as any,
-        ).catch(reject);
+        );
     });
 };
 
