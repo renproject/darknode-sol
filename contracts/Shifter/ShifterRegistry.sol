@@ -47,10 +47,10 @@ contract ShifterRegistry is Claimable {
     /// @param _shifterAddress The address of the Shifter contract.
     function setShifter(address _tokenAddress, address _shifterAddress) external onlyOwner {
         // Check that token, shifter and symbol haven't already been registered
-        require(!LinkedList.isInList(shifterList, _shifterAddress), "shifter already registered");
-        require(shifterByToken[_tokenAddress] == address(0x0), "token already registered");
+        require(!LinkedList.isInList(shifterList, _shifterAddress), "ShifterRegistry: shifter already registered");
+        require(shifterByToken[_tokenAddress] == address(0x0), "ShifterRegistry: token already registered");
         string memory symbol = ERC20Shifted(_tokenAddress).symbol();
-        require(tokenBySymbol[symbol] == address(0x0), "symbol already registered");
+        require(tokenBySymbol[symbol] == address(0x0), "ShifterRegistry: symbol already registered");
 
         // Add to list of shifters
         LinkedList.append(shifterList, _shifterAddress);
@@ -73,7 +73,7 @@ contract ShifterRegistry is Claimable {
     function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
         // Check that token, shifter are registered
         address currentShifter = shifterByToken[_tokenAddress];
-        require(shifterByToken[_tokenAddress] != address(0x0), "token not registered");
+        require(shifterByToken[_tokenAddress] != address(0x0), "ShifterRegistry: token not registered");
 
         // Remove to list of shifters
         LinkedList.remove(shifterList, currentShifter);
@@ -93,7 +93,7 @@ contract ShifterRegistry is Claimable {
     function removeShifter(string calldata _symbol) external onlyOwner {
         // Look up token address
         address tokenAddress = tokenBySymbol[_symbol];
-        require(tokenAddress != address(0x0), "symbol not registered");
+        require(tokenAddress != address(0x0), "ShifterRegistry: symbol not registered");
 
         // Look up shifter address
         address shifterAddress = shifterByToken[tokenAddress];

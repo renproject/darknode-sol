@@ -8,10 +8,12 @@ import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
+const Claimer = artifacts.require("Claimer");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+const NormalToken = artifacts.require("NormalToken");
 
 const { config } = require("../migrations/networks");
 
@@ -558,29 +560,23 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("transfer ownership of the dark node store", async () => {
-        // [ACTION] Initiate ownership transfer to wrong account
-        await dnr.transferStoreOwnership(accounts[1]);
+        const newDnr = await DarknodeRegistry.new(
+            "test",
+            RenToken.address,
+            dnrs.address,
+            config.MINIMUM_BOND,
+            config.MINIMUM_POD_SIZE,
+            config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+        );
 
-        // [ACTION] Can correct ownership transfer
-        await dnr.transferStoreOwnership(accounts[0]);
+        // [ACTION] Initiate ownership transfer to wrong account
+        await dnr.transferStoreOwnership(newDnr.address);
 
         // [CHECK] Owner should still be the DNR
-        (await dnrs.owner.call()).should.equal(dnr.address);
-
-        // [ACTION] Claim ownership
-        await dnrs.claimOwnership();
-
-        // [CHECK] Owner should now be main account
-        (await dnrs.owner.call()).should.equal(accounts[0]);
+        (await dnrs.owner.call()).should.equal(newDnr.address);
 
         // [RESET] Initiate ownership transfer back to DNR
-        await dnrs.transferOwnership(dnr.address);
-
-        // [CHECK] Owner should still be main account
-        (await dnrs.owner.call()).should.equal(accounts[0]);
-
-        // [RESET] Claim ownership
-        await dnr.claimStoreOwnership();
+        await newDnr.transferStoreOwnership(dnr.address);
 
         // [CHECK] Owner should now be the DNR
         (await dnrs.owner.call()).should.equal(dnr.address);
@@ -588,8 +584,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("can't arbitrarily increase bond", async () => {
         // [SETUP] Transfer store to main account
-        await dnr.transferStoreOwnership(accounts[0]);
-        await dnrs.claimOwnership();
+        const claimer = await Claimer.new(dnrs.address);
+        await dnr.transferStoreOwnership(claimer.address);
+        await claimer.transferStoreOwnership(accounts[0]);
+        await dnrs.claimOwnership({ from: accounts[0] });
 
         const previousRenBalance = new BN(await ren.balanceOf.call(accounts[0]));
 
@@ -613,8 +611,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("can't decrease bond without transferring REN", async () => {
         // [SETUP] Transfer store to main account
-        await dnr.transferStoreOwnership(accounts[0]);
-        await dnrs.claimOwnership();
+        const claimer = await Claimer.new(dnrs.address);
+        await dnr.transferStoreOwnership(claimer.address);
+        await claimer.transferStoreOwnership(accounts[0]);
+        await dnrs.claimOwnership({ from: accounts[0] });
 
         // [SETUP] Pause REN to make transfer fail
         await ren.pause();
@@ -629,6 +629,58 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [RESET] Transfer store back to DNR
         await dnrs.transferOwnership(dnr.address);
         await dnr.claimStoreOwnership();
+    });
+
+    describe("recovering funds", () => {
+        it("should be able to withdraw funds that are mistakenly sent to the Darknode Registry", async () => {
+            await ren.transfer(dnr.address, 1000);
+
+            // Only the owner can recover tokens
+            await dnr.recoverTokens(ren.address, { from: accounts[1] })
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            // Can recover unrelated token
+            const initialRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
+            await dnr.recoverTokens(ren.address, { from: accounts[0] });
+            const finalRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
+            finalRenBalance.sub(initialRenBalance).should.bignumber.equal(1000);
+        });
+
+        it("should be able to withdraw funds that are mistakenly sent to the Darknode Registry Store", async () => {
+            // [SETUP] Transfer store to main account
+            const claimer = await Claimer.new(dnrs.address);
+            await dnr.transferStoreOwnership(claimer.address);
+            await claimer.transferStoreOwnership(accounts[0]);
+            await dnrs.claimOwnership({ from: accounts[0] });
+
+            const token = await NormalToken.new();
+            await token.transfer(dnrs.address, 1000);
+            await ren.transfer(dnrs.address, 1000);
+
+            const initialRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
+
+            // Can't recover REN
+            await dnrs.recoverTokens(ren.address, { from: accounts[0] })
+                .should.be.rejectedWith(/not allowed to recover REN/);
+
+            // Only the owner can recover tokens
+            await dnrs.recoverTokens(token.address, { from: accounts[1] })
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            // Can recover unrelated token
+            const initialTokenBalance = new BN((await token.balanceOf.call(accounts[0])).toString());
+            await dnrs.recoverTokens(token.address, { from: accounts[0] });
+            const finalTokenBalance = new BN((await token.balanceOf.call(accounts[0])).toString());
+            finalTokenBalance.sub(initialTokenBalance).should.bignumber.equal(1000);
+
+            // Check that no REN was transferred
+            const finalRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
+            finalRenBalance.should.bignumber.equal(initialRenBalance);
+
+            // [RESET] Transfer store back to DNR
+            await dnrs.transferOwnership(dnr.address);
+            await dnr.claimStoreOwnership();
+        });
     });
 
     describe("when darknode payment is not set", async () => {
@@ -648,7 +700,6 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             );
             // Initiate ownership transfer of DNR store
             await newDNRstore.transferOwnership(newDNR.address);
-            // Claim ownership
             await newDNR.claimStoreOwnership();
         });
 
@@ -726,5 +777,4 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         console.debug("");
     });
-
 });

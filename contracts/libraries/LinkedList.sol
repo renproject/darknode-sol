@@ -38,8 +38,8 @@ library LinkedList {
     * @param newNode The next node to insert before the target.
     */
     function insertBefore(List storage self, address target, address newNode) internal {
-        require(!isInList(self, newNode), "already in list");
-        require(isInList(self, target) || target == NULL, "not in list");
+        require(!isInList(self, newNode), "LinkedList: already in list");
+        require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
         // It is expected that this value is sometimes NULL.
         address prev = self.list[target].previous;
@@ -60,8 +60,8 @@ library LinkedList {
     * @param newNode The next node to insert after the target.
     */
     function insertAfter(List storage self, address target, address newNode) internal {
-        require(!isInList(self, newNode), "already in list");
-        require(isInList(self, target) || target == NULL, "not in list");
+        require(!isInList(self, newNode), "LinkedList: already in list");
+        require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
         // It is expected that this value is sometimes NULL.
         address n = self.list[target].next;
@@ -83,7 +83,7 @@ library LinkedList {
     * @param node The node in the list to be removed.
     */
     function remove(List storage self, address node) internal {
-        require(isInList(self, node), "not in list");
+        require(isInList(self, node), "LinkedList: not in list");
         if (node == NULL) {
             return;
         }
@@ -162,12 +162,12 @@ library LinkedList {
     }
 
     function next(List storage self, address node) internal view returns (address) {
-        require(isInList(self, node), "not in list");
+        require(isInList(self, node), "LinkedList: not in list");
         return self.list[node].next;
     }
 
     function previous(List storage self, address node) internal view returns (address) {
-        require(isInList(self, node), "not in list");
+        require(isInList(self, node), "LinkedList: not in list");
         return self.list[node].previous;
     }
 

@@ -68,7 +68,7 @@ contract DarknodeRegistryStore is Claimable {
     /// @dev The owner is the Darknode Registry so it would need to be updated
     /// first before being able to recover funds.
     function recoverTokens(address _token) external onlyOwner {
-        require(_token != address(ren), "not allowed to withdraw REN");
+        require(_token != address(ren), "DarknodeRegistryStore: not allowed to recover REN");
 
         if (_token == address(0x0)) {
             msg.sender.transfer(address(this).balance);
@@ -122,16 +122,16 @@ contract DarknodeRegistryStore is Claimable {
         uint256 bond = darknodeRegistry[darknodeID].bond;
         delete darknodeRegistry[darknodeID];
         LinkedList.remove(darknodes, darknodeID);
-        require(ren.transfer(owner(), bond), "bond transfer failed");
+        require(ren.transfer(owner(), bond), "DarknodeRegistryStore: bond transfer failed");
     }
 
     /// @notice Updates the bond of a darknode. The new bond must be smaller
     /// than the previous bond of the darknode.
     function updateDarknodeBond(address darknodeID, uint256 decreasedBond) external onlyOwner {
         uint256 previousBond = darknodeRegistry[darknodeID].bond;
-        require(decreasedBond < previousBond, "bond not decreased");
+        require(decreasedBond < previousBond, "DarknodeRegistryStore: bond not decreased");
         darknodeRegistry[darknodeID].bond = decreasedBond;
-        require(ren.transfer(owner(), previousBond.sub(decreasedBond)), "bond transfer failed");
+        require(ren.transfer(owner(), previousBond.sub(decreasedBond)), "DarknodeRegistryStore: bond transfer failed");
     }
 
     /// @notice Updates the deregistration timestamp of a darknode.

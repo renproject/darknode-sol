@@ -68,8 +68,8 @@ contract DarknodePaymentStore is Claimable {
     /// @param _token The token which the balance should be incremented
     /// @param _amount The amount that the balance should be incremented by
     function incrementDarknodeBalance(address _darknode, address _token, uint256 _amount) external onlyOwner {
-        require(_amount > 0, "invalid amount");
-        require(availableBalance(_token) >= _amount, "insufficient contract balance");
+        require(_amount > 0, "DarknodePaymentStore: invalid amount");
+        require(availableBalance(_token) >= _amount, "DarknodePaymentStore: insufficient contract balance");
 
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].add(_amount);
         lockedBalances[_token] = lockedBalances[_token].add(_amount);
@@ -82,7 +82,7 @@ contract DarknodePaymentStore is Claimable {
     /// @param _amount The amount to transfer
     /// @param _recipient The address to withdraw it to
     function transfer(address _darknode, address _token, uint256 _amount, address payable _recipient) external onlyOwner {
-        require(darknodeBalances[_darknode][_token] >= _amount, "insufficient darknode balance");
+        require(darknodeBalances[_darknode][_token] >= _amount, "DarknodePaymentStore: insufficient darknode balance");
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token].sub(_amount);
         lockedBalances[_token] = lockedBalances[_token].sub(_amount);
 

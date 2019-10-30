@@ -9,6 +9,8 @@ import {
 import { log } from "./helper/logs";
 import { ETHEREUM_TOKEN_ADDRESS, NULL, Ox, randomAddress, randomBytes } from "./helper/testUtils";
 
+const RenToken = artifacts.require("RenToken");
+const Claimer = artifacts.require("Claimer");
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const BTCShifter = artifacts.require("BTCShifter");
 const zBTC = artifacts.require("zBTC");
@@ -288,6 +290,74 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         });
     });
 
+    describe("recovering funds", () => {
+        it("should be able to withdraw funds that are mistakenly sent to a Shifter", async () => {
+            let zbtcValue = new BN(200000);
+            await mintTest(btcShifter, zbtcValue);
+            zbtcValue = removeFee(zbtcValue, shiftInFees);
+            await zbtc.transfer(btcShifter.address, zbtcValue, { from: user });
+
+            const renAmount = 1000;
+            const ren = await RenToken.deployed();
+            await ren.transfer(btcShifter.address, renAmount);
+
+            // Only the owner can recover tokens
+            await btcShifter.recoverTokens(ren.address, { from: malicious })
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            // Can recover unrelated token
+            const balanceBefore = new BN(await zbtc.balanceOf.call(owner));
+            await btcShifter.recoverTokens(zbtc.address, { from: owner });
+            const balanceAfter = new BN(await zbtc.balanceOf.call(owner));
+            balanceAfter.sub(balanceBefore).should.bignumber.equal(zbtcValue);
+            await zbtc.transfer(user, zbtcValue);
+
+            const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            await btcShifter.recoverTokens(ren.address, { from: owner });
+            const finalRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            finalRenBalance.sub(initialRenBalance).should.bignumber.equal(renAmount);
+
+            await burnTest(btcShifter, zbtcValue);
+        });
+
+        it("should be able to withdraw funds that are mistakenly sent to a token", async () => {
+            let zbtcValue = new BN(200000);
+            await mintTest(btcShifter, zbtcValue);
+            zbtcValue = removeFee(zbtcValue, shiftInFees);
+            await zbtc.transfer(zbtc.address, zbtcValue, { from: user });
+
+            const renAmount = 1000;
+            const ren = await RenToken.deployed();
+            await ren.transfer(zbtc.address, renAmount);
+
+            // Only the owner can recover tokens
+            await zbtc.recoverTokens(ren.address, { from: malicious })
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            const claimer = await Claimer.new(zbtc.address);
+            await (btcShifter.transferTokenOwnership(claimer.address, { from: owner }));
+            await claimer.transferTokenOwnership(owner, { from: owner });
+            await zbtc.claimOwnership({ from: owner });
+
+            // Can recover unrelated token
+            const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            await zbtc.recoverTokens(ren.address, { from: owner });
+            const finalRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            finalRenBalance.sub(initialRenBalance).should.bignumber.equal(renAmount);
+
+            const balanceBefore = new BN(await zbtc.balanceOf.call(owner));
+            await zbtc.recoverTokens(zbtc.address, { from: owner });
+            const balanceAfter = new BN(await zbtc.balanceOf.call(owner));
+            balanceAfter.sub(balanceBefore).should.bignumber.equal(zbtcValue);
+            await zbtc.transfer(user, zbtcValue);
+
+            await zbtc.transferOwnership(btcShifter.address);
+            await btcShifter.claimTokenOwnership();
+
+            await burnTest(btcShifter, zbtcValue);
+        });
+    });
+
     describe("shifter registry", () => {
         let registry: ShifterRegistryInstance;
 
@@ -391,6 +461,21 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             await registry.removeShifter("zBTC")
                 .should.be.rejectedWith(/symbol not registered/);
+        });
+
+        it("should be able to withdraw funds that are mistakenly sent to the Shifter Registry", async () => {
+            const ren = await RenToken.deployed();
+            await ren.transfer(registry.address, 1000);
+
+            // Only the owner can recover tokens
+            await registry.recoverTokens(ren.address, { from: malicious })
+                .should.be.rejectedWith(/caller is not the owner/);
+
+            // Can recover unrelated token
+            const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            await registry.recoverTokens(ren.address, { from: owner });
+            const finalRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
+            finalRenBalance.sub(initialRenBalance).should.bignumber.equal(1000);
         });
 
         it("can renounce ownership of the registry", async () => {

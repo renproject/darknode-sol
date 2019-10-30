@@ -11,7 +11,7 @@ import "./DarknodePaymentStore.sol";
 
 /// @notice DarknodePayment is responsible for paying off darknodes for their
 ///         computation.
-contract DarknodePayment is Ownable {
+contract DarknodePayment is Claimable {
     using SafeMath for uint256;
     using SafeERC20 for ERC20;
     using ERC20WithFees for ERC20;
@@ -79,13 +79,13 @@ contract DarknodePayment is Ownable {
     /// @param _payer The darknode which claimed
     /// @param _amount The cycle that the darknode claimed for
     /// @param _token The address of the token that was transferred
-    event LogPaymentReceived(address indexed _payer, uint256 _amount, address _token);
+    event LogPaymentReceived(address indexed _payer, uint256 _amount, address indexed _token);
 
     /// @notice Emitted when a darknode calls withdraw
     /// @param _payee The address of the darknode which withdrew
     /// @param _value The amount of DAI withdrawn
     /// @param _token The address of the token that was withdrawn
-    event LogDarknodeWithdrew(address indexed _payee, uint256 _value, address _token);
+    event LogDarknodeWithdrew(address indexed _payee, uint256 _value, address indexed _token);
 
     /// @notice Emitted when the payout percent changes
     /// @param _newPercent The new percent
@@ -107,13 +107,13 @@ contract DarknodePayment is Ownable {
 
     /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
-        require(darknodeRegistry.isRegistered(_darknode), "darknode is not registered");
+        require(darknodeRegistry.isRegistered(_darknode), "DarknodePayment: darknode is not registered");
         _;
     }
 
     /// @notice Restrict a function to have a valid percentage
     modifier validPercent(uint256 _percent) {
-        require(_percent <= 100, "invalid percentage");
+        require(_percent <= 100, "DarknodePayment: invalid percentage");
         _;
     }
 
@@ -149,10 +149,10 @@ contract DarknodePayment is Ownable {
     /// @param _token Which token to transfer
     function withdraw(address _darknode, address _token) public {
         address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(_darknode);
-        require(darknodeOwner != address(0x0), "invalid darknode owner");
+        require(darknodeOwner != address(0x0), "DarknodePayment: invalid darknode owner");
 
         uint256 amount = store.darknodeBalances(_darknode, _token);
-        require(amount > 0, "nothing to withdraw");
+        require(amount > 0, "DarknodePayment: nothing to withdraw");
 
         store.transfer(_darknode, _token, amount, darknodeOwner);
         emit LogDarknodeWithdrew(_darknode, amount, _token);
@@ -183,7 +183,7 @@ contract DarknodePayment is Ownable {
 
     /// @notice Changes the current cycle.
     function changeCycle() external returns (uint256) {
-        require(msg.sender == cycleChanger, "not cycle changer");
+        require(msg.sender == cycleChanger, "DarknodePayment: not cycle changer");
 
         // Snapshot balances for the past cycle
         uint arrayLength = registeredTokens.length;
@@ -208,11 +208,11 @@ contract DarknodePayment is Ownable {
     function deposit(uint256 _value, address _token) external payable {
         uint256 receivedValue;
         if (_token == ETHEREUM) {
-            require(_value == msg.value, "mismatched deposit value");
+            require(_value == msg.value, "DarknodePayment: mismatched deposit value");
             receivedValue = msg.value;
             address(store).transfer(msg.value);
         } else {
-            require(msg.value == 0, "unexpected ether transfer");
+            require(msg.value == 0, "DarknodePayment: unexpected ether transfer");
             // Forward the funds to the store
             receivedValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
         }
@@ -238,7 +238,7 @@ contract DarknodePayment is Ownable {
     /// @notice Claims the rewards allocated to the darknode last epoch.
     /// @param _darknode The address of the darknode to claim
     function claim(address _darknode) external onlyDarknode(_darknode) {
-        require(darknodeRegistry.isRegisteredInPreviousEpoch(_darknode), "cannot claim for this epoch");
+        require(darknodeRegistry.isRegisteredInPreviousEpoch(_darknode), "DarknodePayment: cannot claim for this epoch");
         // Claim share of rewards allocated for last cycle
         _claimDarknodeReward(_darknode);
         emit LogDarknodeClaim(_darknode, previousCycle);
@@ -249,10 +249,10 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to be registered.
     function registerToken(address _token) external onlyOwner {
-        require(registeredTokenIndex[_token] == 0, "token already registered");
+        require(registeredTokenIndex[_token] == 0, "DarknodePayment: token already registered");
         uint arrayLength = pendingTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
-            require(pendingTokens[i] != _token, "token already pending registration");
+            require(pendingTokens[i] != _token, "DarknodePayment: token already pending registration");
         }
         pendingTokens.push(_token);
     }
@@ -262,7 +262,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The address of the token to be deregistered.
     function deregisterToken(address _token) external onlyOwner {
-        require(registeredTokenIndex[_token] > 0, "token not registered");
+        require(registeredTokenIndex[_token] > 0, "DarknodePayment: token not registered");
         _deregisterToken(_token);
     }
 
@@ -270,7 +270,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _addr The new CycleChanger contract address.
     function updateCycleChanger(address _addr) external onlyOwner {
-        require(_addr != address(0), "invalid contract address");
+        require(_addr != address(0), "DarknodePayment: invalid contract address");
         emit LogCycleChangerChanged(_addr, cycleChanger);
         cycleChanger = _addr;
     }
@@ -288,14 +288,15 @@ contract DarknodePayment is Ownable {
     ///         the DarknodePaymentStore.
     ///
     /// @param _newOwner The address to transfer the ownership to.
-    function transferStoreOwnership(address _newOwner) external onlyOwner {
-        store.transferOwnership(_newOwner);
+    function transferStoreOwnership(DarknodePayment _newOwner) external onlyOwner {
+        store.transferOwnership(address(_newOwner));
+        _newOwner.claimStoreOwnership();
     }
 
     /// @notice Claims ownership of the store passed in to the constructor.
     ///         `transferStoreOwnership` must have previously been called when
     ///         transferring from another DarknodePaymentStore.
-    function claimStoreOwnership() external onlyOwner {
+    function claimStoreOwnership() external {
         store.claimOwnership();
     }
 
@@ -305,7 +306,7 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _darknode The address to the darknode to claim rewards for
     function _claimDarknodeReward(address _darknode) private {
-        require(!rewardClaimed[_darknode][previousCycle], "reward already claimed");
+        require(!rewardClaimed[_darknode][previousCycle], "DarknodePayment: reward already claimed");
         rewardClaimed[_darknode][previousCycle] = true;
         uint arrayLength = registeredTokens.length;
         for (uint i = 0; i < arrayLength; i++) {

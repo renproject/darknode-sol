@@ -22,10 +22,10 @@ library Validate {
         uint256 _validRound2,
         bytes memory _signature2
     ) internal pure returns (address) {
-        require(!Compare.bytesEqual(_signature1, _signature2), "same signature");
+        require(!Compare.bytesEqual(_signature1, _signature2), "Validate: same signature");
         address signer1 = recoverPropose(_height, _round, _blockhash1, _validRound1, _signature1);
         address signer2 = recoverPropose(_height, _round, _blockhash2, _validRound2, _signature2);
-        require(signer1 == signer2, "different signer");
+        require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
 
@@ -66,10 +66,10 @@ library Validate {
         bytes memory _blockhash2,
         bytes memory _signature2
     ) internal pure returns (address) {
-        require(!Compare.bytesEqual(_signature1, _signature2), "same signature");
+        require(!Compare.bytesEqual(_signature1, _signature2), "Validate: same signature");
         address signer1 = recoverPrevote(_height, _round, _blockhash1, _signature1);
         address signer2 = recoverPrevote(_height, _round, _blockhash2, _signature2);
-        require(signer1 == signer2, "different signer");
+        require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
 
@@ -107,10 +107,10 @@ library Validate {
         bytes memory _blockhash2,
         bytes memory _signature2
     ) internal pure returns (address) {
-        require(!Compare.bytesEqual(_signature1, _signature2), "same signature");
+        require(!Compare.bytesEqual(_signature1, _signature2), "Validate: same signature");
         address signer1 = recoverPrecommit(_height, _round, _blockhash1, _signature1);
         address signer2 = recoverPrecommit(_height, _round, _blockhash2, _signature2);
-        require(signer1 == signer2, "different signer");
+        require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
 

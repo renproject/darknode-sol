@@ -1,14 +1,14 @@
 pragma solidity ^0.5.12;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
+import "../libraries/Claimable.sol";
 import "../libraries/Validate.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
 /// @notice DarknodeSlasher will become a voting system for darknodes to
 /// deregister other misbehaving darknodes.
 /// Right now, it is a placeholder.
-contract DarknodeSlasher is Ownable {
+contract DarknodeSlasher is Claimable {
 
     DarknodeRegistry public darknodeRegistry;
 
@@ -28,7 +28,7 @@ contract DarknodeSlasher is Ownable {
 
     /// @notice Restrict a function to have a valid percentage
     modifier validPercent(uint256 _percent) {
-        require(_percent <= 100, "invalid percentage");
+        require(_percent <= 100, "DarknodeSlasher: invalid percentage");
         _;
     }
 
@@ -58,7 +58,7 @@ contract DarknodeSlasher is Ownable {
     }
 
     function blacklist(address _guilty) external onlyOwner {
-        require(!blacklisted[_guilty], "already blacklisted");
+        require(!blacklisted[_guilty], "DarknodeSlasher: already blacklisted");
         blacklisted[_guilty] = true;
         darknodeRegistry.slash(_guilty, owner(), blacklistSlashPercent);
     }
@@ -83,7 +83,7 @@ contract DarknodeSlasher is Ownable {
             _validRound2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "already slashed");
+        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
@@ -104,7 +104,7 @@ contract DarknodeSlasher is Ownable {
             _blockhash2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "already slashed");
+        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
@@ -125,7 +125,7 @@ contract DarknodeSlasher is Ownable {
             _blockhash2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "already slashed");
+        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
@@ -148,7 +148,7 @@ contract DarknodeSlasher is Ownable {
             _f,
             _signature
         );
-        require(!secretRevealed[signer], "already slashed");
+        require(!secretRevealed[signer], "DarknodeSlasher: already slashed");
         secretRevealed[signer] = true;
         darknodeRegistry.slash(signer, msg.sender, secretRevealSlashPercent);
     }

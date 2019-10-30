@@ -4,13 +4,14 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
+import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
 import "./ERC20Shifted.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract Shifter is Ownable {
+contract Shifter is Claimable {
     using SafeMath for uint256;
 
     uint8 public version = 2;
@@ -117,7 +118,7 @@ contract Shifter is Ownable {
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
         // ShiftIn and ShiftOut will fail if the feeRecipient is 0x0
-        require(_nextFeeRecipient != address(0x0), "fee recipient cannot be 0x0");
+        require(_nextFeeRecipient != address(0x0), "Shifter: fee recipient cannot be 0x0");
 
         feeRecipient = _nextFeeRecipient;
     }
@@ -148,14 +149,14 @@ contract Shifter is Ownable {
     function shiftIn(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes memory _sig) public returns (uint256) {
         // Verify signature
         bytes32 signedMessageHash = hashForSignature(_pHash, _amount, msg.sender, _nHash);
-        require(status[signedMessageHash] == false, "nonce hash already spent");
+        require(status[signedMessageHash] == false, "Shifter: nonce hash already spent");
         if (!verifySignature(signedMessageHash, _sig)) {
             // Return a detailed string containing the hash and recovered
             // signer. This is a costly operation but is only run in the revert
             // branch.
             revert(
                 String.add4(
-                    "invalid signature - hash: ",
+                    "Shifter: invalid signature - hash: ",
                     String.fromBytes32(signedMessageHash),
                     ", signer: ",
                     String.fromAddress(ECDSA.recover(signedMessageHash, _sig))
@@ -188,8 +189,8 @@ contract Shifter is Ownable {
     function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
-        require(_to.length != 0, "to address is empty");
-        require(_amount >= minShiftAmount, "amount is less than the minimum shiftOut amount");
+        require(_to.length != 0, "Shifter: to address is empty");
+        require(_amount >= minShiftAmount, "Shifter: amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
         uint256 absoluteFee = (_amount.mul(shiftOutFee)).div(BIPS_DENOMINATOR);

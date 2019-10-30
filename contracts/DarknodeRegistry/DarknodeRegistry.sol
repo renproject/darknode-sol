@@ -7,10 +7,11 @@ import "../RenToken/RenToken.sol";
 import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
 import "../DarknodePayment/DarknodePayment.sol";
+import "../libraries/Claimable.sol";
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistry is Ownable {
+contract DarknodeRegistry is Claimable {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -57,19 +58,26 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Emitted when a darknode is registered.
     /// @param _operator The owner of the darknode.
-    /// @param _darknodeID The darknode ID that was registered.
+    /// @param _darknodeID The ID of the darknode that was registered.
     /// @param _bond The amount of REN that was transferred as bond.
     event LogDarknodeRegistered(address indexed _operator, address indexed _darknodeID, uint256 _bond);
 
     /// @notice Emitted when a darknode is deregistered.
     /// @param _operator The owner of the darknode.
-    /// @param _darknodeID The darknode ID that was deregistered.
+    /// @param _darknodeID The ID of the darknode that was deregistered.
     event LogDarknodeDeregistered(address indexed _operator, address indexed _darknodeID);
 
     /// @notice Emitted when a refund has been made.
     /// @param _operator The owner of the darknode.
     /// @param _amount The amount of REN that was refunded.
     event LogDarknodeOwnerRefunded(address indexed _operator, uint256 _amount);
+
+    /// @notice Emitted when a darknode's bond is slashed.
+    /// @param _operator The owner of the darknode.
+    /// @param _darknodeID The ID of the darknode that was slashed.
+    /// @param _challenger The address of the account that submitted the challenge.
+    /// @param _percentage The total percentage  of bond slashed.
+    event LogDarknodeSlashed(address indexed _operator, address indexed _darknodeID, address indexed _challenger, uint256 _percentage);
 
     /// @notice Emitted when a new epoch has begun.
     event LogNewEpoch(uint256 indexed epochhash);
@@ -82,32 +90,32 @@ contract DarknodeRegistry is Ownable {
 
     /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
-        require(store.darknodeOwner(_darknodeID) == msg.sender, "must be darknode owner");
+        require(store.darknodeOwner(_darknodeID) == msg.sender, "DarknodeRegistry: must be darknode owner");
         _;
     }
 
     /// @notice Restrict a function to unregistered darknodes.
     modifier onlyRefunded(address _darknodeID) {
-        require(isRefunded(_darknodeID), "must be refunded or never registered");
+        require(isRefunded(_darknodeID), "DarknodeRegistry: must be refunded or never registered");
         _;
     }
 
     /// @notice Restrict a function to refundable darknodes.
     modifier onlyRefundable(address _darknodeID) {
-        require(isRefundable(_darknodeID), "must be deregistered for at least one epoch");
+        require(isRefundable(_darknodeID), "DarknodeRegistry: must be deregistered for at least one epoch");
         _;
     }
 
     /// @notice Restrict a function to registered nodes without a pending
     /// deregistration.
     modifier onlyDeregisterable(address _darknodeID) {
-        require(isDeregisterable(_darknodeID), "must be deregisterable");
+        require(isDeregisterable(_darknodeID), "DarknodeRegistry: must be deregisterable");
         _;
     }
 
     /// @notice Restrict a function to the Slasher contract.
     modifier onlySlasher() {
-        require(address(slasher) == msg.sender, "must be slasher");
+        require(address(slasher) == msg.sender, "DarknodeRegistry: must be slasher");
         _;
     }
 
@@ -176,7 +184,7 @@ contract DarknodeRegistry is Ownable {
         uint256 bond = minimumBond;
 
         // Transfer bond to store
-        require(ren.transferFrom(msg.sender, address(store), bond), "bond transfer failed");
+        require(ren.transferFrom(msg.sender, address(store), bond), "DarknodeRegistry: bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
@@ -210,11 +218,11 @@ contract DarknodeRegistry is Ownable {
     function epoch() external {
         if (previousEpoch.blocktime == 0) {
             // The first epoch must be called by the owner of the contract
-            require(msg.sender == owner(), "not authorized (first epochs)");
+            require(msg.sender == owner(), "DarknodeRegistry: not authorized (first epochs)");
         }
 
         // Require that the epoch interval has passed
-        require(block.timestamp >= currentEpoch.blocktime.add(minimumEpochInterval), "epoch interval has not passed");
+        require(block.timestamp >= currentEpoch.blocktime.add(minimumEpochInterval), "DarknodeRegistry: epoch interval has not passed");
         uint256 epochhash = uint256(blockhash(block.number - 1));
 
         // Update the epoch hash and timestamp
@@ -256,14 +264,15 @@ contract DarknodeRegistry is Ownable {
     /// @notice Allows the contract owner to initiate an ownership transfer of
     /// the DarknodeRegistryStore.
     /// @param _newOwner The address to transfer the ownership to.
-    function transferStoreOwnership(address _newOwner) external onlyOwner {
-        store.transferOwnership(_newOwner);
+    function transferStoreOwnership(DarknodeRegistry _newOwner) external onlyOwner {
+        store.transferOwnership(address(_newOwner));
+        _newOwner.claimStoreOwnership();
     }
 
     /// @notice Claims ownership of the store passed in to the constructor.
     /// `transferStoreOwnership` must have previously been called when
     /// transferring from another Darknode Registry.
-    function claimStoreOwnership() external onlyOwner {
+    function claimStoreOwnership() external {
         store.claimOwnership();
     }
 
@@ -271,7 +280,7 @@ contract DarknodeRegistry is Ownable {
     /// darknode payment contract.
     /// @param _dnpAddress The address of the DNP contract.
     function updateDarknodePayment(DarknodePayment _dnpAddress) external onlyOwner {
-        require(address(_dnpAddress) != address(0x0), "invalid dnp address");
+        require(address(_dnpAddress) != address(0x0), "DarknodeRegistry: invalid dnp address");
         darknodePayment = _dnpAddress;
     }
 
@@ -301,20 +310,20 @@ contract DarknodeRegistry is Ownable {
     /// address.
     /// @param _slasher The new slasher address.
     function updateSlasher(DarknodeSlasher _slasher) external onlyOwner {
-        require(address(_slasher) != address(0), "invalid slasher address");
+        require(address(_slasher) != address(0), "DarknodeRegistry: invalid slasher address");
         nextSlasher = _slasher;
     }
 
     /// @notice Allow the DarknodeSlasher contract to slash a portion of darknode's
     ///         bond and deregister it.
-    /// @param _guilty The guilty prover whose bond is being slashed
-    /// @param _challenger The challenger who should a portion of the bond as reward
-    /// @param _percentage The total percentage  of bond to be slashed
+    /// @param _guilty The guilty prover whose bond is being slashed.
+    /// @param _challenger The challenger who should receive a portion of the bond as reward.
+    /// @param _percentage The total percentage  of bond to be slashed.
     function slash(address _guilty, address _challenger, uint256 _percentage)
         external
         onlySlasher
     {
-        require(_percentage <= 100, "invalid percent");
+        require(_percentage <= 100, "DarknodeRegistry: invalid percent");
 
         // If the darknode has not been deregistered then deregister it
         if (isDeregisterable(_guilty)) {
@@ -329,10 +338,12 @@ contract DarknodeRegistry is Ownable {
             store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
 
             // Distribute the remaining bond into the darknode payment reward pool
-            require(address(darknodePayment) != address(0x0), "invalid payment address");
-            require(ren.transfer(address(darknodePayment.store()), reward), "reward transfer failed");
-            require(ren.transfer(_challenger, reward), "reward transfer failed");
+            require(address(darknodePayment) != address(0x0), "DarknodeRegistry: invalid payment address");
+            require(ren.transfer(address(darknodePayment.store()), reward), "DarknodeRegistry: reward transfer failed");
+            require(ren.transfer(_challenger, reward), "DarknodeRegistry: reward transfer failed");
         }
+
+        emit LogDarknodeSlashed(store.darknodeOwner(_guilty), _guilty, _challenger, _percentage);
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
@@ -351,7 +362,7 @@ contract DarknodeRegistry is Ownable {
         store.removeDarknode(_darknodeID);
 
         // Refund the owner by transferring REN
-        require(ren.transfer(darknodeOwner, amount), "bond transfer failed");
+        require(ren.transfer(darknodeOwner, amount), "DarknodeRegistry: bond transfer failed");
 
         // Emit an event.
         emit LogDarknodeOwnerRefunded(darknodeOwner, amount);

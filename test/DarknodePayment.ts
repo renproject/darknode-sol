@@ -6,7 +6,7 @@ import {
 } from "../types/truffle-contracts";
 import { ETHEREUM_TOKEN_ADDRESS, MINIMUM_BOND, NULL, PUBK, waitForEpoch } from "./helper/testUtils";
 
-const CycleChanger = artifacts.require("CycleChanger");
+const Claimer = artifacts.require("Claimer");
 const RenToken = artifacts.require("RenToken");
 const ERC20 = artifacts.require("PaymentToken");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
@@ -102,7 +102,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         };
 
         it("cannot register token if not owner", async () => {
-            await dnp.registerToken(dai.address, { from: accounts[1] }).should.be.rejected;
+            await dnp.registerToken(dai.address, { from: accounts[1] }).should.be.rejectedWith(/caller is not the owner/);
         });
 
         it("can register tokens", async () => {
@@ -143,7 +143,7 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("cannot deregister token if not owner", async () => {
-            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS, { from: accounts[1] }).should.be.rejected;
+            await dnp.deregisterToken(ETHEREUM_TOKEN_ADDRESS, { from: accounts[1] }).should.be.rejectedWith(/caller is not the owner/)
         });
 
         it("can deregister tokens", async () => {
@@ -482,7 +482,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForEpoch(dnr);
 
             // Tick should fail
-            await tick(darknode2).should.be.rejected;
+            await tick(darknode2).should.be.rejectedWith(/DarknodePayment: darknode is not registered/);
         });
 
         it("can still withdraw allocated rewards when blacklisted", async () => {
@@ -520,34 +520,26 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     describe("Transferring ownership", async () => {
         it("should disallow unauthorized transferring of ownership", async () => {
-            await dnp.transferStoreOwnership(accounts[1], { from: accounts[1] }).should.eventually.be.rejected;
-            await dnp.claimStoreOwnership({ from: accounts[1] }).should.eventually.be.rejected;
+            await dnp.transferStoreOwnership(accounts[1], { from: accounts[1] }).should.eventually.be.rejectedWith(/Claimable: caller is not the owner/); // TODO!
+            await dnp.claimStoreOwnership({ from: accounts[1] }).should.eventually.be.rejectedWith(/Claimable: caller is not the pending owner/);
         });
 
         it("can transfer ownership of the darknode payment store", async () => {
-            // [ACTION] Initiate ownership transfer to wrong account
-            await dnp.transferStoreOwnership(accounts[1]);
+            const newDarknodePayment = await DarknodePayment.new(
+                "",
+                dnr.address,
+                store.address,
+                0,
+            );
 
-            // [ACTION] Can correct ownership transfer
-            await dnp.transferStoreOwnership(owner);
+            // [ACTION] Initiate ownership transfer to wrong account
+            await dnp.transferStoreOwnership(newDarknodePayment.address, { from: accounts[0] });
 
             // [CHECK] Owner should still be dnp
-            (await store.owner.call()).should.equal(dnp.address);
-
-            // [ACTION] Claim ownership
-            await store.claimOwnership();
-
-            // [CHECK] Owner should now be main account
-            (await store.owner.call()).should.equal(owner);
+            (await store.owner.call()).should.equal(newDarknodePayment.address);
 
             // [RESET] Initiate ownership transfer back to dnp
-            await store.transferOwnership(dnp.address);
-
-            // [CHECK] Owner should still be main account
-            (await store.owner.call()).should.equal(owner);
-
-            // [RESET] Claim ownership
-            await dnp.claimStoreOwnership();
+            await newDarknodePayment.transferStoreOwnership(dnp.address);
 
             // [CHECK] Owner should now be the dnp
             (await store.owner.call()).should.equal(dnp.address);
@@ -557,10 +549,12 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("DarknodePaymentStore negative tests", async () => {
         // Transfer the ownership to owner
         before(async () => {
+            const claimer = await Claimer.new(store.address);
             // [ACTION] Can correct ownership transfer
-            await dnp.transferStoreOwnership(owner);
+            await dnp.transferStoreOwnership(claimer.address);
             // [ACTION] Claim ownership
-            await store.claimOwnership();
+            await claimer.transferStoreOwnership(owner);
+            await store.claimOwnership({ from: owner });
             // [CHECK] Owner should now be main account
             (await store.owner.call()).should.equal(owner);
         });
@@ -581,10 +575,10 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot call functions from non-owner", async () => {
             await store.incrementDarknodeBalance(darknode1, dai.address, new BN(0), { from: accounts[2] })
-                .should.eventually.be.rejected;
+                .should.eventually.be.rejectedWith(/caller is not the owner/);
             await store.transfer(darknode1, dai.address, new BN(0), darknode1, { from: accounts[2] })
-                .should.eventually.be.rejected;
-            await store.transferOwnership(dnp.address, { from: accounts[2] }).should.eventually.be.rejected;
+                .should.eventually.be.rejectedWith(/caller is not the owner/);
+            await store.transferOwnership(dnp.address, { from: accounts[2] }).should.eventually.be.rejectedWith(/caller is not the owner/);
         });
 
         // Transfer the ownership back to DNP
@@ -601,9 +595,9 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("when updating cycle changer", async () => {
         it("cannot update cycleChanger if unauthorized", async () => {
             await dnp.updateCycleChanger(accounts[2], { from: accounts[2] })
-                .should.be.rejectedWith(/Ownable: caller is not the owner./);
+                .should.be.rejectedWith(/Claimable: caller is not the owner./);
             await dnp.updateCycleChanger(accounts[3], { from: accounts[3] })
-                .should.be.rejectedWith(/Ownable: caller is not the owner./);
+                .should.be.rejectedWith(/Claimable: caller is not the owner./);
         });
 
         it("cannot update cycleChanger to an invalid address", async () => {
@@ -611,11 +605,11 @@ contract("DarknodePayment", (accounts: string[]) => {
         });
 
         it("can update cycleChanger to different address", async () => {
-            await dnp.updateCycleChanger(accounts[2]).should.not.eventually.be.rejected;
-            await dnp.changeCycle({ from: accounts[2] }).should.not.eventually.be.rejected;
+            await dnp.updateCycleChanger(accounts[2]).should.not.eventually.be.rejectedWith(/caller is not the owner/);
+            await dnp.changeCycle({ from: accounts[2] }).should.not.eventually.be.rejectedWith(/caller is not the owner/);
             await dnp.changeCycle().should.eventually.be.rejectedWith(/not cycle changer/);
             // Restore the cycle changer to the dnr address
-            await dnp.updateCycleChanger(dnr.address).should.not.eventually.be.rejected;
+            await dnp.updateCycleChanger(dnr.address).should.not.eventually.be.rejectedWith(/caller is not the owner/);
         });
     });
 
@@ -647,7 +641,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     describe("when changing payout percent", async () => {
         it("cannot change payout percent unless authorized", async () => {
             await dnp.updatePayoutPercentage(new BN(10), { from: accounts[2] })
-                .should.be.rejectedWith(/Ownable: caller is not the owner./);
+                .should.be.rejectedWith(/Claimable: caller is not the owner./);
         });
 
         it("cannot change payout percent to an invalid percent", async () => {
@@ -763,7 +757,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
     const updatePayoutPercent = async (percent: number | string | BN) => {
         const p = new BN(percent);
-        await dnp.updatePayoutPercentage(p).should.eventually.not.be.rejected;
+        await dnp.updatePayoutPercentage(p).should.eventually.not.be.rejectedWith(/caller is not the owner/);
         new BN(await dnp.nextCyclePayoutPercent.call()).should.bignumber.equal(p);
         await waitForEpoch(dnr);
         new BN(await dnp.currentCyclePayoutPercent.call()).should.bignumber.equal(p);
