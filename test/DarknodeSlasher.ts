@@ -504,4 +504,12 @@ contract("DarknodeSlasher", (accounts: string[]) => {
 
     });
 
+    it("can update DarknodeRegistry", async () => {
+        const darknodeRegistry = await slasher.darknodeRegistry.call();
+        await slasher.updateDarknodeRegistry(NULL)
+            .should.be.rejectedWith("invalid Darknode Registry address");
+
+        await slasher.updateDarknodeRegistry(accounts[0]);
+        await slasher.updateDarknodeRegistry(darknodeRegistry);
+    });
 });

@@ -10,7 +10,8 @@
     "bindings:go": "solc --allow-paths . --combined-json bin,abi,userdoc,devdoc,metadata contracts/**/*.sol | abigen -pkg bindings --out bindings.go --abi -",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
-    "deploy": "truffle migrate --skipDryRun --network $NETWORK",
+    "deploy": "truffle migrate --network $NETWORK",
+    "deploy-no-dry": "truffle migrate --skipDryRun --network $NETWORK",
     "clean-build": "echo  \"Have all contracts been verified on Etherscan? Continuing in 10 seconds...\" && sleep 10 && grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
     "verify": "truffle run verify --network $NETWORK"
   },
@@ -39,7 +40,7 @@
     "solidity-coverage": "^0.6.7",
     "truffle": "5.0.42",
     "truffle-hdwallet-provider": "^1.0.17",
-    "truffle-plugin-verify": "0.3.4",
+    "truffle-plugin-verify": "0.3.0",
     "truffle-typings": "^1.0.8",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
@@ -51,6 +52,7 @@
     "web3-utils": "^2.0.0-alpha"
   },
   "resolutions": {
-    "solc": "0.5.12"
+    "solc": "0.5.12",
+    "sol-merger": "1.1.1"
   }
 }

@@ -105,6 +105,11 @@ contract DarknodePayment is Claimable {
     /// @param _token The token that was deregistered
     event LogTokenDeregistered(address _token);
 
+    /// @notice Emitted when the DarknodeRegistry is updated.
+    /// @param _previousDarknodeRegistry The address of the old registry.
+    /// @param _nextDarknodeRegistry The address of the new registry.
+    event LogDarknodeRegistryUpdated(DarknodeRegistry _previousDarknodeRegistry, DarknodeRegistry _nextDarknodeRegistry);
+
     /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
         require(darknodeRegistry.isRegistered(_darknode), "DarknodePayment: darknode is not registered");
@@ -140,6 +145,17 @@ contract DarknodePayment is Claimable {
         // Start the current cycle
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
         currentCyclePayoutPercent = nextCyclePayoutPercent;
+    }
+
+    /// @notice Allows the contract owner to update the address of the
+    /// darknode registry contract.
+    /// @param _darknodeRegistry The address of the Darknode Registry
+    /// contract.
+    function updateDarknodeRegistry(DarknodeRegistry _darknodeRegistry) external onlyOwner {
+        require(address(_darknodeRegistry) != address(0x0), "DarknodePayment: invalid Darknode Registry address");
+        DarknodeRegistry previousDarknodeRegistry = darknodeRegistry;
+        darknodeRegistry = _darknodeRegistry;
+        emit LogDarknodeRegistryUpdated(previousDarknodeRegistry, darknodeRegistry);
     }
 
     /// @notice Transfers the funds allocated to the darknode to the darknode
@@ -250,11 +266,18 @@ contract DarknodePayment is Claimable {
     /// @param _token The address of the token to be registered.
     function registerToken(address _token) external onlyOwner {
         require(registeredTokenIndex[_token] == 0, "DarknodePayment: token already registered");
+        require(!tokenPendingRegistration(_token), "DarknodePayment: token already pending registration");
+        pendingTokens.push(_token);
+    }
+
+    function tokenPendingRegistration(address _token) public view returns (bool) {
         uint arrayLength = pendingTokens.length;
         for (uint i = 0; i < arrayLength; i++) {
-            require(pendingTokens[i] != _token, "DarknodePayment: token already pending registration");
+            if (pendingTokens[i] == _token) {
+                return true;
+            }
         }
-        pendingTokens.push(_token);
+        return false;
     }
 
     /// @notice Removes a token from the list of supported tokens.

@@ -480,9 +480,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.refund(ID("-1")).should.be.rejectedWith(/must be deregistered for at least one epoch/);
     });
 
-    it("cannot update DarknodePayment to an invalid address", async () => {
+    it("can update DarknodePayment", async () => {
+        const darknodePayment = await dnr.darknodePayment.call();
         await dnr.updateDarknodePayment(NULL)
-            .should.be.rejectedWith("invalid dnp address");
+            .should.be.rejectedWith("invalid Darknode Payment address");
+
+        await dnr.updateDarknodePayment(accounts[0]);
+        await dnr.updateDarknodePayment(darknodePayment);
     });
 
     it("cannot slash with an invalid percent", async () => {

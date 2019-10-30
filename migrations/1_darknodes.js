@@ -27,7 +27,7 @@ const gitCommit = () => execSync("git describe --always --long").toString().trim
  * @param {any} deployer
  * @param {string} network
  */
-module.exports = async function (deployer, network) {
+module.exports = async function (deployer, network, accounts) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
@@ -59,6 +59,7 @@ module.exports = async function (deployer, network) {
             RenToken.address,
         );
     }
+    const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
 
     if (!DarknodeRegistry.address) {
         deployer.logger.log("Deploying DarknodeRegistry");
@@ -72,19 +73,27 @@ module.exports = async function (deployer, network) {
             config.MINIMUM_EPOCH_INTERVAL_SECONDS
         );
     }
+    const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
 
-    const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
-    if ((await darknodeRegistryStore.owner()) !== DarknodeRegistry.address) {
+    const storeOwner = await darknodeRegistryStore.owner();
+    if (storeOwner !== DarknodeRegistry.address) {
         deployer.logger.log("Linking DarknodeRegistryStore and DarknodeRegistry")
-        // Initiate ownership transfer of DNR store 
-        await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
+        if (storeOwner === accounts[0]) {
+            // Initiate ownership transfer of DNR store 
+            await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
 
-        // Claim ownership
-        const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-        await darknodeRegistry.claimStoreOwnership();
+            // Claim ownership
+            await darknodeRegistry.claimStoreOwnership();
+        } else {
+            const oldDNR = await DarknodeRegistry.at(storeOwner);
+            oldDNR.transferStoreOwnership(DarknodeRegistry.address);
+            // This will also call claim.
+        }
     }
 
-    /** SLASHER **************************************************************/
+    /***************************************************************************
+     ** SLASHER ****************************************************************
+     **************************************************************************/
     if (!DarknodeSlasher.address) {
         deployer.logger.log("Deploying DarknodeSlasher");
         await deployer.deploy(
@@ -92,20 +101,31 @@ module.exports = async function (deployer, network) {
             DarknodeRegistry.address,
         );
     }
+    const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
+
+    const dnrInSlasher = await slasher.darknodeRegistry();
+    if (dnrInSlasher.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+        deployer.logger.log("Updating DNR in Slasher");
+        await slasher.updateDarknodeRegistry(DarknodeRegistry.address);
+    }
 
     // Set the slash percentages
-    const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
-    if (config.BLACKLIST_SLASH_PERCENT > 0) {
+    const blacklistSlashPercent = new BN(await slasher.blacklistSlashPercent.call()).toNumber();
+    if (blacklistSlashPercent !== config.BLACKLIST_SLASH_PERCENT) {
+        deployer.logger.log("Setting blacklist slash percent");
         await slasher.setBlacklistSlashPercent(new BN(config.BLACKLIST_SLASH_PERCENT));
     }
-    if (config.MALICIOUS_SLASH_PERCENT > 0) {
+    const maliciousSlashPercent = new BN(await slasher.maliciousSlashPercent.call()).toNumber();
+    if (maliciousSlashPercent !== config.MALICIOUS_SLASH_PERCENT) {
+        deployer.logger.log("Setting malicious slash percent");
         await slasher.setMaliciousSlashPercent(new BN(config.MALICIOUS_SLASH_PERCENT));
     }
-    if (config.SECRET_REVEAL_SLASH_PERCENT > 0) {
+    const secretRevealSlashPercent = new BN(await slasher.secretRevealSlashPercent.call()).toNumber();
+    if (secretRevealSlashPercent !== config.SECRET_REVEAL_SLASH_PERCENT) {
+        deployer.logger.log("Setting secret reveal slash percent");
         await slasher.setSecretRevealSlashPercent(new BN(config.SECRET_REVEAL_SLASH_PERCENT));
     }
 
-    const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
     const currentSlasher = await darknodeRegistry.slasher.call();
     const nextSlasher = await darknodeRegistry.nextSlasher.call();
     if (currentSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase() && nextSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase()) {
@@ -114,7 +134,9 @@ module.exports = async function (deployer, network) {
         await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
     }
 
-    /** DARKNODE PAYMENT ******************************************************/
+    /***************************************************************************
+     ** DARKNODE PAYMENT *******************************************************
+     **************************************************************************/
     if (!DarknodePaymentStore.address) {
         deployer.logger.log("Deploying DarknodePaymentStore");
         await deployer.deploy(
@@ -137,41 +159,44 @@ module.exports = async function (deployer, network) {
         changeCycle = true;
     }
     // Update darknode payment address
-    await darknodeRegistry.updateDarknodePayment(DarknodePayment.address);
+    if ((await darknodeRegistry.darknodePayment()).toLowerCase() !== DarknodePayment.address.toLowerCase()) {
+        deployer.logger.log("Updating DarknodeRegistry's darknode payment");
+        await darknodeRegistry.updateDarknodePayment(DarknodePayment.address);
+    }
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     for (const tokenName of Object.keys(tokens)) {
         const tokenAddress = tokens[tokenName];
-        const registered = await darknodePayment.registeredTokenIndex.call(tokenAddress);
-        if (registered.toString() === "0") {
+        const registered = (await darknodePayment.registeredTokenIndex.call(tokenAddress)).toString() !== "0";
+        const pendingRegistration = await darknodePayment.tokenPendingRegistration.call(tokenAddress);
+        if (!registered && !pendingRegistration) {
             deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
             await darknodePayment.registerToken(tokenAddress);
         }
     }
 
+    const dnrInDarknodePayment = await darknodePayment.darknodeRegistry();
+    if (dnrInDarknodePayment.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+        deployer.logger.log("Updating DNR in DNP");
+        await darknodePayment.updateDarknodeRegistry(DarknodeRegistry.address);
+    }
+
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
     const currentOwner = await darknodePaymentStore.owner.call();
     if (currentOwner !== DarknodePayment.address) {
-        deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment")
-        // Initiate ownership transfer of DarknodePaymentStore
+        deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment");
 
-        try {
-            await darknodePaymentStore.transferOwnership(DarknodePayment.address, {
-                from: currentOwner
-            });
-        } catch (error) {
+        if (currentOwner === accounts[0]) {
+            await darknodePaymentStore.transferOwnership(DarknodePayment.address);
+
+            // Update DarknodePaymentStore address
+            await darknodePayment.claimStoreOwnership();
+        } else {
             const oldDarknodePayment = await DarknodePayment.at(currentOwner);
             await oldDarknodePayment.transferStoreOwnership(DarknodePayment.address);
+            // This will also call claim.
         }
-
-        // Update DarknodePaymentStore address
-        await darknodePayment.claimStoreOwnership();
     }
-
-    // if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS) {
-    //     deployer.logger.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS}`);
-    //     await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS);
-    // }
 
     if (changeCycle) {
         try {
@@ -182,7 +207,11 @@ module.exports = async function (deployer, network) {
         }
     }
     // Set the darknode payment cycle changer to the darknode registry
-    await darknodePayment.updateCycleChanger(DarknodeRegistry.address);
+    deployer.logger.log("Setting the DarknodePayment's cycle changer");
+    if ((await darknodePayment.cycleChanger()).toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+        deployer.logger.log("Setting the DarknodePayment's cycle changer");
+        await darknodePayment.updateCycleChanger(DarknodeRegistry.address);
+    }
 
     deployer.logger.log({
         RenToken: RenToken.address,

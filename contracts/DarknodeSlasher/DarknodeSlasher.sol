@@ -1,6 +1,5 @@
 pragma solidity ^0.5.12;
 
-
 import "../libraries/Claimable.sol";
 import "../libraries/Validate.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
@@ -26,6 +25,11 @@ contract DarknodeSlasher is Claimable {
     // mapping of address to whether the darknode has been blacklisted
     mapping(address => bool) public blacklisted;
 
+    /// @notice Emitted when the DarknodeRegistry is updated.
+    /// @param _previousDarknodeRegistry The address of the old registry.
+    /// @param _nextDarknodeRegistry The address of the new registry.
+    event LogDarknodeRegistryUpdated(DarknodeRegistry _previousDarknodeRegistry, DarknodeRegistry _nextDarknodeRegistry);
+
     /// @notice Restrict a function to have a valid percentage
     modifier validPercent(uint256 _percent) {
         require(_percent <= 100, "DarknodeSlasher: invalid percentage");
@@ -36,6 +40,17 @@ contract DarknodeSlasher is Claimable {
         DarknodeRegistry _darknodeRegistry
     ) public {
         darknodeRegistry = _darknodeRegistry;
+    }
+
+    /// @notice Allows the contract owner to update the address of the
+    /// darknode registry contract.
+    /// @param _darknodeRegistry The address of the Darknode Registry
+    /// contract.
+    function updateDarknodeRegistry(DarknodeRegistry _darknodeRegistry) external onlyOwner {
+        require(address(_darknodeRegistry) != address(0x0), "DarknodeSlasher: invalid Darknode Registry address");
+        DarknodeRegistry previousDarknodeRegistry = darknodeRegistry;
+        darknodeRegistry = _darknodeRegistry;
+        emit LogDarknodeRegistryUpdated(previousDarknodeRegistry, darknodeRegistry);
     }
 
     function setBlacklistSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {

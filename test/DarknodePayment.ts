@@ -108,19 +108,38 @@ contract("DarknodePayment", (accounts: string[]) => {
         it("can register tokens", async () => {
             const lengthBefore = await tokenCount();
 
+            (await dnp.tokenPendingRegistration.call(dai.address))
+                .should.equal(false);
+            (await dnp.tokenPendingRegistration.call(erc20Token.address))
+                .should.equal(false);
+
             await dnp.registerToken(dai.address);
+            (await dnp.tokenPendingRegistration.call(dai.address))
+                .should.equal(true);
             await dnp.registerToken(dai.address).should.be.rejectedWith(/token already pending registration/);
             await dnp.registerToken(erc20Token.address);
+            (await dnp.tokenPendingRegistration.call(erc20Token.address))
+                .should.equal(true);
             // complete token registration
             await waitForEpoch(dnr);
             (await dnp.registeredTokens.call(lengthBefore)).should.equal(dai.address);
             (await dnp.registeredTokenIndex.call(dai.address)).should.bignumber.equal(new BN(lengthBefore + 1));
+            (await dnp.tokenPendingRegistration.call(dai.address))
+                .should.equal(false);
+            (await dnp.tokenPendingRegistration.call(erc20Token.address))
+                .should.equal(false);
+
             await dnp.registerToken(ETHEREUM_TOKEN_ADDRESS);
             // complete token registration
             await waitForEpoch(dnr);
             (await dnp.registeredTokens.call(lengthBefore + 2)).should.equal(ETHEREUM_TOKEN_ADDRESS);
             (await dnp.registeredTokenIndex.call(ETHEREUM_TOKEN_ADDRESS)).should.bignumber.equal(lengthBefore + 3);
             await checkTokenIndexes();
+
+            (await dnp.tokenPendingRegistration.call(dai.address))
+                .should.equal(false);
+            (await dnp.tokenPendingRegistration.call(erc20Token.address))
+                .should.equal(false);
         });
 
         it("can deregister a destroyed token", async () => {
@@ -691,6 +710,15 @@ contract("DarknodePayment", (accounts: string[]) => {
             await waitForEpoch(dnr);
         });
 
+    });
+
+    it("can update DarknodeRegistry", async () => {
+        const darknodeRegistry = await dnp.darknodeRegistry.call();
+        await dnp.updateDarknodeRegistry(NULL)
+            .should.be.rejectedWith("invalid Darknode Registry address");
+
+        await dnp.updateDarknodeRegistry(accounts[0]);
+        await dnp.updateDarknodeRegistry(darknodeRegistry);
     });
 
     const tick = async (address: string) => {

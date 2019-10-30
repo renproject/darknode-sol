@@ -4,10 +4,19 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../RenToken/RenToken.sol";
-import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "./DarknodeRegistryStore.sol";
-import "../DarknodePayment/DarknodePayment.sol";
 import "../libraries/Claimable.sol";
+
+interface IDarknodePaymentStore {
+}
+
+interface IDarknodePayment {
+    function changeCycle() external returns (uint256);
+    function store() external returns (IDarknodePaymentStore);
+}
+
+interface IDarknodeSlasher {
+}
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
@@ -50,11 +59,11 @@ contract DarknodeRegistry is Claimable {
     DarknodeRegistryStore public store;
 
     /// The Darknode Payment contract for changing cycle
-    DarknodePayment public darknodePayment;
+    IDarknodePayment public darknodePayment;
 
     /// Darknode Slasher allows darknodes to vote on bond slashing.
-    DarknodeSlasher public slasher;
-    DarknodeSlasher public nextSlasher;
+    IDarknodeSlasher public slasher;
+    IDarknodeSlasher public nextSlasher;
 
     /// @notice Emitted when a darknode is registered.
     /// @param _operator The owner of the darknode.
@@ -87,6 +96,7 @@ contract DarknodeRegistry is Claimable {
     event LogMinimumPodSizeUpdated(uint256 _previousMinimumPodSize, uint256 _nextMinimumPodSize);
     event LogMinimumEpochIntervalUpdated(uint256 _previousMinimumEpochInterval, uint256 _nextMinimumEpochInterval);
     event LogSlasherUpdated(address _previousSlasher, address _nextSlasher);
+    event LogDarknodePaymentUpdated(IDarknodePayment _previousDarknodePayment, IDarknodePayment _nextDarknodePayment);
 
     /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
@@ -278,10 +288,13 @@ contract DarknodeRegistry is Claimable {
 
     /// @notice Allows the contract owner to update the address of the
     /// darknode payment contract.
-    /// @param _dnpAddress The address of the DNP contract.
-    function updateDarknodePayment(DarknodePayment _dnpAddress) external onlyOwner {
-        require(address(_dnpAddress) != address(0x0), "DarknodeRegistry: invalid dnp address");
-        darknodePayment = _dnpAddress;
+    /// @param _darknodePayment The address of the Darknode Payment
+    /// contract.
+    function updateDarknodePayment(IDarknodePayment _darknodePayment) external onlyOwner {
+        require(address(_darknodePayment) != address(0x0), "DarknodeRegistry: invalid Darknode Payment address");
+        IDarknodePayment previousDarknodePayment = darknodePayment;
+        darknodePayment = _darknodePayment;
+        emit LogDarknodePaymentUpdated(previousDarknodePayment, darknodePayment);
     }
 
     /// @notice Allows the contract owner to update the minimum bond.
@@ -309,7 +322,7 @@ contract DarknodeRegistry is Claimable {
     /// @notice Allow the contract owner to update the DarknodeSlasher contract
     /// address.
     /// @param _slasher The new slasher address.
-    function updateSlasher(DarknodeSlasher _slasher) external onlyOwner {
+    function updateSlasher(IDarknodeSlasher _slasher) external onlyOwner {
         require(address(_slasher) != address(0), "DarknodeRegistry: invalid slasher address");
         nextSlasher = _slasher;
     }

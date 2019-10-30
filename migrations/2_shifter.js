@@ -99,7 +99,8 @@ module.exports = async function (deployer, network, accounts) {
 
         // Try to change the payment cycle in case the token is pending registration
         let tokenRegistered = (await darknodePayment.registeredTokenIndex.call(Token.address)).toString() !== "0";
-        if (!tokenRegistered) {
+        const pendingRegistration = await darknodePayment.tokenPendingRegistration.call(Token.address);
+        if (!tokenRegistered && !pendingRegistration) {
             deployer.logger.log(`Registering token ${symbol} in DarknodePayment`);
             await darknodePayment.registerToken(Token.address);
         }
