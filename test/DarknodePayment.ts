@@ -452,7 +452,7 @@ contract("DarknodePayment", (accounts: string[]) => {
 
         it("cannot withdraw more than once in a cycle", async () => {
             const numDarknodes = 4;
-            new BN(await dnr.numDarknodesPreviousEpoch.call()).should.bignumber.equal(numDarknodes);
+            new BN(await dnr.numDarknodesPreviousEpoch()).should.bignumber.equal(numDarknodes);
 
             const rewards = new BN("300000000000000000");
             await depositDai(rewards);
@@ -490,7 +490,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             // Change the epoch
             await waitForEpoch(dnr);
             // Add rewards into the next cycle's pool
-            const previousBalance = (new BN(await dnp.darknodeBalances.call(darknode3, dai.address)));
+            const previousBalance = (new BN(await dnp.darknodeBalances(darknode3, dai.address)));
             const rewards = new BN("300000000000000000");
             await depositDai(rewards);
             // Change the epoch
@@ -500,13 +500,13 @@ contract("DarknodePayment", (accounts: string[]) => {
             // Claim the rewards for the pool
             await tick(darknode3);
 
-            const numDarknodes = new BN(await dnr.numDarknodesPreviousEpoch.call());
+            const numDarknodes = new BN(await dnr.numDarknodesPreviousEpoch());
             const rewardSplit = rewardPool.div(numDarknodes);
 
             // Claim rewards for past cycle
             await slasher.blacklist(darknode3);
 
-            const newBalances = (new BN(await dnp.darknodeBalances.call(darknode3, dai.address)));
+            const newBalances = (new BN(await dnp.darknodeBalances(darknode3, dai.address)));
             newBalances.should.bignumber.equal(previousBalance.add(rewardSplit));
 
             const oldDaiBal = new BN(await dai.balanceOf(darknode3));

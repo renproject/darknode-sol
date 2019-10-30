@@ -93,6 +93,14 @@ module.exports = async function (deployer, network) {
         );
     }
 
+    // Set the slash percentages
+    const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
+    if (config.BLACKLIST_SLASH_PERCENT > 0) {
+        await slasher.setBlacklistSlashPercent(new BN(config.BLACKLIST_SLASH_PERCENT));
+    }
+    if (config.MALICIOUS_SLASH_PERCENT > 0) {
+        await slasher.setMaliciousSlashPercent(new BN(config.MALICIOUS_SLASH_PERCENT));
+    }
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
     const currentSlasher = await darknodeRegistry.slasher.call();
     const nextSlasher = await darknodeRegistry.nextSlasher.call();
