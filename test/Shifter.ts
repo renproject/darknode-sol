@@ -50,7 +50,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         const nHash = randomBytes(32);
         const pHash = randomBytes(32);
 
-        const hash = await shifter.hashForSignature(pHash, value, user, nHash);
+        const hash = await shifter.hashForSignature.call(pHash, value, user, nHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
         pubToAddress(ecrecover(Buffer.from(hash.slice(2), "hex"), sig.v, sig.r, sig.s)).toString("hex")
@@ -58,12 +58,12 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
         const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-        const hashForSignature = await shifter.hashForSignature(pHash, value, user, nHash);
-        (await shifter.verifySignature(hashForSignature, sigString))
+        const hashForSignature = await shifter.hashForSignature.call(pHash, value, user, nHash);
+        (await shifter.verifySignature.call(hashForSignature, sigString))
             .should.be.true;
 
-        const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-        const _shiftID = await shifter.nextShiftID();
+        const balanceBefore = new BN((await zbtc.balanceOf.call(user)).toString());
+        const _shiftID = await shifter.nextShiftID.call();
         (await shifter.shiftIn(pHash, value, nHash, sigString, { from: user }) as any)
             .should.emit.logs([
                 log(
@@ -75,7 +75,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                     },
                 ),
             ]);
-        (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
+        (await zbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
 
         return [pHash, nHash];
     };
@@ -84,8 +84,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         // Note: we don't use `||` because we want to pass in `""`
         btcAddress = btcAddress !== undefined ? btcAddress : randomBytes(35);
 
-        const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
-        const _shiftID = await shifter.nextShiftID();
+        const balanceBefore = new BN((await zbtc.balanceOf.call(user)).toString());
+        const _shiftID = await shifter.nextShiftID.call();
         (await shifter.shiftOut(btcAddress, value, { from: user }) as any)
             .should.emit.logs([
                 log(
@@ -98,7 +98,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                     },
                 ),
             ]);
-        (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.sub(new BN(value)));
+        (await zbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.sub(new BN(value)));
     };
 
     describe("can mint and burn", () => {
@@ -108,7 +108,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         it("won't mint for the same nHash and pHash twice", async () => {
             const [pHash, nHash] = await mintTest(btcShifter, value);
 
-            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
+            const hash = await btcShifter.hashForSignature.call(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
@@ -121,13 +121,13 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             const nHash = randomBytes(32);
 
-            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
+            const hash = await btcShifter.hashForSignature.call(pHash, value.toNumber(), user, nHash);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-            const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
+            const balanceBefore = new BN((await zbtc.balanceOf.call(user)).toString());
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user });
-            (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
+            (await zbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
 
             await burnTest(btcShifter, removeFee(value, shiftInFees));
         });
@@ -137,7 +137,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             const nHash2 = randomBytes(32);
             const pHash = randomBytes(32);
 
-            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash1);
+            const hash = await btcShifter.hashForSignature.call(pHash, value.toNumber(), user, nHash1);
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
@@ -167,7 +167,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             const nHash = randomBytes(32);
             const pHash = randomBytes(32);
 
-            const hash = await btcShifter.hashForSignature(pHash, value.toNumber(), user, nHash);
+            const hash = await btcShifter.hashForSignature.call(pHash, value.toNumber(), user, nHash);
 
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
 
@@ -205,7 +205,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         });
 
         it("can upgrade shiftIn fee", async () => {
-            const currentFee = await btcShifter.shiftInFee();
+            const currentFee = await btcShifter.shiftInFee.call();
             await (btcShifter.updateShiftInFee(0, { from: malicious }))
                 .should.be.rejectedWith(/caller is not the owner/);
             await btcShifter.updateShiftInFee(0, { from: owner });
@@ -213,7 +213,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         });
 
         it("can upgrade shiftOut fee", async () => {
-            const currentFee = await btcShifter.shiftOutFee();
+            const currentFee = await btcShifter.shiftOutFee.call();
             await (btcShifter.updateShiftOutFee(0, { from: malicious }))
                 .should.be.rejectedWith(/caller is not the owner/);
             await btcShifter.updateShiftOutFee(0, { from: owner });
@@ -259,7 +259,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 .should.be.rejectedWith(/caller is not the owner/);
 
             await btcShifter.transferTokenOwnership(newShifter.address, { from: owner });
-            (await zbtc.owner()).should.equal(newShifter.address);
+            (await zbtc.owner.call()).should.equal(newShifter.address);
         });
 
         it("can mint and burn using new shifter", async () => {
@@ -284,7 +284,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             // Upgrade newShifter to point to btcShifter
             await newShifter.transferTokenOwnership(btcShifter.address, { from: owner });
 
-            (await zbtc.owner()).should.equal(btcShifter.address);
+            (await zbtc.owner.call()).should.equal(btcShifter.address);
         });
     });
 
@@ -310,62 +310,62 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                     .should.be.rejectedWith(/symbol already registered/);
             }
 
-            (await registry.getShifterByToken(zbtc.address))
+            (await registry.getShifterByToken.call(zbtc.address))
                 .should.equal(btcShifter.address);
 
-            (await registry.getShifterBySymbol("zBTC"))
+            (await registry.getShifterBySymbol.call("zBTC"))
                 .should.equal(btcShifter.address);
 
-            (await registry.getTokenBySymbol("zBTC"))
+            (await registry.getTokenBySymbol.call("zBTC"))
                 .should.equal(zbtc.address);
 
             { // The first 10 shifters starting from NULL
-                const shifters = await registry.getShifters(NULL, 10);
+                const shifters = await registry.getShifters.call(NULL, 10);
                 shifters[0].should.equal(btcShifter.address);
                 shifters[1].should.equal(NULL);
                 shifters.length.should.equal(10);
 
-                const shiftedTokens = await registry.getShiftedTokens(NULL, 10);
+                const shiftedTokens = await registry.getShiftedTokens.call(NULL, 10);
                 shiftedTokens[0].should.equal(zbtc.address);
                 shiftedTokens[1].should.equal(NULL);
                 shiftedTokens.length.should.equal(10);
             }
 
             { // Get all the shifters starting from NULL
-                const shifters = await registry.getShifters(NULL, 0);
+                const shifters = await registry.getShifters.call(NULL, 0);
                 shifters[0].should.equal(btcShifter.address);
                 shifters.length.should.equal(1);
 
-                const shiftedTokens = await registry.getShiftedTokens(NULL, 0);
+                const shiftedTokens = await registry.getShiftedTokens.call(NULL, 0);
                 shiftedTokens[0].should.equal(zbtc.address);
                 shiftedTokens.length.should.equal(1);
             }
 
             { // Starting from first entry
-                const shifters = await registry.getShifters(btcShifter.address, 10);
+                const shifters = await registry.getShifters.call(btcShifter.address, 10);
                 shifters[0].should.equal(btcShifter.address);
                 shifters[1].should.equal(NULL);
                 shifters.length.should.equal(10);
 
-                const shiftedTokens = await registry.getShiftedTokens(zbtc.address, 10);
+                const shiftedTokens = await registry.getShiftedTokens.call(zbtc.address, 10);
                 shiftedTokens[0].should.equal(zbtc.address);
                 shiftedTokens[1].should.equal(NULL);
                 shiftedTokens.length.should.equal(10);
             }
 
             { // Get all the shifters starting from first entry
-                const shifters = await registry.getShifters(btcShifter.address, 0);
+                const shifters = await registry.getShifters.call(btcShifter.address, 0);
                 shifters[0].should.equal(btcShifter.address);
                 shifters.length.should.equal(1);
 
-                const shiftedTokens = await registry.getShiftedTokens(zbtc.address, 0);
+                const shiftedTokens = await registry.getShiftedTokens.call(zbtc.address, 0);
                 shiftedTokens[0].should.equal(zbtc.address);
                 shiftedTokens.length.should.equal(1);
             }
         });
 
         it("can update shifter for a token", async () => {
-            (await registry.getShifterByToken(zbtc.address)).should.equal(btcShifter.address);
+            (await registry.getShifterByToken.call(zbtc.address)).should.equal(btcShifter.address);
 
             const newBtcShifter = await BTCShifter.new(
                 zbtc.address,
@@ -378,7 +378,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             await registry.updateShifter(zbtc.address, newBtcShifter.address);
 
-            (await registry.getShifterByToken(zbtc.address)).should.equal(newBtcShifter.address);
+            (await registry.getShifterByToken.call(zbtc.address)).should.equal(newBtcShifter.address);
         });
 
         it("can't update shifter for an unregistered token", async () => {

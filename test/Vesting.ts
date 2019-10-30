@@ -64,7 +64,7 @@ contract("Vesting", (accounts) => {
                 [beneficiary, startTime, duration],
             )).toString("hex");
 
-            const hashForSignature = await btcShifter.hashForSignature(
+            const hashForSignature = await btcShifter.hashForSignature.call(
                 Ox(pHash),
                 amount.toNumber(),
                 vesting.address,
@@ -74,7 +74,7 @@ contract("Vesting", (accounts) => {
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             // User should have no schedules prior to adding.
-            const schedule = await vesting.schedules(beneficiary);
+            const schedule = await vesting.schedules.call(beneficiary);
             (schedule as any).startTime.should.bignumber.equal(new BN(0));
 
             await vesting.addVestingSchedule(
@@ -88,7 +88,7 @@ contract("Vesting", (accounts) => {
         it("can add a vesting schedule", async () => {
             await addVestingSchedule();
 
-            const schedule = await vesting.schedules(beneficiary);
+            const schedule = await vesting.schedules.call(beneficiary);
             (schedule as any).startTime.should.bignumber.not.equal(new BN(0));
             (schedule as any).amount.should.bignumber.equal(amountAfterFee);
             (schedule as any).duration.should.bignumber.equal(new BN(duration));
@@ -102,20 +102,20 @@ contract("Vesting", (accounts) => {
         };
 
         it("can check claimable amount", async () => {
-            let claimable = await vesting.calculateClaimable(beneficiary);
+            let claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(0));
             claimable[1].should.bignumber.equal(new BN(0));
 
             await addVestingSchedule();
 
-            claimable = await vesting.calculateClaimable(beneficiary);
+            claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(0));
             claimable[1].should.bignumber.equal(new BN(0));
 
             for (let i = 1; i <= duration; i++) {
                 await increaseTime(month);
 
-                claimable = await vesting.calculateClaimable(beneficiary);
+                claimable = await vesting.calculateClaimable.call(beneficiary);
                 claimable[0].should.bignumber.equal(new BN(i));
                 claimable[1].should.bignumber.equal(amountClaimable(i));
             }
@@ -127,7 +127,7 @@ contract("Vesting", (accounts) => {
             // Claim after 3 months.
             await increaseTime(month * 3);
 
-            let claimable = await vesting.calculateClaimable(beneficiary);
+            let claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(3));
             claimable[1].should.bignumber.equal(amountClaimable(3));
 
@@ -136,13 +136,13 @@ contract("Vesting", (accounts) => {
             // Claim remaining at the end of the vesting period.
             await increaseTime(month * (duration - 3));
 
-            claimable = await vesting.calculateClaimable(beneficiary);
+            claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(duration - 3));
             claimable[1].should.bignumber.equal(amountAfterFee.sub(amountClaimable(3)));
 
             await vesting.claim(beneficiary, { from: beneficiary });
 
-            claimable = await vesting.calculateClaimable(beneficiary);
+            claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(0));
             claimable[1].should.bignumber.equal(new BN(0));
         });
@@ -153,7 +153,7 @@ contract("Vesting", (accounts) => {
             // Claim well after vesting period has ended.
             await increaseTime(month * duration * 10);
 
-            const claimable = await vesting.calculateClaimable(beneficiary);
+            const claimable = await vesting.calculateClaimable.call(beneficiary);
             claimable[0].should.bignumber.equal(new BN(duration));
             claimable[1].should.bignumber.equal(amountAfterFee);
         });
