@@ -6,7 +6,8 @@ const config = {
     MINIMUM_EPOCH_INTERVAL_SECONDS: 30, // 216000 in production, 1 month
     DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
     mintAuthority: "", // Darknode public key
-    shifterFees: 10,
+    shiftInFee: 10,
+    shiftOutFee: 10,
     zBTCMinShiftOutAmount: 10000,
     zZECMinShiftOutAmount: 10000,
     zBCHMinShiftOutAmount: 10000,

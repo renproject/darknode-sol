@@ -1,0 +1,145 @@
+diff --git a/node_modules/typechain-target-truffle/dist/generation.js b/node_modules/typechain-target-truffle/dist/generation.js
+index 9c66899..b62db8a 100644
+--- a/node_modules/typechain-target-truffle/dist/generation.js
++++ b/node_modules/typechain-target-truffle/dist/generation.js
+@@ -5,7 +5,8 @@ const lodash_1 = require("lodash");
+ function codegen(contracts) {
+     const template = `
+ /// <reference types="truffle-typings" />
+-import { BigNumber } from "bignumber.js";
++import BN from "bn.js";
++type BigNumber = string | number | BN;
+ 
+ ${contracts.map(generateContractInterface).join("\n")}
+ 
+@@ -24,8 +25,8 @@ function generateArtifactHeaders(contracts) {
+     namespace Truffle {
+       interface Artifacts {
+         ${contracts
+-        .map(f => `require(name: "${f.name}"): TruffleContracts.${f.name}Contract;`)
+-        .join("\n")}
++            .map(f => `require(name: "${f.name}"): TruffleContracts.${f.name}Contract;`)
++            .join("\n")}
+       }
+     }
+   }  
+@@ -36,8 +37,8 @@ function generateContractInterface(c) {
+     return `
+ export interface ${c.name}Contract extends Truffle.Contract<${c.name}Instance> {
+   ${c.constructor && c.constructor[0]
+-        ? `"new"(${generateInputTypes(c.constructor[0].inputs)} meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`
+-        : `"new"(meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`}
++            ? `"new"(${generateInputTypes(c.constructor[0].inputs)} meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`
++            : `"new"(meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`}
+ }
+ `;
+ }
+@@ -45,9 +46,9 @@ function generateContractInstanceInterface(c) {
+     return `
+ export interface ${c.name}Instance extends Truffle.ContractInstance {
+   ${lodash_1.values(c.functions)
+-        .map(v => v[0])
+-        .map(generateFunction)
+-        .join("\n")}
++            .map(v => v[0])
++            .map(generateFunction)
++            .join("\n")}
+ }
+   `;
+ }
+@@ -66,7 +67,7 @@ function generateFunction(fn) {
+ }
+ function generateConstantFunction(fn) {
+     return `
+-  ${fn.name}(${generateInputTypes(fn.inputs)} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}>;
++  ${fn.name}: { call(${generateInputTypes(fn.inputs)} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}> };
+ `;
+ }
+ function generateInputTypes(input) {
+diff --git a/node_modules/typechain-target-truffle/lib/generation.ts b/node_modules/typechain-target-truffle/lib/generation.ts
+index fcb22ce..46e87f3 100644
+--- a/node_modules/typechain-target-truffle/lib/generation.ts
++++ b/node_modules/typechain-target-truffle/lib/generation.ts
+@@ -14,7 +14,8 @@ import { values } from "lodash";
+ export function codegen(contracts: Contract[]) {
+   const template = `
+ /// <reference types="truffle-typings" />
+-import { BigNumber } from "bignumber.js";
++import BN from "bn.js";
++type BigNumber = string | number | BN;
+ 
+ ${contracts.map(generateContractInterface).join("\n")}
+ 
+@@ -34,8 +35,8 @@ export function generateArtifactHeaders(contracts: Contract[]): string {
+     namespace Truffle {
+       interface Artifacts {
+         ${contracts
+-          .map(f => `require(name: "${f.name}"): TruffleContracts.${f.name}Contract;`)
+-          .join("\n")}
++      .map(f => `require(name: "${f.name}"): TruffleContracts.${f.name}Contract;`)
++      .join("\n")}
+       }
+     }
+   }  
+@@ -48,10 +49,10 @@ export interface ${c.name}Contract extends Truffle.Contract<${c.name}Instance> {
+   ${
+     c.constructor && c.constructor[0]
+       ? `"new"(${generateInputTypes(
+-          c.constructor[0].inputs,
+-        )} meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`
++        c.constructor[0].inputs,
++      )} meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`
+       : `"new"(meta?: Truffle.TransactionDetails): Promise<${c.name}Instance>;`
+-  }
++    }
+ }
+ `;
+ }
+@@ -60,9 +61,9 @@ function generateContractInstanceInterface(c: Contract): string {
+   return `
+ export interface ${c.name}Instance extends Truffle.ContractInstance {
+   ${values(c.functions)
+-    .map(v => v[0])
+-    .map(generateFunction)
+-    .join("\n")}
++      .map(v => v[0])
++      .map(generateFunction)
++      .join("\n")}
+ }
+   `;
+ }
+@@ -75,8 +76,8 @@ function generateFunction(fn: FunctionDeclaration): string {
+   return `
+   ${fn.name}: {
+     (${generateInputTypes(
+-      fn.inputs,
+-    )} txDetails?: Truffle.TransactionDetails): Promise<Truffle.TransactionResponse>;
++    fn.inputs,
++  )} txDetails?: Truffle.TransactionDetails): Promise<Truffle.TransactionResponse>;
+   call(${generateInputTypes(
+     fn.inputs,
+   )} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}>;
+@@ -91,10 +92,22 @@ function generateFunction(fn: FunctionDeclaration): string {
+ }
+ 
+ function generateConstantFunction(fn: FunctionDeclaration): string {
++  //   return `
++  //   {
++  //     ${fn.name}(${generateInputTypes(
++  //     fn.inputs,
++  //   )} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}>;
++  //     call(${generateInputTypes(
++  //     fn.inputs,
++  //   )} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}>;
++  //   }
++  // `;
+   return `
+-  ${fn.name}(${generateInputTypes(
++  {
++    call(${generateInputTypes(
+     fn.inputs,
+   )} txDetails?: Truffle.TransactionDetails): Promise<${generateOutputTypes(fn.outputs)}>;
++  }
+ `;
+ }
+ 

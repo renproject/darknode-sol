@@ -76,13 +76,14 @@ module.exports = async function (deployer, network, accounts) {
                 Token.address,
                 _feeRecipient,
                 _mintAuthority,
-                config.shifterFees,
+                config.shiftInFee,
+                config.shiftOutFee,
                 minShiftOutAmount,
             );
         }
         const tokenShifter = await Shifter.at(Shifter.address);
 
-        const shifterAuthority = await tokenShifter.mintAuthority();
+        const shifterAuthority = await tokenShifter.mintAuthority.call();
         if (shifterAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
             deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority.toLowerCase()}, now is ${_mintAuthority.toLowerCase()}`);
             deployer.logger.log(`Updating mint authority in ${symbol} shifter`);
@@ -97,15 +98,15 @@ module.exports = async function (deployer, network, accounts) {
         }
 
         // Try to change the payment cycle in case the token is pending registration
-        let tokenRegistered = (await darknodePayment.registeredTokenIndex(Token.address)).toString() !== "0";
+        let tokenRegistered = (await darknodePayment.registeredTokenIndex.call(Token.address)).toString() !== "0";
         if (!tokenRegistered) {
             deployer.logger.log(`Registering token ${symbol} in DarknodePayment`);
             await darknodePayment.registerToken(Token.address);
         }
 
-        const registered = (await registry.getShifterByToken(Token.address));
+        const registered = await registry.getShifterByToken.call(Token.address);
         if (registered === NULL) {
-            const otherRegistration = (await registry.getShifterBySymbol(symbol));
+            const otherRegistration = (await registry.getShifterBySymbol.call(symbol));
             if (otherRegistration === NULL) {
                 deployer.logger.log(`Registering ${symbol} shifter`);
                 await registry.setShifter(Token.address, Shifter.address);
@@ -114,10 +115,10 @@ module.exports = async function (deployer, network, accounts) {
                 await registry.updateShifter(Token.address, Shifter.address);
             }
         } else {
-            deployer.logger.log(`${symbol} shifter is already registered: ${await registry.getShifterByToken(Token.address)}`);
+            deployer.logger.log(`${symbol} shifter is already registered: ${await registry.getShifterByToken.call(Token.address)}`);
         }
 
-        const feeRecipient = await tokenShifter.feeRecipient();
+        const feeRecipient = await tokenShifter.feeRecipient.call();
         if (feeRecipient.toLowerCase() !== _feeRecipient.toLowerCase()) {
             deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
             await tokenShifter.updateFeeRecipient(_feeRecipient);

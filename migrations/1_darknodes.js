@@ -94,8 +94,8 @@ module.exports = async function (deployer, network) {
     }
 
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-    const currentSlasher = await darknodeRegistry.slasher();
-    const nextSlasher = await darknodeRegistry.nextSlasher();
+    const currentSlasher = await darknodeRegistry.slasher.call();
+    const nextSlasher = await darknodeRegistry.nextSlasher.call();
     if (currentSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase() && nextSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase()) {
         deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry")
         // Update slasher address
@@ -130,7 +130,7 @@ module.exports = async function (deployer, network) {
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     for (const tokenName of Object.keys(tokens)) {
         const tokenAddress = tokens[tokenName];
-        const registered = await darknodePayment.registeredTokenIndex(tokenAddress);
+        const registered = await darknodePayment.registeredTokenIndex.call(tokenAddress);
         if (registered.toString() === "0") {
             deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
             await darknodePayment.registerToken(tokenAddress);
@@ -138,7 +138,7 @@ module.exports = async function (deployer, network) {
     }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
-    const currentOwner = await darknodePaymentStore.owner();
+    const currentOwner = await darknodePaymentStore.owner.call();
     if (currentOwner !== DarknodePayment.address) {
         deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment")
         // Initiate ownership transfer of DarknodePaymentStore
