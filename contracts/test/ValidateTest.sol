@@ -144,4 +144,42 @@ contract ValidateTest {
             _blockhash
         );
     }
+
+    function recoverSecret(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f,
+        bytes memory _signature
+    ) public pure returns (address) {
+        return Validate.recoverSecret(
+            _a,
+            _b,
+            _c,
+            _d,
+            _e,
+            _f,
+            _signature
+        );
+    }
+
+    function secretMessage(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f
+    ) public pure returns (bytes memory) {
+        return Validate.secretMessage(
+            _a,
+            _b,
+            _c,
+            _d,
+            _e,
+            _f
+        );
+    }
 }

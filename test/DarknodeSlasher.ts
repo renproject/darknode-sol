@@ -11,7 +11,8 @@ import { Ox } from "./helper/testUtils";
 import {
     ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
-import { Darknode, generatePrecommitMessage, generatePrevoteMessage, generateProposeMessage } from "./Validate";
+import { Darknode, generatePrecommitMessage, generatePrevoteMessage, generateProposeMessage,
+    generateSecretMessage } from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
@@ -63,9 +64,54 @@ contract("DarknodeSlasher", (accounts: string[]) => {
         await waitForEpoch(dnr);
     });
 
-    describe("when blacklisting", async () => {
+    describe("when setting percentages", async () => {
 
-        it("cannot set an invalid percentage", async () => {
+        it("can set a valid blacklist percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setBlacklistSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setBlacklistSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setBlacklistSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("can set a valid malicious percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setMaliciousSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setMaliciousSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setMaliciousSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("can set a valid secret reveal percentage", async () => {
+            const p1 = new BN("1");
+            await slasher.setSecretRevealSlashPercent(p1)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p1);
+            const p2 = new BN("10");
+            await slasher.setSecretRevealSlashPercent(p2)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p2);
+            const p3 = new BN("12");
+            await slasher.setSecretRevealSlashPercent(p3)
+                .should.eventually.not.be.rejected;
+            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p3);
+        });
+
+        it("cannot set an invalid blacklist percentage", async () => {
             await slasher.setBlacklistSlashPercent(new BN("1001"))
                 .should.eventually.be.rejectedWith(/invalid percentage/);
             await slasher.setBlacklistSlashPercent(new BN("101"))
@@ -73,6 +119,28 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             await slasher.setBlacklistSlashPercent(new BN("1234"))
                 .should.eventually.be.rejectedWith(/invalid percentage/);
         });
+
+        it("cannot set an invalid malicious percentage", async () => {
+            await slasher.setMaliciousSlashPercent(new BN("1001"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setMaliciousSlashPercent(new BN("101"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setMaliciousSlashPercent(new BN("1234"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+        });
+
+        it("cannot set an invalid secret reveal percentage", async () => {
+            await slasher.setSecretRevealSlashPercent(new BN("1001"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setSecretRevealSlashPercent(new BN("101"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+            await slasher.setSecretRevealSlashPercent(new BN("1234"))
+                .should.eventually.be.rejectedWith(/invalid percentage/);
+        });
+
+    });
+
+    describe("when blacklisting", async () => {
 
         it("cannot blacklist twice", async () => {
             await slasher.blacklist(darknodes[4].account.address).should.eventually.not.be.rejected;
@@ -411,6 +479,25 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                     from: caller,
                 },
             ).should.eventually.be.rejectedWith(/already slashed/);
+        });
+
+        it("should slash when a secret message is revealed", async () => {
+            const darknode = darknodes[0];
+            const a = new BN("3");
+            const b = new BN("7");
+            const c = new BN("10");
+            const d = new BN("81804755166950992694975918889421430561708705428859269028015361660142001064486");
+            const e = new BN("90693014804679621771165998959262552553277008236216558633727798007697162314221");
+            const f = new BN("65631258835468800295340604864107498262349560547191423452833833494209803247319");
+            const msg = generateSecretMessage(a, b, c, d, e, f);
+            const hash = hashjs.sha256().update(msg).digest("hex");
+            const sig = ecsign(Buffer.from(hash, "hex"), darknode.privateKey);
+            const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
+            // first slash should succeed
+            await slasher.slashSecretReveal(a, b, c, d, e, f, sigString).should.eventually.not.be.rejected;
+            // second slash should fail
+            await slasher.slashSecretReveal(a, b, c, d, e, f, sigString)
+                .should.eventually.be.rejectedWith(/already slashed/);
         });
 
     });

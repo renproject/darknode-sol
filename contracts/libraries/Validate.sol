@@ -135,4 +135,44 @@ library Validate {
             ")"
         );
     }
+
+    function recoverSecret(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f,
+        bytes memory _signature
+    ) internal pure returns (address) {
+        return ECDSA.recover(sha256(secretMessage(_a, _b, _c, _d, _e, _f)), _signature);
+    }
+
+    function secretMessage(
+        uint256 _a,
+        uint256 _b,
+        uint256 _c,
+        uint256 _d,
+        uint256 _e,
+        uint256 _f
+    ) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            "Secret(",
+            "ShamirShare(",
+            String.fromUint(_a),
+            ",", String.fromUint(_b),
+            ",S256N(", String.fromUint(_c),
+            "),",
+            "S256PrivKey(",
+            "S256N(", String.fromUint(_d),
+            "),",
+            "S256P(", String.fromUint(_e),
+            "),",
+            "S256P(", String.fromUint(_f),
+            ")",
+            ")",
+            ")",
+            ")"
+        );
+    }
 }
