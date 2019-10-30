@@ -6,10 +6,9 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "../libraries/Claimable.sol";
 import "../libraries/CompatibleERC20Functions.sol";
 
-/// @notice DarknodePaymentStore is responsible for tracking black/whitelisted
-///         darknodes as well as the balances which have been allocated to the
-///         darknodes. It is also responsible for holding the tokens to be paid
-///         out to darknodes.
+/// @notice DarknodePaymentStore is responsible for tracking balances which have
+///         been allocated to the darknodes. It is also responsible for holding
+///         the tokens to be paid out to darknodes.
 contract DarknodePaymentStore is Claimable {
     using SafeMath for uint256;
     using CompatibleERC20Functions for ERC20;
@@ -19,20 +18,11 @@ contract DarknodePaymentStore is Claimable {
     /// @notice The special address for Ether.
     address constant public ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    /// @notice The size of the whitelist
-    uint256 public darknodeWhitelistLength;
-
     /// @notice Mapping of darknode -> token -> balance
     mapping(address => mapping(address => uint256)) public darknodeBalances;
 
     /// @notice Mapping of token -> lockedAmount
     mapping(address => uint256) public lockedBalances;
-
-    /// @notice mapping of darknode -> blacklistTimestamp
-    mapping(address => uint256) public darknodeBlacklist;
-
-    /// @notice mapping of darknode -> whitelistTimestamp
-    mapping(address => uint256) public darknodeWhitelist;
 
     /// @notice The contract constructor.
     ///
@@ -43,24 +33,8 @@ contract DarknodePaymentStore is Claimable {
         VERSION = _VERSION;
     }
 
-    /// @notice Allow direct payments to be made to the DarknodePaymentStore.
+    /// @notice Allow direct ETH payments to be made to the DarknodePaymentStore.
     function () external payable {
-    }
-
-    /// @notice Checks to see if a darknode is blacklisted
-    ///
-    /// @param _darknode The address of the darknode
-    /// @return true if the darknode is blacklisted
-    function isBlacklisted(address _darknode) public view returns (bool) {
-        return darknodeBlacklist[_darknode] != 0;
-    }
-
-    /// @notice Checks to see if a darknode is whitelisted
-    ///
-    /// @param _darknode The address of the darknode
-    /// @return true if the darknode is whitelisted
-    function isWhitelisted(address _darknode) public view returns (bool) {
-        return darknodeWhitelist[_darknode] != 0;
     }
 
     /// @notice Get the total balance of the contract for a particular token
@@ -83,35 +57,6 @@ contract DarknodePaymentStore is Claimable {
     /// @return The available balance of the contract
     function availableBalance(address _token) public view returns (uint256) {
         return totalBalance(_token).sub(lockedBalances[_token]);
-    }
-
-    /// @notice Blacklists a darknode from participating in reward allocation.
-    ///         If the darknode is whitelisted, it is removed from the whitelist
-    ///         and the number of whitelisted nodes is decreased.
-    ///
-    /// @param _darknode The address of the darknode to blacklist
-    function blacklist(address _darknode) external onlyOwner {
-        require(!isBlacklisted(_darknode), "darknode already blacklisted");
-        darknodeBlacklist[_darknode] = block.timestamp;
-
-        // Unwhitelist if necessary
-        if (isWhitelisted(_darknode)) {
-            darknodeWhitelist[_darknode] = 0;
-            // Use SafeMath when subtracting to avoid underflows
-            darknodeWhitelistLength = darknodeWhitelistLength.sub(1);
-        }
-    }
-
-    /// @notice Whitelists a darknode allowing it to participate in reward
-    ///         allocation.
-    ///
-    /// @param _darknode The address of the darknode to whitelist
-    function whitelist(address _darknode) external onlyOwner {
-        require(!isBlacklisted(_darknode), "darknode is blacklisted");
-        require(!isWhitelisted(_darknode), "darknode already whitelisted");
-
-        darknodeWhitelist[_darknode] = block.timestamp;
-        darknodeWhitelistLength++;
     }
 
     /// @notice Increments the amount of funds allocated to a particular

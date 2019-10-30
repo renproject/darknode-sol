@@ -1,11 +1,12 @@
 import BN from "bn.js";
 
+import { config } from "../migrations/networks";
 import {
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
     RenTokenInstance,
 } from "../types/truffle-contracts";
 import {
-    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
+    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
 } from "./helper/testUtils";
 
 const RenToken = artifacts.require("RenToken");
@@ -66,13 +67,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can update minimum epoch interval", async () => {
         await dnr.updateMinimumEpochInterval(0x0);
         await waitForEpoch(dnr);
-        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
-        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL, { from: accounts[1] })
+        (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
+        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS, { from: accounts[1] })
             .should.be.rejectedWith(/revert/); // not owner
-        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL);
-        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
+        await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS);
+        (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
         await waitForEpoch(dnr);
-        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL);
+        (await dnr.minimumEpochInterval()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL_SECONDS);
     });
 
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
@@ -82,7 +83,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can not call epoch before the minimum time interval", async () => {
-        await dnr.epoch();
+        await waitForEpoch(dnr);
         // TODO: Why isn't reason returned?
         await dnr.epoch().should.be.rejectedWith(/revert/);
     });
@@ -264,7 +265,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
-        await dnr.epoch();
+        await waitForEpoch(dnr);
     });
 
     it("can not register a node twice", async () => {
@@ -475,6 +476,25 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.refund(ID("-1")).should.be.rejectedWith(/must be deregistered for at least one epoch/);
     });
 
+    it("cannot update DarknodePayment to an invalid address", async () => {
+        await dnr.updateDarknodePayment(NULL)
+            .should.be.rejectedWith("invalid dnp address");
+    });
+
+    it("cannot slash with an invalid percent", async () => {
+        // [ACTION] Update slasher address
+        const newSlasher = accounts[0];
+        await dnr.updateSlasher(newSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(newSlasher);
+        await dnr.slash(ID("2"), newSlasher, new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(328293)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(923)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.updateSlasher(slasher.address);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(slasher.address);
+    });
+
     it("can update slasher address", async () => {
         // [CHECK] This test assumes different previous and new slashers
         const previousSlasher = await dnr.slasher.call();
@@ -519,19 +539,21 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         await waitForEpoch(dnr);
 
+        const slashPercent = 20;
+
         // [CHECK] Only the slasher can call `slash`
-        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
+        await dnr.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
             .should.be.rejectedWith(/must be slasher/);
-        await dnr.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner })
+        await dnr.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner })
             .should.be.rejectedWith(/must be slasher/);
-        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: notSlasher })
+        await slasher.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
             .should.be.rejectedWith(/revert/);
 
-        await slasher.slash(ID("2"), ID("6"), ID("7"), { from: slasherOwner });
-        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
+        await slasher.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
 
         // // NOTE: The darknode doesn't prevent slashing a darknode twice
-        await slasher.slash(ID("3"), ID("6"), ID("7"), { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
     });
 
     it("transfer ownership of the dark node store", async () => {
@@ -606,6 +628,50 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [RESET] Transfer store back to DNR
         await dnrs.transferOwnership(dnr.address);
         await dnr.claimStoreOwnership();
+    });
+
+    describe("when darknode payment is not set", async () => {
+        let newDNRstore;
+        let newDNR;
+
+        before(async () => {
+            // Deploy a new DNR and DNR store
+            newDNRstore = await DarknodeRegistryStore.new("test", RenToken.address);
+            newDNR = await DarknodeRegistry.new(
+                "test",
+                RenToken.address,
+                newDNRstore.address,
+                config.MINIMUM_BOND,
+                config.MINIMUM_POD_SIZE,
+                config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+            );
+            // Initiate ownership transfer of DNR store
+            await newDNRstore.transferOwnership(newDNR.address);
+            // Claim ownership
+            await newDNR.claimStoreOwnership();
+        });
+
+        it("can still call epoch", async () => {
+            await waitForEpoch(newDNR);
+            await waitForEpoch(newDNR);
+        });
+
+        it("cannot slash", async () => {
+            (await newDNR.owner()).should.equal(accounts[0]);
+            const newSlasher = accounts[0];
+            await newDNR.updateSlasher(newSlasher);
+            await waitForEpoch(newDNR);
+            (await newDNR.slasher()).should.equal(newSlasher);
+
+            // We should have enough balance to register a darknode
+            if (new BN(await ren.balanceOf(accounts[8])).lt(MINIMUM_BOND)) {
+                await ren.transfer(accounts[8], MINIMUM_BOND);
+            }
+            await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
+            await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
+            await newDNR.slash(ID("8"), newSlasher, new BN(10))
+                .should.eventually.be.rejectedWith(/invalid payment address/);
+        });
     });
 
     // Takes 30 minutes - keep as it.skip when not running

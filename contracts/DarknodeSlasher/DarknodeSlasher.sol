@@ -15,10 +15,14 @@ contract DarknodeSlasher is Ownable {
         darknodeRegistry = _darknodeRegistry;
     }
 
-    function slash(address _prover, address _challenger1, address _challenger2)
+    function slash(address _guilty, address _challenger, uint256 _percentage)
         external
         onlyOwner
     {
-        darknodeRegistry.slash(_prover, _challenger1, _challenger2);
+        darknodeRegistry.slash(_guilty, _challenger, _percentage);
+    }
+
+    function blacklist(address _guilty) external onlyOwner {
+        darknodeRegistry.slash(_guilty, owner(), 0);
     }
 }

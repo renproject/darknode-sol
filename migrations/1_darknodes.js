@@ -69,7 +69,7 @@ module.exports = async function (deployer, network) {
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL
+            config.MINIMUM_EPOCH_INTERVAL_SECONDS
         );
     }
 
@@ -120,10 +120,12 @@ module.exports = async function (deployer, network) {
             VERSION_STRING,
             DarknodeRegistry.address,
             DarknodePaymentStore.address,
-            0, // Cycle Duration (updated below, after a cycle has been called)
+            config.DARKNODE_PAYOUT_PERCENT, // Reward payout percentage (50% is paid out at any given cycle)
         );
         changeCycle = true;
     }
+    // Update darknode payment address
+    await darknodeRegistry.updateDarknodePayment(DarknodePayment.address);
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     for (const tokenName of Object.keys(tokens)) {
@@ -154,10 +156,10 @@ module.exports = async function (deployer, network) {
         await darknodePayment.claimStoreOwnership();
     }
 
-    if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS) {
-        deployer.logger.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS}`);
-        await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS);
-    }
+    // if (new BN(await darknodePayment.cycleDuration()).toNumber() !== config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS) {
+    //     deployer.logger.log(`Updating cycle duration to ${config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS}`);
+    //     await darknodePayment.updateCycleDuration(config.DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS);
+    // }
 
     if (changeCycle) {
         try {
@@ -167,6 +169,8 @@ module.exports = async function (deployer, network) {
             deployer.logger.log("Unable to call darknodePayment.changeCycle()");
         }
     }
+    // Set the darknode payment cycle changer to the darknode registry
+    await darknodePayment.updateCycleChanger(DarknodeRegistry.address);
 
     deployer.logger.log({
         RenToken: RenToken.address,
