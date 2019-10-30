@@ -46,7 +46,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
     const removeFee = (value: number | BN, bips: number | BN) =>
         new BN(value).sub(new BN(value).mul(new BN(bips)).div(new BN(10000)));
 
-    const mintTest = async (shifter: ShifterInstance, value: number | BN, shiftID = undefined) => {
+    const mintTest = async (shifter: ShifterInstance, value: number | BN, shiftID?: string) => {
         const nHash = randomBytes(32);
         const pHash = randomBytes(32);
 
@@ -80,7 +80,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         return [pHash, nHash];
     };
 
-    const burnTest = async (shifter: ShifterInstance, value: number | BN, btcAddress?: string, shiftID = undefined) => {
+    const burnTest = async (shifter: ShifterInstance, value: number | BN, btcAddress?: string, shiftID?: string) => {
         // Note: we don't use `||` because we want to pass in `""`
         btcAddress = btcAddress !== undefined ? btcAddress : randomBytes(35);
 
