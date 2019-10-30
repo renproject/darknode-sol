@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -30,8 +30,11 @@ contract Shifter is Ownable {
     /// forwarded to a fee recipient.
     address public feeRecipient;
 
-    /// @notice The minting and burning fee in bips.
-    uint16 public fee;
+    /// @notice The shiftIn fee in bips.
+    uint16 public shiftInFee;
+
+    /// @notice The shiftOut fee in bips.
+    uint16 public shiftOutFee;
 
     /// @notice Each nHash can only be seen once.
     mapping (bytes32=>bool) public status;
@@ -57,13 +60,16 @@ contract Shifter is Ownable {
     /// @param _feeRecipient The recipient of burning and minting fees.
     /// @param _mintAuthority The address of the key that can sign mint
     ///        requests.
-    /// @param _fee The amount subtracted each burn and mint request and
+    /// @param _shiftInFee The amount subtracted each shiftIn request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount) public {
+    /// @param _shiftOutFee The amount subtracted each shiftOut request and
+    ///        forwarded to the feeRecipient. In BIPS.
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount) public {
         minShiftAmount = _minShiftOutAmount;
         token = _token;
         mintAuthority = _mintAuthority;
-        fee = _fee;
+        shiftInFee = _shiftInFee;
+        shiftOutFee = _shiftOutFee;
         updateFeeRecipient(_feeRecipient);
     }
 
@@ -116,11 +122,18 @@ contract Shifter is Ownable {
         feeRecipient = _nextFeeRecipient;
     }
 
-    /// @notice Allow the owner to update the fee.
+    /// @notice Allow the owner to update the shiftIn fee.
     ///
     /// @param _nextFee The new fee for minting and burning.
-    function updateFee(uint16 _nextFee) public onlyOwner {
-        fee = _nextFee;
+    function updateShiftInFee(uint16 _nextFee) public onlyOwner {
+        shiftInFee = _nextFee;
+    }
+
+    /// @notice Allow the owner to update the shiftOut fee.
+    ///
+    /// @param _nextFee The new fee for minting and burning.
+    function updateShiftOutFee(uint16 _nextFee) public onlyOwner {
+        shiftOutFee = _nextFee;
     }
 
     /// @notice shiftIn mints tokens after taking a fee for the `_feeRecipient`.
@@ -152,7 +165,7 @@ contract Shifter is Ownable {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = (_amount.mul(shiftInFee)).div(BIPS_DENOMINATOR);
         uint256 receivedAmount = _amount.sub(absoluteFee);
         token.mint(msg.sender, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
@@ -179,7 +192,7 @@ contract Shifter is Ownable {
         require(_amount >= minShiftAmount, "amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = (_amount.mul(shiftOutFee)).div(BIPS_DENOMINATOR);
         token.burn(msg.sender, _amount);
         token.mint(feeRecipient, absoluteFee);
 
@@ -206,19 +219,19 @@ contract Shifter is Ownable {
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
 contract BTCShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }
 
 contract ZECShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }
 
 contract BCHShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }

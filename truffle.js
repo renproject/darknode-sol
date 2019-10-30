@@ -53,7 +53,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: "0.5.8",
+      version: "0.5.12",
       settings: {
         evmVersion: "petersburg",
         optimizer: {
