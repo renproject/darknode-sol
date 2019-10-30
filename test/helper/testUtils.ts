@@ -68,9 +68,9 @@ const increaseTimeHelper = async (seconds: number) => {
                         reject();
                     }
                     resolve();
-                }) as any);
+                }) as any).catch(reject);
             }) as any,
-        );
+        ).catch(reject);
     });
 };
 

@@ -15,6 +15,15 @@ const networks = require("./networks.js");
 const gitCommit = () => execSync("git describe --always --long").toString().trim();
 
 /**
+ * @dev In order to specify what contracts to re-deploy, update `networks.js`.
+ * 
+ * For the network you want to use, set the contracts' addresses to `""` and run:
+ * `NETWORK=testnet yarn deploy` (replacing network)
+ *
+ * Don't forget to verify the contracts on etherscan:
+ * `NETWORK=testnet yarn verify DarknodePayment DarknodePaymentStore`
+ * (replacing network and contract names)
+ * 
  * @param {any} deployer
  * @param {string} network
  */

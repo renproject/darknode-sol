@@ -38,25 +38,51 @@ module.exports = {
             mintAuthority: "TODO",
         },
     },
+    chaosnet: {
+        RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
+        DarknodeSlasher: "0x0000000000000000000000000000000000000000",
+        DarknodeRegistry: "0xe0a0FC6eCABa77638b4f516C11B68f3837fe949a",
+        DarknodeRegistryStore: "0x14Add4Ca443E7445A3418bB572D6079bFC98897a",
+        DarknodePayment: "0x50190F37020505405670656E50A3df49484a9123",
+        DarknodePaymentStore: "0x7546dbfB23F22C05b190DFbbBAa48E4420316677",
+        tokens: {
+            DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+
+        BTCShifter: "0x2F4657e26D4887Ed9029FD5B97661FF4582D0cD6",
+        ZECShifter: "0x8cb5e78CD53A6b994d5C1Cc52A4A773705A9599a",
+        BCHShifter: "0xE0926B2f1B37c2DAE0c5682F5Fd75ADf83CFe771",
+        zBTC: "0xc04956C6472CDd58766614f8D47F6826aC477fB9",
+        zZEC: "0x09aA07Ae98fdE91D66775C13107e9F082fF65295",
+        zBCH: "0x0e68EE104c768078cB3624396AAf9285C58f1a73",
+        ShifterRegistry: "0x1d4713B74e79A3696722Aebe05de976979876CAC",
+
+        config: {
+            ...config,
+            MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
+            mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1", // TODO
+        },
+    },
     testnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x0000000000000000000000000000000000000000",
-        DarknodeRegistry: "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D",
-        DarknodeRegistryStore: "0x88e4477e4fdd677aee2dc9376471d45c198669fa",
-        DarknodePayment: "0x8E11B87547f4072CC8A094F2888201CAF4EA0B9e",
-        DarknodePaymentStore: "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9",
+        DarknodeRegistry: "0x39238ddCc6b301068f6D5B3DCa3A981EB20ba9A3",
+        DarknodeRegistryStore: "0xc24146aE71470C2f8749DA0738b09434E0220d92",
+        DarknodePayment: "0x7e4E9ECeD2ba1EE5051C3B17dd1F81E7C1AfBFb1",
+        DarknodePaymentStore: "0xF842CE0536B49898AC4f7D8aEb5c7764bd3DB443",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: '0xe5c5dAe20CdE920AEEcaE132fB37321523e2fbA5',
-        ZECShifter: '0xD0B7E226e7605c0436D37AabE44668F89f941E70',
-        zBTC: '0xc6069E8DeA210C937A846db2CEbC0f58ca111f26',
-        zZEC: '0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E',
-        zBCH: "",
-        BCHShifter: "",
-        ShifterRegistry: '0xbA563a8510d86dE95F5a50007E180d6d4966ad12',
+        BTCShifter: "0xe5c5dAe20CdE920AEEcaE132fB37321523e2fbA5",
+        ZECShifter: "0xD0B7E226e7605c0436D37AabE44668F89f941E70",
+        BCHShifter: "0x0aFf3BCFD89453d22d38C32bC6b03041f244BB4b",
+        zBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
+        zZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
+        zBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
+        ShifterRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
 
         config: {
             ...config,
@@ -76,13 +102,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: '0x8fB4F7D1ea9329697127F2784399301c0F8E6866',
-        ZECShifter: '0x19Fe91276a992c2E85544C627583fcc535ff0661',
-        zBTC: '0x916B8012E1813E5924a3Eca400dBE6C7055a8484',
-        zZEC: '0x71b6A19Fc832bD9C739489EcBEa67ab41261026F',
-        zBCH: "",
-        BCHShifter: "",
-        ShifterRegistry: '0xc7B310c18D78f175812CFfD8896d3cC959aC28d6',
+        BTCShifter: "0x8fB4F7D1ea9329697127F2784399301c0F8E6866",
+        ZECShifter: "0x19Fe91276a992c2E85544C627583fcc535ff0661",
+        zBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
+        zZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
+        zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
+        BCHShifter: "0x9b74517b18D8D0581df70dc6376db5f4974ebfbD",
+        ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
 
         config: {
             ...config,
@@ -92,11 +118,11 @@ module.exports = {
 
     localnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: '0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3',
-        DarknodeRegistry: '0xA7F5B11657AA2796B9355DceF075202C26507B9B',
-        DarknodeRegistryStore: '0x46d016F50837a5DF8fe229127e54fb18B621bAeF',
-        DarknodePayment: '0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe',
-        DarknodePaymentStore: '0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534',
+        DarknodeSlasher: "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
+        DarknodeRegistry: "0xA7F5B11657AA2796B9355DceF075202C26507B9B",
+        DarknodeRegistryStore: "0x46d016F50837a5DF8fe229127e54fb18B621bAeF",
+        DarknodePayment: "0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe",
+        DarknodePaymentStore: "0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",

@@ -19,18 +19,21 @@ const kovanNetwork = {
   gasPrice: 6.5 * GWEI,
 };
 
+const mainNetwork = {
+  // @ts-ignore
+  provider: () => new HDWalletProvider(process.env.MNEMONIC_MAINNET, `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`),
+  network_id: 1,
+  gas: 6721975,
+  gasPrice: 2.1 * GWEI,
+};
+
 module.exports = {
   networks: {
     localnet: kovanNetwork,
     devnet: kovanNetwork,
     testnet: kovanNetwork,
-    main: {
-      // @ts-ignore
-      provider: () => new HDWalletProvider(process.env.MNEMONIC_MAINNET, `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`),
-      network_id: 1,
-      gas: 6721975,
-      gasPrice: 6.5 * GWEI,
-    },
+    main: mainNetwork,
+    chaosnet: mainNetwork,
     development: {
       host: "localhost",
       port: 8545,

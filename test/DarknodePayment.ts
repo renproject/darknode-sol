@@ -2,11 +2,10 @@ import BN from "bn.js";
 
 import { config } from "../migrations/networks";
 import {
-    CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance, DarknodeRegistryInstance,
-    DarknodeSlasherInstance, ERC20Instance, RenTokenInstance } from "../types/truffle-contracts";
-import {
-    ETHEREUM_TOKEN_ADDRESS, MINIMUM_BOND, NULL, PUBK, waitForEpoch,
-} from "./helper/testUtils";
+    CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
+    DarknodeRegistryInstance, DarknodeSlasherInstance, ERC20Instance, RenTokenInstance,
+} from "../types/truffle-contracts";
+import { ETHEREUM_TOKEN_ADDRESS, MINIMUM_BOND, NULL, PUBK, waitForEpoch } from "./helper/testUtils";
 
 const CycleChanger = artifacts.require("CycleChanger");
 const RenToken = artifacts.require("RenToken");
