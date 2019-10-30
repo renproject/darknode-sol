@@ -9,6 +9,7 @@ import {
 } from "./helper/testUtils";
 
 const Claimer = artifacts.require("Claimer");
+const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
@@ -639,11 +640,20 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await dnr.recoverTokens(ren.address, { from: accounts[1] })
                 .should.be.rejectedWith(/caller is not the owner/);
 
-            // Can recover unrelated token
+            // Recover REN
             const initialRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
             await dnr.recoverTokens(ren.address, { from: accounts[0] });
             const finalRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
             finalRenBalance.sub(initialRenBalance).should.bignumber.equal(1000);
+
+            // Recover ETH
+            const forceSend = await ForceSend.new();
+            await forceSend.send(dnr.address, { value: "1" });
+            (await web3.eth.getBalance(dnr.address))
+                .should.bignumber.greaterThan(0);
+            await dnr.recoverTokens(NULL, { from: accounts[0] });
+            (await web3.eth.getBalance(dnr.address))
+                .should.bignumber.equal(0);
         });
 
         it("should be able to withdraw funds that are mistakenly sent to the Darknode Registry Store", async () => {
@@ -672,6 +682,15 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await dnrs.recoverTokens(token.address, { from: accounts[0] });
             const finalTokenBalance = new BN((await token.balanceOf.call(accounts[0])).toString());
             finalTokenBalance.sub(initialTokenBalance).should.bignumber.equal(1000);
+
+            // Recover ETH
+            const forceSend = await ForceSend.new();
+            await forceSend.send(dnrs.address, { value: "1" });
+            (await web3.eth.getBalance(dnrs.address))
+                .should.bignumber.greaterThan(0);
+            await dnrs.recoverTokens(NULL, { from: accounts[0] });
+            (await web3.eth.getBalance(dnrs.address))
+                .should.bignumber.equal(0);
 
             // Check that no REN was transferred
             const finalRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());

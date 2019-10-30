@@ -9,6 +9,7 @@ import {
 import { log } from "./helper/logs";
 import { ETHEREUM_TOKEN_ADDRESS, NULL, Ox, randomAddress, randomBytes } from "./helper/testUtils";
 
+const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
 const Claimer = artifacts.require("Claimer");
 const ShifterRegistry = artifacts.require("ShifterRegistry");
@@ -305,17 +306,27 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await btcShifter.recoverTokens(ren.address, { from: malicious })
                 .should.be.rejectedWith(/caller is not the owner/);
 
-            // Can recover unrelated token
+            // Recover zBTC
             const balanceBefore = new BN(await zbtc.balanceOf.call(owner));
             await btcShifter.recoverTokens(zbtc.address, { from: owner });
             const balanceAfter = new BN(await zbtc.balanceOf.call(owner));
             balanceAfter.sub(balanceBefore).should.bignumber.equal(zbtcValue);
             await zbtc.transfer(user, zbtcValue);
 
+            // Recover REN
             const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
             await btcShifter.recoverTokens(ren.address, { from: owner });
             const finalRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
             finalRenBalance.sub(initialRenBalance).should.bignumber.equal(renAmount);
+
+            // Recover ETH
+            const forceSend = await ForceSend.new();
+            await forceSend.send(btcShifter.address, { value: "1" });
+            (await web3.eth.getBalance(btcShifter.address))
+                .should.bignumber.greaterThan(0);
+            await btcShifter.recoverTokens(NULL, { from: owner });
+            (await web3.eth.getBalance(btcShifter.address))
+                .should.bignumber.equal(0);
 
             await burnTest(btcShifter, zbtcValue);
         });
@@ -339,17 +350,27 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await claimer.transferTokenOwnership(owner, { from: owner });
             await zbtc.claimOwnership({ from: owner });
 
-            // Can recover unrelated token
+            // Recover REN
             const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
             await zbtc.recoverTokens(ren.address, { from: owner });
             const finalRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
             finalRenBalance.sub(initialRenBalance).should.bignumber.equal(renAmount);
 
+            // Recover zBTC
             const balanceBefore = new BN(await zbtc.balanceOf.call(owner));
             await zbtc.recoverTokens(zbtc.address, { from: owner });
             const balanceAfter = new BN(await zbtc.balanceOf.call(owner));
             balanceAfter.sub(balanceBefore).should.bignumber.equal(zbtcValue);
             await zbtc.transfer(user, zbtcValue);
+
+            // Recover ETH
+            const forceSend = await ForceSend.new();
+            await forceSend.send(btcShifter.address, { value: "1" });
+            (await web3.eth.getBalance(btcShifter.address))
+                .should.bignumber.greaterThan(0);
+            await btcShifter.recoverTokens(NULL, { from: owner });
+            (await web3.eth.getBalance(btcShifter.address))
+                .should.bignumber.equal(0);
 
             await zbtc.transferOwnership(btcShifter.address);
             await btcShifter.claimTokenOwnership();
