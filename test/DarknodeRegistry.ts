@@ -67,13 +67,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can update minimum epoch interval", async () => {
         await dnr.updateMinimumEpochInterval(0x0);
         await waitForEpoch(dnr);
-        (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
+        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
         await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS, { from: accounts[1] })
             .should.be.rejectedWith(/revert/); // not owner
         await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS);
-        (await dnr.minimumEpochInterval()).should.bignumber.equal(0);
+        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
         await waitForEpoch(dnr);
-        (await dnr.minimumEpochInterval()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL_SECONDS);
+        (await dnr.minimumEpochInterval.call()).should.bignumber.equal(MINIMUM_EPOCH_INTERVAL_SECONDS);
     });
 
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
@@ -486,13 +486,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const newSlasher = accounts[0];
         await dnr.updateSlasher(newSlasher);
         await waitForEpoch(dnr);
-        (await dnr.slasher()).should.equal(newSlasher);
+        (await dnr.slasher.call()).should.equal(newSlasher);
         await dnr.slash(ID("2"), newSlasher, new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
         await dnr.slash(ID("2"), newSlasher, new BN(328293)).should.eventually.be.rejectedWith(/invalid percent/);
         await dnr.slash(ID("2"), newSlasher, new BN(923)).should.eventually.be.rejectedWith(/invalid percent/);
         await dnr.updateSlasher(slasher.address);
         await waitForEpoch(dnr);
-        (await dnr.slasher()).should.equal(slasher.address);
+        (await dnr.slasher.call()).should.equal(slasher.address);
     });
 
     it("can update slasher address", async () => {
@@ -661,10 +661,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             const newSlasher = accounts[0];
             await newDNR.updateSlasher(newSlasher);
             await waitForEpoch(newDNR);
-            (await newDNR.slasher()).should.equal(newSlasher);
+            (await newDNR.slasher.call()).should.equal(newSlasher);
 
             // We should have enough balance to register a darknode
-            if (new BN(await ren.balanceOf(accounts[8])).lt(MINIMUM_BOND)) {
+            if (new BN(await ren.balanceOf.call(accounts[8])).lt(MINIMUM_BOND)) {
                 await ren.transfer(accounts[8], MINIMUM_BOND);
             }
             await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });

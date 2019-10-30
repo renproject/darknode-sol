@@ -1,18 +1,20 @@
 import BN from "bn.js";
-
 import { ecsign } from "ethereumjs-util";
 import hashjs from "hash.js";
 
 // import { config } from "../migrations/networks";
 import {
     DarknodePaymentStoreInstance, DarknodeRegistryInstance, DarknodeRegistryStoreInstance,
-    DarknodeSlasherInstance, RenTokenInstance } from "../types/truffle-contracts";
-import { Ox } from "./helper/testUtils";
+    DarknodeSlasherInstance, RenTokenInstance,
+} from "../types/truffle-contracts";
 import {
-    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
+    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, Ox, PUBK,
+    waitForEpoch,
 } from "./helper/testUtils";
-import { Darknode, generatePrecommitMessage, generatePrevoteMessage, generateProposeMessage,
-    generateSecretMessage } from "./Validate";
+import {
+    Darknode, generatePrecommitMessage, generatePrevoteMessage, generateProposeMessage,
+    generateSecretMessage,
+} from "./Validate";
 
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
@@ -70,45 +72,45 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const p1 = new BN("1");
             await slasher.setBlacklistSlashPercent(p1)
                 .should.eventually.not.be.rejected;
-            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p1);
+            (await slasher.blacklistSlashPercent.call()).should.bignumber.equal(p1);
             const p2 = new BN("10");
             await slasher.setBlacklistSlashPercent(p2)
                 .should.eventually.not.be.rejected;
-            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p2);
+            (await slasher.blacklistSlashPercent.call()).should.bignumber.equal(p2);
             const p3 = new BN("12");
             await slasher.setBlacklistSlashPercent(p3)
                 .should.eventually.not.be.rejected;
-            (await slasher.blacklistSlashPercent()).should.bignumber.equal(p3);
+            (await slasher.blacklistSlashPercent.call()).should.bignumber.equal(p3);
         });
 
         it("can set a valid malicious percentage", async () => {
             const p1 = new BN("1");
             await slasher.setMaliciousSlashPercent(p1)
                 .should.eventually.not.be.rejected;
-            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p1);
+            (await slasher.maliciousSlashPercent.call()).should.bignumber.equal(p1);
             const p2 = new BN("10");
             await slasher.setMaliciousSlashPercent(p2)
                 .should.eventually.not.be.rejected;
-            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p2);
+            (await slasher.maliciousSlashPercent.call()).should.bignumber.equal(p2);
             const p3 = new BN("12");
             await slasher.setMaliciousSlashPercent(p3)
                 .should.eventually.not.be.rejected;
-            (await slasher.maliciousSlashPercent()).should.bignumber.equal(p3);
+            (await slasher.maliciousSlashPercent.call()).should.bignumber.equal(p3);
         });
 
         it("can set a valid secret reveal percentage", async () => {
             const p1 = new BN("1");
             await slasher.setSecretRevealSlashPercent(p1)
                 .should.eventually.not.be.rejected;
-            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p1);
+            (await slasher.secretRevealSlashPercent.call()).should.bignumber.equal(p1);
             const p2 = new BN("10");
             await slasher.setSecretRevealSlashPercent(p2)
                 .should.eventually.not.be.rejected;
-            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p2);
+            (await slasher.secretRevealSlashPercent.call()).should.bignumber.equal(p2);
             const p3 = new BN("12");
             await slasher.setSecretRevealSlashPercent(p3)
                 .should.eventually.not.be.rejected;
-            (await slasher.secretRevealSlashPercent()).should.bignumber.equal(p3);
+            (await slasher.secretRevealSlashPercent.call()).should.bignumber.equal(p3);
         });
 
         it("cannot set an invalid blacklist percentage", async () => {
@@ -334,7 +336,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
             const caller = accounts[1];
-            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const darknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
 
             // first slash should pass
             await slasher.slashDuplicatePropose(
@@ -351,10 +353,10 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 },
             ).should.eventually.not.be.rejected;
 
-            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashPercent = new BN(await slasher.maliciousSlashPercent.call());
             const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
 
-            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
             newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
 
             // second slash should fail
@@ -392,7 +394,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
             const caller = accounts[1];
-            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const darknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
 
             // first slash should pass
             await slasher.slashDuplicatePrevote(
@@ -407,10 +409,10 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 },
             ).should.eventually.not.be.rejected;
 
-            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashPercent = new BN(await slasher.maliciousSlashPercent.call());
             const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
 
-            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
             newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
 
             // second slash should fail
@@ -446,7 +448,7 @@ contract("DarknodeSlasher", (accounts: string[]) => {
             const sigString2 = Ox(`${sig2.r.toString("hex")}${sig2.s.toString("hex")}${(sig2.v).toString(16)}`);
 
             const caller = accounts[1];
-            const darknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const darknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
 
             // first slash should pass
             await slasher.slashDuplicatePrecommit(
@@ -461,10 +463,10 @@ contract("DarknodeSlasher", (accounts: string[]) => {
                 },
             ).should.eventually.not.be.rejected;
 
-            const slashPercent = new BN(await slasher.maliciousSlashPercent());
+            const slashPercent = new BN(await slasher.maliciousSlashPercent.call());
             const slashedAmount = darknodeBond.div(new BN(100)).mul(slashPercent);
 
-            const newDarknodeBond = new BN(await dnr.getDarknodeBond(darknode.account.address));
+            const newDarknodeBond = new BN(await dnr.getDarknodeBond.call(darknode.account.address));
             newDarknodeBond.should.bignumber.equal(darknodeBond.sub(slashedAmount));
 
             // second slash should fail
