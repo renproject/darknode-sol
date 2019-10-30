@@ -22,7 +22,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
     let mintAuthority: Account;
     let privKey: Buffer;
 
-    const feeInBips = new BN(10);
+    const shiftInFees = new BN(5);
+    const shiftOutFees = new BN(15);
 
     before(async () => {
         zbtc = await zBTC.new();
@@ -33,8 +34,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             zbtc.address,
             feeRecipient,
             mintAuthority.address,
-            feeInBips,
-            feeInBips,
+            shiftInFees,
+            shiftOutFees,
             10000,
         );
 
@@ -67,10 +68,14 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             .should.emit.logs([
                 log(
                     "LogShiftIn",
-                    { _to: user, _amount: removeFee(value, 10), _shiftID: shiftID !== undefined ? shiftID : _shiftID },
+                    {
+                        _to: user,
+                        _amount: removeFee(value, shiftInFees),
+                        _shiftID: shiftID !== undefined ? shiftID : _shiftID,
+                    },
                 ),
             ]);
-        (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
+        (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
 
         return [pHash, nHash];
     };
@@ -87,7 +92,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                     "LogShiftOut",
                     {
                         _to: btcAddress,
-                        _amount: removeFee(value, 10),
+                        _amount: removeFee(value, shiftOutFees),
                         _shiftID: shiftID !== undefined ? shiftID : _shiftID,
                         _indexedTo: keccak256(btcAddress),
                     },
@@ -99,7 +104,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
     describe("can mint and burn", () => {
         const value = new BN(20000);
         it("can mint tokens with an unused hash, valid signature and pHash", async () => mintTest(btcShifter, value));
-        it("can burn tokens", async () => burnTest(btcShifter, removeFee(value, 10)));
+        it("can burn tokens", async () => burnTest(btcShifter, removeFee(value, shiftInFees)));
         it("won't mint for the same nHash and pHash twice", async () => {
             const [pHash, nHash] = await mintTest(btcShifter, value);
 
@@ -122,9 +127,9 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             const balanceBefore = new BN((await zbtc.balanceOf(user)).toString());
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user });
-            (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, 10)));
+            (await zbtc.balanceOf(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, shiftInFees)));
 
-            await burnTest(btcShifter, removeFee(value, 10));
+            await burnTest(btcShifter, removeFee(value, shiftInFees));
         });
 
         it("won't mint with an invalid signature", async () => {
@@ -142,7 +147,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         });
 
         it("can't burn to empty address", async () => {
-            await burnTest(btcShifter, removeFee(value, 10), new Buffer([]) as any as string)
+            await burnTest(btcShifter, removeFee(value, shiftInFees), new Buffer([]) as any as string)
                 .should.be.rejectedWith(/to address is empty/);
         });
 
@@ -238,8 +243,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 zbtc.address,
                 feeRecipient,
                 mintAuthority.address,
-                feeInBips,
-                feeInBips,
+                shiftInFees,
+                shiftOutFees,
                 10000,
             );
 
@@ -260,7 +265,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         it("can mint and burn using new shifter", async () => {
             const value = new BN(200000);
             await mintTest(newShifter, value);
-            await burnTest(newShifter, removeFee(value, 10));
+            await burnTest(newShifter, removeFee(value, shiftInFees));
         });
 
         it("can't upgrade to an invalid shifter", async () => {
@@ -366,8 +371,8 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
                 zbtc.address,
                 feeRecipient,
                 mintAuthority.address,
-                feeInBips,
-                feeInBips,
+                shiftInFees,
+                shiftOutFees,
                 10000,
             );
 
