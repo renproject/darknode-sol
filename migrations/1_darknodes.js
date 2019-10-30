@@ -15,6 +15,15 @@ const networks = require("./networks.js");
 const gitCommit = () => execSync("git describe --always --long").toString().trim();
 
 /**
+ * @dev In order to specify what contracts to re-deploy, update `networks.js`.
+ * 
+ * For the network you want to use, set the contracts' addresses to `""` and run:
+ * `NETWORK=testnet yarn deploy` (replacing network)
+ *
+ * Don't forget to verify the contracts on etherscan:
+ * `NETWORK=testnet yarn verify DarknodePayment DarknodePaymentStore`
+ * (replacing network and contract names)
+ * 
  * @param {any} deployer
  * @param {string} network
  */
@@ -93,8 +102,8 @@ module.exports = async function (deployer, network) {
         await slasher.setMaliciousSlashPercent(new BN(config.MALICIOUS_SLASH_PERCENT));
     }
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
-    const currentSlasher = await darknodeRegistry.slasher();
-    const nextSlasher = await darknodeRegistry.nextSlasher();
+    const currentSlasher = await darknodeRegistry.slasher.call();
+    const nextSlasher = await darknodeRegistry.nextSlasher.call();
     if (currentSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase() && nextSlasher.toLowerCase() != DarknodeSlasher.address.toLowerCase()) {
         deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry")
         // Update slasher address
@@ -129,7 +138,7 @@ module.exports = async function (deployer, network) {
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     for (const tokenName of Object.keys(tokens)) {
         const tokenAddress = tokens[tokenName];
-        const registered = await darknodePayment.registeredTokenIndex(tokenAddress);
+        const registered = await darknodePayment.registeredTokenIndex.call(tokenAddress);
         if (registered.toString() === "0") {
             deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
             await darknodePayment.registerToken(tokenAddress);
@@ -137,7 +146,7 @@ module.exports = async function (deployer, network) {
     }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
-    const currentOwner = await darknodePaymentStore.owner();
+    const currentOwner = await darknodePaymentStore.owner.call();
     if (currentOwner !== DarknodePayment.address) {
         deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment")
         // Initiate ownership transfer of DarknodePaymentStore

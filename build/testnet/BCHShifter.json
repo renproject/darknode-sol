@@ -400,6 +400,11 @@
           "indexed": true,
           "name": "_shiftID",
           "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "_signedMessageHash",
+          "type": "bytes32"
         }
       ],
       "name": "LogShiftIn",
@@ -526,11 +531,39 @@
           "name": "OwnershipTransferred",
           "type": "event",
           "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "_to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "_amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "name": "_shiftID",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "name": "_signedMessageHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "LogShiftIn",
+          "type": "event",
+          "signature": "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502"
         }
       },
       "links": {},
       "address": "0x0aFf3BCFD89453d22d38C32bC6b03041f244BB4b",
-      "transactionHash": "0xd6016d84904abd4d989567357e95aa2798dffbe2713669167b9b3d3d115171a1"
+      "transactionHash": "0x71be0348459e2bda30079a5edecf65db43fb4e7a47e71029683937be27e4f63c"
     }
   },
   "schemaVersion": "3.0.11"

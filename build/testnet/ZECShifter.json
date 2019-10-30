@@ -400,6 +400,11 @@
           "indexed": true,
           "name": "_shiftID",
           "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "_signedMessageHash",
+          "type": "bytes32"
         }
       ],
       "name": "LogShiftIn",

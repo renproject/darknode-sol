@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -138,6 +138,16 @@ contract DarknodePayment is Ownable {
         // Start the current cycle
         (currentCycle, cycleStartTime) = darknodeRegistry.currentEpoch();
         currentCyclePayoutPercent = nextCyclePayoutPercent;
+    }
+
+    /// @notice Allow the owner of the contract to recover funds accidentally
+    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
+    function recoverTokens(address _token) external onlyOwner {
+        if (_token == address(0x0)) {
+            msg.sender.transfer(address(this).balance);
+        } else {
+            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
+        }
     }
 
     /// @notice Transfers the funds allocated to the darknode to the darknode

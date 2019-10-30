@@ -106,6 +106,3 @@ export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
 export const randomID = () => {
     return keccak256(Math.random().toString());
 };
-
-export const openPrefix = toHex("Republic Protocol: open: ");
-export const closePrefix = toHex("Republic Protocol: cancel: ");

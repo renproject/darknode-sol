@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -56,27 +56,29 @@ contract DarknodeRegistry is Ownable {
     DarknodeSlasher public nextSlasher;
 
     /// @notice Emitted when a darknode is registered.
+    /// @param _operator The owner of the darknode.
     /// @param _darknodeID The darknode ID that was registered.
     /// @param _bond The amount of REN that was transferred as bond.
-    event LogDarknodeRegistered(address indexed _darknodeID, uint256 _bond);
+    event LogDarknodeRegistered(address indexed _operator, address indexed _darknodeID, uint256 _bond);
 
     /// @notice Emitted when a darknode is deregistered.
+    /// @param _operator The owner of the darknode.
     /// @param _darknodeID The darknode ID that was deregistered.
-    event LogDarknodeDeregistered(address indexed _darknodeID);
+    event LogDarknodeDeregistered(address indexed _operator, address indexed _darknodeID);
 
     /// @notice Emitted when a refund has been made.
-    /// @param _owner The address that was refunded.
+    /// @param _operator The owner of the darknode.
     /// @param _amount The amount of REN that was refunded.
-    event LogDarknodeOwnerRefunded(address indexed _owner, uint256 _amount);
+    event LogDarknodeOwnerRefunded(address indexed _operator, uint256 _amount);
 
     /// @notice Emitted when a new epoch has begun.
     event LogNewEpoch(uint256 indexed epochhash);
 
     /// @notice Emitted when a constructor parameter has been updated.
-    event LogMinimumBondUpdated(uint256 previousMinimumBond, uint256 nextMinimumBond);
-    event LogMinimumPodSizeUpdated(uint256 previousMinimumPodSize, uint256 nextMinimumPodSize);
-    event LogMinimumEpochIntervalUpdated(uint256 previousMinimumEpochInterval, uint256 nextMinimumEpochInterval);
-    event LogSlasherUpdated(address previousSlasher, address nextSlasher);
+    event LogMinimumBondUpdated(uint256 _previousMinimumBond, uint256 _nextMinimumBond);
+    event LogMinimumPodSizeUpdated(uint256 _previousMinimumPodSize, uint256 _nextMinimumPodSize);
+    event LogMinimumEpochIntervalUpdated(uint256 _previousMinimumEpochInterval, uint256 _nextMinimumEpochInterval);
+    event LogSlasherUpdated(address _previousSlasher, address _nextSlasher);
 
     /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
@@ -149,6 +151,16 @@ contract DarknodeRegistry is Ownable {
         numDarknodesPreviousEpoch = 0;
     }
 
+    /// @notice Allow the owner of the contract to recover funds accidentally
+    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
+    function recoverTokens(address _token) external onlyOwner {
+        if (_token == address(0x0)) {
+            msg.sender.transfer(address(this).balance);
+        } else {
+            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
+        }
+    }
+
     /// @notice Register a darknode and transfer the bond to this contract.
     /// Before registering, the bond transfer must be approved in the REN
     /// contract. The caller must provide a public encryption key for the
@@ -179,7 +191,7 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
-        emit LogDarknodeRegistered(_darknodeID, bond);
+        emit LogDarknodeRegistered(msg.sender, _darknodeID, bond);
     }
 
     /// @notice Deregister a darknode. The darknode will not be deregistered
@@ -511,6 +523,6 @@ contract DarknodeRegistry is Ownable {
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
         // Emit an event
-        emit LogDarknodeDeregistered(_darknodeID);
+        emit LogDarknodeDeregistered(msg.sender, _darknodeID);
     }
 }

@@ -375,7 +375,7 @@
     "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
-    "42": {
+    "1": {
       "events": {
         "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
@@ -397,8 +397,8 @@
         }
       },
       "links": {},
-      "address": "0xF842CE0536B49898AC4f7D8aEb5c7764bd3DB443",
-      "transactionHash": "0x2e32b243f43e1c4fd66254330f892d4ec72f124181e56669c0146dbf9ccbc375"
+      "address": "0x7546dbfB23F22C05b190DFbbBAa48E4420316677",
+      "transactionHash": "0xd6fe173b495ec368d2d214652a61056b9d2a81b75ccb67bc28867dfcfd8670f4"
     }
   },
   "schemaVersion": "3.0.11"
