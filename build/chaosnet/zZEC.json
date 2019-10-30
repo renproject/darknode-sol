@@ -1,5 +1,5 @@
 {
-  "contractName": "zBCH",
+  "contractName": "zZEC",
   "abi": [
     {
       "constant": true,
@@ -382,7 +382,7 @@
     "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
-    "42": {
+    "1": {
       "events": {
         "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
@@ -450,8 +450,8 @@
         }
       },
       "links": {},
-      "address": "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
-      "transactionHash": "0xf19c19055d6bed35856423d4acaf4d3f09c16dce034a915dd03117a9ec103e93"
+      "address": "0x09aA07Ae98fdE91D66775C13107e9F082fF65295",
+      "transactionHash": "0x88fe2ef13ab6d4fa426a7c058875f988ded3aab1801d40532f2ef05c3e463587"
     }
   },
   "schemaVersion": "3.0.11"

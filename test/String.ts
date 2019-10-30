@@ -26,7 +26,7 @@ contract("String", (accounts) => {
     it("can convert bytes32 to hex strings", async () => {
         const bytes32 = randomBytes(32);
 
-        (await StringInstance.fromBytes32(bytes32))
+        (await StringInstance.fromBytes32.call(bytes32))
             .should.equal(bytes32.toLowerCase());
     });
 

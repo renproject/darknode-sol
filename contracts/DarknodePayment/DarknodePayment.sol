@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -222,10 +222,11 @@ contract DarknodePayment is Ownable {
     ///
     /// @param _token The token address
     function forward(address _token) external {
-        require(_token != ETHEREUM, "not erc20");
-        uint256 balance = ERC20(_token).balanceOf(address(this));
-        require(balance != 0, "nothing to forward");
-        ERC20(_token).safeTransfer(address(store), balance);
+        if (_token == ETHEREUM) {
+            address(store).transfer(address(this).balance);
+        } else {
+            ERC20(_token).safeTransfer(address(store), ERC20(_token).balanceOf(address(this)));
+        }
     }
 
     /// @notice Claims the rewards allocated to the darknode last epoch.

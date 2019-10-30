@@ -6,7 +6,7 @@
 const glob = require("glob");
 const fs = require("fs");
 
-const networks = ["testnet", "devnet", "localnet"];
+const networks = ["testnet", "devnet", "localnet", "chaosnet"];
 
 const path = require('path');
 const dirname = path.dirname(__filename);
@@ -30,6 +30,9 @@ for (const network of networks) {
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,
+
+                    // Included for Etherscan verification
+                    // bytecode: obj.bytecode,
                 }
                 const newData = JSON.stringify(newObj, null, "  ");
 
