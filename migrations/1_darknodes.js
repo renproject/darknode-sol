@@ -75,7 +75,7 @@ module.exports = async function (deployer, network, accounts) {
     }
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
 
-    const storeOwner = await darknodeRegistryStore.owner();
+    const storeOwner = await darknodeRegistryStore.owner.call();
     if (storeOwner !== DarknodeRegistry.address) {
         deployer.logger.log("Linking DarknodeRegistryStore and DarknodeRegistry")
         if (storeOwner === accounts[0]) {
@@ -103,7 +103,7 @@ module.exports = async function (deployer, network, accounts) {
     }
     const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
 
-    const dnrInSlasher = await slasher.darknodeRegistry();
+    const dnrInSlasher = await slasher.darknodeRegistry.call();
     if (dnrInSlasher.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in Slasher");
         await slasher.updateDarknodeRegistry(DarknodeRegistry.address);
@@ -173,7 +173,7 @@ module.exports = async function (deployer, network, accounts) {
         }
     }
 
-    const dnrInDarknodePayment = await darknodePayment.darknodeRegistry();
+    const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();
     if (dnrInDarknodePayment.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in DNP");
         await darknodePayment.updateDarknodeRegistry(DarknodeRegistry.address);
