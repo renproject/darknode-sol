@@ -11,7 +11,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
     "deploy": "truffle migrate --network $NETWORK",
-    "deploy-no-dry": "truffle migrate --skipDryRun --network $NETWORK",
+    "deploy-skipDryRun": "yarn deploy --skipDryRun",
     "clean-build": "echo  \"Have all contracts been verified on Etherscan? Continuing in 10 seconds...\" && sleep 10 && grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
     "verify": "truffle run verify --network $NETWORK"
   },

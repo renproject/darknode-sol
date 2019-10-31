@@ -145,7 +145,6 @@ module.exports = async function (deployer, network, accounts) {
         );
     }
 
-    let changeCycle = false;
     if (!DarknodePayment.address) {
         // Deploy Darknode Payment
         deployer.logger.log("Deploying DarknodePayment");
@@ -156,7 +155,6 @@ module.exports = async function (deployer, network, accounts) {
             DarknodePaymentStore.address,
             config.DARKNODE_PAYOUT_PERCENT, // Reward payout percentage (50% is paid out at any given cycle)
         );
-        changeCycle = true;
     }
     // Update darknode payment address
     if ((await darknodeRegistry.darknodePayment()).toLowerCase() !== DarknodePayment.address.toLowerCase()) {
@@ -198,16 +196,16 @@ module.exports = async function (deployer, network, accounts) {
         }
     }
 
-    if (changeCycle) {
-        try {
-            deployer.logger.log("Attempting to change cycle");
-            await darknodePayment.changeCycle();
-        } catch (error) {
-            deployer.logger.log("Unable to call darknodePayment.changeCycle()");
-        }
-    }
+    // if (changeCycle) {
+    //     try {
+    //         deployer.logger.log("Attempting to change cycle");
+    //         await darknodePayment.changeCycle();
+    //     } catch (error) {
+    //         deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+    //     }
+    // }
+
     // Set the darknode payment cycle changer to the darknode registry
-    deployer.logger.log("Setting the DarknodePayment's cycle changer");
     if ((await darknodePayment.cycleChanger()).toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Setting the DarknodePayment's cycle changer");
         await darknodePayment.updateCycleChanger(DarknodeRegistry.address);

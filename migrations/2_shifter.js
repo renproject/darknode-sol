@@ -53,12 +53,12 @@ module.exports = async function (deployer, network, accounts) {
     }
     const registry = await ShifterRegistry.at(ShifterRegistry.address);
 
-    try {
-        deployer.logger.log("Attempting to change cycle");
-        await darknodePayment.changeCycle();
-    } catch (error) {
-        deployer.logger.log("Unable to call darknodePayment.changeCycle()");
-    }
+    // try {
+    //     deployer.logger.log("Attempting to change cycle");
+    //     await darknodePayment.changeCycle();
+    // } catch (error) {
+    //     deployer.logger.log("Unable to call darknodePayment.changeCycle()");
+    // }
 
     for (const [Token, Shifter, name, symbol, decimals, minShiftOutAmount] of [
         [zBTC, BTCShifter, "Shifted Bitcoin", "zBTC", 8, config.zBTCMinShiftOutAmount],

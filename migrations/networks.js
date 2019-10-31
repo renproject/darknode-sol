@@ -43,24 +43,25 @@ module.exports = {
         },
     },
     chaosnet: {
-        RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
-        DarknodeSlasher: "0x0000000000000000000000000000000000000000",
-        DarknodeRegistry: "0xe0a0FC6eCABa77638b4f516C11B68f3837fe949a",
-        DarknodeRegistryStore: "0x14Add4Ca443E7445A3418bB572D6079bFC98897a",
-        DarknodePayment: "0x50190F37020505405670656E50A3df49484a9123",
-        DarknodePaymentStore: "0x7546dbfB23F22C05b190DFbbBAa48E4420316677",
         tokens: {
             DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x2F4657e26D4887Ed9029FD5B97661FF4582D0cD6",
-        ZECShifter: "0x8cb5e78CD53A6b994d5C1Cc52A4A773705A9599a",
-        BCHShifter: "0xE0926B2f1B37c2DAE0c5682F5Fd75ADf83CFe771",
-        zBTC: "0xc04956C6472CDd58766614f8D47F6826aC477fB9",
-        zZEC: "0x09aA07Ae98fdE91D66775C13107e9F082fF65295",
-        zBCH: "0x0e68EE104c768078cB3624396AAf9285C58f1a73",
-        ShifterRegistry: "0x1d4713B74e79A3696722Aebe05de976979876CAC",
+        RenToken: '0x408e41876cCCDC0F92210600ef50372656052a38',
+        DarknodeSlasher: '0x7AdD7E6F431Cfa23dFfce61DD9749810dc678B16',
+        DarknodeRegistry: '0xA1eb04Db7a0ffd6e458b1868660a0edAF8199Fa9',
+        DarknodeRegistryStore: '0xE8d0C5D4ca958C8619Ab1B98cA901d65340C48B1',
+        DarknodePayment: '0x376D835c6Dc5d06C6335915B36ffe9734D3E4faa',
+        DarknodePaymentStore: '0x311999EE72B5826D664FD4F3aC09c0C462eFfe49',
+
+        BTCShifter: '0x1258d7FF385d1d81017d4a3d464c02f74C61902a',
+        ZECShifter: '0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b',
+        BCHShifter: '0xa76beA11766E0b66bD952bc357CF027742021a8C',
+        zBTC: '0x88C64A7D2ecC882D558DD16aBC1537515a78BB7D',
+        zZEC: '0x8dD8944320Eb76F8e39C58E7A30d34E7fbA9D719',
+        zBCH: '0x466Dd97F83b18aC23dDF16931f8171A817953fF1',
+        ShifterRegistry: '0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F',
 
         config: {
             ...config,
@@ -123,7 +124,7 @@ module.exports = {
     localnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
-        DarknodeRegistry: "0xA7F5B11657AA2796B9355DceF075202C26507B9B",
+        DarknodeRegistry: "",
         DarknodeRegistryStore: "0x46d016F50837a5DF8fe229127e54fb18B621bAeF",
         DarknodePayment: "0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe",
         DarknodePaymentStore: "0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534",

@@ -2,112 +2,29 @@
   "contractName": "ShifterRegistry",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "claimOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
+          "internalType": "string",
           "name": "_symbol",
           "type": "string"
         },
         {
           "indexed": true,
+          "internalType": "string",
           "name": "_indexedSymbol",
           "type": "string"
         },
         {
           "indexed": true,
+          "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
         },
         {
           "indexed": true,
-          "name": "_shifterAddress",
-          "type": "address"
-        }
-      ],
-      "name": "LogShifterRegistered",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_symbol",
-          "type": "string"
-        },
-        {
-          "indexed": true,
-          "name": "_indexedSymbol",
-          "type": "string"
-        },
-        {
-          "indexed": true,
-          "name": "_tokenAddress",
-          "type": "address"
-        },
-        {
-          "indexed": true,
+          "internalType": "address",
           "name": "_shifterAddress",
           "type": "address"
         }
@@ -119,17 +36,51 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        },
+        {
           "indexed": true,
+          "internalType": "string",
+          "name": "_indexedSymbol",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "_shifterAddress",
+          "type": "address"
+        }
+      ],
+      "name": "LogShifterRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_currentShifterAddress",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "address",
           "name": "_newShifterAddress",
           "type": "address"
         }
@@ -142,11 +93,13 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "previousOwner",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -156,12 +109,92 @@
     },
     {
       "constant": false,
+      "inputs": [],
+      "name": "claimOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "recoverTokens",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "_shifterAddress",
           "type": "address"
         }
@@ -176,10 +209,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "_newShifterAddress",
           "type": "address"
         }
@@ -194,6 +229,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "string",
           "name": "_symbol",
           "type": "string"
         }
@@ -208,10 +244,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_start",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_count",
           "type": "uint256"
         }
@@ -219,6 +257,7 @@
       "name": "getShifters",
       "outputs": [
         {
+          "internalType": "address[]",
           "name": "",
           "type": "address[]"
         }
@@ -231,10 +270,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_start",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_count",
           "type": "uint256"
         }
@@ -242,6 +283,7 @@
       "name": "getShiftedTokens",
       "outputs": [
         {
+          "internalType": "address[]",
           "name": "",
           "type": "address[]"
         }
@@ -254,6 +296,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
         }
@@ -261,6 +304,7 @@
       "name": "getShifterByToken",
       "outputs": [
         {
+          "internalType": "contract IShifter",
           "name": "",
           "type": "address"
         }
@@ -273,6 +317,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "string",
           "name": "_tokenSymbol",
           "type": "string"
         }
@@ -280,6 +325,7 @@
       "name": "getShifterBySymbol",
       "outputs": [
         {
+          "internalType": "contract IShifter",
           "name": "",
           "type": "address"
         }
@@ -292,6 +338,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "string",
           "name": "_tokenSymbol",
           "type": "string"
         }
@@ -299,6 +346,7 @@
       "name": "getTokenBySymbol",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -311,7 +359,7 @@
   "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
     "1": {
@@ -322,22 +370,26 @@
             {
               "indexed": false,
               "name": "_symbol",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": true,
               "name": "_indexedSymbol",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": true,
               "name": "_tokenAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "_shifterAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogShifterRegistered",
@@ -350,22 +402,26 @@
             {
               "indexed": false,
               "name": "_symbol",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": true,
               "name": "_indexedSymbol",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": true,
               "name": "_tokenAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "_shifterAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogShifterDeregistered",
@@ -378,17 +434,20 @@
             {
               "indexed": true,
               "name": "_tokenAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "_currentShifterAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "_newShifterAddress",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogShifterUpdated",
@@ -401,12 +460,14 @@
             {
               "indexed": true,
               "name": "previousOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "newOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "OwnershipTransferred",
@@ -415,9 +476,9 @@
         }
       },
       "links": {},
-      "address": "0x1d4713B74e79A3696722Aebe05de976979876CAC",
-      "transactionHash": "0xef4496f60080aa4c0c5f6d3bbdcd29cd20b3744a394489f6756f27f765cf277e"
+      "address": "0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F",
+      "transactionHash": "0xe212b01c2034ee43f87b7ff28e0ff3ef119d314d42a2af41217b24622c98311a"
     }
   },
-  "schemaVersion": "3.0.11"
+  "schemaVersion": "3.0.16"
 }
