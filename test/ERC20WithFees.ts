@@ -77,7 +77,7 @@ contract("ERC20WithFees", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.naiveDeposit(token.address, VALUE)
-                    .should.be.rejectedWith(/revert/);
+                    .should.be.rejectedWith(/SafeERC20: (ERC20 operation did not succeed)|(low-level call failed)/);
 
                 // Compare balances after depositing
                 (await token.balanceOf.call(accounts[0])).should.bignumber.equal(before);
@@ -92,7 +92,7 @@ contract("ERC20WithFees", (accounts) => {
                 // Approve and deposit
                 await token.approve(mock.address, 0);
                 await mock.deposit(token.address, VALUE)
-                    .should.be.rejectedWith(/revert/);
+                    .should.be.rejectedWith(/SafeERC20: (ERC20 operation did not succeed)|(low-level call failed)/);
 
                 // Compare balances after depositing
                 (await token.balanceOf.call(accounts[0])).should.bignumber.equal(before);
@@ -106,7 +106,7 @@ contract("ERC20WithFees", (accounts) => {
 
                 // Withdraw
                 await mock.withdraw(token.address, VALUE.mul(new BN(2)))
-                    .should.be.rejectedWith(/revert/);
+                    .should.be.rejectedWith(/SafeERC20: (ERC20 operation did not succeed)|(low-level call failed)/);
 
                 // Compare balances after depositing
                 (await token.balanceOf.call(accounts[0])).should.bignumber.equal(before);
@@ -128,7 +128,7 @@ contract("ERC20WithFees", (accounts) => {
                 // Approve twice without resetting allowance
                 await mock.approve(token.address, NEW_VALUE);
                 await mock.approve(token.address, NEW_VALUE)
-                    .should.be.rejectedWith(/revert/);
+                    .should.be.rejectedWith(/SafeERC20: approve from non-zero to non-zero allowance/);
 
                 // Can transfer from the contract
                 await token.transferFrom(mock.address, accounts[0], NEW_VALUE.sub(NEW_FEE));
@@ -153,7 +153,7 @@ contract("ERC20WithFees", (accounts) => {
                 await token.approve(mock.address, VALUE);
                 if (testCase.fees) {
                     await mock.naiveDeposit(token.address, VALUE)
-                        .should.be.rejectedWith("incorrect balance in deposit");
+                        .should.be.rejectedWith(/ERC20WithFeesTest: incorrect balance in deposit/);
                     await token.approve(mock.address, 0);
                 } else {
                     await mock.naiveDeposit(token.address, VALUE);

@@ -7,7 +7,7 @@ index d85ce09..adb7ac8 100644
          // Check the signature length
          if (signature.length != 65) {
 -            return (address(0));
-+            revert("signature's length is invalid");
++            revert("ECDSA: signature length is invalid");
          }
  
          // Divide the signature in r, s and v variables
@@ -16,12 +16,12 @@ index d85ce09..adb7ac8 100644
          // these malleable signatures as well.
          if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
 -            return address(0);
-+            revert("signature's s is in the wrong range");
++            revert("ECDSA: signature.s is in the wrong range");
          }
  
          if (v != 27 && v != 28) {
 -            return address(0);
-+            revert("signature's v is in the wrong range");
++            revert("ECDSA: signature.v is in the wrong range");
          }
  
          // If the signature is valid (and not malleable), return the signer address

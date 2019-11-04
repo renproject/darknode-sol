@@ -152,7 +152,7 @@ contract Shifter is Claimable {
         require(status[signedMessageHash] == false, "Shifter: nonce hash already spent");
         if (!verifySignature(signedMessageHash, _sig)) {
             // Return a detailed string containing the hash and recovered
-            // signer. This is a costly operation but is only run in the revert
+            // signer. This is somewhat costly but is only run in the revert
             // branch.
             revert(
                 String.add4(

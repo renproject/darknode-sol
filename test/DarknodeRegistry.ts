@@ -31,7 +31,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         dnr = await DarknodeRegistry.deployed();
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
-        await dnr.epoch({ from: accounts[1] }).should.be.rejectedWith(/not authorized/);
+        await dnr.epoch({ from: accounts[1] })
+            .should.be.rejectedWith(/DarknodeRegistry: not authorized/);
         await waitForEpoch(dnr);
 
         for (let i = 1; i < accounts.length; i++) {
@@ -49,7 +50,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         (await dnr.minimumBond.call()).should.bignumber.equal(1);
         await dnr.updateMinimumBond(MINIMUM_BOND, { from: accounts[1] })
-            .should.be.rejectedWith(/revert/); // not owner
+            .should.be.rejectedWith(/Ownable: caller is not the owner/);
         await dnr.updateMinimumBond(MINIMUM_BOND);
         (await dnr.minimumBond.call()).should.bignumber.equal(1);
         await waitForEpoch(dnr);
@@ -61,7 +62,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         (await dnr.minimumPodSize.call()).should.bignumber.equal(0);
         await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE, { from: accounts[1] })
-            .should.be.rejectedWith(/revert/); // not owner
+            .should.be.rejectedWith(/Ownable: caller is not the owner/);
         await dnr.updateMinimumPodSize(MINIMUM_POD_SIZE);
         (await dnr.minimumPodSize.call()).should.bignumber.equal(0);
         await waitForEpoch(dnr);
@@ -73,7 +74,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
         await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS, { from: accounts[1] })
-            .should.be.rejectedWith(/revert/); // not owner
+            .should.be.rejectedWith(/Ownable: caller is not the owner/);
         await dnr.updateMinimumEpochInterval(MINIMUM_EPOCH_INTERVAL_SECONDS);
         (await dnr.minimumEpochInterval.call()).should.bignumber.equal(0);
         await waitForEpoch(dnr);
@@ -83,13 +84,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can not register a Dark Node with a bond less than the minimum bond", async () => {
         const lowBond = MINIMUM_BOND.sub(new BN(1));
         await ren.approve(dnr.address, lowBond, { from: accounts[0] });
-        await dnr.register(ID("A"), PUBK("A")).should.be.rejectedWith(/revert/); // failed transfer
+        await dnr.register(ID("A"), PUBK("A"))
+            .should.be.rejectedWith(/ERC20: transfer amount exceeds allowance/); // failed transfer
     });
 
     it("can not call epoch before the minimum time interval", async () => {
         await waitForEpoch(dnr);
-        // TODO: Why isn't reason returned?
-        await dnr.epoch().should.be.rejectedWith(/revert/);
+        await dnr.epoch()
+            .should.be.rejectedWith(/DarknodeRegistry: epoch interval has not passed/);
     });
 
     it("can register, deregister and refund Darknodes", async () => {
@@ -275,15 +277,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("can not register a node twice", async () => {
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
         await dnr.register(ID("0"), PUBK("0"))
-            .should.be.rejectedWith(/must be refunded or never registered/);
+            .should.be.rejectedWith(/DarknodeRegistry: must be refunded or never registered/);
     });
 
     it("can not deregister a node which is not registered", async () => {
-        await dnr.deregister(ID("-1")).should.be.rejectedWith(/must be deregisterable/);
+        await dnr.deregister(ID("-1"))
+            .should.be.rejectedWith(/DarknodeRegistry: must be deregisterable/);
     });
 
     it("only darknode owner can deregister darknode", async () => {
-        await dnr.deregister(ID("0"), { from: accounts[9] }).should.be.rejectedWith(/must be darknode owner/);
+        await dnr.deregister(ID("0"), { from: accounts[9] })
+            .should.be.rejectedWith(/DarknodeRegistry: must be darknode owner/);
     });
 
     it("can get the owner of the Dark Node", async () => {
@@ -315,7 +319,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can't deregister twice", async () => {
-        await dnr.deregister(ID("0"), { from: accounts[0] }).should.be.rejectedWith(/must be deregisterable/);
+        await dnr.deregister(ID("0"), { from: accounts[0] })
+            .should.be.rejectedWith(/must be deregisterable/);
     });
 
     it("can get the current epoch's registered dark nodes", async () => {
@@ -380,7 +385,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("should fail to refund before deregistering", async () => {
-        await dnr.refund(ID("3"), { from: accounts[3] }).should.be.rejectedWith(/must be deregistered/);
+        await dnr.refund(ID("3"), { from: accounts[3] })
+            .should.be.rejectedWith(/must be deregistered/);
     });
 
     it("can deregister and refund dark nodes", async () => {
@@ -454,7 +460,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("should fail to refund twice", async () => {
-        await dnr.refund(ID("2")).should.be.rejectedWith(/must be deregistered for at least one epoch/);
+        await dnr.refund(ID("2"))
+            .should.be.rejectedWith(/must be deregistered for at least one epoch/);
     });
 
     it("should throw if refund fails", async () => {
@@ -469,7 +476,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] Refund fails if transfer fails
         await ren.pause();
-        await dnr.refund(ID("2")).should.be.rejectedWith(/revert/); // paused contract
+        await dnr.refund(ID("2"))
+            .should.be.rejectedWith(/Pausable: paused/);
         await ren.unpause();
 
         // [RESET]
@@ -477,13 +485,14 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("should not refund for an address which is never registered", async () => {
-        await dnr.refund(ID("-1")).should.be.rejectedWith(/must be deregistered for at least one epoch/);
+        await dnr.refund(ID("-1"))
+            .should.be.rejectedWith(/DarknodeRegistry: must be deregistered for at least one epoch/);
     });
 
     it("can update DarknodePayment", async () => {
         const darknodePayment = await dnr.darknodePayment.call();
         await dnr.updateDarknodePayment(NULL)
-            .should.be.rejectedWith("invalid Darknode Payment address");
+            .should.be.rejectedWith(/DarknodeRegistry: invalid Darknode Payment address/);
 
         await dnr.updateDarknodePayment(accounts[0]);
         await dnr.updateDarknodePayment(darknodePayment);
@@ -495,9 +504,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateSlasher(newSlasher);
         await waitForEpoch(dnr);
         (await dnr.slasher.call()).should.equal(newSlasher);
-        await dnr.slash(ID("2"), newSlasher, new BN(101)).should.eventually.be.rejectedWith(/invalid percent/);
-        await dnr.slash(ID("2"), newSlasher, new BN(328293)).should.eventually.be.rejectedWith(/invalid percent/);
-        await dnr.slash(ID("2"), newSlasher, new BN(923)).should.eventually.be.rejectedWith(/invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(101))
+            .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(328293))
+            .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
+        await dnr.slash(ID("2"), newSlasher, new BN(923))
+            .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
         await dnr.updateSlasher(slasher.address);
         await waitForEpoch(dnr);
         (await dnr.slasher.call()).should.equal(slasher.address);
@@ -511,7 +523,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] The slasher can't be updated to 0x0
         await dnr.updateSlasher(NULL)
-            .should.be.rejectedWith("invalid slasher address");
+            .should.be.rejectedWith(/DarknodeRegistry: invalid slasher address/);
 
         // [ACTION] Update slasher address
         await dnr.updateSlasher(newSlasher);
@@ -551,11 +563,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] Only the slasher can call `slash`
         await dnr.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
-            .should.be.rejectedWith(/must be slasher/);
+            .should.be.rejectedWith(/DarknodeRegistry: must be slasher/);
         await dnr.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner })
-            .should.be.rejectedWith(/must be slasher/);
+            .should.be.rejectedWith(/DarknodeRegistry: must be slasher/);
         await slasher.slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
-            .should.be.rejectedWith(/revert/);
+            .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
         await slasher.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner });
         await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
@@ -607,7 +619,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] Can't increase bond again
         await dnrs.updateDarknodeBond(ID("7"), previousBond)
-            .should.be.rejectedWith(/bond not decreased/);
+            .should.be.rejectedWith(/DarknodeRegistryStore: bond not decreased/);
 
         // [RESET] Transfer store back to DNR
         await dnrs.transferOwnership(dnr.address);
@@ -626,7 +638,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] Can't decrease bond if REN is paused
         await dnrs.updateDarknodeBond(ID("7"), new BN(0))
-            .should.be.rejectedWith(/revert/);
+            .should.be.rejectedWith(/Pausable: paused/);
 
         // [RESET] Unpause REN
         await ren.unpause();
@@ -642,7 +654,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
             // Only the owner can recover tokens
             await dnr.recoverTokens(ren.address, { from: accounts[1] })
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             // Recover REN
             const initialRenBalance = new BN((await ren.balanceOf.call(accounts[0])).toString());
@@ -675,11 +687,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
             // Can't recover REN
             await dnrs.recoverTokens(ren.address, { from: accounts[0] })
-                .should.be.rejectedWith(/not allowed to recover REN/);
+                .should.be.rejectedWith(/DarknodeRegistryStore: not allowed to recover REN/);
 
             // Only the owner can recover tokens
             await dnrs.recoverTokens(token.address, { from: accounts[1] })
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             // Can recover unrelated token
             const initialTokenBalance = new BN((await token.balanceOf.call(accounts[0])).toString());
@@ -745,7 +757,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
             await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
             await newDNR.slash(ID("8"), newSlasher, new BN(10))
-                .should.eventually.be.rejectedWith(/invalid payment address/);
+                .should.be.rejectedWith(/DarknodeRegistry: invalid payment address/);
         });
     });
 

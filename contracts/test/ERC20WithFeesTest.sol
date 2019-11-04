@@ -19,7 +19,7 @@ contract ERC20WithFeesTest  {
 
         uint256 newValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(this), _value);
         balances[_token] = balances[_token].add(newValue);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in deposit");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in deposit");
     }
 
     function withdraw(address _token, uint256 _value) external {
@@ -27,7 +27,7 @@ contract ERC20WithFeesTest  {
 
         ERC20(_token).safeTransfer(msg.sender, _value);
         balances[_token] = balances[_token].sub(_value);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in withdraw");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in withdraw");
     }
 
     function approve(address _token, uint256 _value) external {
@@ -39,6 +39,6 @@ contract ERC20WithFeesTest  {
 
         ERC20(_token).safeTransferFrom(msg.sender, address(this), _value);
         balances[_token] = balances[_token].add(_value);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in deposit");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in deposit");
     }
 }

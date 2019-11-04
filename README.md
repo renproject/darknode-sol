@@ -35,16 +35,16 @@ yarn run test
 
 ## Coverage
 
-Install the dependencies.
-
-```
-yarn install
-```
-
 Run the Truffle test suite with coverage.
 
 ```sh
 yarn run coverage
+```
+
+Open the coverage file.
+
+```sh
+open ./coverage/index.html
 ```
 
 ## Deploying
@@ -76,5 +76,5 @@ ETHERSCAN_KEY="..."
 Run the following (replacing the network and contract name):
 
 ```sh
-NETWORK=mainnet yarn run verify YourContractName
+NETWORK=mainnet yarn run verify Contract1 Contract2
 ```

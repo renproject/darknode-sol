@@ -66,7 +66,7 @@ module.exports = {
         config: {
             ...config,
             MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
-            mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1", // TODO
+            mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1",
         },
     },
     testnet: {

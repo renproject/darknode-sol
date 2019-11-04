@@ -116,7 +116,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash, sigString, { from: user })
-                .should.be.rejectedWith(/nonce hash already spent/);
+                .should.be.rejectedWith(/Shifter: nonce hash already spent/);
         });
 
         it("can mint for the same pHash with a different nHash", async () => {
@@ -146,17 +146,17 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash2, sigString, { from: user })
-                .should.be.rejectedWith(/invalid signature/);
+                .should.be.rejectedWith(/Shifter: invalid signature/);
         });
 
         it("can't burn to empty address", async () => {
             await burnTest(btcShifter, removeFee(value, shiftInFees), new Buffer([]) as any as string)
-                .should.be.rejectedWith(/to address is empty/);
+                .should.be.rejectedWith(/Shifter: to address is empty/);
         });
 
         it("can't burn less than minimum shiftOut amount", async () => {
             await burnTest(btcShifter, 5000)
-                .should.be.rejectedWith(/amount is less than the minimum shiftOut amount/);
+                .should.be.rejectedWith(/Shifter: amount is less than the minimum shiftOut amount/);
         });
 
         it("won't mint for a signature's complement", async () => {
@@ -183,7 +183,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             };
             const altSigString = Ox(`${altSig.r.toString("hex")}${altSig.s.toString("hex")}${(altSig.v).toString(16)}`);
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash, altSigString, { from: user })
-                .should.be.rejectedWith(/signature's s is in the wrong range/);
+                .should.be.rejectedWith(/ECDSA: signature.s is in the wrong range/);
 
             // Valid signature
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
@@ -193,16 +193,16 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             // before checking the signature because the nonce hash has already
             // been used
             await btcShifter.shiftIn(pHash, value.toNumber(), nHash, altSigString, { from: user })
-                .should.be.rejectedWith(/nonce hash already spent/);
+                .should.be.rejectedWith(/Shifter: nonce hash already spent/);
         });
     });
 
     describe("updating fee recipient and mint authority", () => {
         it("can upgrade fee recipient", async () => {
             await (btcShifter.updateFeeRecipient(malicious, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await (btcShifter.updateFeeRecipient(NULL, { from: owner }))
-                .should.be.rejectedWith(/fee recipient cannot be 0x0/);
+                .should.be.rejectedWith(/Shifter: fee recipient cannot be 0x0/);
             await btcShifter.updateFeeRecipient(user, { from: owner });
             await btcShifter.updateFeeRecipient(feeRecipient, { from: owner });
         });
@@ -210,7 +210,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         it("can upgrade shiftIn fee", async () => {
             const currentFee = await btcShifter.shiftInFee.call();
             await (btcShifter.updateShiftInFee(0, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await btcShifter.updateShiftInFee(0, { from: owner });
             await btcShifter.updateShiftInFee(currentFee, { from: owner });
         });
@@ -218,21 +218,21 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         it("can upgrade shiftOut fee", async () => {
             const currentFee = await btcShifter.shiftOutFee.call();
             await (btcShifter.updateShiftOutFee(0, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await btcShifter.updateShiftOutFee(0, { from: owner });
             await btcShifter.updateShiftOutFee(currentFee, { from: owner });
         });
 
         it("can upgrade mint authority", async () => {
             await (btcShifter.updateMintAuthority(malicious, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await btcShifter.updateMintAuthority(user, { from: owner });
             await btcShifter.updateMintAuthority(mintAuthority.address, { from: owner });
         });
 
         it("can upgrade min shiftOut amount", async () => {
             await (btcShifter.updateMinimumShiftOutAmount(malicious, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await btcShifter.updateMinimumShiftOutAmount(8000, { from: owner });
             await btcShifter.updateMinimumShiftOutAmount(10000, { from: owner });
         });
@@ -259,7 +259,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
              */
 
             await (btcShifter.transferTokenOwnership(newShifter.address, { from: malicious }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             await btcShifter.transferTokenOwnership(newShifter.address, { from: owner });
             (await zbtc.owner.call()).should.equal(newShifter.address);
@@ -273,16 +273,16 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
         it("can't upgrade to an invalid shifter", async () => {
             await (newShifter.transferTokenOwnership(malicious, { from: owner }))
-                .should.be.rejectedWith(/revert/);
+                .should.be.rejectedWith(/revert/); // Tries to call ".claim" on non-contract address
 
             await zbtc.claimOwnership({ from: malicious })
-                .should.be.rejectedWith(/caller is not the pending owner/);
+                .should.be.rejectedWith(/Claimable: caller is not the pending owner/);
         });
 
         it("can reset the upgrade", async () => {
             // Trying to reset upgrade in btcShifter without owning the token
             await (btcShifter.transferTokenOwnership(NULL, { from: owner }))
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             // Upgrade newShifter to point to btcShifter
             await newShifter.transferTokenOwnership(btcShifter.address, { from: owner });
@@ -304,7 +304,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             // Only the owner can recover tokens
             await btcShifter.recoverTokens(ren.address, { from: malicious })
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             // Recover zBTC
             const balanceBefore = new BN(await zbtc.balanceOf.call(owner));
@@ -343,7 +343,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             // Only the owner can recover tokens
             await zbtc.recoverTokens(ren.address, { from: malicious })
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             const claimer = await Claimer.new(zbtc.address);
             await (btcShifter.transferTokenOwnership(claimer.address, { from: owner }));
@@ -389,16 +389,16 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
         it("can register shifters", async () => {
             await registry.setShifter(zbtc.address, btcShifter.address);
             await registry.setShifter(zbtc.address, btcShifter.address)
-                .should.be.rejectedWith(/shifter already registered/);
+                .should.be.rejectedWith(/ShifterRegistry: shifter already registered/);
             await registry.setShifter(zbtc.address, NULL)
-                .should.be.rejectedWith(/token already registered/);
+                .should.be.rejectedWith(/ShifterRegistry: token already registered/);
         });
 
         it("can retrieve shifters", async () => {
             { // Try to register token with an existing symbol
                 const altZbtc = await zBTC.new();
                 await registry.setShifter(altZbtc.address, NULL)
-                    .should.be.rejectedWith(/symbol already registered/);
+                    .should.be.rejectedWith(/ShifterRegistry: symbol already registered/);
             }
 
             (await registry.getShifterByToken.call(zbtc.address))
@@ -474,14 +474,14 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
         it("can't update shifter for an unregistered token", async () => {
             await registry.updateShifter(ETHEREUM_TOKEN_ADDRESS, randomAddress())
-                .should.be.rejectedWith(/token not registered/);
+                .should.be.rejectedWith(/ShifterRegistry: token not registered/);
         });
 
         it("can deregister shifters", async () => {
             await registry.removeShifter("zBTC");
 
             await registry.removeShifter("zBTC")
-                .should.be.rejectedWith(/symbol not registered/);
+                .should.be.rejectedWith(/ShifterRegistry: symbol not registered/);
         });
 
         it("should be able to withdraw funds that are mistakenly sent to the Shifter Registry", async () => {
@@ -490,7 +490,7 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
 
             // Only the owner can recover tokens
             await registry.recoverTokens(ren.address, { from: malicious })
-                .should.be.rejectedWith(/caller is not the owner/);
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
             // Can recover unrelated token
             const initialRenBalance = new BN((await ren.balanceOf.call(owner)).toString());
