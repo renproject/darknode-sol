@@ -7,11 +7,12 @@ import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
 import "./ERC20Shifted.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract Shifter is Claimable {
+contract Shifter is Claimable, CanReclaimTokens {
     using SafeMath for uint256;
 
     uint8 public version = 2;
@@ -72,16 +73,6 @@ contract Shifter is Claimable {
         shiftInFee = _shiftInFee;
         shiftOutFee = _shiftOutFee;
         updateFeeRecipient(_feeRecipient);
-    }
-
-    /// @notice Allow the owner of the contract to recover funds accidentally
-    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
-    function recoverTokens(address _token) external onlyOwner {
-        if (_token == address(0x0)) {
-            msg.sender.transfer(address(this).balance);
-        } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
-        }
     }
 
     // Public functions ////////////////////////////////////////////////////////

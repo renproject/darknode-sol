@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../RenToken/RenToken.sol";
 import "./DarknodeRegistryStore.sol";
 import "../libraries/Claimable.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 interface IDarknodePaymentStore {
 }
@@ -20,7 +21,7 @@ interface IDarknodeSlasher {
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistry is Claimable {
+contract DarknodeRegistry is Claimable, CanReclaimTokens {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -167,16 +168,6 @@ contract DarknodeRegistry is Claimable {
         numDarknodes = 0;
         numDarknodesNextEpoch = 0;
         numDarknodesPreviousEpoch = 0;
-    }
-
-    /// @notice Allow the owner of the contract to recover funds accidentally
-    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
-    function recoverTokens(address _token) external onlyOwner {
-        if (_token == address(0x0)) {
-            msg.sender.transfer(address(this).balance);
-        } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
-        }
     }
 
     /// @notice Register a darknode and transfer the bond to this contract.

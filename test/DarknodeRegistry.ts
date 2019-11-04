@@ -687,7 +687,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
             // Can't recover REN
             await dnrs.recoverTokens(ren.address, { from: accounts[0] })
-                .should.be.rejectedWith(/DarknodeRegistryStore: not allowed to recover REN/);
+                .should.be.rejectedWith(/CanReclaimTokens: token is not recoverable/);
 
             // Only the owner can recover tokens
             await dnrs.recoverTokens(token.address, { from: accounts[1] })

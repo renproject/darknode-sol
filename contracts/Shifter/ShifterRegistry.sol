@@ -4,10 +4,11 @@ import "../libraries/Claimable.sol";
 import "./ERC20Shifted.sol";
 import "../libraries/LinkedList.sol";
 import "./IShifter.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 /// @notice ShifterRegistry is a mapping from assets to their associated
 /// ERC20Shifted and Shifter contracts.
-contract ShifterRegistry is Claimable {
+contract ShifterRegistry is Claimable, CanReclaimTokens {
 
     /// @dev The symbol is included twice because strings have to be hashed
     /// first in order to be used as a log index/topic.
@@ -29,16 +30,6 @@ contract ShifterRegistry is Claimable {
 
     /// @notice A map of token symbols to canonical shifter addresses
     mapping (string=>address) private tokenBySymbol;
-
-    /// @notice Allow the owner of the contract to recover funds accidentally
-    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
-    function recoverTokens(address _token) external onlyOwner {
-        if (_token == address(0x0)) {
-            msg.sender.transfer(address(this).balance);
-        } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
-        }
-    }
 
     /// @notice Allow the owner to set the shifter address for a given
     ///         ERC20Shifted token contract.

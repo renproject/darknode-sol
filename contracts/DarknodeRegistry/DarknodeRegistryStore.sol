@@ -5,11 +5,12 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../libraries/Claimable.sol";
 import "../libraries/LinkedList.sol";
 import "../RenToken/RenToken.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 /// @notice This contract stores data and funds for the DarknodeRegistry
 /// contract. The data / fund logic and storage have been separated to improve
 /// upgradability.
-contract DarknodeRegistryStore is Claimable {
+contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -61,20 +62,7 @@ contract DarknodeRegistryStore is Claimable {
     ) public {
         VERSION = _VERSION;
         ren = _ren;
-    }
-
-    /// @notice Allow the owner of the contract to recover funds accidentally
-    /// sent to the contract. To withdraw ETH, the token should be set to `0x0`.
-    /// @dev The owner is the Darknode Registry so it would need to be updated
-    /// first before being able to recover funds.
-    function recoverTokens(address _token) external onlyOwner {
-        require(_token != address(ren), "DarknodeRegistryStore: not allowed to recover REN");
-
-        if (_token == address(0x0)) {
-            msg.sender.transfer(address(this).balance);
-        } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
-        }
+        blacklistRecoverableToken(address(ren));
     }
 
     /// @notice Instantiates a darknode and appends it to the darknodes
