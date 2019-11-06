@@ -7,7 +7,7 @@ contract CanReclaimTokens is Ownable {
 
     mapping(address => bool) private recoverableTokensBlacklist;
 
-    function blacklistRecoverableToken(address _token) public {
+    function blacklistRecoverableToken(address _token) public onlyOwner {
         recoverableTokensBlacklist[_token] = true;
     }
 
