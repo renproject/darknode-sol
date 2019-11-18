@@ -18,6 +18,8 @@ const NormalToken = artifacts.require("NormalToken");
 
 const { config } = require("../migrations/networks");
 
+const numAccounts = 10;
+
 contract("DarknodeRegistry", (accounts: string[]) => {
 
     let ren: RenTokenInstance;
@@ -35,7 +37,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith(/DarknodeRegistry: not authorized/);
         await waitForEpoch(dnr);
 
-        for (let i = 1; i < accounts.length; i++) {
+        for (let i = 1; i < numAccounts; i++) {
             await ren.transfer(accounts[i], MINIMUM_BOND);
         }
     });
@@ -96,7 +98,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("can register, deregister and refund Darknodes", async () => {
         // [ACTION] Register
-        for (let i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < numAccounts; i++) {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
@@ -105,7 +107,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
 
         // [ACTION] Deregister
-        for (let i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < numAccounts; i++) {
             await dnr.deregister(ID(i), { from: accounts[i] });
         }
 
@@ -114,7 +116,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
 
         // [ACTION] Refund
-        for (let i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < numAccounts; i++) {
             await dnr.refund(ID(i), { from: accounts[i] });
         }
     });
@@ -267,7 +269,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("[SETUP] Register darknodes for next tests", async () => {
-        for (let i = 0; i < accounts.length; i++) {
+        for (let i = 0; i < numAccounts; i++) {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
@@ -325,7 +327,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("can get the current epoch's registered dark nodes", async () => {
         const nodes = (await dnr.getDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(accounts.length - 6);
+        (nodes.length).should.equal(numAccounts - 6);
         nodes[0].should.equal(ID("2"));
         nodes[1].should.equal(ID("3"));
         nodes[2].should.equal(ID("6"));
@@ -334,12 +336,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("can get the previous epoch's registered dark nodes", async () => {
         let nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(accounts.length);
+        (nodes.length).should.equal(numAccounts);
 
         await waitForEpoch(dnr);
 
         nodes = (await dnr.getPreviousDarknodes.call(NULL, 0)).filter((x) => x !== NULL);
-        (nodes.length).should.equal(accounts.length - 6);
+        (nodes.length).should.equal(numAccounts - 6);
     });
 
     it("can get the dark nodes in multiple calls", async () => {
@@ -356,7 +358,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             }
         } while (start !== NULL);
 
-        (nodes.length).should.equal(accounts.length - 6);
+        (nodes.length).should.equal(numAccounts - 6);
         nodes[0].should.equal(ID("2"));
         nodes[1].should.equal(ID("3"));
         nodes[2].should.equal(ID("6"));
@@ -377,7 +379,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             }
         } while (start !== NULL);
 
-        (nodes.length).should.equal(accounts.length - 6);
+        (nodes.length).should.equal(numAccounts - 6);
         nodes[0].should.equal(ID("2"));
         nodes[1].should.equal(ID("3"));
         nodes[2].should.equal(ID("6"));
@@ -766,7 +768,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const MAX_DARKNODES = 6000;
 
         // Fund the darknode operator (6000 dark nodes cost a lot to operate!)
-        for (let i = 1; i < accounts.length; i++) {
+        for (let i = 1; i < numAccounts; i++) {
             const balance = await web3.eth.getBalance(accounts[i]);
             web3.eth.sendTransaction(
                 { to: accounts[0], from: accounts[i], value: balance, gasPrice: 0 },

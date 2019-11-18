@@ -69,9 +69,9 @@ contract Shifter is Claimable, CanReclaimTokens {
     constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount) public {
         minShiftAmount = _minShiftOutAmount;
         token = _token;
-        mintAuthority = _mintAuthority;
         shiftInFee = _shiftInFee;
         shiftOutFee = _shiftOutFee;
+        updateMintAuthority(_mintAuthority);
         updateFeeRecipient(_feeRecipient);
     }
 
@@ -94,6 +94,7 @@ contract Shifter is Claimable, CanReclaimTokens {
     ///
     /// @param _nextMintAuthority The address to start paying fees to.
     function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
+        require(_nextMintAuthority != address(0), "Shifter: mintAuthority cannot be set to address zero");
         mintAuthority = _nextMintAuthority;
     }
 

@@ -2,8 +2,10 @@ pragma solidity ^0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
 contract CanReclaimTokens is Ownable {
+    using SafeERC20 for ERC20;
 
     mapping(address => bool) private recoverableTokensBlacklist;
 
@@ -19,7 +21,7 @@ contract CanReclaimTokens is Ownable {
         if (_token == address(0x0)) {
             msg.sender.transfer(address(this).balance);
         } else {
-            ERC20(_token).transfer(msg.sender, ERC20(_token).balanceOf(address(this)));
+            ERC20(_token).safeTransfer(msg.sender, ERC20(_token).balanceOf(address(this)));
         }
     }
 }

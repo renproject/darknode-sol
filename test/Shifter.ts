@@ -230,6 +230,11 @@ contract("Shifter", ([owner, feeRecipient, user, malicious]) => {
             await btcShifter.updateMintAuthority(mintAuthority.address, { from: owner });
         });
 
+        it("cannot upgrade mint authority to zero address", async () => {
+            await (btcShifter.updateMintAuthority(NULL, { from: owner }))
+                .should.be.rejectedWith(/Shifter: mintAuthority cannot be set to address zero/);
+        });
+
         it("can upgrade min shiftOut amount", async () => {
             await (btcShifter.updateMinimumShiftOutAmount(malicious, { from: malicious }))
                 .should.be.rejectedWith(/Ownable: caller is not the owner/);
