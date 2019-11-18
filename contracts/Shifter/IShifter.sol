@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 interface IShifter {
     function shiftIn(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes calldata _sig) external returns (uint256);

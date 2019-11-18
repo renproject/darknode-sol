@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "../libraries/Claimable.sol";
 import "./ERC20Shifted.sol";

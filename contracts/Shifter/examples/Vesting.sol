@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "../ShifterRegistry.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
