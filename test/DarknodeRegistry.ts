@@ -90,7 +90,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith(/ERC20: transfer amount exceeds allowance/); // failed transfer
     });
 
-    it("can not register a Dark Node with address zero", async () => {
+    it("cannot register a darknode with address zero", async () => {
         await dnr.register(NULL, PUBK("A"))
             .should.be.rejectedWith(/DarknodeRegistry: darknode address cannot be zero/); // failed transfer
     });
