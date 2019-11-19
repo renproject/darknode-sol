@@ -17,6 +17,7 @@ contract Claimable is Ownable {
     }
 
     function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != owner() && newOwner != pendingOwner, "Claimable: invalid new owner");
         pendingOwner = newOwner;
     }
 

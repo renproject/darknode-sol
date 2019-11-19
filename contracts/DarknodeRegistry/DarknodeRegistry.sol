@@ -96,8 +96,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     event LogMinimumBondUpdated(uint256 _previousMinimumBond, uint256 _nextMinimumBond);
     event LogMinimumPodSizeUpdated(uint256 _previousMinimumPodSize, uint256 _nextMinimumPodSize);
     event LogMinimumEpochIntervalUpdated(uint256 _previousMinimumEpochInterval, uint256 _nextMinimumEpochInterval);
-    event LogSlasherUpdated(address _previousSlasher, address _nextSlasher);
-    event LogDarknodePaymentUpdated(IDarknodePayment _previousDarknodePayment, IDarknodePayment _nextDarknodePayment);
+    event LogSlasherUpdated(address indexed _previousSlasher, address indexed _nextSlasher);
+    event LogDarknodePaymentUpdated(IDarknodePayment indexed _previousDarknodePayment, IDarknodePayment indexed _nextDarknodePayment);
 
     /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
@@ -189,6 +189,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     ///        other darknodes and traders to encrypt messages to the trader.
     function register(address _darknodeID, bytes calldata _publicKey) external onlyRefunded(_darknodeID) {
         require(_darknodeID != address(0), "DarknodeRegistry: darknode address cannot be zero");
+        // TODO: The following require was a suggestion. Leaving it here until there is confirmation that this is needed.
+        // require(_darknodeID != msg.sender, "DarknodeRegistry: darknode address cannot be the same as the darknode owner");
 
         // Use the current minimum bond as the darknode's bond and transfer bond to store
         require(ren.transferFrom(msg.sender, address(store), minimumBond), "DarknodeRegistry: bond transfer failed");

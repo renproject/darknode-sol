@@ -636,6 +636,14 @@ contract("DarknodePayment", (accounts: string[]) => {
                 .should.be.rejectedWith(/Ownable: caller is not the owner/);
         });
 
+        it("cannot transferOwnership to the same owner", async () => {
+            await store.transferOwnership(owner, { from: owner })
+                .should.be.rejectedWith(/Claimable: invalid new owner/);
+            await store.transferOwnership(accounts[3], { from: owner });
+            await store.transferOwnership(accounts[3], { from: owner })
+                .should.be.rejectedWith(/Claimable: invalid new owner/);
+        });
+
         // Transfer the ownership back to DNP
         after(async () => {
             // [RESET] Initiate ownership transfer back to dnp

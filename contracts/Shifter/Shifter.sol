@@ -7,12 +7,13 @@ import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
 import "./ERC20Shifted.sol";
+import "./IShifter.sol";
 import "../libraries/CanReclaimTokens.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract Shifter is Claimable, CanReclaimTokens {
+contract Shifter is IShifter, Claimable, CanReclaimTokens {
     using SafeMath for uint256;
 
     uint8 public version = 2;
@@ -158,7 +159,7 @@ contract Shifter is Claimable, CanReclaimTokens {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount.mul(shiftInFee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = _amount.mul(shiftInFee).div(BIPS_DENOMINATOR);
         uint256 receivedAmount = _amount.sub(absoluteFee);
         token.mint(msg.sender, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
@@ -185,7 +186,7 @@ contract Shifter is Claimable, CanReclaimTokens {
         require(_amount >= minShiftAmount, "Shifter: amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount.mul(shiftOutFee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = _amount.mul(shiftOutFee).div(BIPS_DENOMINATOR);
         token.burn(msg.sender, _amount);
         token.mint(feeRecipient, absoluteFee);
 

@@ -64,7 +64,7 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
     function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
         // Check that token, shifter are registered
         address currentShifter = shifterByToken[_tokenAddress];
-        require(shifterByToken[_tokenAddress] != address(0x0), "ShifterRegistry: token not registered");
+        require(currentShifter != address(0x0), "ShifterRegistry: token not registered");
 
         // Remove to list of shifters
         LinkedList.remove(shifterList, currentShifter);
@@ -90,8 +90,8 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
         address shifterAddress = shifterByToken[tokenAddress];
 
         // Remove token and shifter
-        shifterByToken[tokenAddress] = address(0x0);
-        tokenBySymbol[_symbol] = address(0x0);
+        delete shifterByToken[tokenAddress]; 
+        delete tokenBySymbol[_symbol];
         LinkedList.remove(shifterList, shifterAddress);
         LinkedList.remove(shiftedTokenList, tokenAddress);
         numShifters -= 1;
