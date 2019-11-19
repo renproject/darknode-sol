@@ -90,6 +90,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith(/ERC20: transfer amount exceeds allowance/); // failed transfer
     });
 
+    it("can not register a Dark Node with address zero", async () => {
+        await dnr.register(NULL, PUBK("A"))
+            .should.be.rejectedWith(/DarknodeRegistry: darknode address cannot be zero/); // failed transfer
+    });
+
     it("can not call epoch before the minimum time interval", async () => {
         await waitForEpoch(dnr);
         await dnr.epoch()
@@ -500,21 +505,58 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await dnr.updateDarknodePayment(darknodePayment);
     });
 
+    it("cannot slash unregistered darknodes", async () => {
+        // Update slasher address
+        const newSlasher = accounts[0];
+        await dnr.updateSlasher(newSlasher);
+        await waitForEpoch(dnr);
+
+        (await dnr.slasher.call()).should.equal(newSlasher);
+        await dnr.slash(ID("2"), newSlasher, new BN(70))
+            .should.be.rejectedWith(/DarknodeRegistry: invalid darknode/);
+
+        // Reset slasher address
+        await dnr.updateSlasher(slasher.address);
+        await waitForEpoch(dnr);
+        (await dnr.slasher.call()).should.equal(slasher.address);
+    });
+
     it("cannot slash with an invalid percent", async () => {
-        // [ACTION] Update slasher address
+        // Update slasher address
         const newSlasher = accounts[0];
         await dnr.updateSlasher(newSlasher);
         await waitForEpoch(dnr);
         (await dnr.slasher.call()).should.equal(newSlasher);
+
+        // Register darknode 3
+        await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
+        await dnr.register(ID("2"), PUBK("2"), { from: accounts[2] });
+        await waitForEpoch(dnr);
+
         await dnr.slash(ID("2"), newSlasher, new BN(101))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
         await dnr.slash(ID("2"), newSlasher, new BN(328293))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
         await dnr.slash(ID("2"), newSlasher, new BN(923))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
+
+        // Reset slasher
         await dnr.updateSlasher(slasher.address);
         await waitForEpoch(dnr);
         (await dnr.slasher.call()).should.equal(slasher.address);
+
+        // De-register darknode 3
+        await dnr.deregister(ID("2"), { from: accounts[2] });
+        (await dnr.isPendingDeregistration.call(ID("2"))).should.be.true;
+
+        // Call epoch
+        await waitForEpoch(dnr);
+        await waitForEpoch(dnr);
+        (await dnr.isDeregistered.call(ID("2"))).should.be.true;
+
+        // Refund darknode 3
+        await dnr.refund(ID("2"), { from: accounts[2] });
+        (await dnr.isRefunded.call(ID("2"))).should.be.true;
     });
 
     it("can update slasher address", async () => {
@@ -572,10 +614,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
         await slasher.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner });
-        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
+        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner })
+            .should.be.rejectedWith(/DarknodeRegistry: invalid darknode/);
 
         // // NOTE: The darknode doesn't prevent slashing a darknode twice
-        await slasher.slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner });
+        await slasher.slash(ID("2"), ID("6"), slashPercent, { from: slasherOwner });
     });
 
     it("transfer ownership of the dark node store", async () => {
@@ -758,6 +801,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             }
             await ren.approve(newDNR.address, MINIMUM_BOND, { from: accounts[8] });
             await newDNR.register(ID("8"), PUBK("8"), { from: accounts[8] });
+            await waitForEpoch(newDNR);
             await newDNR.slash(ID("8"), newSlasher, new BN(10))
                 .should.be.rejectedWith(/DarknodeRegistry: invalid payment address/);
         });

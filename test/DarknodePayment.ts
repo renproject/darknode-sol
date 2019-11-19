@@ -263,6 +263,23 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] })
                 .should.be.rejectedWith(/DarknodePayment: unexpected ether transfer/);
         });
+
+        it("cannot deposit ERC20 that has not been registered", async () => {
+            const before = new BN(await dai.balanceOf.call(accounts[0]));
+
+            // Deregister dai and try to deposit
+            await dnp.deregisterToken(dai.address);
+            await waitForEpoch(dnr);
+
+            // Approve and deposit
+            await dai.approve(dnp.address, before);
+            await dnp.deposit(before, dai.address, { from: accounts[0] })
+                .should.be.rejectedWith(/DarknodePayment: token not registered/);
+
+            // RESET: Register dai back
+            await dnp.registerToken(dai.address);
+            await waitForEpoch(dnr);
+        });
     });
 
     describe("Claiming rewards", async () => {

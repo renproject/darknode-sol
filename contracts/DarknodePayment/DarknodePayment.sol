@@ -234,6 +234,7 @@ contract DarknodePayment is Claimable {
             address(store).transfer(msg.value);
         } else {
             require(msg.value == 0, "DarknodePayment: unexpected ether transfer");
+            require(registeredTokenIndex[_token] != 0, "DarknodePayment: token not registered");
             // Forward the funds to the store
             receivedValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
         }
@@ -377,7 +378,7 @@ contract DarknodePayment is Claimable {
         registeredTokenIndex[lastToken] = registeredTokenIndex[_token];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
-        registeredTokens.length = registeredTokens.length.sub(1);
+        registeredTokens.pop();
         registeredTokenIndex[_token] = 0;
 
         emit LogTokenDeregistered(_token);

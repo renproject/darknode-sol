@@ -171,4 +171,31 @@ library LinkedList {
         return self.list[node].previous;
     }
 
+    function elements(List storage self, address _start, uint256 _count, uint256 total) internal view returns (address[] memory) {
+        uint256 count;
+        if (_count == 0) {
+            count = total;
+        } else {
+            count = _count;
+        }
+
+        address[] memory elems = new address[](count);
+
+        // Begin with the first node in the list
+        uint256 n = 0;
+        address nextItem = _start;
+        if (nextItem == address(0)) {
+            nextItem = begin(self);
+        }
+
+        while (n < count) {
+            if (nextItem == address(0)) {
+                break;
+            }
+            elems[n] = nextItem;
+            nextItem = next(self, nextItem);
+            n += 1;
+        }
+        return elems;
+    }
 }

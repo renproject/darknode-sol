@@ -101,60 +101,12 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
 
     /// @dev To get all the registered shifters use count = 0.
     function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
-        uint256 count;
-        if (_count == 0) {
-            count = numShifters;
-        } else {
-            count = _count;
-        }
-
-        address[] memory shifters = new address[](count);
-
-        // Begin with the first node in the list
-        uint256 n = 0;
-        address next = _start;
-        if (next == address(0)) {
-            next = LinkedList.begin(shifterList);
-        }
-
-        while (n < count) {
-            if (next == address(0)) {
-                break;
-            }
-            shifters[n] = next;
-            next = LinkedList.next(shifterList, next);
-            n += 1;
-        }
-        return shifters;
+        return LinkedList.elements(shifterList, _start, _count, numShifters);
     }
 
     /// @dev To get all the registered shifted tokens use count = 0.
     function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
-        uint256 count;
-        if (_count == 0) {
-            count = numShifters;
-        } else {
-            count = _count;
-        }
-
-        address[] memory shiftedTokens = new address[](count);
-
-        // Begin with the first node in the list
-        uint256 n = 0;
-        address next = _start;
-        if (next == address(0)) {
-            next = LinkedList.begin(shiftedTokenList);
-        }
-
-        while (n < count) {
-            if (next == address(0)) {
-                break;
-            }
-            shiftedTokens[n] = next;
-            next = LinkedList.next(shiftedTokenList, next);
-            n += 1;
-        }
-        return shiftedTokens;
+        return LinkedList.elements(shiftedTokenList, _start, _count, numShifters);
     }
 
     /// @notice Returns the Shifter address for the given ERC20Shifted token
