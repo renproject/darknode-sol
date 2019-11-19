@@ -345,16 +345,16 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
         uint256 totalBond = store.darknodeBond(_guilty);
         uint256 penalty = totalBond.div(100).mul(_percentage);
-        uint256 remainder = penalty.mod(2);
-        uint256 reward = penalty.div(2);
-        if (reward > 0) {
+        uint256 challengerReward = penalty.div(2);
+        uint256 darknodePaymentReward = penalty.sub(challengerReward);
+        if (challengerReward > 0) {
             // Slash the bond of the failed prover
             store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
 
             // Distribute the remaining bond into the darknode payment reward pool
             require(address(darknodePayment) != address(0x0), "DarknodeRegistry: invalid payment address");
-            require(ren.transfer(address(darknodePayment.store()), reward.add(remainder)), "DarknodeRegistry: reward transfer failed");
-            require(ren.transfer(_challenger, reward), "DarknodeRegistry: reward transfer failed");
+            require(ren.transfer(address(darknodePayment.store()), darknodePaymentReward), "DarknodeRegistry: reward transfer failed");
+            require(ren.transfer(_challenger, challengerReward), "DarknodeRegistry: reward transfer failed");
         }
 
         emit LogDarknodeSlashed(store.darknodeOwner(_guilty), _guilty, _challenger, _percentage);

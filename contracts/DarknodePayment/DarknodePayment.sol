@@ -123,8 +123,8 @@ contract DarknodePayment is Claimable {
     }
 
     /// @notice Restrict a function to be called by cycleChanger
-    modifier onlyCycleChanger(address caller) {
-        require(caller == cycleChanger, "DarknodePayment: not cycle changer");
+    modifier onlyCycleChanger {
+        require(msg.sender == cycleChanger, "DarknodePayment: not cycle changer");
         _;
     }
 
@@ -204,7 +204,7 @@ contract DarknodePayment is Claimable {
     }
 
     /// @notice Changes the current cycle.
-    function changeCycle() external onlyCycleChanger(msg.sender) returns (uint256) {
+    function changeCycle() external onlyCycleChanger returns (uint256) {
 
         // Snapshot balances for the past cycle
         uint arrayLength = registeredTokens.length;
