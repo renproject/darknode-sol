@@ -61,9 +61,13 @@ contract("LinkedList", () => {
         (await linkedList.begin.call()).should.equal(NODE1);
     });
 
-    it("handle removing NULL", async () => {
-        await linkedList.insertBefore(NODE1, NULL);
-        await linkedList.remove(NULL);
+    it("should not add NULL", async () => {
+        await linkedList.insertBefore(NODE1, NULL)
+            .should.be.rejectedWith(/LinkedList: invalid address/);
+        await linkedList.insertAfter(NODE1, NULL)
+            .should.be.rejectedWith(/LinkedList: invalid address/);
+        await linkedList.append(NULL)
+            .should.be.rejectedWith(/LinkedList: invalid address/);
     });
 
     it("should not add the same value more than once", async () => {
@@ -127,5 +131,28 @@ contract("LinkedList", () => {
         await linkedList.next.call(NOT_NODE1)
             .should.be.rejectedWith(/LinkedList: not in list/); // not in list
     });
+
+    it("should revert when given incorrect count while retrieving elements in the list", async () => {
+        await linkedList.elements.call(NODE1, 0)
+            .should.be.rejectedWith(/LinkedList: invalid count/); // invalid count
+    })
+
+    it("should return elements in the list", async () => {
+        let shifters = await linkedList.elements.call(NODE1, 1);
+        shifters[0].should.equal(NODE1);
+        shifters.length.should.equal(1);
+
+        shifters = await linkedList.elements.call(NODE2, 2);
+        shifters[0].should.equal(NODE2);
+        shifters[1].should.equal(NODE3);
+        shifters.length.should.equal(2);
+
+        await linkedList.append(NODE4);
+
+        shifters = await linkedList.elements.call(NODE1, 10);
+        shifters[0].should.equal(NODE1);
+        shifters[3].should.equal(NODE4);
+        shifters.length.should.equal(10);
+    })
 
 });

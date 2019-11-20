@@ -38,6 +38,7 @@ library LinkedList {
     * @param newNode The next node to insert before the target.
     */
     function insertBefore(List storage self, address target, address newNode) internal {
+        require(newNode != address(0), "LinkedList: invalid address");
         require(!isInList(self, newNode), "LinkedList: already in list");
         require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
@@ -60,6 +61,7 @@ library LinkedList {
     * @param newNode The next node to insert after the target.
     */
     function insertAfter(List storage self, address target, address newNode) internal {
+        require(newNode != address(0), "LinkedList: invalid address");
         require(!isInList(self, newNode), "LinkedList: already in list");
         require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
@@ -171,15 +173,10 @@ library LinkedList {
         return self.list[node].previous;
     }
 
-    function elements(List storage self, address _start, uint256 _count, uint256 total) internal view returns (address[] memory) {
-        uint256 count;
-        if (_count == 0) {
-            count = total;
-        } else {
-            count = _count;
-        }
-
-        address[] memory elems = new address[](count);
+    function elements(List storage self, address _start, uint256 _count) internal view returns (address[] memory) {
+        require(_count > 0, "LinkedList: invalid count");
+        require(isInList(self, _start) || _start == address(0), "LinkedList: not in list");
+        address[] memory elems = new address[](_count);
 
         // Begin with the first node in the list
         uint256 n = 0;
@@ -188,7 +185,7 @@ library LinkedList {
             nextItem = begin(self);
         }
 
-        while (n < count) {
+        while (n < _count) {
             if (nextItem == address(0)) {
                 break;
             }

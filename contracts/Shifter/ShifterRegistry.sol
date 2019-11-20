@@ -101,12 +101,12 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
 
     /// @dev To get all the registered shifters use count = 0.
     function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
-        return LinkedList.elements(shifterList, _start, _count, numShifters);
+        return LinkedList.elements(shifterList, _start, _count == 0 ? numShifters : _count);
     }
 
     /// @dev To get all the registered shifted tokens use count = 0.
     function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
-        return LinkedList.elements(shiftedTokenList, _start, _count, numShifters);
+        return LinkedList.elements(shiftedTokenList, _start, _count == 0 ? numShifters : _count);
     }
 
     /// @notice Returns the Shifter address for the given ERC20Shifted token
