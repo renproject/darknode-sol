@@ -68,6 +68,8 @@ contract("LinkedList", () => {
             .should.be.rejectedWith(/LinkedList: invalid address/);
         await linkedList.append(NULL)
             .should.be.rejectedWith(/LinkedList: invalid address/);
+        await linkedList.remove(NULL)
+            .should.be.rejectedWith(/LinkedList: not in list/);
     });
 
     it("should not add the same value more than once", async () => {

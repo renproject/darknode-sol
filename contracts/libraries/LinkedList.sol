@@ -86,9 +86,7 @@ library LinkedList {
     */
     function remove(List storage self, address node) internal {
         require(isInList(self, node), "LinkedList: not in list");
-        if (node == NULL) {
-            return;
-        }
+        
         address p = self.list[node].previous;
         address n = self.list[node].next;
 
