@@ -83,11 +83,20 @@ module.exports = async function (deployer, network, accounts) {
             await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
 
             // Claim ownership
+            deployer.logger.log(`Claiming DNRS ownership in DNR`);
             await darknodeRegistry.claimStoreOwnership();
         } else {
+            deployer.logger.log(`Transferring DNRS ownership from ${storeOwner} to new DNR`);
             const oldDNR = await DarknodeRegistry.at(storeOwner);
             oldDNR.transferStoreOwnership(DarknodeRegistry.address);
-            // This will also call claim.
+            // This will also call claim, but we try anyway because older
+            // contracts didn't:
+            try {
+                // Claim ownership
+                await darknodeRegistry.claimStoreOwnership();
+            } catch (error) {
+                // Ignore
+            }
         }
     }
 
@@ -188,11 +197,20 @@ module.exports = async function (deployer, network, accounts) {
             await darknodePaymentStore.transferOwnership(DarknodePayment.address);
 
             // Update DarknodePaymentStore address
+            deployer.logger.log(`Claiming DNPS ownership in DNP`);
             await darknodePayment.claimStoreOwnership();
         } else {
+            deployer.logger.log(`Transferring DNPS ownership from ${currentOwner} to new DNP`);
             const oldDarknodePayment = await DarknodePayment.at(currentOwner);
             await oldDarknodePayment.transferStoreOwnership(DarknodePayment.address);
-            // This will also call claim.
+            // This will also call claim, but we try anyway because older
+            // contracts didn't:
+            try {
+                // Claim ownership
+                await darknodePayment.claimStoreOwnership();
+            } catch (error) {
+                // Ignore
+            }
         }
     }
 

@@ -90,11 +90,29 @@ module.exports = async function (deployer, network, accounts) {
             await tokenShifter.updateMintAuthority(_mintAuthority);
         }
 
-        if (await token.owner() !== Shifter.address) {
+        const tokenOwner = await token.owner();
+        if (tokenOwner !== Shifter.address) {
             deployer.logger.log(`Transferring ${symbol} ownership`);
-            await token.transferOwnership(Shifter.address);
-            deployer.logger.log(`Claiming ${symbol} ownership in shifter`);
-            await tokenShifter.claimTokenOwnership();
+
+            if (tokenOwner === accounts[0]) {
+                await token.transferOwnership(tokenShifter.address);
+
+                // Update tokenShifter address
+                deployer.logger.log(`Claiming ${symbol} ownership in shifter`);
+                await darknodePayment.claimStoreOwnership();
+            } else {
+                deployer.logger.log(`Transferring token ownership from ${tokenOwner} to new ${symbol} shifter`);
+                const oldShifter = await Shifter.at(tokenOwner);
+                await oldShifter.transferTokenOwnership(tokenShifter.address);
+                // This will also call claim, but we try anyway because older
+                // contracts didn't:
+                try {
+                    // Claim ownership
+                    await tokenShifter.claimStoreOwnership();
+                } catch (error) {
+                    // Ignore
+                }
+            }
         }
 
         // Try to change the payment cycle in case the token is pending registration
