@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -95,20 +95,20 @@ contract DarknodePayment is Claimable {
     /// @notice Emitted when the CycleChanger address changes
     /// @param _newCycleChanger The new CycleChanger
     /// @param _oldCycleChanger The old CycleChanger
-    event LogCycleChangerChanged(address _newCycleChanger, address _oldCycleChanger);
+    event LogCycleChangerChanged(address indexed _newCycleChanger, address indexed _oldCycleChanger);
 
     /// @notice Emitted when a new token is registered
     /// @param _token The token that was registered
-    event LogTokenRegistered(address _token);
+    event LogTokenRegistered(address indexed _token);
 
     /// @notice Emitted when a token is deregistered
     /// @param _token The token that was deregistered
-    event LogTokenDeregistered(address _token);
+    event LogTokenDeregistered(address indexed _token);
 
     /// @notice Emitted when the DarknodeRegistry is updated.
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
-    event LogDarknodeRegistryUpdated(DarknodeRegistry _previousDarknodeRegistry, DarknodeRegistry _nextDarknodeRegistry);
+    event LogDarknodeRegistryUpdated(DarknodeRegistry indexed _previousDarknodeRegistry, DarknodeRegistry indexed _nextDarknodeRegistry);
 
     /// @notice Restrict a function registered dark nodes to call a function.
     modifier onlyDarknode(address _darknode) {
@@ -119,6 +119,12 @@ contract DarknodePayment is Claimable {
     /// @notice Restrict a function to have a valid percentage
     modifier validPercent(uint256 _percent) {
         require(_percent <= 100, "DarknodePayment: invalid percentage");
+        _;
+    }
+
+    /// @notice Restrict a function to be called by cycleChanger
+    modifier onlyCycleChanger {
+        require(msg.sender == cycleChanger, "DarknodePayment: not cycle changer");
         _;
     }
 
@@ -198,8 +204,7 @@ contract DarknodePayment is Claimable {
     }
 
     /// @notice Changes the current cycle.
-    function changeCycle() external returns (uint256) {
-        require(msg.sender == cycleChanger, "DarknodePayment: not cycle changer");
+    function changeCycle() external onlyCycleChanger returns (uint256) {
 
         // Snapshot balances for the past cycle
         uint arrayLength = registeredTokens.length;
@@ -229,6 +234,7 @@ contract DarknodePayment is Claimable {
             address(store).transfer(msg.value);
         } else {
             require(msg.value == 0, "DarknodePayment: unexpected ether transfer");
+            require(registeredTokenIndex[_token] != 0, "DarknodePayment: token not registered");
             // Forward the funds to the store
             receivedValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(store), _value);
         }
@@ -372,7 +378,7 @@ contract DarknodePayment is Claimable {
         registeredTokenIndex[lastToken] = registeredTokenIndex[_token];
         // Decreasing the length will clean up the storage for us
         // So we don't need to manually delete the element
-        registeredTokens.length = registeredTokens.length.sub(1);
+        registeredTokens.pop();
         registeredTokenIndex[_token] = 0;
 
         emit LogTokenDeregistered(_token);

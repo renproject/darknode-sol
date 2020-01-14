@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 /**
  * @notice LinkedList is a library for a circular double linked list.
@@ -38,6 +38,7 @@ library LinkedList {
     * @param newNode The next node to insert before the target.
     */
     function insertBefore(List storage self, address target, address newNode) internal {
+        require(newNode != address(0), "LinkedList: invalid address");
         require(!isInList(self, newNode), "LinkedList: already in list");
         require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
@@ -60,6 +61,7 @@ library LinkedList {
     * @param newNode The next node to insert after the target.
     */
     function insertAfter(List storage self, address target, address newNode) internal {
+        require(newNode != address(0), "LinkedList: invalid address");
         require(!isInList(self, newNode), "LinkedList: already in list");
         require(isInList(self, target) || target == NULL, "LinkedList: not in list");
 
@@ -84,9 +86,7 @@ library LinkedList {
     */
     function remove(List storage self, address node) internal {
         require(isInList(self, node), "LinkedList: not in list");
-        if (node == NULL) {
-            return;
-        }
+        
         address p = self.list[node].previous;
         address n = self.list[node].next;
 
@@ -171,4 +171,26 @@ library LinkedList {
         return self.list[node].previous;
     }
 
+    function elements(List storage self, address _start, uint256 _count) internal view returns (address[] memory) {
+        require(_count > 0, "LinkedList: invalid count");
+        require(isInList(self, _start) || _start == address(0), "LinkedList: not in list");
+        address[] memory elems = new address[](_count);
+
+        // Begin with the first node in the list
+        uint256 n = 0;
+        address nextItem = _start;
+        if (nextItem == address(0)) {
+            nextItem = begin(self);
+        }
+
+        while (n < _count) {
+            if (nextItem == address(0)) {
+                break;
+            }
+            elems[n] = nextItem;
+            nextItem = next(self, nextItem);
+            n += 1;
+        }
+        return elems;
+    }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "../libraries/LinkedList.sol";
 
@@ -52,4 +52,7 @@ contract LinkedListTest {
         ll.swap(node1, node2);
     }
 
+    function elements(address _start, uint256 _count) public view returns(address[] memory) {
+        return ll.elements(_start, _count);
+    }
 }

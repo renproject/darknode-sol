@@ -263,6 +263,23 @@ contract("DarknodePayment", (accounts: string[]) => {
             await dnp.deposit(amount, dai.address, { value: "1", from: accounts[0] })
                 .should.be.rejectedWith(/DarknodePayment: unexpected ether transfer/);
         });
+
+        it("cannot deposit ERC20 that has not been registered", async () => {
+            const before = new BN(await dai.balanceOf.call(accounts[0]));
+
+            // Deregister dai and try to deposit
+            await dnp.deregisterToken(dai.address);
+            await waitForEpoch(dnr);
+
+            // Approve and deposit
+            await dai.approve(dnp.address, before);
+            await dnp.deposit(before, dai.address, { from: accounts[0] })
+                .should.be.rejectedWith(/DarknodePayment: token not registered/);
+
+            // RESET: Register dai back
+            await dnp.registerToken(dai.address);
+            await waitForEpoch(dnr);
+        });
     });
 
     describe("Claiming rewards", async () => {
@@ -617,6 +634,14 @@ contract("DarknodePayment", (accounts: string[]) => {
                 .should.be.rejectedWith(/Ownable: caller is not the owner/);
             await store.transferOwnership(dnp.address, { from: accounts[2] })
                 .should.be.rejectedWith(/Ownable: caller is not the owner/);
+        });
+
+        it("cannot transferOwnership to the same owner", async () => {
+            await store.transferOwnership(owner, { from: owner })
+                .should.be.rejectedWith(/Claimable: invalid new owner/);
+            await store.transferOwnership(accounts[3], { from: owner });
+            await store.transferOwnership(accounts[3], { from: owner })
+                .should.be.rejectedWith(/Claimable: invalid new owner/);
         });
 
         // Transfer the ownership back to DNP

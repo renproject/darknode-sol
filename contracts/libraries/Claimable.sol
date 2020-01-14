@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -17,6 +17,7 @@ contract Claimable is Ownable {
     }
 
     function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != owner() && newOwner != pendingOwner, "Claimable: invalid new owner");
         pendingOwner = newOwner;
     }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -96,8 +96,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     event LogMinimumBondUpdated(uint256 _previousMinimumBond, uint256 _nextMinimumBond);
     event LogMinimumPodSizeUpdated(uint256 _previousMinimumPodSize, uint256 _nextMinimumPodSize);
     event LogMinimumEpochIntervalUpdated(uint256 _previousMinimumEpochInterval, uint256 _nextMinimumEpochInterval);
-    event LogSlasherUpdated(address _previousSlasher, address _nextSlasher);
-    event LogDarknodePaymentUpdated(IDarknodePayment _previousDarknodePayment, IDarknodePayment _nextDarknodePayment);
+    event LogSlasherUpdated(address indexed _previousSlasher, address indexed _nextSlasher);
+    event LogDarknodePaymentUpdated(IDarknodePayment indexed _previousDarknodePayment, IDarknodePayment indexed _nextDarknodePayment);
 
     /// @notice Restrict a function to the owner that registered the darknode.
     modifier onlyDarknodeOwner(address _darknodeID) {
@@ -127,6 +127,13 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// @notice Restrict a function to the Slasher contract.
     modifier onlySlasher() {
         require(address(slasher) == msg.sender, "DarknodeRegistry: must be slasher");
+        _;
+    }
+
+    /// @notice Restrict a function to registered nodes without a pending
+    /// deregistration.
+    modifier onlyDarknode(address _darknodeID) {
+        require(isRegistered(_darknodeID), "DarknodeRegistry: invalid darknode");
         _;
     }
 
@@ -181,17 +188,18 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// @param _publicKey The public key of the darknode. It is stored to allow
     ///        other darknodes and traders to encrypt messages to the trader.
     function register(address _darknodeID, bytes calldata _publicKey) external onlyRefunded(_darknodeID) {
-        // Use the current minimum bond as the darknode's bond.
-        uint256 bond = minimumBond;
+        require(_darknodeID != address(0), "DarknodeRegistry: darknode address cannot be zero");
+        // TODO: The following require was a suggestion. Leaving it here until there is confirmation that this is needed.
+        // require(_darknodeID != msg.sender, "DarknodeRegistry: darknode address cannot be the same as the darknode owner");
 
-        // Transfer bond to store
-        require(ren.transferFrom(msg.sender, address(store), bond), "DarknodeRegistry: bond transfer failed");
+        // Use the current minimum bond as the darknode's bond and transfer bond to store
+        require(ren.transferFrom(msg.sender, address(store), minimumBond), "DarknodeRegistry: bond transfer failed");
 
         // Flag this darknode for registration
         store.appendDarknode(
             _darknodeID,
             msg.sender,
-            bond,
+            minimumBond,
             _publicKey,
             currentEpoch.blocktime.add(minimumEpochInterval),
             0
@@ -200,7 +208,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(1);
 
         // Emit an event.
-        emit LogDarknodeRegistered(msg.sender, _darknodeID, bond);
+        emit LogDarknodeRegistered(msg.sender, _darknodeID, minimumBond);
     }
 
     /// @notice Deregister a darknode. The darknode will not be deregistered
@@ -326,6 +334,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     function slash(address _guilty, address _challenger, uint256 _percentage)
         external
         onlySlasher
+        onlyDarknode(_guilty)
     {
         require(_percentage <= 100, "DarknodeRegistry: invalid percent");
 
@@ -336,15 +345,16 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
         uint256 totalBond = store.darknodeBond(_guilty);
         uint256 penalty = totalBond.div(100).mul(_percentage);
-        uint256 reward = penalty.div(2);
-        if (reward > 0) {
+        uint256 challengerReward = penalty.div(2);
+        uint256 darknodePaymentReward = penalty.sub(challengerReward);
+        if (challengerReward > 0) {
             // Slash the bond of the failed prover
             store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
 
             // Distribute the remaining bond into the darknode payment reward pool
             require(address(darknodePayment) != address(0x0), "DarknodeRegistry: invalid payment address");
-            require(ren.transfer(address(darknodePayment.store()), reward), "DarknodeRegistry: reward transfer failed");
-            require(ren.transfer(_challenger, reward), "DarknodeRegistry: reward transfer failed");
+            require(ren.transfer(address(darknodePayment.store()), darknodePaymentReward), "DarknodeRegistry: reward transfer failed");
+            require(ren.transfer(_challenger, challengerReward), "DarknodeRegistry: reward transfer failed");
         }
 
         emit LogDarknodeSlashed(store.darknodeOwner(_guilty), _guilty, _challenger, _percentage);

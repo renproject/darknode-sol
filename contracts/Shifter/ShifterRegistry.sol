@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity 0.5.12;
 
 import "../libraries/Claimable.sol";
 import "./ERC20Shifted.sol";
@@ -64,7 +64,7 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
     function updateShifter(address _tokenAddress, address _newShifterAddress) external onlyOwner {
         // Check that token, shifter are registered
         address currentShifter = shifterByToken[_tokenAddress];
-        require(shifterByToken[_tokenAddress] != address(0x0), "ShifterRegistry: token not registered");
+        require(currentShifter != address(0x0), "ShifterRegistry: token not registered");
 
         // Remove to list of shifters
         LinkedList.remove(shifterList, currentShifter);
@@ -90,8 +90,8 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
         address shifterAddress = shifterByToken[tokenAddress];
 
         // Remove token and shifter
-        shifterByToken[tokenAddress] = address(0x0);
-        tokenBySymbol[_symbol] = address(0x0);
+        delete shifterByToken[tokenAddress]; 
+        delete tokenBySymbol[_symbol];
         LinkedList.remove(shifterList, shifterAddress);
         LinkedList.remove(shiftedTokenList, tokenAddress);
         numShifters -= 1;
@@ -101,60 +101,12 @@ contract ShifterRegistry is Claimable, CanReclaimTokens {
 
     /// @dev To get all the registered shifters use count = 0.
     function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
-        uint256 count;
-        if (_count == 0) {
-            count = numShifters;
-        } else {
-            count = _count;
-        }
-
-        address[] memory shifters = new address[](count);
-
-        // Begin with the first node in the list
-        uint256 n = 0;
-        address next = _start;
-        if (next == address(0)) {
-            next = LinkedList.begin(shifterList);
-        }
-
-        while (n < count) {
-            if (next == address(0)) {
-                break;
-            }
-            shifters[n] = next;
-            next = LinkedList.next(shifterList, next);
-            n += 1;
-        }
-        return shifters;
+        return LinkedList.elements(shifterList, _start, _count == 0 ? numShifters : _count);
     }
 
     /// @dev To get all the registered shifted tokens use count = 0.
     function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
-        uint256 count;
-        if (_count == 0) {
-            count = numShifters;
-        } else {
-            count = _count;
-        }
-
-        address[] memory shiftedTokens = new address[](count);
-
-        // Begin with the first node in the list
-        uint256 n = 0;
-        address next = _start;
-        if (next == address(0)) {
-            next = LinkedList.begin(shiftedTokenList);
-        }
-
-        while (n < count) {
-            if (next == address(0)) {
-                break;
-            }
-            shiftedTokens[n] = next;
-            next = LinkedList.next(shiftedTokenList, next);
-            n += 1;
-        }
-        return shiftedTokens;
+        return LinkedList.elements(shiftedTokenList, _start, _count == 0 ? numShifters : _count);
     }
 
     /// @notice Returns the Shifter address for the given ERC20Shifted token
