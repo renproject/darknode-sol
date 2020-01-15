@@ -12,7 +12,7 @@ module.exports = {
         "migrations/Migrations.sol",
 
         // Contracts for assisting the tests
-        "test/CompatibleERC20Test.sol",
+        "test/ERC20WithFeesTest.sol",
         "test/tokens/ImpreciseToken.sol",
         "test/tokens/SelfDestructingToken.sol",
         "test/tokens/NonCompliantToken.sol",
@@ -20,7 +20,9 @@ module.exports = {
         "test/tokens/ReturnsFalseToken.sol",
         "test/tokens/TokenWithFees.sol",
         "test/LinkedListTest.sol",
+        "test/ValidateTest.sol",
         "test/StringTest.sol",
+        "test/CompareTest.sol",
         "test/tokens/PaymentToken.sol",
         "test/CycleChanger.sol",
     ],

@@ -17,7 +17,7 @@ chai.should();
 
 const networkAddresses = require("../../migrations/networks.js");
 const config = networkAddresses.config;
-export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL } = config;
+export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL_SECONDS } = config;
 
 export const MINIMUM_BOND = new BN(config.MINIMUM_BOND);
 
@@ -52,13 +52,15 @@ export const randomAddress = (): string => {
 
 const increaseTimeHelper = async (seconds: number) => {
     await new Promise((resolve, reject) => {
-        web3.currentProvider.send(
+        // tslint:disable-next-line: no-floating-promises
+        return web3.currentProvider.send(
             { jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0 } as any,
             ((err: Error) => {
                 if (err) {
                     reject(err);
                 }
-                web3.currentProvider.send({
+                // tslint:disable-next-line: no-floating-promises
+                return web3.currentProvider.send({
                     jsonrpc: "2.0",
                     method: "evm_mine",
                     params: [],
@@ -88,7 +90,7 @@ export const increaseTime = async (seconds: number) => {
 };
 
 export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
-    const timeout = MINIMUM_EPOCH_INTERVAL * 0.1;
+    const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {
@@ -106,6 +108,3 @@ export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
 export const randomID = () => {
     return keccak256(Math.random().toString());
 };
-
-export const openPrefix = toHex("Republic Protocol: open: ");
-export const closePrefix = toHex("Republic Protocol: cancel: ");

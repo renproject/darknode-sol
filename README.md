@@ -35,16 +35,16 @@ yarn run test
 
 ## Coverage
 
-Install the dependencies.
-
-```
-yarn install
-```
-
 Run the Truffle test suite with coverage.
 
 ```sh
 yarn run coverage
+```
+
+Open the coverage file.
+
+```sh
+open ./coverage/index.html
 ```
 
 ## Deploying
@@ -63,6 +63,8 @@ Deploy to Kovan:
 NETWORK=kovan yarn run deploy
 ```
 
+See `1_darknodes.js` for additional instructions.
+
 ## Verifying Contract Code
 
 Add an Etherscan API key to your `.env`:
@@ -74,5 +76,5 @@ ETHERSCAN_KEY="..."
 Run the following (replacing the network and contract name):
 
 ```sh
-NETWORK=mainnet yarn run verify YourContractName
+NETWORK=mainnet yarn run verify Contract1 Contract2
 ```

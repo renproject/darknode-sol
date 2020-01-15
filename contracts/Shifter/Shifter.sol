@@ -1,16 +1,19 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
+import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
 import "./ERC20Shifted.sol";
+import "./IShifter.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 /// @notice Shifter handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract Shifter is Ownable {
+contract Shifter is IShifter, Claimable, CanReclaimTokens {
     using SafeMath for uint256;
 
     uint8 public version = 2;
@@ -30,8 +33,11 @@ contract Shifter is Ownable {
     /// forwarded to a fee recipient.
     address public feeRecipient;
 
-    /// @notice The minting and burning fee in bips.
-    uint16 public fee;
+    /// @notice The shiftIn fee in bips.
+    uint16 public shiftInFee;
+
+    /// @notice The shiftOut fee in bips.
+    uint16 public shiftOutFee;
 
     /// @notice Each nHash can only be seen once.
     mapping (bytes32=>bool) public status;
@@ -57,13 +63,16 @@ contract Shifter is Ownable {
     /// @param _feeRecipient The recipient of burning and minting fees.
     /// @param _mintAuthority The address of the key that can sign mint
     ///        requests.
-    /// @param _fee The amount subtracted each burn and mint request and
+    /// @param _shiftInFee The amount subtracted each shiftIn request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount) public {
+    /// @param _shiftOutFee The amount subtracted each shiftOut request and
+    ///        forwarded to the feeRecipient. In BIPS.
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount) public {
         minShiftAmount = _minShiftOutAmount;
         token = _token;
-        mintAuthority = _mintAuthority;
-        fee = _fee;
+        shiftInFee = _shiftInFee;
+        shiftOutFee = _shiftOutFee;
+        updateMintAuthority(_mintAuthority);
         updateFeeRecipient(_feeRecipient);
     }
 
@@ -86,6 +95,7 @@ contract Shifter is Ownable {
     ///
     /// @param _nextMintAuthority The address to start paying fees to.
     function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
+        require(_nextMintAuthority != address(0), "Shifter: mintAuthority cannot be set to address zero");
         mintAuthority = _nextMintAuthority;
     }
 
@@ -101,16 +111,23 @@ contract Shifter is Ownable {
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
         // ShiftIn and ShiftOut will fail if the feeRecipient is 0x0
-        require(_nextFeeRecipient != address(0x0), "fee recipient cannot be 0x0");
+        require(_nextFeeRecipient != address(0x0), "Shifter: fee recipient cannot be 0x0");
 
         feeRecipient = _nextFeeRecipient;
     }
 
-    /// @notice Allow the owner to update the fee.
+    /// @notice Allow the owner to update the shiftIn fee.
     ///
     /// @param _nextFee The new fee for minting and burning.
-    function updateFee(uint16 _nextFee) public onlyOwner {
-        fee = _nextFee;
+    function updateShiftInFee(uint16 _nextFee) public onlyOwner {
+        shiftInFee = _nextFee;
+    }
+
+    /// @notice Allow the owner to update the shiftOut fee.
+    ///
+    /// @param _nextFee The new fee for minting and burning.
+    function updateShiftOutFee(uint16 _nextFee) public onlyOwner {
+        shiftOutFee = _nextFee;
     }
 
     /// @notice shiftIn mints tokens after taking a fee for the `_feeRecipient`.
@@ -125,14 +142,14 @@ contract Shifter is Ownable {
     function shiftIn(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes memory _sig) public returns (uint256) {
         // Verify signature
         bytes32 signedMessageHash = hashForSignature(_pHash, _amount, msg.sender, _nHash);
-        require(status[signedMessageHash] == false, "nonce hash already spent");
+        require(status[signedMessageHash] == false, "Shifter: nonce hash already spent");
         if (!verifySignature(signedMessageHash, _sig)) {
             // Return a detailed string containing the hash and recovered
-            // signer. This is a costly operation but is only run in the revert
+            // signer. This is somewhat costly but is only run in the revert
             // branch.
             revert(
                 String.add4(
-                    "invalid signature - hash: ",
+                    "Shifter: invalid signature - hash: ",
                     String.fromBytes32(signedMessageHash),
                     ", signer: ",
                     String.fromAddress(ECDSA.recover(signedMessageHash, _sig))
@@ -142,7 +159,7 @@ contract Shifter is Ownable {
         status[signedMessageHash] = true;
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = _amount.mul(shiftInFee).div(BIPS_DENOMINATOR);
         uint256 receivedAmount = _amount.sub(absoluteFee);
         token.mint(msg.sender, receivedAmount);
         token.mint(feeRecipient, absoluteFee);
@@ -165,11 +182,11 @@ contract Shifter is Ownable {
     function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
-        require(_to.length != 0, "to address is empty");
-        require(_amount >= minShiftAmount, "amount is less than the minimum shiftOut amount");
+        require(_to.length != 0, "Shifter: to address is empty");
+        require(_amount >= minShiftAmount, "Shifter: amount is less than the minimum shiftOut amount");
 
         // Burn full amount and mint fee
-        uint256 absoluteFee = (_amount.mul(fee)).div(BIPS_DENOMINATOR);
+        uint256 absoluteFee = _amount.mul(shiftOutFee).div(BIPS_DENOMINATOR);
         token.burn(msg.sender, _amount);
         token.mint(feeRecipient, absoluteFee);
 
@@ -196,19 +213,19 @@ contract Shifter is Ownable {
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
 contract BTCShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }
 
 contract ZECShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }
 
 contract BCHShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _fee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _fee, _minShiftOutAmount) public {
+    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
+        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
         }
 }

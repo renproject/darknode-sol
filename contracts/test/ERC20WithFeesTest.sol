@@ -1,13 +1,15 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 
-import "../libraries/CompatibleERC20Functions.sol";
+import "../libraries/ERC20WithFees.sol";
 
-contract CompatibleERC20Test  {
+contract ERC20WithFeesTest  {
     using SafeMath for uint256;
-    using CompatibleERC20Functions for ERC20;
+    using SafeERC20 for ERC20;
+    using ERC20WithFees for ERC20;
 
     // Stores its own balance amount
     mapping(address => uint256) public balances;
@@ -17,7 +19,7 @@ contract CompatibleERC20Test  {
 
         uint256 newValue = ERC20(_token).safeTransferFromWithFees(msg.sender, address(this), _value);
         balances[_token] = balances[_token].add(newValue);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in deposit");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in deposit");
     }
 
     function withdraw(address _token, uint256 _value) external {
@@ -25,7 +27,7 @@ contract CompatibleERC20Test  {
 
         ERC20(_token).safeTransfer(msg.sender, _value);
         balances[_token] = balances[_token].sub(_value);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in withdraw");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in withdraw");
     }
 
     function approve(address _token, uint256 _value) external {
@@ -37,6 +39,6 @@ contract CompatibleERC20Test  {
 
         ERC20(_token).safeTransferFrom(msg.sender, address(this), _value);
         balances[_token] = balances[_token].add(_value);
-        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "incorrect balance in deposit");
+        require(ERC20(_token).balanceOf(address(this)) == balances[_token], "ERC20WithFeesTest: incorrect balance in deposit");
     }
 }

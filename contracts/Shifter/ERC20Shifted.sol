@@ -1,14 +1,15 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 
 import "../libraries/Claimable.sol";
+import "../libraries/CanReclaimTokens.sol";
 
 /// @notice ERC20Shifted represents a digital asset that has been bridged on to
 /// the Ethereum ledger. It exposes mint and burn functions that can only be
 /// called by it's associated Shifter.
-contract ERC20Shifted is ERC20, ERC20Detailed, Claimable {
+contract ERC20Shifted is ERC20, ERC20Detailed, Claimable, CanReclaimTokens {
 
     /* solium-disable-next-line no-empty-blocks */
     constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {}

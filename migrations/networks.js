@@ -3,10 +3,14 @@ const BN = require("bn.js");
 const config = {
     MINIMUM_BOND: new BN(100000).mul(new BN(10).pow(new BN(18))),
     MINIMUM_POD_SIZE: 3, // 24 in production
-    MINIMUM_EPOCH_INTERVAL: 2, // 14400 in production
-    DARKNODE_PAYMENT_CYCLE_DURATION_SECONDS: 300, // 300 for testnet (5 minutes in seconds), 86400 in mainnet testing (1 day), 2628000 in production (1 month in seconds)
+    MINIMUM_EPOCH_INTERVAL_SECONDS: 30, // 216000 in production, 1 month
+    DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
+    BLACKLIST_SLASH_PERCENT: 0, // Don't slash bond for blacklisting
+    MALICIOUS_SLASH_PERCENT: 50, // Slash 50% of the bond
+    SECRET_REVEAL_SLASH_PERCENT: 100, // Slash 100% of the bond
     mintAuthority: "", // Darknode public key
-    shifterFees: 10,
+    shiftInFee: 10,
+    shiftOutFee: 10,
     zBTCMinShiftOutAmount: 10000,
     zZECMinShiftOutAmount: 10000,
     zBCHMinShiftOutAmount: 10000,
@@ -38,25 +42,52 @@ module.exports = {
             mintAuthority: "TODO",
         },
     },
+    chaosnet: {
+        tokens: {
+            DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+
+        RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
+        DarknodeSlasher: "0x7AdD7E6F431Cfa23dFfce61DD9749810dc678B16",
+        DarknodeRegistry: "0xA1eb04Db7a0ffd6e458b1868660a0edAF8199Fa9",
+        DarknodeRegistryStore: "0xE8d0C5D4ca958C8619Ab1B98cA901d65340C48B1",
+        DarknodePayment: "0x376D835c6Dc5d06C6335915B36ffe9734D3E4faa",
+        DarknodePaymentStore: "0x311999EE72B5826D664FD4F3aC09c0C462eFfe49",
+
+        BTCShifter: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
+        ZECShifter: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
+        BCHShifter: "0xa76beA11766E0b66bD952bc357CF027742021a8C",
+        zBTC: "0x88C64A7D2ecC882D558DD16aBC1537515a78BB7D",
+        zZEC: "0x8dD8944320Eb76F8e39C58E7A30d34E7fbA9D719",
+        zBCH: "0x466Dd97F83b18aC23dDF16931f8171A817953fF1",
+        ShifterRegistry: "0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F",
+
+        config: {
+            ...config,
+            MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
+            mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1",
+        },
+    },
     testnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "0x0000000000000000000000000000000000000000",
-        DarknodeRegistry: "0x1C6309618338D0EDf9a7Ea8eA18E060fD323020D",
-        DarknodeRegistryStore: "0x88e4477e4fdd677aee2dc9376471d45c198669fa",
-        DarknodePayment: "0x8E11B87547f4072CC8A094F2888201CAF4EA0B9e",
-        DarknodePaymentStore: "0xA9411C3AD1fBE168fd119A3B32fB481a0b9877A9",
+        DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
+        DarknodeRegistry: "0xD94aD925233f8344875C74DeDF7c4cbcb92aA9FF",
+        DarknodeRegistryStore: "0xc24146aE71470C2f8749DA0738b09434E0220d92",
+        DarknodePayment: "0x4Fc1f776ddfeb7AC1A93Cbb9FcbeFdda7e3C838E",
+        DarknodePaymentStore: "0x823c22F1e17766271a5986D9faa12bcfFDeb701B",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: '0xe5c5dAe20CdE920AEEcaE132fB37321523e2fbA5',
-        ZECShifter: '0xD0B7E226e7605c0436D37AabE44668F89f941E70',
-        zBTC: '0xc6069E8DeA210C937A846db2CEbC0f58ca111f26',
-        zZEC: '0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E',
-        zBCH: "",
-        BCHShifter: "",
-        ShifterRegistry: '0xbA563a8510d86dE95F5a50007E180d6d4966ad12',
+        BTCShifter: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
+        ZECShifter: "0x1615f5a285134925Fb4D87812827863fde046fDa",
+        BCHShifter: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
+        zBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
+        zZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
+        zBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
+        ShifterRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
 
         config: {
             ...config,
@@ -76,13 +107,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: '0x8fB4F7D1ea9329697127F2784399301c0F8E6866',
-        ZECShifter: '0x19Fe91276a992c2E85544C627583fcc535ff0661',
-        zBTC: '0x916B8012E1813E5924a3Eca400dBE6C7055a8484',
-        zZEC: '0x71b6A19Fc832bD9C739489EcBEa67ab41261026F',
-        zBCH: "",
-        BCHShifter: "",
-        ShifterRegistry: '0xc7B310c18D78f175812CFfD8896d3cC959aC28d6',
+        BTCShifter: "0x8fB4F7D1ea9329697127F2784399301c0F8E6866",
+        ZECShifter: "0x19Fe91276a992c2E85544C627583fcc535ff0661",
+        zBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
+        zZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
+        zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
+        BCHShifter: "0x9b74517b18D8D0581df70dc6376db5f4974ebfbD",
+        ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
 
         config: {
             ...config,
@@ -92,11 +123,11 @@ module.exports = {
 
     localnet: {
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: '0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3',
-        DarknodeRegistry: '0xA7F5B11657AA2796B9355DceF075202C26507B9B',
-        DarknodeRegistryStore: '0x46d016F50837a5DF8fe229127e54fb18B621bAeF',
-        DarknodePayment: '0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe',
-        DarknodePaymentStore: '0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534',
+        DarknodeSlasher: "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
+        DarknodeRegistry: "",
+        DarknodeRegistryStore: "0x46d016F50837a5DF8fe229127e54fb18B621bAeF",
+        DarknodePayment: "0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe",
+        DarknodePaymentStore: "0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
