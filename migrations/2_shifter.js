@@ -90,7 +90,7 @@ module.exports = async function (deployer, network, accounts) {
             await tokenShifter.updateMintAuthority(_mintAuthority);
         }
 
-        const tokenOwner = await token.owner();
+        const tokenOwner = await token.owner.call();
         if (tokenOwner !== Shifter.address) {
             deployer.logger.log(`Transferring ${symbol} ownership`);
 
