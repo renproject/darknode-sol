@@ -1,6 +1,6 @@
 import BN from "bn.js";
-import hashjs from "hash.js";
 import { ecsign } from "ethereumjs-util";
+import hashjs from "hash.js";
 import { Account } from "web3-eth-accounts";
 
 import { ValidateTestInstance } from "../types/truffle-contracts";

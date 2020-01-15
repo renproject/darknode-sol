@@ -59,23 +59,23 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     }
 
     function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
-        shifterRegistry().getShifters(_start, _count);
+        return shifterRegistry().getShifters(_start, _count);
     }
 
     function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
-        shifterRegistry().getShiftedTokens(_start, _count);
+        return shifterRegistry().getShiftedTokens(_start, _count);
     }
 
     function getShifterByToken(address _tokenAddress) external view returns (IShifter) {
-        shifterRegistry().getShifterByToken(_tokenAddress);
+        return shifterRegistry().getShifterByToken(_tokenAddress);
     }
 
     function getShifterBySymbol(string calldata _tokenSymbol) external view returns (IShifter) {
-        shifterRegistry().getShifterBySymbol(_tokenSymbol);
+        return shifterRegistry().getShifterBySymbol(_tokenSymbol);
     }
 
     function getTokenBySymbol(string calldata _tokenSymbol) external view returns (address) {
-        shifterRegistry().getTokenBySymbol(_tokenSymbol);
+        return shifterRegistry().getTokenBySymbol(_tokenSymbol);
     }
 
     // Only owner //////////////////////////////////////////////////////////////

@@ -137,12 +137,12 @@ contract("LinkedList", () => {
     it("should revert when given incorrect count while retrieving elements in the list", async () => {
         await linkedList.elements.call(NODE1, 0)
             .should.be.rejectedWith(/LinkedList: invalid count/); // invalid count
-    })
+    });
 
     it("should revert when given incorrect start address while retrieving elements in the list", async () => {
         await linkedList.elements.call(NODE4, 1)
             .should.be.rejectedWith(/LinkedList: not in list/); // invalid count
-    })
+    });
 
     it("should return elements in the list", async () => {
         let shifters = await linkedList.elements.call(NODE1, 1);
@@ -160,6 +160,6 @@ contract("LinkedList", () => {
         shifters[0].should.equal(NODE1);
         shifters[3].should.equal(NODE4);
         shifters.length.should.equal(10);
-    })
+    });
 
 });
