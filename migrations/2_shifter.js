@@ -99,7 +99,7 @@ module.exports = async function (deployer, network, accounts) {
 
                 // Update tokenShifter address
                 deployer.logger.log(`Claiming ${symbol} ownership in shifter`);
-                await darknodePayment.claimStoreOwnership();
+                await tokenShifter.claimTokenOwnership();
             } else {
                 deployer.logger.log(`Transferring token ownership from ${tokenOwner} to new ${symbol} shifter`);
                 const oldShifter = await Shifter.at(tokenOwner);
@@ -108,7 +108,7 @@ module.exports = async function (deployer, network, accounts) {
                 // contracts didn't:
                 try {
                     // Claim ownership
-                    await tokenShifter.claimStoreOwnership();
+                    await tokenShifter.claimTokenOwnership();
                 } catch (error) {
                     // Ignore
                 }
