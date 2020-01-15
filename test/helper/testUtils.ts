@@ -108,3 +108,8 @@ export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
 export const randomID = () => {
     return keccak256(Math.random().toString());
 };
+
+export const encodeCallData = (functioName: string, parameterTypes: string[], parameters: any[]) => {
+    return web3.eth.abi.encodeFunctionSignature(`${functioName}(${parameterTypes.join(",")})`) +
+        web3.eth.abi.encodeParameters(parameterTypes, parameters).slice(2);
+};

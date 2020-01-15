@@ -18,6 +18,8 @@ const config = {
 
 module.exports = {
     mainnet: {
+        Protocol: "",
+        ProtocolLogic: "",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
         DarknodeSlasher: "0x0000000000000000000000000000000000000000",
         DarknodeRegistry: "0x34bd421C7948Bc16f826Fd99f9B785929b121633",
@@ -48,6 +50,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
+        Protocol: "",
+        ProtocolLogic: "",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
         DarknodeSlasher: "0x7AdD7E6F431Cfa23dFfce61DD9749810dc678B16",
         DarknodeRegistry: "0xA1eb04Db7a0ffd6e458b1868660a0edAF8199Fa9",
@@ -70,6 +74,8 @@ module.exports = {
         },
     },
     testnet: {
+        Protocol: "",
+        ProtocolLogic: "",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
         DarknodeRegistry: "0xD94aD925233f8344875C74DeDF7c4cbcb92aA9FF",
@@ -96,6 +102,8 @@ module.exports = {
     },
 
     devnet: {
+        Protocol: "",
+        ProtocolLogic: "",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0xfe48363206E1849a2F53f5214af932354c35FD89",
         DarknodeRegistry: "0x6E1a6b85f05bfec5c24C7a26E302cB28e639651c",
@@ -122,6 +130,8 @@ module.exports = {
     },
 
     localnet: {
+        Protocol: "",
+        ProtocolLogic: "",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
         DarknodeRegistry: "",

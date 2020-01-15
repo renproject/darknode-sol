@@ -14,6 +14,8 @@ const BCHShifter = artifacts.require("BCHShifter");
 const zBCH = artifacts.require("zBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
+const ProtocolLogic = artifacts.require("ProtocolLogic");
+const Protocol = artifacts.require("Protocol");
 
 const networks = require("./networks.js");
 
@@ -22,17 +24,17 @@ const networks = require("./networks.js");
  * @param {string} network
  * @param {any[]} accounts
  */
-module.exports = async function (deployer, network, accounts) {
+module.exports = async function (deployer, network, [contractOwner]) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
-    const _mintAuthority = config.mintAuthority || accounts[0];
+    const _mintAuthority = config.mintAuthority || contractOwner;
     // TODO: _feeRecipient should be the DarknodePayment contract
     // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
-    const _feeRecipient = addresses.DarknodePaymentStore || accounts[0];
+    const _feeRecipient = addresses.DarknodePaymentStore || contractOwner;
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
@@ -43,15 +45,24 @@ module.exports = async function (deployer, network, accounts) {
     zBTC.address = addresses.zBTC || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
+    const protocol = await ProtocolLogic.at(Protocol.address);
 
     /** Registry **************************************************************/
 
     if (!ShifterRegistry.address) {
+        deployer.logger.log(`Deploying Shifter`);
         await deployer.deploy(
             ShifterRegistry,
         );
     }
     const registry = await ShifterRegistry.at(ShifterRegistry.address);
+
+    deployer.logger.log(`Checking...`);
+    const protocolShifterRegistry = await protocol.shifterRegistry.call({ from: contractOwner });
+    if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
+        deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
+        await protocol._updateShifterRegistry(registry.address, { from: contractOwner });
+    }
 
     // try {
     //     deployer.logger.log("Attempting to change cycle");
@@ -85,7 +96,7 @@ module.exports = async function (deployer, network, accounts) {
 
         const shifterAuthority = await tokenShifter.mintAuthority.call();
         if (shifterAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
-            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority.toLowerCase()}, now is ${_mintAuthority.toLowerCase()}`);
+            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority}, now is ${_mintAuthority}`);
             deployer.logger.log(`Updating mint authority in ${symbol} shifter`);
             await tokenShifter.updateMintAuthority(_mintAuthority);
         }
@@ -94,7 +105,7 @@ module.exports = async function (deployer, network, accounts) {
         if (tokenOwner !== Shifter.address) {
             deployer.logger.log(`Transferring ${symbol} ownership`);
 
-            if (tokenOwner === accounts[0]) {
+            if (tokenOwner === contractOwner) {
                 await token.transferOwnership(tokenShifter.address);
 
                 // Update tokenShifter address
@@ -110,12 +121,11 @@ module.exports = async function (deployer, network, accounts) {
                     // Claim ownership
                     await tokenShifter.claimTokenOwnership();
                 } catch (error) {
-                    // Ignore
+                    console.error(error);
                 }
             }
         }
 
-        // Try to change the payment cycle in case the token is pending registration
         let tokenRegistered = (await darknodePayment.registeredTokenIndex.call(Token.address)).toString() !== "0";
         const pendingRegistration = await darknodePayment.tokenPendingRegistration.call(Token.address);
         if (!tokenRegistered && !pendingRegistration) {
@@ -124,7 +134,7 @@ module.exports = async function (deployer, network, accounts) {
         }
 
         const registered = await registry.getShifterByToken.call(Token.address);
-        if (registered === NULL) {
+        if (registered === NULL || registered !== Shifter.address) {
             const otherRegistration = (await registry.getShifterBySymbol.call(symbol));
             if (otherRegistration === NULL) {
                 deployer.logger.log(`Registering ${symbol} shifter`);
