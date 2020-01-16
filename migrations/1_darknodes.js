@@ -53,30 +53,34 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     ProtocolLogic.address = addresses.ProtocolLogic || "";
     const tokens = addresses.tokens || {};
 
+    let actionCount = 0;
 
     /** PROTOCOL **************************************************************/
     if (!ProtocolLogic.address) {
         deployer.logger.log("Deploying ProtocolLogic");
         await deployer.deploy(ProtocolLogic);
+        actionCount++;
     }
+
+    proxyOwner = proxyOwner || "0x5E2603499eddc325153d96445A6c44487F0d1859";
 
     let protocolProxy;
     if (!Protocol.address) {
         deployer.logger.log("Deploying Protocol");
-        await deployer.deploy(Protocol, { from: proxyOwner });
+        await deployer.deploy(Protocol);
         protocolProxy = await Protocol.at(Protocol.address);
-        await protocolProxy.initialize(ProtocolLogic.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]), { from: proxyOwner });
+        await protocolProxy.initialize(ProtocolLogic.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]));
         // await protocolProxy.changeAdmin(proxyOwner, { from: contractOwner });
+        actionCount++;
     } else {
         protocolProxy = await Protocol.at(Protocol.address);
     }
-
-    deployer.logger.log("Checking...");
 
     const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyOwner });
     if (protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
         deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${ProtocolLogic.address}`);
         await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyOwner });
+        actionCount++;
     }
 
     const protocol = await ProtocolLogic.at(Protocol.address);
@@ -85,6 +89,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     if (!RenToken.address) {
         deployer.logger.log("Deploying RenToken");
         await deployer.deploy(RenToken);
+        actionCount++;
     }
 
     /** DARKNODE REGISTRY *****************************************************/
@@ -95,6 +100,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             VERSION_STRING,
             RenToken.address,
         );
+        actionCount++;
     }
     const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
 
@@ -109,6 +115,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             config.MINIMUM_POD_SIZE,
             config.MINIMUM_EPOCH_INTERVAL_SECONDS
         );
+        actionCount++;
     }
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
 
@@ -116,6 +123,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     if (protocolDarknodeRegistry.toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
         deployer.logger.log(`Updating DarknodeRegistry in Protocol contract. Was ${protocolDarknodeRegistry}, now is ${darknodeRegistry.address}`);
         await protocol._updateDarknodeRegistry(darknodeRegistry.address, { from: contractOwner });
+        actionCount++;
     }
 
     const storeOwner = await darknodeRegistryStore.owner.call();
@@ -141,6 +149,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
                 // Ignore
             }
         }
+        actionCount++;
     }
 
     /***************************************************************************
@@ -152,6 +161,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             DarknodeSlasher,
             DarknodeRegistry.address,
         );
+        actionCount++;
     }
     const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
 
@@ -159,6 +169,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     if (dnrInSlasher.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in Slasher");
         await slasher.updateDarknodeRegistry(DarknodeRegistry.address);
+        actionCount++;
     }
 
     // Set the slash percentages
@@ -166,16 +177,19 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     if (blacklistSlashPercent !== config.BLACKLIST_SLASH_PERCENT) {
         deployer.logger.log("Setting blacklist slash percent");
         await slasher.setBlacklistSlashPercent(new BN(config.BLACKLIST_SLASH_PERCENT));
+        actionCount++;
     }
     const maliciousSlashPercent = new BN(await slasher.maliciousSlashPercent.call()).toNumber();
     if (maliciousSlashPercent !== config.MALICIOUS_SLASH_PERCENT) {
         deployer.logger.log("Setting malicious slash percent");
         await slasher.setMaliciousSlashPercent(new BN(config.MALICIOUS_SLASH_PERCENT));
+        actionCount++;
     }
     const secretRevealSlashPercent = new BN(await slasher.secretRevealSlashPercent.call()).toNumber();
     if (secretRevealSlashPercent !== config.SECRET_REVEAL_SLASH_PERCENT) {
         deployer.logger.log("Setting secret reveal slash percent");
         await slasher.setSecretRevealSlashPercent(new BN(config.SECRET_REVEAL_SLASH_PERCENT));
+        actionCount++;
     }
 
     const currentSlasher = await darknodeRegistry.slasher.call();
@@ -184,6 +198,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry")
         // Update slasher address
         await darknodeRegistry.updateSlasher(DarknodeSlasher.address);
+        actionCount++;
     }
 
     /***************************************************************************
@@ -195,6 +210,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             DarknodePaymentStore,
             VERSION_STRING,
         );
+        actionCount++;
     }
 
     if (!DarknodePayment.address) {
@@ -207,11 +223,13 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             DarknodePaymentStore.address,
             config.DARKNODE_PAYOUT_PERCENT, // Reward payout percentage (50% is paid out at any given cycle)
         );
+        actionCount++;
     }
     // Update darknode payment address
     if ((await darknodeRegistry.darknodePayment()).toLowerCase() !== DarknodePayment.address.toLowerCase()) {
         deployer.logger.log("Updating DarknodeRegistry's darknode payment");
         await darknodeRegistry.updateDarknodePayment(DarknodePayment.address);
+        actionCount++;
     }
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
@@ -223,12 +241,14 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
             await darknodePayment.registerToken(tokenAddress);
         }
+        actionCount++;
     }
 
     const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();
     if (dnrInDarknodePayment.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in DNP");
         await darknodePayment.updateDarknodeRegistry(DarknodeRegistry.address);
+        actionCount++;
     }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(DarknodePaymentStore.address);
@@ -255,6 +275,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
                 // Ignore
             }
         }
+        actionCount++;
     }
 
     // if (changeCycle) {
@@ -270,7 +291,10 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     if ((await darknodePayment.cycleChanger()).toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Setting the DarknodePayment's cycle changer");
         await darknodePayment.updateCycleChanger(DarknodeRegistry.address);
+        actionCount++;
     }
+
+    deployer.logger.log(`Performed ${actionCount} updates.`);
 
     deployer.logger.log({
         RenToken: RenToken.address,

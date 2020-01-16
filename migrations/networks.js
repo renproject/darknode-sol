@@ -74,8 +74,8 @@ module.exports = {
         },
     },
     testnet: {
-        Protocol: "",
-        ProtocolLogic: "",
+        Protocol: "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
+        ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
         DarknodeRegistry: "0xD94aD925233f8344875C74DeDF7c4cbcb92aA9FF",
@@ -102,8 +102,8 @@ module.exports = {
     },
 
     devnet: {
-        Protocol: "",
-        ProtocolLogic: "",
+        Protocol: "0x1deB773B50B66b0e65e62E41380355a1A2BEd2e1",
+        ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0xfe48363206E1849a2F53f5214af932354c35FD89",
         DarknodeRegistry: "0x6E1a6b85f05bfec5c24C7a26E302cB28e639651c",

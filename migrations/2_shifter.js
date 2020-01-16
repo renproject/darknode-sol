@@ -47,6 +47,8 @@ module.exports = async function (deployer, network, [contractOwner]) {
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(Protocol.address);
 
+    let actionCount = 0;
+
     /** Registry **************************************************************/
 
     if (!ShifterRegistry.address) {
@@ -54,14 +56,15 @@ module.exports = async function (deployer, network, [contractOwner]) {
         await deployer.deploy(
             ShifterRegistry,
         );
+        actionCount++;
     }
     const registry = await ShifterRegistry.at(ShifterRegistry.address);
 
-    deployer.logger.log(`Checking...`);
     const protocolShifterRegistry = await protocol.shifterRegistry.call({ from: contractOwner });
     if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
         deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
         await protocol._updateShifterRegistry(registry.address, { from: contractOwner });
+        actionCount++;
     }
 
     // try {
@@ -78,6 +81,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     ]) {
         if (!Token.address) {
             await deployer.deploy(Token, name, symbol, decimals);
+            actionCount++;
         }
         const token = await Token.at(Token.address);
 
@@ -91,6 +95,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
                 config.shiftOutFee,
                 minShiftOutAmount,
             );
+            actionCount++;
         }
         const tokenShifter = await Shifter.at(Shifter.address);
 
@@ -99,6 +104,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
             deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority}, now is ${_mintAuthority}`);
             deployer.logger.log(`Updating mint authority in ${symbol} shifter`);
             await tokenShifter.updateMintAuthority(_mintAuthority);
+            actionCount++;
         }
 
         const tokenOwner = await token.owner.call();
@@ -124,6 +130,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
                     console.error(error);
                 }
             }
+            actionCount++;
         }
 
         let tokenRegistered = (await darknodePayment.registeredTokenIndex.call(Token.address)).toString() !== "0";
@@ -131,6 +138,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
         if (!tokenRegistered && !pendingRegistration) {
             deployer.logger.log(`Registering token ${symbol} in DarknodePayment`);
             await darknodePayment.registerToken(Token.address);
+            actionCount++;
         }
 
         const registered = await registry.getShifterByToken.call(Token.address);
@@ -143,6 +151,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
                 deployer.logger.log(`Updating registered ${symbol} shifter`);
                 await registry.updateShifter(Token.address, Shifter.address);
             }
+            actionCount++;
         } else {
             deployer.logger.log(`${symbol} shifter is already registered: ${await registry.getShifterByToken.call(Token.address)}`);
         }
@@ -151,8 +160,11 @@ module.exports = async function (deployer, network, [contractOwner]) {
         if (feeRecipient.toLowerCase() !== _feeRecipient.toLowerCase()) {
             deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
             await tokenShifter.updateFeeRecipient(_feeRecipient);
+            actionCount++;
         }
     }
+
+    deployer.logger.log(`Performed ${actionCount} updates.`);
 
     /** LOG *******************************************************************/
 

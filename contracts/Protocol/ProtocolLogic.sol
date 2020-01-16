@@ -1,6 +1,5 @@
 pragma solidity 0.5.12;
 
-// import "@openzeppelin/upgrades/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "../DarknodePayment/DarknodePayment.sol";
