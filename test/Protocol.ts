@@ -94,10 +94,10 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         (await protocol.shifterRegistry.call())
             .should.equal(NULL);
 
-        await protocol._updateShifterRegistry(dnr.address);
+        await protocol._updateShifterRegistry(shifterRegistry.address);
 
         (await protocol.shifterRegistry.call())
-            .should.equal(dnr.address);
+            .should.equal(shifterRegistry.address);
     });
 
     it("Proxy functions", async () => {
