@@ -14,8 +14,8 @@ const BCHShifter = artifacts.require("BCHShifter");
 const zBCH = artifacts.require("zBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
+const ProtocolLogic = artifacts.require("ProtocolLogic");
 const Protocol = artifacts.require("Protocol");
-const ProtocolProxy = artifacts.require("ProtocolProxy");
 
 const networks = require("./networks.js");
 
@@ -45,7 +45,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     zBTC.address = addresses.zBTC || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-    const protocol = await Protocol.at(ProtocolProxy.address);
+    const protocol = await ProtocolLogic.at(Protocol.address);
 
     let actionCount = 0;
 

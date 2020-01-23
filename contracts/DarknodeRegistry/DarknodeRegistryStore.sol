@@ -1,6 +1,6 @@
 pragma solidity 0.5.12;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/LinkedList.sol";

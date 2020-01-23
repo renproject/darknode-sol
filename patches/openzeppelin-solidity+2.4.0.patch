@@ -1,7 +1,7 @@
-diff --git a/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol b/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol
-index d85ce09..1d34ab2 100644
---- a/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol
-+++ b/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol
+diff --git a/node_modules/openzeppelin-solidity/contracts/cryptography/ECDSA.sol b/node_modules/openzeppelin-solidity/contracts/cryptography/ECDSA.sol
+index d85ce09..adb7ac8 100644
+--- a/node_modules/openzeppelin-solidity/contracts/cryptography/ECDSA.sol
++++ b/node_modules/openzeppelin-solidity/contracts/cryptography/ECDSA.sol
 @@ -28,7 +28,7 @@ library ECDSA {
      function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
          // Check the signature length
