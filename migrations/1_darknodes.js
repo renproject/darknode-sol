@@ -297,6 +297,8 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     deployer.logger.log(`Performed ${actionCount} updates.`);
 
     deployer.logger.log({
+        Protocol: Protocol.address,
+        ProtocolLogic: ProtocolLogic.address,
         RenToken: RenToken.address,
         DarknodeSlasher: DarknodeSlasher.address,
         DarknodeRegistry: DarknodeRegistry.address,

@@ -130,26 +130,26 @@ module.exports = {
     },
 
     localnet: {
-        Protocol: "",
-        ProtocolLogic: "",
+        Protocol: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
+        ProtocolLogic: "0x1E5c069eccAdc5979D20a9706924F7adc66Da414",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
-        DarknodeRegistry: "",
-        DarknodeRegistryStore: "0x46d016F50837a5DF8fe229127e54fb18B621bAeF",
-        DarknodePayment: "0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe",
-        DarknodePaymentStore: "0x72Acdf4f0E3245262E46Bd8daCc207Df7CF3A534",
+        DarknodeSlasher: "0x8447EfA2a06bfEf230c93fa60f8a82EEfEA5A427",
+        DarknodeRegistry: "0x226DE25a04AE3b133D6611614D3f24B7B787Abd6",
+        DarknodeRegistryStore: "0xA89F46C8daA8E8fe6F4dcc8361205d14b8E2A617",
+        DarknodePayment: "0x0C6445A8D3120e52B05A5892E562e53A6ae17Eb9",
+        DarknodePaymentStore: "0xee9de0Ab7BB06B063B44677382FE95C87b497358",
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        ShifterRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
-        zBTC: "0xDE027035d33CEB2757685E325de1A0b924aA73E6",
         BTCShifter: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
-        zZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
         ZECShifter: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
-        zBCH: "",
-        BCHShifter: "",
+        BCHShifter: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
+        zBTC: "0xDE027035d33CEB2757685E325de1A0b924aA73E6",
+        zZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
+        zBCH: "0x679F9e30549311fE7FEE0Eae44CE09e043a44055",
+        ShifterRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
 
         config: {
             ...config,

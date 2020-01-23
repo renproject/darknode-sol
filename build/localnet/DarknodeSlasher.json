@@ -2,9 +2,95 @@
   "contractName": "DarknodeSlasher",
   "abi": [
     {
+      "inputs": [
+        {
+          "internalType": "contract DarknodeRegistry",
+          "name": "_darknodeRegistry",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "contract DarknodeRegistry",
+          "name": "_previousDarknodeRegistry",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "contract DarknodeRegistry",
+          "name": "_nextDarknodeRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "LogDarknodeRegistryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "blacklistSlashPercent",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "blacklisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [],
-      "name": "renounceOwnership",
+      "name": "claimOwnership",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -13,9 +99,10 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "owner",
+      "name": "darknodeRegistry",
       "outputs": [
         {
+          "internalType": "contract DarknodeRegistry",
           "name": "",
           "type": "address"
         }
@@ -30,6 +117,7 @@
       "name": "isOwner",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -41,9 +129,40 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "darknodeRegistry",
+      "name": "maliciousSlashPercent",
       "outputs": [
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -54,8 +173,85 @@
     },
     {
       "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "secretRevealSlashPercent",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "secretRevealed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "slashed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -67,50 +263,275 @@
       "type": "function"
     },
     {
+      "constant": false,
       "inputs": [
         {
+          "internalType": "contract DarknodeRegistry",
           "name": "_darknodeRegistry",
           "type": "address"
         }
       ],
+      "name": "updateDarknodeRegistry",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
+      "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_prover",
+          "internalType": "uint256",
+          "name": "_percentage",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBlacklistSlashPercent",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_percentage",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaliciousSlashPercent",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_percentage",
+          "type": "uint256"
+        }
+      ],
+      "name": "setSecretRevealSlashPercent",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_guilty",
           "type": "address"
         },
         {
-          "name": "_challenger1",
+          "internalType": "address",
+          "name": "_challenger",
           "type": "address"
         },
         {
-          "name": "_challenger2",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "_percentage",
+          "type": "uint256"
         }
       ],
       "name": "slash",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_guilty",
+          "type": "address"
+        }
+      ],
+      "name": "blacklist",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_height",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_round",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_validRound1",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash2",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_validRound2",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature2",
+          "type": "bytes"
+        }
+      ],
+      "name": "slashDuplicatePropose",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_height",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_round",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash2",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature2",
+          "type": "bytes"
+        }
+      ],
+      "name": "slashDuplicatePrevote",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_height",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_round",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature1",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_blockhash2",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature2",
+          "type": "bytes"
+        }
+      ],
+      "name": "slashDuplicatePrecommit",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_a",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_b",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_c",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_d",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_e",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_f",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_signature",
+          "type": "bytes"
+        }
+      ],
+      "name": "slashSecretReveal",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -120,7 +541,7 @@
   "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodeSlasher/DarknodeSlasher.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -131,23 +552,45 @@
             {
               "indexed": true,
               "name": "previousOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "newOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "OwnershipTransferred",
           "type": "event",
           "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "contract DarknodeRegistry",
+              "name": "_previousDarknodeRegistry",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "contract DarknodeRegistry",
+              "name": "_nextDarknodeRegistry",
+              "type": "address"
+            }
+          ],
+          "name": "LogDarknodeRegistryUpdated",
+          "type": "event",
+          "signature": "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7"
         }
       },
       "links": {},
-      "address": "0xa6B1d1E63B92F8Fb36F8E1356FD5739e6433f0a3",
+      "address": "0x8447EfA2a06bfEf230c93fa60f8a82EEfEA5A427",
       "transactionHash": "0x36d36648554f3056e084eed942503903bb629b5bca08b6d809837e90bd8ad6d0"
     }
   },
-  "schemaVersion": "3.0.11"
+  "schemaVersion": "3.0.20"
 }

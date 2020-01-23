@@ -148,7 +148,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
                 deployer.logger.log(`Registering ${symbol} shifter`);
                 await registry.setShifter(Token.address, Shifter.address);
             } else {
-                deployer.logger.log(`Updating registered ${symbol} shifter`);
+                deployer.logger.log(`Updating registered ${symbol} shifter (was ${otherRegistration})`);
                 await registry.updateShifter(Token.address, Shifter.address);
             }
             actionCount++;

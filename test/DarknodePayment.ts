@@ -70,18 +70,18 @@ contract("DarknodePayment", (accounts: string[]) => {
         };
 
         const printTokens = async () => {
-            console.log(`Registered tokens: [`);
+            console.info(`Registered tokens: [`);
             let i = 0;
             while (true) {
                 try {
                     const token = await dnp.registeredTokens.call(i);
-                    console.log(`    ${token}, (${await dnp.registeredTokenIndex.call(token)})`);
+                    console.info(`    ${token}, (${await dnp.registeredTokenIndex.call(token)})`);
                     i++;
                 } catch (error) {
                     break;
                 }
             }
-            console.log(`]`);
+            console.info(`]`);
         };
 
         const checkTokenIndexes = async () => {
