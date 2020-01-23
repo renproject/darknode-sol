@@ -1,7 +1,7 @@
 import {
     BTCShifterInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    ProtocolInstance, ProtocolLogicInstance, RenTokenInstance, ShifterRegistryInstance,
+    ProtocolInstance, ProtocolProxyInstance, RenTokenInstance, ShifterRegistryInstance,
     zBTCInstance,
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
@@ -15,8 +15,8 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const ShifterRegistry = artifacts.require("ShifterRegistry");
 const zBTC = artifacts.require("zBTC");
 const BTCShifter = artifacts.require("BTCShifter");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const Protocol = artifacts.require("Protocol");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
 
 contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
 
@@ -29,8 +29,8 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
     let shifterRegistry: ShifterRegistryInstance;
     let zbtc: zBTCInstance;
     let btcShifter: BTCShifterInstance;
-    let protocol: ProtocolLogicInstance;
-    let protocolProxy: ProtocolInstance;
+    let protocol: ProtocolInstance;
+    let protocolProxy: ProtocolProxyInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
@@ -42,8 +42,8 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         shifterRegistry = await ShifterRegistry.deployed();
         zbtc = await zBTC.deployed();
         btcShifter = await BTCShifter.deployed();
-        protocol = await ProtocolLogic.at(Protocol.address);
-        protocolProxy = await Protocol.deployed();
+        protocol = await Protocol.at(ProtocolProxy.address);
+        protocolProxy = await ProtocolProxy.deployed();
         await waitForEpoch(dnr);
     });
 
@@ -103,20 +103,20 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
     it("Proxy functions", async () => {
         // Try to initialize again
         await protocolProxy.initialize(
-            ProtocolLogic.address,
+            Protocol.address,
             proxyOwner,
             encodeCallData("initialize", ["address"], [owner]), { from: proxyOwner },
         )
             .should.be.rejectedWith(/revert$/);
         await protocolProxy.initialize(
-            ProtocolLogic.address,
+            Protocol.address,
             proxyOwner,
             Buffer.from([]) as unknown as string,
         )
             .should.be.rejectedWith(/revert$/);
 
         // Upgrade logic
-        const newLogic = await ProtocolLogic.new();
+        const newLogic = await Protocol.new();
 
         // Wrong address
         await protocolProxy.upgradeTo(newLogic.address, { from: owner })

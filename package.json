@@ -7,7 +7,7 @@
     "coverage": "yarn run generate && solidity-coverage",
     "test": "yarn run generate && truffle test",
     "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/chaosnet/*.json\"",
-    "bindings:go": "solc darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades openzeppelin-solidity=`pwd`/node_modules/openzeppelin-solidity --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') | abigen -pkg bindings --out bindings.go --abi -",
+    "bindings:go": "solc darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades @openzeppelin/contracts=`pwd`/node_modules/@openzeppelin/contracts --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') | abigen -pkg bindings --out bindings.go --abi -",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
     "deploy": "truffle migrate --network $NETWORK",
@@ -16,8 +16,8 @@
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
-    "@openzeppelin/upgrades": "^2.6.0",
-    "openzeppelin-solidity": "2.4.0"
+    "@openzeppelin/contracts": "^2.4.0",
+    "@openzeppelin/upgrades": "^2.6.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",

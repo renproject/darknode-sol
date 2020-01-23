@@ -1,8 +1,8 @@
 pragma solidity 0.5.12;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/String.sol";

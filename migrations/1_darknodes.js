@@ -9,8 +9,8 @@ const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const Protocol = artifacts.require("Protocol");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
 
 const networks = require("./networks.js");
 
@@ -49,41 +49,41 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
-    Protocol.address = addresses.Protocol || "";
-    ProtocolLogic.address = addresses.ProtocolLogic || "";
+    ProtocolProxy.address = addresses.Protocol || "";
+    Protocol.address = addresses.ProtocolLogic || "";
     const tokens = addresses.tokens || {};
 
     let actionCount = 0;
 
     /** PROTOCOL **************************************************************/
-    if (!ProtocolLogic.address) {
-        deployer.logger.log("Deploying ProtocolLogic");
-        await deployer.deploy(ProtocolLogic);
+    if (!Protocol.address) {
+        deployer.logger.log("Deploying Protocol");
+        await deployer.deploy(Protocol);
         actionCount++;
     }
 
     proxyOwner = proxyOwner || "0x5E2603499eddc325153d96445A6c44487F0d1859";
 
     let protocolProxy;
-    if (!Protocol.address) {
+    if (!ProtocolProxy.address) {
         deployer.logger.log("Deploying Protocol");
-        await deployer.deploy(Protocol);
-        protocolProxy = await Protocol.at(Protocol.address);
-        await protocolProxy.initialize(ProtocolLogic.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]));
+        await deployer.deploy(ProtocolProxy);
+        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
+        await protocolProxy.initialize(Protocol.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]));
         // await protocolProxy.changeAdmin(proxyOwner, { from: contractOwner });
         actionCount++;
     } else {
-        protocolProxy = await Protocol.at(Protocol.address);
+        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
     }
 
     const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyOwner });
-    if (protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
-        deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${ProtocolLogic.address}`);
-        await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyOwner });
+    if (protocolProxyLogic.toLowerCase() !== Protocol.address.toLowerCase()) {
+        deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${Protocol.address}`);
+        await protocolProxy.upgradeTo(Protocol.address, { from: proxyOwner });
         actionCount++;
     }
 
-    const protocol = await ProtocolLogic.at(Protocol.address);
+    const protocol = await Protocol.at(ProtocolProxy.address);
 
     /** Ren TOKEN *************************************************************/
     if (!RenToken.address) {
@@ -303,5 +303,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         DarknodeRegistryStore: DarknodeRegistryStore.address,
         DarknodePayment: DarknodePayment.address,
         DarknodePaymentStore: DarknodePaymentStore.address,
+        Protocol: ProtocolProxy.address,
+        ProtocolLogic: Protocol.address,
     });
 }

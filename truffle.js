@@ -79,7 +79,7 @@ Repository: https://github.com/renproject/darknode-sol
 Issues: https://github.com/renproject/darknode-sol/issues
 
 Licenses
-openzeppelin-solidity: (MIT) https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/LICENSE
+@openzeppelin/contracts: (MIT) https://github.com/OpenZeppelin/@openzeppelin/contracts/blob/master/LICENSE
 darknode-sol: (GNU GPL V3) https://github.com/renproject/darknode-sol/blob/master/LICENSE
 `
   },
