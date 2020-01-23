@@ -25,6 +25,10 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
         owner = _owner;
     }
 
+    function transferOwnership(address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
+
     // Darknode contracts
 
     function darknodeRegistry() public view returns (DarknodeRegistry) {

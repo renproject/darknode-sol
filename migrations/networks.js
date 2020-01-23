@@ -131,7 +131,7 @@ module.exports = {
 
     localnet: {
         Protocol: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
-        ProtocolLogic: "0x1E5c069eccAdc5979D20a9706924F7adc66Da414",
+        ProtocolLogic: "0xcfb2fD20211552216755E318aD091d0d1C3a39a7",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x8447EfA2a06bfEf230c93fa60f8a82EEfEA5A427",
         DarknodeRegistry: "0x226DE25a04AE3b133D6611614D3f24B7B787Abd6",
