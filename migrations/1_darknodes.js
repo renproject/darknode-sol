@@ -40,6 +40,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
+    proxyOwner = proxyOwner || config.proxyOwner;
 
     const VERSION_STRING = `${network}-${gitCommit()}`;
 
@@ -61,8 +62,6 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         await deployer.deploy(ProtocolLogic);
         actionCount++;
     }
-
-    proxyOwner = proxyOwner || "0x5E2603499eddc325153d96445A6c44487F0d1859";
 
     let protocolProxy;
     if (!Protocol.address) {
@@ -240,8 +239,8 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         if (!registered && !pendingRegistration) {
             deployer.logger.log(`Registering token ${tokenName} in DarknodePayment`);
             await darknodePayment.registerToken(tokenAddress);
+            actionCount++;
         }
-        actionCount++;
     }
 
     const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();

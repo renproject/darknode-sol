@@ -14,6 +14,7 @@ const BCHShifter = artifacts.require("BCHShifter");
 const zBCH = artifacts.require("zBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
+const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 const Protocol = artifacts.require("Protocol");
 
@@ -32,9 +33,9 @@ module.exports = async function (deployer, network, [contractOwner]) {
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
     const _mintAuthority = config.mintAuthority || contractOwner;
+
     // TODO: _feeRecipient should be the DarknodePayment contract
-    // There should be a 0_darknode_payment.js that deploys it before the shifter contracts
-    const _feeRecipient = addresses.DarknodePaymentStore || contractOwner;
+    const _feeRecipient = DarknodePaymentStore.address || addresses.DarknodePaymentStore || contractOwner;
 
     BTCShifter.address = addresses.BTCShifter || "";
     ZECShifter.address = addresses.ZECShifter || "";
@@ -101,8 +102,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
 
         const shifterAuthority = await tokenShifter.mintAuthority.call();
         if (shifterAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
-            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${shifterAuthority}, now is ${_mintAuthority}`);
-            deployer.logger.log(`Updating mint authority in ${symbol} shifter`);
+            deployer.logger.log(`Updating mint authority in ${symbol} shifter. Was ${shifterAuthority}, now is ${_mintAuthority}`);
             await tokenShifter.updateMintAuthority(_mintAuthority);
             actionCount++;
         }
@@ -152,12 +152,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
                 await registry.updateShifter(Token.address, Shifter.address);
             }
             actionCount++;
-        } else {
-            deployer.logger.log(`${symbol} shifter is already registered: ${await registry.getShifterByToken.call(Token.address)}`);
         }
 
         const feeRecipient = await tokenShifter.feeRecipient.call();
-        if (feeRecipient.toLowerCase() !== _feeRecipient.toLowerCase()) {
+        if (feeRecipient.toLowerCase() !== DarknodePaymentStore.address.toLowerCase()) {
             deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
             await tokenShifter.updateFeeRecipient(_feeRecipient);
             actionCount++;
