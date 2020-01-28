@@ -70,6 +70,24 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
             .should.equal(shifterRegistry.address);
     });
 
+    it("Protocol owner", async () => {
+        (await protocol.owner.call())
+            .should.equal(owner);
+
+        await protocol.transferOwnership(otherAccount, { from: otherAccount })
+            .should.be.rejectedWith(/Ownable: caller is not the owner/);
+
+        await protocol.transferOwnership(otherAccount);
+
+        (await protocol.owner.call())
+            .should.equal(otherAccount);
+
+        await protocol.transferOwnership(owner, { from: otherAccount });
+
+        (await protocol.owner.call())
+            .should.equal(owner);
+    });
+
     it("Update DarknodeRegistry address", async () => {
         await protocol._updateDarknodeRegistry(NULL, { from: otherAccount })
             .should.be.rejectedWith(/Ownable: caller is not the owner/);
