@@ -52,8 +52,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        Protocol: "0x7A43B06eD73fcd3707F1a681ca645d758A51eE52",
-        ProtocolLogic: "0x54751636e04092ee76f25b2B3c50dCDcFeBdBaDf",
+        Protocol: "0xeF4de0E97D92757520D78c4d49d8151964f6a85B",
+        ProtocolLogic: "0xa638f33388747d5f62411273f4be8919ed8c94b4",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
         DarknodeSlasher: "0x7AdD7E6F431Cfa23dFfce61DD9749810dc678B16",
         DarknodeRegistry: "0xA1eb04Db7a0ffd6e458b1868660a0edAF8199Fa9",

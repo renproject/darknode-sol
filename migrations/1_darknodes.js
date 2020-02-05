@@ -69,7 +69,6 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         await deployer.deploy(Protocol);
         protocolProxy = await Protocol.at(Protocol.address);
         await protocolProxy.initialize(ProtocolLogic.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]));
-        // await protocolProxy.changeAdmin(proxyOwner, { from: contractOwner });
         actionCount++;
     } else {
         protocolProxy = await Protocol.at(Protocol.address);
