@@ -32,6 +32,21 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "darknodeRegistry",
@@ -291,8 +306,8 @@
     "1": {
       "events": {},
       "links": {},
-      "address": "0xA638f33388747D5f62411273f4Be8919ed8C94B4",
-      "transactionHash": "0x4e65824dc2d3a835a52fbb6352a1cf7eb537533e210684b896fe89c76fead008"
+      "address": "0x54751636e04092ee76f25b2B3c50dCDcFeBdBaDf",
+      "transactionHash": "0xa6ff2d36c24a8c0bd5df576918bb35938c925fcecea7ab2d37e3a703f1475f17"
     }
   },
   "schemaVersion": "3.0.20"
