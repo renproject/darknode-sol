@@ -81,7 +81,7 @@ module.exports = {
         ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
-        DarknodeRegistry: "0xD94aD925233f8344875C74DeDF7c4cbcb92aA9FF",
+        DarknodeRegistry: "0xf33AEd5bEfd9e9a2E92495Ea971c57866C39869f",
         DarknodeRegistryStore: "0xc24146aE71470C2f8749DA0738b09434E0220d92",
         DarknodePayment: "0x4Fc1f776ddfeb7AC1A93Cbb9FcbeFdda7e3C838E",
         DarknodePaymentStore: "0x823c22F1e17766271a5986D9faa12bcfFDeb701B",

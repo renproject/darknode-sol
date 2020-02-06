@@ -74,10 +74,11 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
         protocolProxy = await Protocol.at(Protocol.address);
     }
 
-    const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyOwner });
-    if (protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
+    if (ProtocolLogic.address === "") { // protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
+        const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyOwner });
         deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${ProtocolLogic.address}`);
-        await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyOwner });
+        if (proxyOwner !== contract)
+            await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyOwner });
         actionCount++;
     }
 
@@ -117,13 +118,6 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     }
     const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
 
-    const protocolDarknodeRegistry = await await protocol.darknodeRegistry.call({ from: contractOwner });
-    if (protocolDarknodeRegistry.toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
-        deployer.logger.log(`Updating DarknodeRegistry in Protocol contract. Was ${protocolDarknodeRegistry}, now is ${darknodeRegistry.address}`);
-        await protocol._updateDarknodeRegistry(darknodeRegistry.address, { from: contractOwner });
-        actionCount++;
-    }
-
     const storeOwner = await darknodeRegistryStore.owner.call();
     if (storeOwner !== DarknodeRegistry.address) {
         deployer.logger.log("Linking DarknodeRegistryStore and DarknodeRegistry")
@@ -147,6 +141,13 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
                 // Ignore
             }
         }
+        actionCount++;
+    }
+
+    const protocolDarknodeRegistry = await await protocol.darknodeRegistry.call();
+    if (protocolDarknodeRegistry.toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
+        deployer.logger.log(`Updating DarknodeRegistry in Protocol contract. Was ${protocolDarknodeRegistry}, now is ${darknodeRegistry.address}`);
+        await protocol._updateDarknodeRegistry(darknodeRegistry.address);
         actionCount++;
     }
 

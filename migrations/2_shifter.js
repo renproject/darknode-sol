@@ -61,10 +61,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
     }
     const registry = await ShifterRegistry.at(ShifterRegistry.address);
 
-    const protocolShifterRegistry = await protocol.shifterRegistry.call({ from: contractOwner });
+    const protocolShifterRegistry = await protocol.shifterRegistry.call();
     if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
         deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
-        await protocol._updateShifterRegistry(registry.address, { from: contractOwner });
+        await protocol._updateShifterRegistry(registry.address);
         actionCount++;
     }
 

@@ -80,13 +80,13 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "contract IDarknodePayment",
           "name": "_previousDarknodePayment",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "contract IDarknodePayment",
           "name": "_nextDarknodePayment",
           "type": "address"
@@ -225,13 +225,13 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
           "name": "_previousSlasher",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
           "name": "_nextSlasher",
           "type": "address"
@@ -1236,13 +1236,13 @@
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_previousSlasher",
               "type": "address",
               "internalType": "address"
             },
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_nextSlasher",
               "type": "address",
               "internalType": "address"
@@ -1296,13 +1296,13 @@
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
+              "indexed": true,
               "internalType": "contract IDarknodePayment",
               "name": "_previousDarknodePayment",
               "type": "address"
             },
             {
-              "indexed": false,
+              "indexed": true,
               "internalType": "contract IDarknodePayment",
               "name": "_nextDarknodePayment",
               "type": "address"
@@ -1372,9 +1372,9 @@
         }
       },
       "links": {},
-      "address": "0xD94aD925233f8344875C74DeDF7c4cbcb92aA9FF",
-      "transactionHash": "0x0be47dc767323c4a5014523db8cd9d61a5289be584f129cdf4a348592f95b1c4"
+      "address": "0xf33AEd5bEfd9e9a2E92495Ea971c57866C39869f",
+      "transactionHash": "0x17a2ad462c27c64b6d61d8111a4584b36f7f54f3e24a2a369f8e1d1fc7fb3f0b"
     }
   },
-  "schemaVersion": "3.0.17"
+  "schemaVersion": "3.0.20"
 }
