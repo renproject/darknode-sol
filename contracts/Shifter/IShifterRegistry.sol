@@ -1,6 +1,6 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./IShifter.sol";
 

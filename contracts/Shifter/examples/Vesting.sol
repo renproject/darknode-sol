@@ -1,9 +1,9 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
 import "../ShifterRegistry.sol";
-import "openzeppelin-solidity/contracts/math/Math.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract Vesting is Ownable {
     using SafeMath for uint256;

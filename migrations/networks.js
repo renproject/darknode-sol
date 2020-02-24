@@ -119,13 +119,16 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x8fB4F7D1ea9329697127F2784399301c0F8E6866",
-        ZECShifter: "0x19Fe91276a992c2E85544C627583fcc535ff0661",
+        BTCShifter: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
+        ZECShifter: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
+        BCHShifter: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
         zBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
         zZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
         zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
-        BCHShifter: "0x9b74517b18D8D0581df70dc6376db5f4974ebfbD",
         ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
+
+        // Confirmationless
+        BTCConfirmationlessShifter: "0x42e339D2aef4AEC178cE8B2780B070F73FD234ba",
 
         config: {
             ...config,

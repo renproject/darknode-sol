@@ -5,9 +5,9 @@
   "scripts": {
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "coverage": "yarn run generate && solidity-coverage",
-    "test": "yarn run generate && truffle test",
+    "test": "yarn run generate && truffle test --show-events",
     "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/chaosnet/*.json\"",
-    "bindings:go": "solc darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades openzeppelin-solidity=`pwd`/node_modules/openzeppelin-solidity --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') | abigen -pkg bindings --out bindings.go --abi -",
+    "bindings:go": "solc darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades @openzeppelin/contracts=`pwd`/node_modules/@openzeppelin/contracts --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') | abigen -pkg bindings --out bindings.go --abi -",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "prepare": "patch-package",
     "deploy": "truffle migrate --network $NETWORK",
@@ -16,15 +16,15 @@
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
-    "@openzeppelin/upgrades": "^2.6.0",
-    "openzeppelin-solidity": "2.4.0"
+    "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/upgrades": "^2.7.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.7",
+    "@types/chai": "^4.2.9",
     "@types/chai-as-promised": "^7.1.2",
     "@types/ethereumjs-abi": "^0.6.3",
-    "@types/mocha": "^5.2.7",
-    "@types/node": "^13.1.6",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^13.7.2",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.1.1",
     "chai": "^4.2.0",
@@ -32,28 +32,28 @@
     "chai-bignumber": "github:noiach/chai-bignumber.git#fd75e47b2980c3a151d2a05b070293b18a9bddce",
     "coveralls": "^3.0.9",
     "dotenv": "^8.2.0",
-    "eth-gas-reporter": "^0.2.14",
+    "eth-gas-reporter": "^0.2.15",
     "ethereumjs-abi": "^0.6.8",
-    "ganache-cli": "^6.8.1",
+    "ganache-cli": "^6.9.1",
     "hash.js": "^1.1.7",
     "patch-package": "^6.2.0",
-    "solc": "0.6.1",
+    "solc": "^0.5.16",
     "solidity-coverage": "^0.6.7",
-    "truffle": "^5.1.8",
+    "truffle": "^5.1.13",
     "truffle-hdwallet-provider": "^1.0.17",
-    "truffle-plugin-verify": "0.3.6",
+    "truffle-plugin-verify": "0.3.9",
     "truffle-typings": "^1.0.8",
     "ts-node": "^8.6.2",
-    "tslint": "^5.20.1",
-    "typechain": "^1.0.3",
+    "tslint": "^6.0.0",
+    "typechain": "^1.0.5",
     "typechain-target-truffle": "^1.0.2",
     "typechain-target-web3-v1": "^1.0.4",
-    "typescript": "^3.7.4",
+    "typescript": "^3.7.5",
     "web3": "^2.0.0-alpha",
     "web3-utils": "^2.0.0-alpha"
   },
   "resolutions": {
-    "solc": "0.6.1",
+    "solc": "0.5.16",
     "sol-merger": "1.1.1"
   }
 }

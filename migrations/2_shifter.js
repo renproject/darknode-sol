@@ -17,6 +17,7 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 const Protocol = artifacts.require("Protocol");
+const BTCConfirmationlessShifter = artifacts.require("BTCConfirmationlessShifter");
 
 const networks = require("./networks.js");
 
@@ -44,6 +45,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     zZEC.address = addresses.zZEC || "";
     zBCH.address = addresses.zBCH || "";
     zBTC.address = addresses.zBTC || "";
+    BTCConfirmationlessShifter.address = addresses.BTCConfirmationlessShifter || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(Protocol.address);
@@ -160,6 +162,12 @@ module.exports = async function (deployer, network, [contractOwner]) {
             await tokenShifter.updateFeeRecipient(_feeRecipient);
             actionCount++;
         }
+    }
+
+    if (!BTCConfirmationlessShifter.address) {
+        deployer.logger.log(`Deploying BTCConfirmationlessShifter`);
+        await deployer.deploy(BTCConfirmationlessShifter, ShifterRegistry.address);
+        actionCount++;
     }
 
     deployer.logger.log(`Performed ${actionCount} updates.`);
