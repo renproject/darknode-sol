@@ -2,18 +2,286 @@
   "contractName": "DarknodePayment",
   "abi": [
     {
-      "constant": true,
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_VERSION",
+          "type": "string"
+        },
+        {
+          "internalType": "contract DarknodeRegistry",
+          "name": "_darknodeRegistry",
+          "type": "address"
+        },
+        {
+          "internalType": "contract DarknodePaymentStore",
+          "name": "_darknodePaymentStore",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_cyclePayoutPercent",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newCycleChanger",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_oldCycleChanger",
+          "type": "address"
+        }
+      ],
+      "name": "LogCycleChangerChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_darknode",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_cycle",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogDarknodeClaim",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract DarknodeRegistry",
+          "name": "_previousDarknodeRegistry",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "contract DarknodeRegistry",
+          "name": "_nextDarknodeRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "LogDarknodeRegistryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_payee",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_value",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "LogDarknodeWithdrew",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_payer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "LogPaymentReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_newPercent",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_oldPercent",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogPayoutPercentChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "LogTokenDeregistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "LogTokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "ETHEREUM",
+      "outputs": [
+        {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
       ],
-      "name": "previousCycleRewardShare",
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "VERSION",
       "outputs": [
         {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentCycle",
+      "outputs": [
+        {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentCyclePayoutPercent",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cycleChanger",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -26,6 +294,118 @@
       "name": "cycleStartTime",
       "outputs": [
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "darknodeRegistry",
+      "outputs": [
+        {
+          "internalType": "contract DarknodeRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "nextCyclePayoutPercent",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "pendingTokens",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "previousCycle",
+      "outputs": [
+        {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -38,15 +418,17 @@
       "constant": true,
       "inputs": [
         {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "pendingTokens",
-      "outputs": [
-        {
+          "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "name": "previousCycleRewardShare",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -55,12 +437,40 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "cycleDuration",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "registeredTokenIndex",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "registeredTokens",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -78,26 +488,14 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "shareCount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -105,55 +503,9 @@
       "name": "rewardClaimed",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "unclaimedRewards",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -166,116 +518,9 @@
       "name": "store",
       "outputs": [
         {
+          "internalType": "contract DarknodePaymentStore",
           "name": "",
           "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "registeredTokens",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "darknodeRegistry",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "currentCycle",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "blacklister",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "registeredTokenIndex",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "cycleTimeout",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "previousCycle",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -286,6 +531,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -298,260 +544,50 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "ETHEREUM",
-      "outputs": [
+      "inputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "name": "unclaimedRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
       "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "VERSION",
-      "outputs": [
-        {
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "name": "_VERSION",
-          "type": "string"
-        },
-        {
-          "name": "_darknodeRegistry",
-          "type": "address"
-        },
-        {
-          "name": "_darknodePaymentStore",
-          "type": "address"
-        },
-        {
-          "name": "_cycleDurationSeconds",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_darknode",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogDarknodeBlacklisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_darknode",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogDarknodeWhitelisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_darknode",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_cycle",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogDarknodeClaim",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_payer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "LogPaymentReceived",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_payee",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_value",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "LogDarknodeWithdrew",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_newCycle",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_lastCycle",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_cycleTimeout",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogNewCycle",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_newDuration",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_oldDuration",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogCycleDurationChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_newBlacklister",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_oldBlacklister",
-          "type": "address"
-        }
-      ],
-      "name": "LogBlacklisterChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "LogTokenRegistered",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "LogTokenDeregistered",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
     },
     {
       "constant": false,
       "inputs": [
         {
+          "internalType": "contract DarknodeRegistry",
+          "name": "_darknodeRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "updateDarknodeRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_darknode",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -566,10 +602,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_darknode",
           "type": "address"
         },
         {
+          "internalType": "address[]",
           "name": "_tokens",
           "type": "address[]"
         }
@@ -584,6 +622,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -591,6 +630,7 @@
       "name": "currentCycleRewardPool",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -603,10 +643,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_darknodeID",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -614,6 +656,7 @@
       "name": "darknodeBalances",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -628,6 +671,7 @@
       "name": "changeCycle",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -640,10 +684,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_value",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -658,6 +704,22 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "forward",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_darknode",
           "type": "address"
         }
@@ -672,20 +734,7 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_darknode",
-          "type": "address"
-        }
-      ],
-      "name": "blacklist",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -697,9 +746,31 @@
       "type": "function"
     },
     {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "tokenPendingRegistration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -714,11 +785,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_addr",
           "type": "address"
         }
       ],
-      "name": "updateBlacklister",
+      "name": "updateCycleChanger",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -728,11 +800,12 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_durationSeconds",
+          "internalType": "uint256",
+          "name": "_percent",
           "type": "uint256"
         }
       ],
-      "name": "updateCycleDuration",
+      "name": "updatePayoutPercentage",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -742,6 +815,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "contract DarknodePayment",
           "name": "_newOwner",
           "type": "address"
         }
@@ -765,7 +839,7 @@
   "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodePayment/DarknodePayment.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -812,12 +886,14 @@
             {
               "indexed": true,
               "name": "_darknode",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": false,
               "name": "_cycle",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             }
           ],
           "name": "LogDarknodeClaim",
@@ -830,17 +906,20 @@
             {
               "indexed": true,
               "name": "_payer",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": false,
               "name": "_amount",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             },
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_token",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogPaymentReceived",
@@ -853,17 +932,20 @@
             {
               "indexed": true,
               "name": "_payee",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": false,
               "name": "_value",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             },
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_token",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogDarknodeWithdrew",
@@ -933,9 +1015,10 @@
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_token",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogTokenRegistered",
@@ -946,9 +1029,10 @@
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
+              "indexed": true,
               "name": "_token",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "LogTokenDeregistered",
@@ -961,23 +1045,85 @@
             {
               "indexed": true,
               "name": "previousOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "newOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "OwnershipTransferred",
           "type": "event",
           "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0x9d549c7da0887b9da28aa4897e17429f78345be76b1918673be3430462a4d130": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_newCycleChanger",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_oldCycleChanger",
+              "type": "address"
+            }
+          ],
+          "name": "LogCycleChangerChanged",
+          "type": "event",
+          "signature": "0x9d549c7da0887b9da28aa4897e17429f78345be76b1918673be3430462a4d130"
+        },
+        "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "contract DarknodeRegistry",
+              "name": "_previousDarknodeRegistry",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "contract DarknodeRegistry",
+              "name": "_nextDarknodeRegistry",
+              "type": "address"
+            }
+          ],
+          "name": "LogDarknodeRegistryUpdated",
+          "type": "event",
+          "signature": "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7"
+        },
+        "0x0855549798088e618c4eccab56d3fa69209935ef7bc4ffe7200dff654d975643": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_newPercent",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_oldPercent",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogPayoutPercentChanged",
+          "type": "event",
+          "signature": "0x0855549798088e618c4eccab56d3fa69209935ef7bc4ffe7200dff654d975643"
         }
       },
       "links": {},
-      "address": "0x7c71E53853863ce0a3BE7D024EF99aba7d872bfe",
-      "transactionHash": "0xd51db5745370bc6a3f0e887c6dbcc0234a1052e4ec1af952e682902ba0dc6107"
+      "address": "0x0C6445A8D3120e52B05A5892E562e53A6ae17Eb9",
+      "transactionHash": "0x9c71558a92499a478e3b0ce4675472496a26aab0777181884d66d60f7e207c1c"
     }
   },
-  "schemaVersion": "3.0.11"
+  "schemaVersion": "3.0.20"
 }

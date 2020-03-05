@@ -2,14 +2,142 @@
   "contractName": "BCHShifter",
   "abi": [
     {
-      "constant": false,
       "inputs": [
         {
-          "name": "_nextMintAuthority",
+          "internalType": "contract ERC20Shifted",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_feeRecipient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_mintAuthority",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_shiftInFee",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_shiftOutFee",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_minShiftOutAmount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_shiftID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_signedMessageHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "LogShiftIn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_to",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_shiftID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "_indexedTo",
+          "type": "bytes"
+        }
+      ],
+      "name": "LogShiftOut",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
           "type": "address"
         }
       ],
-      "name": "updateMintAuthority",
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "blacklistRecoverableToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimOwnership",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -25,39 +153,12 @@
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_nextTokenOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferTokenOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_nextFee",
-          "type": "uint16"
-        }
-      ],
-      "name": "updateFee",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "constant": true,
       "inputs": [],
       "name": "feeRecipient",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -70,18 +171,22 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_pHash",
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "_to",
           "type": "address"
         },
         {
+          "internalType": "bytes32",
           "name": "_nHash",
           "type": "bytes32"
         }
@@ -89,6 +194,7 @@
       "name": "hashForSignature",
       "outputs": [
         {
+          "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
         }
@@ -99,15 +205,11 @@
     },
     {
       "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "status",
+      "inputs": [],
+      "name": "isOwner",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -119,15 +221,91 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "version",
+      "name": "minShiftAmount",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
-          "type": "uint8"
+          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "mintAuthority",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "nextShiftID",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "recoverTokens",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -143,111 +321,22 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_to",
-          "type": "bytes"
-        },
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "shiftOut",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "minShiftAmount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "mintAuthority",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "nextShiftID",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
+          "internalType": "bytes32",
           "name": "_pHash",
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         },
         {
+          "internalType": "bytes32",
           "name": "_nHash",
           "type": "bytes32"
         },
         {
+          "internalType": "bytes",
           "name": "_sig",
           "type": "bytes"
         }
@@ -255,6 +344,7 @@
       "name": "shiftIn",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -265,33 +355,11 @@
     },
     {
       "constant": true,
-      "inputs": [
-        {
-          "name": "_signedMessageHash",
-          "type": "bytes32"
-        },
-        {
-          "name": "_sig",
-          "type": "bytes"
-        }
-      ],
-      "name": "verifySignature",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
       "inputs": [],
-      "name": "fee",
+      "name": "shiftInFee",
       "outputs": [
         {
+          "internalType": "uint16",
           "name": "",
           "type": "uint16"
         }
@@ -304,11 +372,89 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_minShiftOutAmount",
+          "internalType": "bytes",
+          "name": "_to",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
           "type": "uint256"
         }
       ],
-      "name": "updateMinimumShiftOutAmount",
+      "name": "shiftOut",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "shiftOutFee",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "status",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "token",
+      "outputs": [
+        {
+          "internalType": "contract ERC20Shifted",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -318,6 +464,22 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "contract Shifter",
+          "name": "_nextTokenOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferTokenOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_nextFeeRecipient",
           "type": "address"
         }
@@ -332,11 +494,57 @@
       "constant": false,
       "inputs": [
         {
-          "name": "newOwner",
+          "internalType": "uint256",
+          "name": "_minShiftOutAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateMinimumShiftOutAmount",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextMintAuthority",
           "type": "address"
         }
       ],
-      "name": "transferOwnership",
+      "name": "updateMintAuthority",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_nextFee",
+          "type": "uint16"
+        }
+      ],
+      "name": "updateShiftInFee",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_nextFee",
+          "type": "uint16"
+        }
+      ],
+      "name": "updateShiftOutFee",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -344,12 +552,24 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "token",
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_signedMessageHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_sig",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifySignature",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
-          "type": "address"
+          "type": "bool"
         }
       ],
       "payable": false,
@@ -357,103 +577,25 @@
       "type": "function"
     },
     {
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "version",
+      "outputs": [
         {
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "name": "_feeRecipient",
-          "type": "address"
-        },
-        {
-          "name": "_mintAuthority",
-          "type": "address"
-        },
-        {
-          "name": "_fee",
-          "type": "uint16"
-        },
-        {
-          "name": "_minShiftOutAmount",
-          "type": "uint256"
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
         }
       ],
       "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "_to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "name": "_shiftID",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogShiftIn",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_to",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "name": "_shiftID",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "name": "_indexedTo",
-          "type": "bytes"
-        }
-      ],
-      "name": "LogShiftOut",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
+      "stateMutability": "view",
+      "type": "function"
     }
   ],
   "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/Shifter.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -487,22 +629,26 @@
             {
               "indexed": false,
               "name": "_to",
-              "type": "bytes"
+              "type": "bytes",
+              "internalType": "bytes"
             },
             {
               "indexed": false,
               "name": "_amount",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             },
             {
               "indexed": true,
               "name": "_shiftID",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             },
             {
               "indexed": true,
               "name": "_indexedTo",
-              "type": "bytes"
+              "type": "bytes",
+              "internalType": "bytes"
             }
           ],
           "name": "LogShiftOut",
@@ -515,17 +661,51 @@
             {
               "indexed": true,
               "name": "previousOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "newOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "OwnershipTransferred",
           "type": "event",
           "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        },
+        "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_shiftID",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "_signedMessageHash",
+              "type": "bytes32"
+            }
+          ],
+          "name": "LogShiftIn",
+          "type": "event",
+          "signature": "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502"
         }
       },
       "links": {},
@@ -533,5 +713,5 @@
       "transactionHash": "0x5f9b3319ec488c4ec79c7e5665ed8557d8aabd231ad4e20557f51fb9e43a3e47"
     }
   },
-  "schemaVersion": "3.0.11"
+  "schemaVersion": "3.0.20"
 }

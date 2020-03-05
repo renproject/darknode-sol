@@ -2,100 +2,14 @@
   "contractName": "DarknodeRegistryStore",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "claimOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "ren",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [
         {
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "VERSION",
-      "outputs": [
-        {
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
+          "internalType": "string",
           "name": "_VERSION",
           "type": "string"
         },
         {
+          "internalType": "contract RenToken",
           "name": "_ren",
           "type": "address"
         }
@@ -109,11 +23,13 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "previousOwner",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -122,29 +38,173 @@
       "type": "event"
     },
     {
+      "constant": true,
+      "inputs": [],
+      "name": "VERSION",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "blacklistRecoverableToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "recoverTokens",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "ren",
+      "outputs": [
+        {
+          "internalType": "contract RenToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_darknodeID",
           "type": "address"
         },
         {
+          "internalType": "address payable",
           "name": "_darknodeOwner",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_bond",
           "type": "uint256"
         },
         {
+          "internalType": "bytes",
           "name": "_publicKey",
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
           "name": "_registeredAt",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_deregisteredAt",
           "type": "uint256"
         }
@@ -161,6 +221,7 @@
       "name": "begin",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -173,6 +234,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -180,6 +242,7 @@
       "name": "next",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -192,6 +255,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -206,10 +270,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "decreasedBond",
           "type": "uint256"
         }
@@ -224,10 +290,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "deregisteredAt",
           "type": "uint256"
         }
@@ -242,6 +310,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -249,6 +318,7 @@
       "name": "darknodeOwner",
       "outputs": [
         {
+          "internalType": "address payable",
           "name": "",
           "type": "address"
         }
@@ -261,6 +331,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -268,6 +339,7 @@
       "name": "darknodeBond",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -280,6 +352,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -287,6 +360,7 @@
       "name": "darknodeRegisteredAt",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -299,6 +373,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -306,6 +381,7 @@
       "name": "darknodeDeregisteredAt",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -318,6 +394,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "darknodeID",
           "type": "address"
         }
@@ -325,6 +402,7 @@
       "name": "darknodePublicKey",
       "outputs": [
         {
+          "internalType": "bytes",
           "name": "",
           "type": "bytes"
         }
@@ -337,7 +415,7 @@
   "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -348,12 +426,14 @@
             {
               "indexed": true,
               "name": "previousOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             },
             {
               "indexed": true,
               "name": "newOwner",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "OwnershipTransferred",
@@ -362,9 +442,9 @@
         }
       },
       "links": {},
-      "address": "0xC126a308dd07Adfa4a445686dcF7CbC423185593",
-      "transactionHash": "0x945806bfcc662d62370147e5882e1fc173a811acf336c926d58c24c76d6df893"
+      "address": "0x3eA70E8eE1C4e0Fe9Cc2b120d72800f093a39665",
+      "transactionHash": "0x6d1f151291f7ba397f43af2ec0071ba675c5565c4ba00e4d4ebcba8414f79fd9"
     }
   },
-  "schemaVersion": "3.0.11"
+  "schemaVersion": "3.0.20"
 }

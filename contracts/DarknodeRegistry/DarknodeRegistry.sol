@@ -13,7 +13,7 @@ interface IDarknodePaymentStore {
 
 interface IDarknodePayment {
     function changeCycle() external returns (uint256);
-    function store() external returns (IDarknodePaymentStore);
+    function store() external view returns (IDarknodePaymentStore);
 }
 
 interface IDarknodeSlasher {
