@@ -2,78 +2,33 @@
   "contractName": "ProtocolLogic",
   "abi": [
     {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_owner",
+          "internalType": "contract DarknodeRegistry",
+          "name": "_newDarknodeRegistry",
           "type": "address"
         }
       ],
-      "name": "initialize",
+      "name": "_updateDarknodeRegistry",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "darknodeRegistry",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
-          "name": "",
+          "internalType": "contract ShifterRegistry",
+          "name": "_newShifterRegistry",
           "type": "address"
         }
       ],
+      "name": "_updateShifterRegistry",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "darknodeRegistryStore",
-      "outputs": [
-        {
-          "internalType": "contract DarknodeRegistryStore",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "renToken",
-      "outputs": [
-        {
-          "internalType": "contract RenToken",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -109,6 +64,36 @@
     {
       "constant": true,
       "inputs": [],
+      "name": "darknodeRegistry",
+      "outputs": [
+        {
+          "internalType": "contract DarknodeRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "darknodeRegistryStore",
+      "outputs": [
+        {
+          "internalType": "contract DarknodeRegistryStore",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
       "name": "darknodeSlasher",
       "outputs": [
         {
@@ -123,11 +108,64 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "shifterRegistry",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_start",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_count",
+          "type": "uint256"
+        }
+      ],
+      "name": "getShiftedTokens",
       "outputs": [
         {
-          "internalType": "contract ShifterRegistry",
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_tokenSymbol",
+          "type": "string"
+        }
+      ],
+      "name": "getShifterBySymbol",
+      "outputs": [
+        {
+          "internalType": "contract IShifter",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getShifterByToken",
+      "outputs": [
+        {
+          "internalType": "contract IShifter",
           "name": "",
           "type": "address"
         }
@@ -166,74 +204,6 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_start",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_count",
-          "type": "uint256"
-        }
-      ],
-      "name": "getShiftedTokens",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_tokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getShifterByToken",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_tokenSymbol",
-          "type": "string"
-        }
-      ],
-      "name": "getShifterBySymbol",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
           "internalType": "string",
           "name": "_tokenSymbol",
           "type": "string"
@@ -255,30 +225,60 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
-          "name": "_newDarknodeRegistry",
+          "internalType": "address",
+          "name": "_owner",
           "type": "address"
         }
       ],
-      "name": "_updateDarknodeRegistry",
+      "name": "initialize",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
         {
-          "internalType": "contract ShifterRegistry",
-          "name": "_newShifterRegistry",
+          "internalType": "address",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "_updateShifterRegistry",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "renToken",
+      "outputs": [
+        {
+          "internalType": "contract RenToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "shifterRegistry",
+      "outputs": [
+        {
+          "internalType": "contract ShifterRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
       "type": "function"
     }
   ],

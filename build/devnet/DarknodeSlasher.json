@@ -52,6 +52,21 @@
       "type": "event"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_guilty",
+          "type": "address"
+        }
+      ],
+      "name": "blacklist",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "blacklistSlashPercent",
@@ -217,67 +232,6 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "slashed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "contract DarknodeRegistry",
-          "name": "_darknodeRegistry",
-          "type": "address"
-        }
-      ],
-      "name": "updateDarknodeRegistry",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
@@ -351,21 +305,6 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_guilty",
-          "type": "address"
-        }
-      ],
-      "name": "blacklist",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "_height",
           "type": "uint256"
@@ -381,11 +320,6 @@
           "type": "bytes"
         },
         {
-          "internalType": "uint256",
-          "name": "_validRound1",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes",
           "name": "_signature1",
           "type": "bytes"
@@ -396,17 +330,12 @@
           "type": "bytes"
         },
         {
-          "internalType": "uint256",
-          "name": "_validRound2",
-          "type": "uint256"
-        },
-        {
           "internalType": "bytes",
           "name": "_signature2",
           "type": "bytes"
         }
       ],
-      "name": "slashDuplicatePropose",
+      "name": "slashDuplicatePrecommit",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -471,6 +400,11 @@
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
+          "name": "_validRound1",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes",
           "name": "_signature1",
           "type": "bytes"
@@ -481,12 +415,17 @@
           "type": "bytes"
         },
         {
+          "internalType": "uint256",
+          "name": "_validRound2",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes",
           "name": "_signature2",
           "type": "bytes"
         }
       ],
-      "name": "slashDuplicatePrecommit",
+      "name": "slashDuplicatePropose",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -532,6 +471,67 @@
         }
       ],
       "name": "slashSecretReveal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "slashed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "contract DarknodeRegistry",
+          "name": "_darknodeRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "updateDarknodeRegistry",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
