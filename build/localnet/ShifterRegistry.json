@@ -386,7 +386,7 @@
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
+  "sourcePath": "./contracts/Shifter/ShifterRegistry.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"

@@ -26,7 +26,7 @@ for (const network of networks) {
                 const newObj = {
                     contractName: obj.contractName,
                     abi: obj.abi,
-                    sourcePath: obj.sourcePath,
+                    sourcePath: obj.sourcePath.replace(/.*\/darknode-sol\//g, "./"),
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,

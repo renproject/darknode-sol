@@ -538,7 +538,7 @@
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodeSlasher/DarknodeSlasher.sol",
+  "sourcePath": "./contracts/DarknodeSlasher/DarknodeSlasher.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"

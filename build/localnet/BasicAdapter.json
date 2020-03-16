@@ -72,7 +72,7 @@
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/examples/BasicAdapter.sol",
+  "sourcePath": "./contracts/Shifter/examples/BasicAdapter.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
