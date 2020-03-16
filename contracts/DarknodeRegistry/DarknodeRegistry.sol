@@ -52,7 +52,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     Epoch public currentEpoch;
     Epoch public previousEpoch;
 
-    /// Republic ERC20 token contract used to transfer bonds.
+    /// REN ERC20 contract used to transfer bonds.
     RenToken public ren;
 
     /// Darknode Registry Store is the storage contract for darknodes.
