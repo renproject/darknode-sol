@@ -38,7 +38,7 @@ contract BasicAdapter is GSNRecipient {
     ) external {
         require(
             registry.getTokenBySymbol(_symbol).transferFrom(
-                msg.sender,
+                _msgSender(),
                 address(this),
                 _amount
             ),
