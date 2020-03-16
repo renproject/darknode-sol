@@ -10,11 +10,11 @@ const config = {
     SECRET_REVEAL_SLASH_PERCENT: 100, // Slash 100% of the bond
     mintAuthority: "", // Darknode public key
     proxyOwner: "",
-    shiftInFee: 10,
-    shiftOutFee: 10,
-    zBTCMinShiftOutAmount: 10000,
-    zZECMinShiftOutAmount: 10000,
-    zBCHMinShiftOutAmount: 10000,
+    mintFee: 10,
+    burnFee: 10,
+    renBTCMinimumBurnAmount: 10000,
+    renZECMinimumBurnAmount: 10000,
+    renBCHMinimumBurnAmount: 10000,
 }
 
 module.exports = {
@@ -32,13 +32,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        ShifterRegistry: "",
-        zZEC: "",
-        BTCShifter: "",
-        zBTC: "",
-        ZECShifter: "",
-        zBCH: "",
-        BCHShifter: "",
+        GatewayRegistry: "",
+        renZEC: "",
+        BTCGateway: "",
+        renBTC: "",
+        ZECGateway: "",
+        renBCH: "",
+        BCHGateway: "",
 
         config: {
             ...config,
@@ -61,13 +61,13 @@ module.exports = {
         DarknodePayment: "0x376D835c6Dc5d06C6335915B36ffe9734D3E4faa",
         DarknodePaymentStore: "0x311999EE72B5826D664FD4F3aC09c0C462eFfe49",
 
-        BTCShifter: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
-        ZECShifter: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
-        BCHShifter: "0xa76beA11766E0b66bD952bc357CF027742021a8C",
-        zBTC: "0x88C64A7D2ecC882D558DD16aBC1537515a78BB7D",
-        zZEC: "0x8dD8944320Eb76F8e39C58E7A30d34E7fbA9D719",
-        zBCH: "0x466Dd97F83b18aC23dDF16931f8171A817953fF1",
-        ShifterRegistry: "0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F",
+        BTCGateway: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
+        ZECGateway: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
+        BCHGateway: "0xa76beA11766E0b66bD952bc357CF027742021a8C",
+        renBTC: "0x88C64A7D2ecC882D558DD16aBC1537515a78BB7D",
+        renZEC: "0x8dD8944320Eb76F8e39C58E7A30d34E7fbA9D719",
+        renBCH: "0x466Dd97F83b18aC23dDF16931f8171A817953fF1",
+        GatewayRegistry: "0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F",
 
         BasicAdapter: "",
 
@@ -92,13 +92,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
-        ZECShifter: "0x1615f5a285134925Fb4D87812827863fde046fDa",
-        BCHShifter: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
-        zBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
-        zZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
-        zBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
-        ShifterRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
+        BTCGateway: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
+        ZECGateway: "0x1615f5a285134925Fb4D87812827863fde046fDa",
+        BCHGateway: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
+        renBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
+        renZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
+        renBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
+        GatewayRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
 
         BasicAdapter: "0xdCb0B03c2fc9F0b3aF7742C3C1262db436BF5443",
 
@@ -123,13 +123,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
-        ZECShifter: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
-        BCHShifter: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
-        zBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
-        zZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
-        zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
-        ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
+        BTCGateway: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
+        ZECGateway: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
+        BCHGateway: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
+        renBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
+        renZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
+        renBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
+        GatewayRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
 
         BasicAdapter: "0x4D322a1DAA623F93F7C44F606f57F5f4D9925f8b",
 
@@ -154,13 +154,13 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        BTCShifter: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
-        ZECShifter: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
-        BCHShifter: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
-        zBTC: "0xDE027035d33CEB2757685E325de1A0b924aA73E6",
-        zZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
-        zBCH: "0x679F9e30549311fE7FEE0Eae44CE09e043a44055",
-        ShifterRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
+        BTCGateway: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
+        ZECGateway: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
+        BCHGateway: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
+        renBTC: "0xDE027035d33CEB2757685E325de1A0b924aA73E6",
+        renZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
+        renBCH: "0x679F9e30549311fE7FEE0Eae44CE09e043a44055",
+        GatewayRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
 
         BasicAdapter: "",
 

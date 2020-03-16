@@ -4,56 +4,55 @@ import { Account } from "web3-eth-accounts";
 import { keccak256 } from "web3-utils";
 
 import {
-    BTCShifterInstance, ShifterRegistryInstance, zBTCInstance,
+    BTCGatewayInstance, GatewayRegistryInstance, renBTCInstance,
 } from "../types/truffle-contracts";
 import { Ox, randomBytes } from "./helper/testUtils";
 
 const BasicAdapter = artifacts.require("BasicAdapter");
-const BTCShifter = artifacts.require("BTCShifter");
-const ShifterRegistry = artifacts.require("ShifterRegistry");
-const zBTC = artifacts.require("zBTC");
+const BTCGateway = artifacts.require("BTCGateway");
+const GatewayRegistry = artifacts.require("GatewayRegistry");
+const renBTC = artifacts.require("renBTC");
 
-contract("Shifter", ([owner, feeRecipient, user]) => {
-    let btcShifter: BTCShifterInstance;
-    let zbtc: zBTCInstance;
-    let registry: ShifterRegistryInstance;
+contract("Gateway", ([owner, feeRecipient, user]) => {
+    let btcGateway: BTCGatewayInstance;
+    let renbtc: renBTCInstance;
+    let registry: GatewayRegistryInstance;
 
     // We generate a new account so that we have access to its private key for
     // `ecsign`. Web3's sign functions all prefix the message being signed.
     let mintAuthority: Account;
     let privKey: Buffer;
 
-    const shiftInFees = new BN(5);
-    const shiftOutFees = new BN(15);
+    const mintFees = new BN(5);
+    const burnFees = new BN(15);
 
     before(async () => {
-        zbtc = await zBTC.new();
+        renbtc = await renBTC.new();
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
-        btcShifter = await BTCShifter.new(
-            zbtc.address,
+        btcGateway = await BTCGateway.new(
+            renbtc.address,
             feeRecipient,
             mintAuthority.address,
-            shiftInFees,
-            shiftOutFees,
+            mintFees,
+            burnFees,
             10000,
         );
 
-        registry = await ShifterRegistry.new();
-        await registry.setShifter(zbtc.address, btcShifter.address);
+        registry = await GatewayRegistry.new();
+        await registry.setGateway(renbtc.address, btcGateway.address);
 
-        await zbtc.transferOwnership(btcShifter.address);
-        await btcShifter.claimTokenOwnership();
+        await renbtc.transferOwnership(btcGateway.address);
+        await btcGateway.claimTokenOwnership();
     });
 
     const removeFee = (value: number | BN, bips: number | BN) =>
         new BN(value).sub(new BN(value).mul(new BN(bips)).div(new BN(10000)));
 
     it("can mint to an adapter", async () => {
-        // Shift In
         const value = new BN(20000);
-        const burnValue = removeFee(value, shiftInFees);
+        const burnValue = removeFee(value, mintFees);
 
         const basicAdapter = await BasicAdapter.new(registry.address);
 
@@ -62,20 +61,20 @@ contract("Shifter", ([owner, feeRecipient, user]) => {
 
         const pHash = keccak256(web3.eth.abi.encodeParameters(
             ["string", "address"],
-            ["zBTC", user],
+            ["renBTC", user],
         ));
 
-        const hash = await btcShifter.hashForSignature.call(pHash, value, basicAdapter.address, nHash);
+        const hash = await btcGateway.hashForSignature.call(pHash, value, basicAdapter.address, nHash);
         const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
         const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-        const balanceBeforeMint = new BN((await zbtc.balanceOf.call(user)).toString());
-        await basicAdapter.shiftIn("zBTC", user, value, nHash, sigString);
-        const balanceAfterMint = new BN((await zbtc.balanceOf.call(user)).toString());
+        const balanceBeforeMint = new BN((await renbtc.balanceOf.call(user)).toString());
+        await basicAdapter.mint("renBTC", user, value, nHash, sigString);
+        const balanceAfterMint = new BN((await renbtc.balanceOf.call(user)).toString());
         balanceAfterMint.should.bignumber.equal(balanceBeforeMint.add(burnValue));
 
-        await zbtc.approve(basicAdapter.address, burnValue, { from: user });
-        await basicAdapter.shiftOut("zBTC", bitcoinAddress, burnValue, { from: user });
-        (await zbtc.balanceOf.call(user)).should.bignumber.equal(balanceAfterMint.sub(burnValue));
+        await renbtc.approve(basicAdapter.address, burnValue, { from: user });
+        await basicAdapter.burn("renBTC", bitcoinAddress, burnValue, { from: user });
+        (await renbtc.balanceOf.call(user)).should.bignumber.equal(balanceAfterMint.sub(burnValue));
     });
 });

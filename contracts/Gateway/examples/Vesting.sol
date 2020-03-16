@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../ShifterRegistry.sol";
+import "../GatewayRegistry.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 contract Vesting is Ownable {
     using SafeMath for uint256;
 
-    ShifterRegistry public registry;
+    GatewayRegistry public registry;
 
     uint256 private constant SECONDS_PER_MONTH = 365 days / 12;
 
@@ -17,27 +17,23 @@ contract Vesting is Ownable {
         // The start time (in seconds since Unix epoch) at which the vesting
         // period should begin.
         uint256 startTime;
-
         // The number of months for the vesting period.
         uint16 duration;
-
         // The total amount of Bitcoin apart of the vesting schedule.
         uint256 amount;
-
         // The number of months claimed by the user.
         uint256 monthsClaimed;
-
         // The total amount of Bitcoin claimed by the user.
         uint256 amountClaimed;
     }
 
     /// @notice Mapping of a beneficiary address to a vesting schedule. Each
     //          beneficiary can have a maximum of 1 vesting schedule.
-    mapping (address => VestingSchedule) public schedules;
+    mapping(address => VestingSchedule) public schedules;
 
     /// @notice The contract constructor.
-    /// @param _registry The Shifter registry contract address.
-    constructor(ShifterRegistry _registry) public {
+    /// @param _registry The GatewayRegistry contract address.
+    constructor(GatewayRegistry _registry) public {
         registry = _registry;
     }
 
@@ -52,23 +48,33 @@ contract Vesting is Ownable {
     /// @param _duration The number of months for the vesting period.
     function addVestingSchedule(
         // Payload
-        address        _beneficiary,
-        uint256        _startTime,
-        uint16         _duration,
+        address _beneficiary,
+        uint256 _startTime,
+        uint16 _duration,
         // Required
-        uint256        _amount,
-        bytes32        _nHash,
+        uint256 _amount,
+        bytes32 _nHash,
         bytes calldata _sig
     ) external onlyOwner {
-        require(schedules[_beneficiary].startTime == 0, "vesting schedule already exists");
+        require(
+            schedules[_beneficiary].startTime == 0,
+            "vesting schedule already exists"
+        );
         require(_amount > 0, "amount must be greater than 0");
         require(_duration > 0, "duration must be at least 1 month");
 
-        // Construct the payload hash and mint new tokens using the Shifter
+        // Construct the payload hash and mint new tokens using the Gateway
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
-        bytes32 pHash = keccak256(abi.encode(_beneficiary, _startTime, _duration));
-        uint256 finalAmount = registry.getShifterBySymbol("zBTC").shiftIn(pHash, _amount, _nHash, _sig);
+        bytes32 pHash = keccak256(
+            abi.encode(_beneficiary, _startTime, _duration)
+        );
+        uint256 finalAmount = registry.getGatewayBySymbol("renBTC").mint(
+            pHash,
+            _amount,
+            _nHash,
+            _sig
+        );
 
         // Construct a vesting schedule and assign it to the beneficiary.
         VestingSchedule memory schedule = VestingSchedule({
@@ -98,15 +104,19 @@ contract Vesting is Ownable {
         schedule.monthsClaimed = schedule.monthsClaimed.add(monthsClaimable);
         schedule.amountClaimed = schedule.amountClaimed.add(amountClaimable);
 
-        // Shift out the tokens using the Shifter contract. This will burn the
+        // Burn the tokens using the Gateway contract. This will burn the
         // tokens after taking a fee. The Darknodes will watch for this event to
         // transfer the user the Bitcoin.
-        registry.getShifterBySymbol("zBTC").shiftOut(_to, amountClaimable);
+        registry.getGatewayBySymbol("renBTC").burn(_to, amountClaimable);
     }
 
     /// @notice Retrieves the claimable amount for a given beneficiary.
     /// @param _to The Ethereum address of the beneficiary.
-    function calculateClaimable(address _to) public view returns (uint256, uint256) {
+    function calculateClaimable(address _to)
+        public
+        view
+        returns (uint256, uint256)
+    {
         VestingSchedule storage schedule = schedules[_to];
 
         // Return if the vesting schedule does not exist or has not yet started.
@@ -120,8 +130,12 @@ contract Vesting is Ownable {
 
         // Calculate the months elapsed and amount claimable since the last
         // claim attempt.
-        uint256 monthsClaimable = Math.min(schedule.duration, elapsedMonths).sub(schedule.monthsClaimed);
-        uint256 amountClaimable = schedule.amount.mul(monthsClaimable).div(schedule.duration);
+        uint256 monthsClaimable = Math
+            .min(schedule.duration, elapsedMonths)
+            .sub(schedule.monthsClaimed);
+        uint256 amountClaimable = schedule.amount.mul(monthsClaimable).div(
+            schedule.duration
+        );
 
         return (monthsClaimable, amountClaimable);
     }

@@ -2,16 +2,16 @@
 
 const NULL = "0x0000000000000000000000000000000000000000";
 
-const ShifterRegistry = artifacts.require("ShifterRegistry");
+const GatewayRegistry = artifacts.require("GatewayRegistry");
 
-const BTCShifter = artifacts.require("BTCShifter");
-const zBTC = artifacts.require("zBTC");
+const BTCGateway = artifacts.require("BTCGateway");
+const renBTC = artifacts.require("renBTC");
 
-const ZECShifter = artifacts.require("ZECShifter");
-const zZEC = artifacts.require("zZEC");
+const ZECGateway = artifacts.require("ZECGateway");
+const renZEC = artifacts.require("renZEC");
 
-const BCHShifter = artifacts.require("BCHShifter");
-const zBCH = artifacts.require("zBCH");
+const BCHGateway = artifacts.require("BCHGateway");
+const renBCH = artifacts.require("renBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
@@ -38,13 +38,13 @@ module.exports = async function (deployer, network, [contractOwner]) {
     // TODO: _feeRecipient should be the DarknodePayment contract
     const _feeRecipient = DarknodePaymentStore.address || addresses.DarknodePaymentStore || contractOwner;
 
-    BTCShifter.address = addresses.BTCShifter || "";
-    ZECShifter.address = addresses.ZECShifter || "";
-    BCHShifter.address = addresses.BCHShifter || "";
-    ShifterRegistry.address = addresses.ShifterRegistry || "";
-    zZEC.address = addresses.zZEC || "";
-    zBCH.address = addresses.zBCH || "";
-    zBTC.address = addresses.zBTC || "";
+    BTCGateway.address = addresses.BTCGateway || "";
+    ZECGateway.address = addresses.ZECGateway || "";
+    BCHGateway.address = addresses.BCHGateway || "";
+    GatewayRegistry.address = addresses.GatewayRegistry || "";
+    renZEC.address = addresses.renZEC || "";
+    renBCH.address = addresses.renBCH || "";
+    renBTC.address = addresses.renBTC || "";
     BasicAdapter.address = addresses.BasicAdapter || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
@@ -54,19 +54,19 @@ module.exports = async function (deployer, network, [contractOwner]) {
 
     /** Registry **************************************************************/
 
-    if (!ShifterRegistry.address) {
-        deployer.logger.log(`Deploying Shifter`);
+    if (!GatewayRegistry.address) {
+        deployer.logger.log(`Deploying Gateway contract`);
         await deployer.deploy(
-            ShifterRegistry,
+            GatewayRegistry,
         );
         actionCount++;
     }
-    const registry = await ShifterRegistry.at(ShifterRegistry.address);
+    const registry = await GatewayRegistry.at(GatewayRegistry.address);
 
-    const protocolShifterRegistry = await protocol.shifterRegistry.call();
-    if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
-        deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
-        await protocol._updateShifterRegistry(registry.address);
+    const protocolGatewayRegistry = await protocol.gatewayRegistry.call();
+    if (protocolGatewayRegistry.toLowerCase() !== registry.address.toLowerCase()) {
+        deployer.logger.log(`Updating GatewayRegistry in Protocol contract. Was ${protocolGatewayRegistry}, now is ${registry.address}`);
+        await protocol._updateGatewayRegistry(registry.address);
         actionCount++;
     }
 
@@ -86,10 +86,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
     //     deployer.logger.log("Unable to call darknodePayment.changeCycle()");
     // }
 
-    for (const [Token, Shifter, name, symbol, decimals, minShiftOutAmount] of [
-        [zBTC, BTCShifter, "Shifted Bitcoin", "zBTC", 8, config.zBTCMinShiftOutAmount],
-        [zZEC, ZECShifter, "Shifted ZCash", "zZEC", 8, config.zZECMinShiftOutAmount],
-        [zBCH, BCHShifter, "Shifted Bitcoin Cash", "zBCH", 8, config.zBCHMinShiftOutAmount],
+    for (const [Token, Gateway, name, symbol, decimals, minimumBurnAmount] of [
+        [renBTC, BTCGateway, "renBTC", "renBTC", 8, config.renBTCMinimumBurnAmount],
+        [renZEC, ZECGateway, "renZEC", "renZEC", 8, config.renZECMinimumBurnAmount],
+        [renBCH, BCHGateway, "renBCH", "renBCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
         if (!Token.address) {
             await deployer.deploy(Token, name, symbol, decimals);
@@ -97,46 +97,46 @@ module.exports = async function (deployer, network, [contractOwner]) {
         }
         const token = await Token.at(Token.address);
 
-        if (!Shifter.address) {
+        if (!Gateway.address) {
             await deployer.deploy(
-                Shifter,
+                Gateway,
                 Token.address,
                 _feeRecipient,
                 _mintAuthority,
-                config.shiftInFee,
-                config.shiftOutFee,
-                minShiftOutAmount,
+                config.mintFee,
+                config.burnFee,
+                minimumBurnAmount,
             );
             actionCount++;
         }
-        const tokenShifter = await Shifter.at(Shifter.address);
+        const tokenGateway = await Gateway.at(Gateway.address);
 
-        const shifterAuthority = await tokenShifter.mintAuthority.call();
-        if (shifterAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
-            deployer.logger.log(`Updating mint authority in ${symbol} shifter. Was ${shifterAuthority}, now is ${_mintAuthority}`);
-            await tokenShifter.updateMintAuthority(_mintAuthority);
+        const gatewayMintAuthority = await tokenGateway.mintAuthority.call();
+        if (gatewayMintAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
+            deployer.logger.log(`Updating mint authority in ${symbol} Gateway. Was ${gatewayMintAuthority}, now is ${_mintAuthority}`);
+            await tokenGateway.updateMintAuthority(_mintAuthority);
             actionCount++;
         }
 
         const tokenOwner = await token.owner.call();
-        if (tokenOwner !== Shifter.address) {
+        if (tokenOwner !== Gateway.address) {
             deployer.logger.log(`Transferring ${symbol} ownership`);
 
             if (tokenOwner === contractOwner) {
-                await token.transferOwnership(tokenShifter.address);
+                await token.transferOwnership(tokenGateway.address);
 
-                // Update tokenShifter address
-                deployer.logger.log(`Claiming ${symbol} ownership in shifter`);
-                await tokenShifter.claimTokenOwnership();
+                // Update token's Gateway contract
+                deployer.logger.log(`Claiming ${symbol} ownership in Gateway`);
+                await tokenGateway.claimTokenOwnership();
             } else {
-                deployer.logger.log(`Transferring token ownership from ${tokenOwner} to new ${symbol} shifter`);
-                const oldShifter = await Shifter.at(tokenOwner);
-                await oldShifter.transferTokenOwnership(tokenShifter.address);
+                deployer.logger.log(`Transferring token ownership from ${tokenOwner} to new ${symbol} Gateway`);
+                const oldGateway = await Gateway.at(tokenOwner);
+                await oldGateway.transferTokenOwnership(tokenGateway.address);
                 // This will also call claim, but we try anyway because older
                 // contracts didn't:
                 try {
                     // Claim ownership
-                    await tokenShifter.claimTokenOwnership();
+                    await tokenGateway.claimTokenOwnership();
                 } catch (error) {
                     console.error(error);
                 }
@@ -152,23 +152,23 @@ module.exports = async function (deployer, network, [contractOwner]) {
             actionCount++;
         }
 
-        const registered = await registry.getShifterByToken.call(Token.address);
-        if (registered === NULL || registered !== Shifter.address) {
-            const otherRegistration = (await registry.getShifterBySymbol.call(symbol));
+        const registered = await registry.getGatewayByToken.call(Token.address);
+        if (registered === NULL || registered !== Gateway.address) {
+            const otherRegistration = (await registry.getGatewayBySymbol.call(symbol));
             if (otherRegistration === NULL) {
-                deployer.logger.log(`Registering ${symbol} shifter`);
-                await registry.setShifter(Token.address, Shifter.address);
+                deployer.logger.log(`Registering ${symbol} Gateway`);
+                await registry.setGateway(Token.address, Gateway.address);
             } else {
-                deployer.logger.log(`Updating registered ${symbol} shifter (was ${otherRegistration})`);
-                await registry.updateShifter(Token.address, Shifter.address);
+                deployer.logger.log(`Updating registered ${symbol} Gateway (was ${otherRegistration})`);
+                await registry.updateGateway(Token.address, Gateway.address);
             }
             actionCount++;
         }
 
-        const feeRecipient = await tokenShifter.feeRecipient.call();
+        const feeRecipient = await tokenGateway.feeRecipient.call();
         if (feeRecipient.toLowerCase() !== DarknodePaymentStore.address.toLowerCase()) {
-            deployer.logger.log(`Updating fee recipient for ${symbol} shifter. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
-            await tokenShifter.updateFeeRecipient(_feeRecipient);
+            deployer.logger.log(`Updating fee recipient for ${symbol} Gateway. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
+            await tokenGateway.updateFeeRecipient(_feeRecipient);
             actionCount++;
         }
     }
@@ -178,13 +178,13 @@ module.exports = async function (deployer, network, [contractOwner]) {
     /** LOG *******************************************************************/
 
     deployer.logger.log({
-        BTCShifter: BTCShifter.address,
-        ZECShifter: ZECShifter.address,
-        BCHShifter: BCHShifter.address,
-        zBTC: zBTC.address,
-        zZEC: zZEC.address,
-        zBCH: zBCH.address,
-        ShifterRegistry: ShifterRegistry.address,
+        BTCGateway: BTCGateway.address,
+        ZECGateway: ZECGateway.address,
+        BCHGateway: BCHGateway.address,
+        renBTC: renBTC.address,
+        renZEC: renZEC.address,
+        renBCH: renBCH.address,
+        GatewayRegistry: GatewayRegistry.address,
         BasicAdapter: BasicAdapter.address,
     });
 }

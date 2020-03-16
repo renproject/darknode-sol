@@ -7,10 +7,11 @@ import "../libraries/Compare.sol";
 
 /// @notice Validate is a library for validating malicious darknode behaviour.
 library Validate {
-    /// @notice Recovers two propose messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if propose messages were different
+    /// @notice Recovers two propose messages and checks if they were signed by
+    ///         the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if propose messages were
+    ///         different.
     function duplicatePropose(
         uint256 _height,
         uint256 _round,
@@ -79,10 +80,11 @@ library Validate {
             );
     }
 
-    /// @notice Recovers two prevote messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if prevote messages were different
+    /// @notice Recovers two prevote messages and checks if they were signed by
+    ///         the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if prevote messages were
+    ///         different.
     function duplicatePrevote(
         uint256 _height,
         uint256 _round,
@@ -141,10 +143,11 @@ library Validate {
             );
     }
 
-    /// @notice Recovers two precommit messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if precommit messages were different
+    /// @notice Recovers two precommit messages and checks if they were signed
+    ///         by the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if precommit messages were
+    ///         different.
     function duplicatePrecommit(
         uint256 _height,
         uint256 _round,

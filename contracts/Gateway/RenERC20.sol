@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 import "../libraries/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 
-/// @notice ERC20Shifted represents a digital asset that has been bridged on to
+/// @notice RenERC20 represents a digital asset that has been bridged on to
 /// the Ethereum ledger. It exposes mint and burn functions that can only be
-/// called by it's associated Shifter.
-contract ERC20Shifted is ERC20, ERC20Detailed, Claimable, CanReclaimTokens {
+/// called by it's associated Gateway contract.
+contract RenERC20 is ERC20, ERC20Detailed, Claimable, CanReclaimTokens {
     /* solium-disable-next-line no-empty-blocks */
     constructor(string memory _name, string memory _symbol, uint8 _decimals)
         public
@@ -25,14 +25,14 @@ contract ERC20Shifted is ERC20, ERC20Detailed, Claimable, CanReclaimTokens {
     }
 }
 
-/// @dev The following are not necessary for deploying zBTC or zZEC contracts,
+/// @dev The following are not necessary for deploying renBTC or renZEC contracts,
 /// but are used to track deployments.
 
 /* solium-disable-next-line no-empty-blocks */
-contract zBTC is ERC20Shifted("Shifted BTC", "zBTC", 8) {}
+contract renBTC is RenERC20("renBTC", "renBTC", 8) {}
 
 /* solium-disable-next-line no-empty-blocks */
-contract zZEC is ERC20Shifted("Shifted ZEC", "zZEC", 8) {}
+contract renZEC is RenERC20("renZEC", "renZEC", 8) {}
 
 /* solium-disable-next-line no-empty-blocks */
-contract zBCH is ERC20Shifted("Shifted BCH", "zBCH", 8) {}
+contract renBCH is RenERC20("renBCH", "renBCH", 8) {}

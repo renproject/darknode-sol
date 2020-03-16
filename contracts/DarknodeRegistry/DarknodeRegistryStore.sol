@@ -62,9 +62,9 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     /// linked-list.
     ///
     /// @param _darknodeID The darknode's ID.
-    /// @param _darknodeOwner The darknode's owner's address
-    /// @param _bond The darknode's bond value
-    /// @param _publicKey The darknode's public key
+    /// @param _darknodeOwner The darknode's owner's address.
+    /// @param _bond The darknode's bond value.
+    /// @param _publicKey The darknode's public key.
     /// @param _registeredAt The time stamp when the darknode is registered.
     /// @param _deregisteredAt The time stamp when the darknode is deregistered.
     function appendDarknode(
@@ -86,7 +86,7 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
         LinkedList.append(darknodes, _darknodeID);
     }
 
-    /// @notice Returns the address of the first darknode in the store
+    /// @notice Returns the address of the first darknode in the store.
     function begin() external view onlyOwner returns (address) {
         return LinkedList.begin(darknodes);
     }

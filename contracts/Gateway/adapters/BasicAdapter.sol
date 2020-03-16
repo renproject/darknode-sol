@@ -2,17 +2,17 @@ pragma solidity 0.5.16;
 
 import "@openzeppelin/contracts/GSN/GSNRecipient.sol";
 
-import "../IShifter.sol";
-import "../IShifterRegistry.sol";
+import "../IGateway.sol";
+import "../IGatewayRegistry.sol";
 
 contract BasicAdapter is GSNRecipient {
-    IShifterRegistry registry;
+    IGatewayRegistry registry;
 
-    constructor(IShifterRegistry _registry) public {
+    constructor(IGatewayRegistry _registry) public {
         registry = _registry;
     }
 
-    function shiftIn(
+    function mint(
         // Payload
         string calldata _symbol,
         address _recipient,
@@ -22,7 +22,7 @@ contract BasicAdapter is GSNRecipient {
         bytes calldata _sig
     ) external {
         bytes32 payloadHash = keccak256(abi.encode(_symbol, _recipient));
-        uint256 amount = registry.getShifterBySymbol(_symbol).shiftIn(
+        uint256 amount = registry.getGatewayBySymbol(_symbol).mint(
             payloadHash,
             _amount,
             _nHash,
@@ -31,11 +31,9 @@ contract BasicAdapter is GSNRecipient {
         registry.getTokenBySymbol(_symbol).transfer(_recipient, amount);
     }
 
-    function shiftOut(
-        string calldata _symbol,
-        bytes calldata _to,
-        uint256 _amount
-    ) external {
+    function burn(string calldata _symbol, bytes calldata _to, uint256 _amount)
+        external
+    {
         require(
             registry.getTokenBySymbol(_symbol).transferFrom(
                 _msgSender(),
@@ -44,7 +42,7 @@ contract BasicAdapter is GSNRecipient {
             ),
             "token transfer failed"
         );
-        registry.getShifterBySymbol(_symbol).shiftOut(_to, _amount);
+        registry.getGatewayBySymbol(_symbol).burn(_to, _amount);
     }
 
     // GSN functions

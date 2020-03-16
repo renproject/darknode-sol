@@ -42,12 +42,13 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     uint256 public minimumEpochInterval;
 
     /// When one of the above variables is modified, it is only updated when the
-    /// next epoch is called. These variables store the values for the next epoch.
+    /// next epoch is called. These variables store the values for the next
+    /// epoch.
     uint256 public nextMinimumBond;
     uint256 public nextMinimumPodSize;
     uint256 public nextMinimumEpochInterval;
 
-    /// The current and previous epoch
+    /// The current and previous epoch.
     Epoch public currentEpoch;
     Epoch public previousEpoch;
 
@@ -57,7 +58,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// Darknode Registry Store is the storage contract for darknodes.
     DarknodeRegistryStore public store;
 
-    /// The Darknode Payment contract for changing cycle
+    /// The Darknode Payment contract for changing cycle.
     IDarknodePayment public darknodePayment;
 
     /// Darknode Slasher allows darknodes to vote on bond slashing.
@@ -565,7 +566,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
     /// @notice Returns whether a darknode is scheduled to become registered
     /// at next epoch.
-    /// @param _darknodeID The ID of the darknode to return
+    /// @param _darknodeID The ID of the darknode to return.
     function isPendingRegistration(address _darknodeID)
         public
         view
@@ -636,8 +637,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
     /// @notice Returns if a darknode was in the registered state for a given
     /// epoch.
-    /// @param _darknodeID The ID of the darknode
-    /// @param _epoch One of currentEpoch, previousEpoch
+    /// @param _darknodeID The ID of the darknode.
+    /// @param _epoch One of currentEpoch, previousEpoch.
     function isRegisteredInEpoch(address _darknodeID, Epoch memory _epoch)
         private
         view

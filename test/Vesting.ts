@@ -4,20 +4,20 @@ import { rawEncode } from "ethereumjs-abi";
 import { ecsign, keccak256 } from "ethereumjs-util";
 
 import {
-    BTCShifterInstance, ShifterRegistryInstance, VestingInstance, zBTCInstance,
+    BTCGatewayInstance, GatewayRegistryInstance, renBTCInstance, VestingInstance,
 } from "../types/truffle-contracts";
 import { increaseTime, Ox, randomBytes } from "./helper/testUtils";
 
-const BTCShifter = artifacts.require("BTCShifter");
-const ShifterRegistry = artifacts.require("ShifterRegistry");
-const zBTC = artifacts.require("zBTC");
+const BTCGateway = artifacts.require("BTCGateway");
+const GatewayRegistry = artifacts.require("GatewayRegistry");
+const renBTC = artifacts.require("renBTC");
 const Vesting = artifacts.require("Vesting");
 
 contract("Vesting", (accounts) => {
-    let btcShifter: BTCShifterInstance;
-    let zbtc: zBTCInstance;
+    let btcGateway: BTCGatewayInstance;
+    let renbtc: renBTCInstance;
     let vesting: VestingInstance;
-    let registry: ShifterRegistryInstance;
+    let registry: GatewayRegistryInstance;
 
     const mintAuthority = web3.eth.accounts.create();
     const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
@@ -28,10 +28,10 @@ contract("Vesting", (accounts) => {
 
     beforeEach(async () => {
         // Setup the environment
-        zbtc = await zBTC.new();
+        renbtc = await renBTC.new();
 
-        btcShifter = await BTCShifter.new(
-            zbtc.address,
+        btcGateway = await BTCGateway.new(
+            renbtc.address,
             feeRecipient,
             mintAuthority.address,
             feeInBips,
@@ -39,11 +39,11 @@ contract("Vesting", (accounts) => {
             10000,
         );
 
-        await zbtc.transferOwnership(btcShifter.address);
-        await btcShifter.claimTokenOwnership();
+        await renbtc.transferOwnership(btcGateway.address);
+        await btcGateway.claimTokenOwnership();
 
-        registry = await ShifterRegistry.new();
-        await registry.setShifter(zbtc.address, btcShifter.address);
+        registry = await GatewayRegistry.new();
+        await registry.setGateway(renbtc.address, btcGateway.address);
 
         // Setup the contracts for testing
         vesting = await Vesting.new(registry.address);
@@ -64,7 +64,7 @@ contract("Vesting", (accounts) => {
                 [beneficiary, startTime, duration],
             )).toString("hex");
 
-            const hashForSignature = await btcShifter.hashForSignature.call(
+            const hashForSignature = await btcGateway.hashForSignature.call(
                 Ox(pHash),
                 amount.toNumber(),
                 vesting.address,
