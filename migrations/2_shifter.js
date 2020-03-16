@@ -17,7 +17,7 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 const Protocol = artifacts.require("Protocol");
-const BTCConfirmationlessShifter = artifacts.require("BTCConfirmationlessShifter");
+const BasicAdapter = artifacts.require("BasicAdapter");
 
 const networks = require("./networks.js");
 
@@ -45,7 +45,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     zZEC.address = addresses.zZEC || "";
     zBCH.address = addresses.zBCH || "";
     zBTC.address = addresses.zBTC || "";
-    BTCConfirmationlessShifter.address = addresses.BTCConfirmationlessShifter || "";
+    BasicAdapter.address = addresses.BasicAdapter || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(Protocol.address);
@@ -67,6 +67,15 @@ module.exports = async function (deployer, network, [contractOwner]) {
     if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
         deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
         await protocol._updateShifterRegistry(registry.address);
+        actionCount++;
+    }
+
+    if (!BasicAdapter.address) {
+        deployer.logger.log(`Deploying BasicAdapter`);
+        await deployer.deploy(
+            BasicAdapter,
+            registry.address,
+        );
         actionCount++;
     }
 
@@ -164,12 +173,6 @@ module.exports = async function (deployer, network, [contractOwner]) {
         }
     }
 
-    if (!BTCConfirmationlessShifter.address) {
-        deployer.logger.log(`Deploying BTCConfirmationlessShifter`);
-        await deployer.deploy(BTCConfirmationlessShifter, ShifterRegistry.address);
-        actionCount++;
-    }
-
     deployer.logger.log(`Performed ${actionCount} updates.`);
 
     /** LOG *******************************************************************/
@@ -182,5 +185,6 @@ module.exports = async function (deployer, network, [contractOwner]) {
         zZEC: zZEC.address,
         zBCH: zBCH.address,
         ShifterRegistry: ShifterRegistry.address,
+        BasicAdapter: BasicAdapter.address,
     });
 }

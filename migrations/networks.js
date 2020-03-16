@@ -69,6 +69,8 @@ module.exports = {
         zBCH: "0x466Dd97F83b18aC23dDF16931f8171A817953fF1",
         ShifterRegistry: "0x5d9bF2Bad3dD710e4D533681ed16eD1cfeAc9e6F",
 
+        BasicAdapter: "",
+
         config: {
             ...config,
             MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
@@ -97,6 +99,8 @@ module.exports = {
         zZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
         zBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
         ShifterRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
+
+        BasicAdapter: "0xdCb0B03c2fc9F0b3aF7742C3C1262db436BF5443",
 
         config: {
             ...config,
@@ -127,8 +131,7 @@ module.exports = {
         zBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
         ShifterRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
 
-        // Confirmationless
-        BTCConfirmationlessShifter: "0x42e339D2aef4AEC178cE8B2780B070F73FD234ba",
+        BasicAdapter: "0x4D322a1DAA623F93F7C44F606f57F5f4D9925f8b",
 
         config: {
             ...config,
@@ -158,6 +161,8 @@ module.exports = {
         zZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
         zBCH: "0x679F9e30549311fE7FEE0Eae44CE09e043a44055",
         ShifterRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
+
+        BasicAdapter: "",
 
         config: {
             ...config,

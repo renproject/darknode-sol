@@ -39,7 +39,7 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     /// @notice The shiftOut fee in bips.
     uint16 public shiftOutFee;
 
-    /// @notice Each nHash can only be seen once.
+    /// @notice Each signature can only be seen once.
     mapping(bytes32 => bool) public status;
 
     // LogShiftIn and LogShiftOut contain a unique `shiftID` that identifies
