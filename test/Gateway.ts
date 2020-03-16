@@ -401,8 +401,8 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
 
         it("can retrieve gateways", async () => {
             { // Try to register token with an existing symbol
-                const altZbtc = await renBTC.new();
-                await registry.setGateway(altZbtc.address, NULL)
+                const altRenBTC = await renBTC.new();
+                await registry.setGateway(altRenBTC.address, NULL)
                     .should.be.rejectedWith(/GatewayRegistry: symbol already registered/);
             }
 
