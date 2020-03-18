@@ -10,11 +10,11 @@ import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "../RenToken/RenToken.sol";
 import "../Gateway/Gateway.sol";
 import "../Gateway/GatewayRegistry.sol";
-import "./ProtocolStorage.sol";
+import "./ProtocolState.sol";
 
 /// @notice ProtocolLogic implements the getter functions for the Protocol proxy
-/// as well as onlyOwner functions for updating the values in ProtocolStorage.
-contract ProtocolLogic is Initializable, ProtocolStorage {
+/// as well as onlyOwner functions for updating the values in ProtocolState.
+contract ProtocolLogic is Initializable, ProtocolState {
     modifier onlyOwner() {
         require(msg.sender == owner, "Ownable: caller is not the owner");
         _;
@@ -31,7 +31,7 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     // Darknode contracts
 
     function darknodeRegistry() public view returns (DarknodeRegistry) {
-        return ProtocolStorage._darknodeRegistry;
+        return ProtocolState._darknodeRegistry;
     }
 
     function darknodeRegistryStore()
@@ -67,7 +67,7 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     // Gateway contracts
 
     function gatewayRegistry() public view returns (GatewayRegistry) {
-        return ProtocolStorage._gatewayRegistry;
+        return ProtocolState._gatewayRegistry;
     }
 
     function getGateways(address _start, uint256 _count)
@@ -119,7 +119,7 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
         public
         onlyOwner
     {
-        ProtocolStorage._darknodeRegistry = _newDarknodeRegistry;
+        ProtocolState._darknodeRegistry = _newDarknodeRegistry;
     }
 
     /// @notice Update the address of GatewayRegistry. This could affect the
@@ -128,7 +128,7 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
         public
         onlyOwner
     {
-        ProtocolStorage._gatewayRegistry = _newGatewayRegistry;
+        ProtocolState._gatewayRegistry = _newGatewayRegistry;
     }
 
     // Internal functions //////////////////////////////////////////////////////

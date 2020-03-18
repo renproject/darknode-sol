@@ -354,13 +354,11 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
         // Sync state with new store.
         // Note: numDarknodesPreviousEpoch is set to 0 for a newly deployed DNR.
-        numDarknodesPreviousEpoch = getDarknodeCountFromEpochs(
-            true,
-            false,
-            false
-        );
-        numDarknodes = getDarknodeCountFromEpochs(false, true, false);
-        numDarknodesNextEpoch = getDarknodeCountFromEpochs(false, false, true);
+        (
+            numDarknodesPreviousEpoch,
+            numDarknodes,
+            numDarknodesNextEpoch
+        ) = getDarknodeCountFromEpochs();
     }
 
     /// @notice Allows the contract owner to update the address of the
@@ -714,31 +712,42 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         emit LogDarknodeDeregistered(msg.sender, _darknodeID);
     }
 
-    function getDarknodeCountFromEpochs(
-        bool _includePreviousEpoch,
-        bool _includeCurrentEpoch,
-        bool _includeNextEpoch
-    ) private view returns (uint256) {
+    function getDarknodeCountFromEpochs()
+        private
+        view
+        returns (uint256, uint256, uint256)
+    {
         // Begin with the first node in the list
-        uint256 n = 0;
+        uint256 nPreviousEpoch = 0;
+        uint256 nCurrentEpoch = 0;
+        uint256 nNextEpoch = 0;
         address next = store.begin();
 
         // Iterate until all registered Darknodes have been collected
         while (true) {
+            // End of darknode list.
             if (next == address(0)) {
                 break;
             }
+
+            if (isRegisteredInPreviousEpoch(next)) {
+                nPreviousEpoch += 1;
+            }
+
+            if (isRegistered(next)) {
+                nCurrentEpoch += 1;
+            }
+
+            // Darknode is registered and has not deregistered, or is pending
+            // becoming registered.
             if (
-                (_includePreviousEpoch && isRegisteredInPreviousEpoch(next)) ||
-                (_includeCurrentEpoch && isRegistered(next)) ||
-                (_includeNextEpoch &&
-                    ((isRegistered(next) && !isPendingDeregistration(next)) ||
-                        isPendingRegistration(next)))
+                ((isRegistered(next) && !isPendingDeregistration(next)) ||
+                    isPendingRegistration(next))
             ) {
-                n += 1;
+                nNextEpoch += 1;
             }
             next = store.next(next);
         }
-        return n;
+        return (nPreviousEpoch, nCurrentEpoch, nNextEpoch);
     }
 }

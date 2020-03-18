@@ -1,8 +1,6 @@
 pragma solidity 0.5.16;
 
 interface IMintGateway {
-    // function status(bytes32) external returns (bool);
-
     function mint(
         bytes32 _pHash,
         uint256 _amount,
@@ -13,8 +11,6 @@ interface IMintGateway {
 }
 
 interface IBurnGateway {
-    // function status(bytes32) external returns (bool);
-
     function burn(bytes calldata _to, uint256 _amount)
         external
         returns (uint256);
