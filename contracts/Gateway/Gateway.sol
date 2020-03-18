@@ -193,17 +193,30 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         }
         status[signedMessageHash] = true;
 
+        uint256 amountScaled = token.divideByRate(_amount);
+
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = _amount.mul(mintFee).div(BIPS_DENOMINATOR);
-        uint256 receivedAmount = _amount.sub(absoluteFee);
-        token.mint(msg.sender, receivedAmount);
-        token.mint(feeRecipient, absoluteFee);
+        uint256 absoluteFeeScaled = amountScaled.mul(mintFee).div(
+            BIPS_DENOMINATOR
+        );
+        uint256 receivedAmountScaled = amountScaled.sub(absoluteFeeScaled);
+        token.mint(msg.sender, receivedAmountScaled);
+        token.mint(feeRecipient, absoluteFeeScaled);
 
         // Emit a log with a unique identifier 'n'.
+        // Use underlying amount, not scaled by rate.
+        uint256 receivedAmount = token.multiplyByRate(receivedAmountScaled);
         emit LogMint(msg.sender, receivedAmount, nextN, signedMessageHash);
         nextN += 1;
 
-        return receivedAmount;
+        return receivedAmountScaled;
+    }
+
+    function burn(bytes memory _to, uint256 _amountScaled)
+        public
+        returns (uint256)
+    {
+        return burn(_to, token.divideByRate(_amountScaled));
     }
 
     /// @notice burn destroys tokens after taking a fee for the `_feeRecipient`,
@@ -216,30 +229,34 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     ///        Bitcoin address.
     /// @param _amount The amount of the token being burnt, in its
     ///        smallest value. (e.g. satoshis for BTC)
-    function burn(bytes memory _to, uint256 _amount) public returns (uint256) {
+    function burnUnderlying(bytes memory _to, uint256 _amount)
+        public
+        returns (uint256)
+    {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "Gateway: to address is empty");
 
         // Burn full amount and mint fee
         uint256 absoluteFee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
-        token.burn(msg.sender, _amount);
-        token.mint(feeRecipient, absoluteFee);
-
-        // Emit a log with a unique identifier 'n'.
-        uint256 receivedValue = _amount.sub(absoluteFee);
+        uint256 amountScaled = token.divideByRate(_amount);
+        uint256 receivedScaled = token.divideByRate(_amount.sub(absoluteFee));
+        uint256 receivedValue = token.multiplyByRate(receivedScaled);
+        uint256 amountDifference = amountScaled.sub(receivedScaled);
+        token.burn(msg.sender, amountScaled);
+        token.mint(feeRecipient, amountDifference);
 
         require(
             // Must be strictly greater, to that the release transaction is of
             // at least one unit.
-            _amount > minimumBurnAmount,
+            receivedValue > minimumBurnAmount,
             "Gateway: amount is less than the minimum burn amount"
         );
 
         emit LogBurn(_to, receivedValue, nextN, _to);
         nextN += 1;
 
-        return receivedValue;
+        return receivedScaled;
     }
 
     /// @notice verifySignature checks the the provided signature matches the provided

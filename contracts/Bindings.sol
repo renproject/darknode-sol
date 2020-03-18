@@ -8,7 +8,7 @@ import "./DarknodeSlasher/DarknodeSlasher.sol";
 import "./RenToken/RenToken.sol";
 import "./Gateway/Gateway.sol";
 import "./Gateway/GatewayRegistry.sol";
-import "./Protocol/ProtocolLogic.sol";
+import "./Protocol/Protocol.sol";
 
 /// @notice Bindings imports all of the contracts for generating bindings.
 /* solium-disable-next-line no-empty-blocks */

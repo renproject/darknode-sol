@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 
 import "../libraries/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
+import "./ERC20WithRate.sol";
 
 /// @notice RenERC20 represents a digital asset that has been bridged on to
 /// the Ethereum ledger. It exposes mint and burn functions that can only be
@@ -16,17 +17,20 @@ contract RenERC20 is
     Initializable,
     ERC20,
     ERC20Detailed,
+    ERC20WithRate,
     Claimable,
     CanReclaimTokens
 {
     /* solium-disable-next-line no-empty-blocks */
     function initialize(
         address _nextOwner,
+        uint256 _initialRate,
         string memory _name,
         string memory _symbol,
         uint8 _decimals
     ) public initializer {
         ERC20Detailed.initialize(_name, _symbol, _decimals);
+        ERC20WithRate.initialize(_nextOwner, _initialRate);
         Claimable.initialize(_nextOwner);
         CanReclaimTokens.initialize(_nextOwner);
     }
