@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 
 /// @notice Taken from the DAI token.
-contract ERC20WithRate is Initializable, ERC20, ERC20Detailed {
+contract ERC20WithPermit is Initializable, ERC20, ERC20Detailed {
     using SafeMath for uint256;
 
     mapping(address => uint256) public nonces;
