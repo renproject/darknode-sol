@@ -193,7 +193,7 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         }
         status[signedMessageHash] = true;
 
-        uint256 amountScaled = token.divideByRate(_amount);
+        uint256 amountScaled = token.fromUnderlying(_amount);
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
         uint256 absoluteFeeScaled = amountScaled.mul(mintFee).div(
@@ -205,7 +205,7 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
 
         // Emit a log with a unique identifier 'n'.
         // Use underlying amount, not scaled by rate.
-        uint256 receivedAmount = token.multiplyByRate(receivedAmountScaled);
+        uint256 receivedAmount = token.toUnderlying(receivedAmountScaled);
         emit LogMint(msg.sender, receivedAmount, nextN, signedMessageHash);
         nextN += 1;
 
@@ -216,7 +216,7 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         public
         returns (uint256)
     {
-        return burn(_to, token.divideByRate(_amountScaled));
+        return burn(_to, token.toUnderlying(_amountScaled));
     }
 
     /// @notice burn destroys tokens after taking a fee for the `_feeRecipient`,
@@ -239,9 +239,9 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
 
         // Burn full amount and mint fee
         uint256 absoluteFee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
-        uint256 amountScaled = token.divideByRate(_amount);
-        uint256 receivedScaled = token.divideByRate(_amount.sub(absoluteFee));
-        uint256 receivedValue = token.multiplyByRate(receivedScaled);
+        uint256 amountScaled = token.fromUnderlying(_amount);
+        uint256 receivedScaled = token.fromUnderlying(_amount.sub(absoluteFee));
+        uint256 receivedValue = token.toUnderlying(receivedScaled);
         uint256 amountDifference = amountScaled.sub(receivedScaled);
         token.burn(msg.sender, amountScaled);
         token.mint(feeRecipient, amountDifference);
