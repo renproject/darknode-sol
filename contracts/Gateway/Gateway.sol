@@ -199,7 +199,10 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         uint256 absoluteFeeScaled = amountScaled.mul(mintFee).div(
             BIPS_DENOMINATOR
         );
-        uint256 receivedAmountScaled = amountScaled.sub(absoluteFeeScaled);
+        uint256 receivedAmountScaled = amountScaled.sub(
+            absoluteFeeScaled,
+            "Gateway: fee exceeds amount"
+        );
         token.mint(msg.sender, receivedAmountScaled);
         token.mint(feeRecipient, absoluteFeeScaled);
 
@@ -240,7 +243,9 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         // Burn full amount and mint fee
         uint256 absoluteFee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
         uint256 amountScaled = token.fromUnderlying(_amount);
-        uint256 receivedScaled = token.fromUnderlying(_amount.sub(absoluteFee));
+        uint256 receivedScaled = token.fromUnderlying(
+            _amount.sub(absoluteFee, "Gateway: fee exceeds amount")
+        );
         uint256 receivedValue = token.toUnderlying(receivedScaled);
         uint256 amountDifference = amountScaled.sub(receivedScaled);
         token.burn(msg.sender, amountScaled);

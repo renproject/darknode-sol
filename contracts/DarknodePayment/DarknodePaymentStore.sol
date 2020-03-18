@@ -56,7 +56,11 @@ contract DarknodePaymentStore is Claimable {
     /// @param _token The token to check balance of.
     /// @return The available balance of the contract.
     function availableBalance(address _token) public view returns (uint256) {
-        return totalBalance(_token).sub(lockedBalances[_token]);
+        return
+            totalBalance(_token).sub(
+                lockedBalances[_token],
+                "DarknodePaymentStore: locked balance exceed total balance"
+            );
     }
 
     /// @notice Increments the amount of funds allocated to a particular
@@ -98,8 +102,14 @@ contract DarknodePaymentStore is Claimable {
             "DarknodePaymentStore: insufficient darknode balance"
         );
         darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token]
-            .sub(_amount);
-        lockedBalances[_token] = lockedBalances[_token].sub(_amount);
+            .sub(
+            _amount,
+            "DarknodePaymentStore: insufficient darknode balance for transfer"
+        );
+        lockedBalances[_token] = lockedBalances[_token].sub(
+            _amount,
+            "DarknodePaymentStore: insufficient token balance for transfer"
+        );
 
         if (_token == ETHEREUM) {
             _recipient.transfer(_amount);

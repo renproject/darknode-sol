@@ -236,7 +236,8 @@ contract DarknodePayment is Claimable {
         returns (uint256)
     {
         uint256 total = store.availableBalance(_token).sub(
-            unclaimedRewards[_token]
+            unclaimedRewards[_token],
+            "DarknodePayment: unclaimed rewards exceed total rewards"
         );
         return total.div(100).mul(currentCyclePayoutPercent);
     }
@@ -434,7 +435,8 @@ contract DarknodePayment is Claimable {
             // Only increment balance if shares were allocated last cycle
             if (previousCycleRewardShare[token] > 0) {
                 unclaimedRewards[token] = unclaimedRewards[token].sub(
-                    previousCycleRewardShare[token]
+                    previousCycleRewardShare[token],
+                    "DarknodePayment: share exceeds unclaimed rewards"
                 );
                 store.incrementDarknodeBalance(
                     _darknode,
@@ -471,7 +473,10 @@ contract DarknodePayment is Claimable {
     ///
     /// @param _token The address of the token to deregister.
     function _deregisterToken(address _token) private {
-        address lastToken = registeredTokens[registeredTokens.length.sub(1)];
+        address lastToken = registeredTokens[registeredTokens.length.sub(
+            1,
+            "DarknodePayment: no tokens registered"
+        )];
         uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
         // Move the last token to _token's position and update it's index
         registeredTokens[deletedTokenIndex] = lastToken;
