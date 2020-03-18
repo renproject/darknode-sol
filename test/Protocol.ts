@@ -80,9 +80,15 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
         await protocol.transferOwnership(otherAccount);
 
         (await protocol.owner.call())
+            .should.equal(owner);
+
+        await protocol.claimOwnership({ from: otherAccount });
+
+        (await protocol.owner.call())
             .should.equal(otherAccount);
 
         await protocol.transferOwnership(owner, { from: otherAccount });
+        await protocol.claimOwnership({ from: owner });
 
         (await protocol.owner.call())
             .should.equal(owner);

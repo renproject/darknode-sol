@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/LinkedList.sol";
 import "../RenToken/RenToken.sol";
 import "../libraries/CanReclaimTokens.sol";

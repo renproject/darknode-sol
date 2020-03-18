@@ -1,9 +1,10 @@
 pragma solidity 0.5.16;
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+
+import "../Governance/Claimable.sol";
 
 /// @notice RenERC20 represents a digital asset that has been bridged on to
 /// the Ethereum ledger. It exposes mint and burn functions that can only be

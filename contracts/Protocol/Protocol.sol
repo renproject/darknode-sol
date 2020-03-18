@@ -16,6 +16,7 @@ import "../Gateway/GatewayRegistry.sol";
 import "../Gateway/interfaces/IGatewayRegistry.sol";
 import "../Gateway/interfaces/IGateway.sol";
 import "./ProtocolState.sol";
+import "../Governance/Claimable.sol";
 
 /// @notice Protocol is a directory of the current contract addresses.
 /* solium-disable-next-line no-empty-blocks */
@@ -25,12 +26,12 @@ contract ProtocolProxy is InitializableAdminUpgradeabilityProxy {}
 /// as well as onlyOwner functions for updating the values in ProtocolState.
 contract ProtocolLogic is
     Initializable,
-    Ownable,
+    Claimable,
     ProtocolStateV1,
     IGatewayRegistry
 {
     function initialize(address _nextOwner) public initializer {
-        Ownable.initialize(_nextOwner);
+        Claimable.initialize(_nextOwner);
     }
 
     // Darknode contracts

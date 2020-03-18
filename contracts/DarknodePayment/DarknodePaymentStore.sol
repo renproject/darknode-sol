@@ -4,7 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/ERC20WithFees.sol";
 
 /// @notice DarknodePaymentStore is responsible for tracking balances which have

@@ -6,7 +6,7 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 import "./ERC20WithRate.sol";
 import "./ERC20WithPermit.sol";

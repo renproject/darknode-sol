@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 
 contract Claimer {
     Claimable child;

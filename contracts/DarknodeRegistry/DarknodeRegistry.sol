@@ -4,7 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../RenToken/RenToken.sol";
 import "./DarknodeRegistryStore.sol";
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 
 interface IDarknodePaymentStore {}
