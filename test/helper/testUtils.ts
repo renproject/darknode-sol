@@ -8,7 +8,7 @@ import chaiBigNumber from "chai-bignumber";
 import { ECDSASignature } from "ethereumjs-util";
 import { keccak256, toChecksumAddress, toHex } from "web3-utils";
 
-import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
+import { DarknodeRegistryInstance, RenERC20Instance } from "../../types/truffle-contracts";
 // Import chai log helper
 import "./logs";
 
@@ -16,7 +16,10 @@ chai.use(chaiAsPromised);
 chai.use((chaiBigNumber as any)(BigNumber) as any);
 chai.should();
 
+export const { encodeCallData } = require("../../migrations/encode.js");
+
 const networkAddresses = require("../../migrations/networks.js");
+
 const config = networkAddresses.config;
 export const { MINIMUM_POD_SIZE, MINIMUM_EPOCH_INTERVAL_SECONDS } = config;
 
@@ -112,9 +115,17 @@ export const randomID = () => {
     return keccak256(Math.random().toString());
 };
 
-export const encodeCallData = (functioName: string, parameterTypes: string[], parameters: any[]) => {
-    return web3.eth.abi.encodeFunctionSignature(`${functioName}(${parameterTypes.join(",")})`) +
-        web3.eth.abi.encodeParameters(parameterTypes, parameters).slice(2);
+export const deployProxy = async <T>(web3: Web3, ProxyContract: Truffle.Contract<any>, LogicContract: Truffle.Contract<any>, proxyGovernanceAddress: string, params: { type: string, value: any, name?: string }[], options?: { from: string }): Promise<T> => {
+    let logicAddress = LogicContract.address;
+    // if (!logicAddress) {
+    const logicContract = await LogicContract.new();
+    logicAddress = logicContract.address;
+    // }
+
+    const proxy = await ProxyContract.new();
+
+    await proxy.initialize(logicAddress, proxyGovernanceAddress, encodeCallData(web3, "initialize", params.map(p => p.type), params.map(p => p.value)), options);
+    return await LogicContract.at(proxy.address);
 };
 
 export const sigToString = (sig: ECDSASignature) => {

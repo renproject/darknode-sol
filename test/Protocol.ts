@@ -15,10 +15,10 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
 const BTCGateway = artifacts.require("BTCGateway");
-const Protocol = artifacts.require("Protocol");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 
-contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
+contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) => {
 
     let dnp: DarknodePaymentInstance;
     let dnpStore: DarknodePaymentStoreInstance;
@@ -42,8 +42,8 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         gatewayRegistry = await GatewayRegistry.deployed();
         renbtc = await renBTC.deployed();
         btcGateway = await BTCGateway.deployed();
-        protocol = await ProtocolLogic.at(Protocol.address);
-        protocolProxy = await Protocol.deployed();
+        protocol = await ProtocolLogic.at(ProtocolProxy.address);
+        protocolProxy = await ProtocolProxy.deployed();
         await waitForEpoch(dnr);
     });
 
@@ -122,13 +122,13 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         // Try to initialize again
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyOwner,
-            encodeCallData("initialize", ["address"], [owner]), { from: proxyOwner },
+            proxyGovernanceAddress,
+            encodeCallData(web3, "initialize", ["address"], [owner]), { from: proxyGovernanceAddress },
         )
             .should.be.rejectedWith(/revert$/);
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyOwner,
+            proxyGovernanceAddress,
             Buffer.from([]) as unknown as string,
         )
             .should.be.rejectedWith(/revert$/);
@@ -140,7 +140,7 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         await protocolProxy.upgradeTo(newLogic.address, { from: owner })
             .should.be.rejectedWith(/revert$/);
 
-        await protocolProxy.upgradeTo(newLogic.address, { from: proxyOwner });
+        await protocolProxy.upgradeTo(newLogic.address, { from: proxyGovernanceAddress });
         (await protocol.renToken.call())
             .should.equal(ren.address);
     });

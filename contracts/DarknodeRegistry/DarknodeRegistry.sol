@@ -39,6 +39,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     uint256 public minimumBond;
     uint256 public minimumPodSize;
     uint256 public minimumEpochInterval;
+    uint256 public minimumRegistrationInterval;
 
     /// When one of the above variables is modified, it is only updated when the
     /// next epoch is called. These variables store the values for the next
@@ -195,7 +196,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         DarknodeRegistryStore _storeAddress,
         uint256 _minimumBond,
         uint256 _minimumPodSize,
-        uint256 _minimumEpochIntervalSeconds
+        uint256 _minimumEpochIntervalSeconds,
+        uint256 _minimumRegistrationIntervalSeconds
     ) public {
         Claimable.initialize(msg.sender);
         CanReclaimTokens.initialize(msg.sender);
@@ -212,6 +214,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
 
         minimumEpochInterval = _minimumEpochIntervalSeconds;
         nextMinimumEpochInterval = minimumEpochInterval;
+
+        minimumRegistrationInterval = _minimumRegistrationIntervalSeconds;
 
         uint256 epochhash = uint256(blockhash(block.number - 1));
         currentEpoch = Epoch({
@@ -617,7 +621,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         return
             isDeregistered(_darknodeID) &&
             store.darknodeDeregisteredAt(_darknodeID) <=
-            previousEpoch.blocktime;
+            (previousEpoch.blocktime - minimumRegistrationInterval);
     }
 
     /// @notice Returns if a darknode is in the registered state.

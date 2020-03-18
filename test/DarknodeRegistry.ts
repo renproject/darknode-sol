@@ -629,6 +629,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,
             config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+            0,
         );
 
         // [ACTION] Initiate ownership transfer to wrong account
@@ -777,6 +778,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 config.MINIMUM_BOND,
                 config.MINIMUM_POD_SIZE,
                 config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+                0,
             );
             // Initiate ownership transfer of DNR store
             await newDNRstore.transferOwnership(newDNR.address);
@@ -835,6 +837,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 config.MINIMUM_BOND,
                 config.MINIMUM_POD_SIZE,
                 config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+                0,
             );
             // Initiate ownership transfer of DNR store
             await dnr.transferStoreOwnership(newDNR.address);

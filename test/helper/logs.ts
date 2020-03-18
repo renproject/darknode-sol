@@ -92,7 +92,7 @@ chai.use(function (newChai: any, utils: any): void {
 
                 this.assert(
                     sameValues,
-                    `expected ${arg} to be #{exp} instead of #{act} in log ${expectedLog.event}`,
+                    `expected ${arg} to be #{exp.toString()} instead of #{act.toString()} in log ${expectedLog.event}`,
                     `expected ${arg} to be different from #{exp} in log ${expectedLog.event}`,
                     (expectedLog.args as any)[arg],
                     (actualLog.args as any)[arg],

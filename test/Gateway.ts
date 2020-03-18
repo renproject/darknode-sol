@@ -4,10 +4,12 @@ import { Account } from "web3-eth-accounts";
 import { keccak256 } from "web3-utils";
 
 import {
-    BTCGatewayInstance, GatewayInstance, GatewayRegistryInstance, renBTCInstance,
+    BTCGatewayInstance, GatewayInstance, GatewayRegistryInstance, renBTCInstance, RenERC20Instance,
 } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
-import { ETHEREUM_TOKEN_ADDRESS, NULL, Ox, randomAddress, randomBytes } from "./helper/testUtils";
+import {
+    deployProxy, ETHEREUM_TOKEN_ADDRESS, NULL, Ox, randomAddress, randomBytes,
+} from "./helper/testUtils";
 
 const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
@@ -15,10 +17,11 @@ const Claimer = artifacts.require("Claimer");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const BTCGateway = artifacts.require("BTCGateway");
 const renBTC = artifacts.require("renBTC");
+const RenERC20 = artifacts.require("RenERC20");
 
-contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
+contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddress]) => {
     let btcGateway: BTCGatewayInstance;
-    let renbtc: renBTCInstance;
+    let renbtc: RenERC20Instance;
 
     // We generate a new account so that we have access to its private key for
     // `ecsign`. Web3's sign functions all prefix the message being signed.
@@ -29,7 +32,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
     const burnFees = new BN(15);
 
     before(async () => {
-        renbtc = await renBTC.new();
+        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
@@ -46,8 +49,10 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
         await btcGateway.claimTokenOwnership();
     });
 
+    const getFee = (value: number | BN, bips: number | BN) =>
+        new BN(value).mul(new BN(bips)).div(new BN(10000));
     const removeFee = (value: number | BN, bips: number | BN) =>
-        new BN(value).sub(new BN(value).mul(new BN(bips)).div(new BN(10000)));
+        new BN(value).sub(getFee(value, bips));
 
     const mintTest = async (gateway: GatewayInstance, value: number | BN, n?: string) => {
         const nHash = randomBytes(32);
@@ -65,7 +70,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
         (await gateway.verifySignature.call(hashForSignature, sigString))
             .should.be.true;
 
-        const balanceBefore = new BN((await renbtc.balanceOf.call(user)).toString());
+        const balanceBefore = new BN((await renbtc.balanceOfUnderlying.call(user)).toString());
         const _n = await gateway.nextN.call();
         (await gateway.mint(pHash, value, nHash, sigString, { from: user }) as any)
             .should.emit.logs([
@@ -78,7 +83,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
                     },
                 ),
             ]);
-        (await renbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, mintFees)));
+        (await renbtc.balanceOfUnderlying.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, mintFees)));
 
         return [pHash, nHash];
     };
@@ -87,9 +92,9 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
         // Note: we don't use `||` because we want to pass in `""`
         btcAddress = btcAddress !== undefined ? btcAddress : randomBytes(35);
 
-        const balanceBefore = new BN((await renbtc.balanceOf.call(user)).toString());
+        const balanceBefore = new BN((await renbtc.balanceOfUnderlying.call(user)).toString());
         const _n = await gateway.nextN.call();
-        (await gateway.burn(btcAddress, value, { from: user }) as any)
+        (await gateway.burnUnderlying(btcAddress, value, { from: user }) as any)
             .should.emit.logs([
                 log(
                     "LogBurn",
@@ -101,7 +106,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
                     },
                 ),
             ]);
-        (await renbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.sub(new BN(value)));
+        (await renbtc.balanceOfUnderlying.call(user)).should.bignumber.equal(balanceBefore.sub(new BN(value)));
     };
 
     describe("can mint and burn", () => {
@@ -128,9 +133,9 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
             const sig = ecsign(Buffer.from(hash.slice(2), "hex"), privKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
-            const balanceBefore = new BN((await renbtc.balanceOf.call(user)).toString());
+            const balanceBefore = new BN((await renbtc.balanceOfUnderlying.call(user)).toString());
             await btcGateway.mint(pHash, value.toNumber(), nHash, sigString, { from: user });
-            (await renbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, mintFees)));
+            (await renbtc.balanceOfUnderlying.call(user)).should.bignumber.equal(balanceBefore.add(removeFee(value, mintFees)));
 
             await burnTest(btcGateway, removeFee(value, mintFees));
         });
@@ -401,7 +406,8 @@ contract("Gateway", ([owner, feeRecipient, user, malicious]) => {
 
         it("can retrieve gateways", async () => {
             { // Try to register token with an existing symbol
-                const altRenBTC = await renBTC.new();
+                const altRenBTC = await RenERC20.new();
+                await altRenBTC.initialize(await web3.eth.net.getId(), owner, "500000000000000000", "renBTC", "renBTC", 8);
                 await registry.setGateway(altRenBTC.address, NULL)
                     .should.be.rejectedWith(/GatewayRegistry: symbol already registered/);
             }

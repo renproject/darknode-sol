@@ -4,31 +4,31 @@ import { rawEncode } from "ethereumjs-abi";
 import { ecsign, keccak256 } from "ethereumjs-util";
 
 import {
-    BTCGatewayInstance, GatewayRegistryInstance, renBTCInstance, VestingInstance,
+    BTCGatewayInstance, GatewayRegistryInstance, RenERC20Instance, VestingInstance,
 } from "../types/truffle-contracts";
-import { increaseTime, Ox, randomBytes } from "./helper/testUtils";
+import { deployProxy, increaseTime, Ox, randomBytes } from "./helper/testUtils";
 
 const BTCGateway = artifacts.require("BTCGateway");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
+const RenERC20 = artifacts.require("RenERC20");
 const Vesting = artifacts.require("Vesting");
 
-contract("Vesting", (accounts) => {
+contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddress]) => {
     let btcGateway: BTCGatewayInstance;
-    let renbtc: renBTCInstance;
+    let renbtc: RenERC20Instance;
     let vesting: VestingInstance;
     let registry: GatewayRegistryInstance;
 
     const mintAuthority = web3.eth.accounts.create();
     const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
     const feeInBips = new BN(10);
-    const feeRecipient = accounts[1];
 
     const month = 24 * 60 * 60 * 365 / 12;
 
     beforeEach(async () => {
         // Setup the environment
-        renbtc = await renBTC.new();
+        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
 
         btcGateway = await BTCGateway.new(
             renbtc.address,
@@ -50,7 +50,6 @@ contract("Vesting", (accounts) => {
     });
 
     describe("can vest bitcoin", () => {
-        const beneficiary = accounts[2];
         const amount = new BN(200000);
         const amountAfterFee = new BN(199800);
         const duration = 6;

@@ -9,16 +9,14 @@ const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const Protocol = artifacts.require("Protocol");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 
 const networks = require("./networks.js");
 
-const gitCommit = () => execSync("git describe --always --long").toString().trim();
+const { encodeCallData } = require("./encode");
 
-const encodeCallData = (functioName, parameterTypes, parameters) => {
-    return web3.eth.abi.encodeFunctionSignature(`${functioName}(${parameterTypes.join(",")})`) + web3.eth.abi.encodeParameters(parameterTypes, parameters).slice(2);
-}
+const gitCommit = () => execSync("git describe --always --long").toString().trim();
 
 /**
  * @dev In order to specify what contracts to re-deploy, update `networks.js`.
@@ -33,14 +31,14 @@ const encodeCallData = (functioName, parameterTypes, parameters) => {
  * @param {any} deployer
  * @param {string} network
  */
-module.exports = async function (deployer, network, [contractOwner, proxyOwner]) {
+module.exports = async function (deployer, network, [contractOwner, proxyGovernanceAddress]) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
-    proxyOwner = proxyOwner || config.proxyOwner;
+    proxyGovernanceAddress = proxyGovernanceAddress || config.proxyGovernanceAddress;
 
     const VERSION_STRING = `${network}-${gitCommit()}`;
 
@@ -50,7 +48,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
-    Protocol.address = addresses.Protocol || "";
+    ProtocolProxy.address = addresses.ProtocolProxy || "";
     ProtocolLogic.address = addresses.ProtocolLogic || "";
     const tokens = addresses.tokens || {};
 
@@ -64,25 +62,25 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     }
 
     let protocolProxy;
-    if (!Protocol.address) {
-        deployer.logger.log("Deploying Protocol");
-        await deployer.deploy(Protocol);
-        protocolProxy = await Protocol.at(Protocol.address);
-        await protocolProxy.initialize(ProtocolLogic.address, proxyOwner, encodeCallData("initialize", ["address"], [contractOwner]));
+    if (!ProtocolProxy.address) {
+        deployer.logger.log("Deploying ProtocolProxy");
+        await deployer.deploy(ProtocolProxy);
+        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
+        await protocolProxy.initialize(ProtocolLogic.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["address"], [contractOwner]));
         actionCount++;
     } else {
-        protocolProxy = await Protocol.at(Protocol.address);
+        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
     }
 
     if (ProtocolLogic.address === "") { // protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
-        const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyOwner });
+        const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyGovernanceAddress });
         deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${ProtocolLogic.address}`);
-        if (proxyOwner !== contract)
-            await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyOwner });
+        if (proxyGovernanceAddress !== contract)
+            await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyGovernanceAddress });
         actionCount++;
     }
 
-    const protocol = await ProtocolLogic.at(Protocol.address);
+    const protocol = await ProtocolLogic.at(ProtocolProxy.address);
 
     /** Ren TOKEN *************************************************************/
     if (!RenToken.address) {
@@ -112,7 +110,8 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
             DarknodeRegistryStore.address,
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL_SECONDS
+            config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+            0,
         );
         actionCount++;
     }
@@ -296,7 +295,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyOwner])
     deployer.logger.log(`Performed ${actionCount} updates.`);
 
     deployer.logger.log({
-        Protocol: Protocol.address,
+        Protocol: ProtocolProxy.address,
         ProtocolLogic: ProtocolLogic.address,
         RenToken: RenToken.address,
         DarknodeSlasher: DarknodeSlasher.address,

@@ -1,13 +1,13 @@
 pragma solidity 0.5.16;
 
+import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
+
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "../Gateway/GatewayRegistry.sol";
 
-/// @notice ProtocolState stores the values used by ProtocolLogic as a
+/// @notice ProtocolStateV1 stores the values used by Protocol as a
 /// separate contract to reduce the risk of memory slots being moved.
-contract ProtocolState {
-    address public owner;
-
+contract ProtocolStateV1 {
     // NEW STORAGE VALUES SHOULD ONLY BE ADDED TO THE END OF THIS CONTRACT.
 
     // These are all private so that the getter interfaced can be changed
