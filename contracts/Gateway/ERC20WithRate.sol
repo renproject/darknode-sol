@@ -44,14 +44,14 @@ contract ERC20WithRate is Initializable, Ownable, ERC20 {
         view
         returns (uint256)
     {
-        return multiplyByRate(balanceOf(_account));
+        return toUnderlying(balanceOf(_account));
     }
 
-    function multiplyByRate(uint256 _value) public view returns (uint256) {
+    function toUnderlying(uint256 _value) public view returns (uint256) {
         return _value.mul(_rate).div(_rateScale);
     }
 
-    function divideByRate(uint256 _value) public view returns (uint256) {
+    function fromUnderlying(uint256 _value) public view returns (uint256) {
         return _value.mul(_rateScale).div(_rate);
     }
 }
