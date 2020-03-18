@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 
 import "../libraries/String.sol";
 import "../libraries/Compare.sol";

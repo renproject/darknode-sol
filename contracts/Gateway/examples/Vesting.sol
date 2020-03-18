@@ -1,9 +1,9 @@
 pragma solidity 0.5.16;
 
 import "../GatewayRegistry.sol";
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/Math.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
 contract Vesting is Ownable {
     using SafeMath for uint256;
@@ -34,6 +34,7 @@ contract Vesting is Ownable {
     /// @notice The contract constructor.
     /// @param _registry The GatewayRegistry contract address.
     constructor(GatewayRegistry _registry) public {
+        Ownable.initialize(msg.sender);
         registry = _registry;
     }
 

@@ -1,14 +1,11 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "../libraries/Claimable.sol";
 
 contract Claimer {
     Claimable child;
 
-    constructor(
-        Claimable _child
-    ) public {
+    constructor(Claimable _child) public {
         child = _child;
     }
 

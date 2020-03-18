@@ -1,13 +1,12 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
 import "./RenERC20.sol";
-import "./IGateway.sol";
+import "./interfaces/IGateway.sol";
 import "../libraries/CanReclaimTokens.sol";
 
 /// @notice Gateway handles verifying mint and burn requests. A mintAuthority
@@ -75,6 +74,8 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         uint16 _burnFee,
         uint256 _minimumBurnAmount
     ) public {
+        Claimable.initialize(msg.sender);
+        CanReclaimTokens.initialize(msg.sender);
         minimumBurnAmount = _minimumBurnAmount;
         token = _token;
         mintFee = _mintFee;

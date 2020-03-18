@@ -3,12 +3,17 @@ pragma solidity 0.5.16;
 import "../libraries/Claimable.sol";
 import "./RenERC20.sol";
 import "../libraries/LinkedList.sol";
-import "./IGateway.sol";
+import "./interfaces/IGateway.sol";
 import "../libraries/CanReclaimTokens.sol";
 
 /// @notice GatewayRegistry is a mapping from assets to their associated
 /// RenERC20 and Gateway contracts.
 contract GatewayRegistry is Claimable, CanReclaimTokens {
+    constructor() public {
+        Claimable.initialize(msg.sender);
+        CanReclaimTokens.initialize(msg.sender);
+    }
+
     /// @dev The symbol is included twice because strings have to be hashed
     /// first in order to be used as a log index/topic.
     event LogGatewayRegistered(
@@ -197,8 +202,8 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
     function getTokenBySymbol(string calldata _tokenSymbol)
         external
         view
-        returns (address)
+        returns (IERC20)
     {
-        return tokenBySymbol[_tokenSymbol];
+        return IERC20(tokenBySymbol[_tokenSymbol]);
     }
 }

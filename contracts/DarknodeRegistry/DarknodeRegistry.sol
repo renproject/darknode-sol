@@ -1,7 +1,6 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../RenToken/RenToken.sol";
 import "./DarknodeRegistryStore.sol";
@@ -198,6 +197,8 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         uint256 _minimumPodSize,
         uint256 _minimumEpochIntervalSeconds
     ) public {
+        Claimable.initialize(msg.sender);
+        CanReclaimTokens.initialize(msg.sender);
         VERSION = _VERSION;
 
         store = _storeAddress;

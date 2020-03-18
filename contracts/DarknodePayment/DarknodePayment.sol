@@ -1,9 +1,8 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 import "../libraries/ERC20WithFees.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
@@ -161,6 +160,7 @@ contract DarknodePayment is Claimable {
         DarknodePaymentStore _darknodePaymentStore,
         uint256 _cyclePayoutPercent
     ) public validPercent(_cyclePayoutPercent) {
+        Claimable.initialize(msg.sender);
         VERSION = _VERSION;
         darknodeRegistry = _darknodeRegistry;
         store = _darknodePaymentStore;
