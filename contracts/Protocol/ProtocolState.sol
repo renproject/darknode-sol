@@ -3,10 +3,9 @@ pragma solidity 0.5.16;
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "../Shifter/ShifterRegistry.sol";
 
-/// @notice ProtocolStorage stores the values used by ProtocolLogic as a
+/// @notice ProtocolState stores the values used by ProtocolLogic as a
 /// separate contract to reduce the risk of memory slots being moved.
-contract ProtocolStorage {
-
+contract ProtocolState {
     address public owner;
 
     // NEW STORAGE VALUES SHOULD ONLY BE ADDED TO THE END OF THIS CONTRACT.

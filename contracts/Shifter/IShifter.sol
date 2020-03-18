@@ -1,8 +1,6 @@
 pragma solidity 0.5.16;
 
 interface IInShifter {
-    // function status(bytes32) external returns (bool);
-
     function shiftIn(
         bytes32 _pHash,
         uint256 _amount,
@@ -13,8 +11,6 @@ interface IInShifter {
 }
 
 interface IOutShifter {
-    // function status(bytes32) external returns (bool);
-
     function shiftOut(bytes calldata _to, uint256 _amount)
         external
         returns (uint256);

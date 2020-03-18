@@ -10,14 +10,13 @@ import "../DarknodeSlasher/DarknodeSlasher.sol";
 import "../RenToken/RenToken.sol";
 import "../Shifter/Shifter.sol";
 import "../Shifter/ShifterRegistry.sol";
-import "./ProtocolStorage.sol";
+import "./ProtocolState.sol";
 
 /// @notice ProtocolLogic implements the getter functions for the Protocol proxy
-/// as well as onlyOwner functions for updating the values in ProtocolStorage.
-contract ProtocolLogic is Initializable, ProtocolStorage {
-
+/// as well as onlyOwner functions for updating the values in ProtocolState.
+contract ProtocolLogic is Initializable, ProtocolState {
     modifier onlyOwner() {
-         require(msg.sender == owner, "Ownable: caller is not the owner");
+        require(msg.sender == owner, "Ownable: caller is not the owner");
         _;
     }
 
@@ -32,10 +31,14 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     // Darknode contracts
 
     function darknodeRegistry() public view returns (DarknodeRegistry) {
-        return ProtocolStorage._darknodeRegistry;
+        return ProtocolState._darknodeRegistry;
     }
 
-    function darknodeRegistryStore() public view returns (DarknodeRegistryStore) {
+    function darknodeRegistryStore()
+        public
+        view
+        returns (DarknodeRegistryStore)
+    {
         return darknodeRegistry().store();
     }
 
@@ -44,7 +47,10 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     }
 
     function darknodePayment() public view returns (DarknodePayment) {
-        return DarknodePayment(_payableAddress(address(darknodeRegistry().darknodePayment())));
+        return
+            DarknodePayment(
+                _payableAddress(address(darknodeRegistry().darknodePayment()))
+            );
     }
 
     function darknodePaymentStore() public view returns (DarknodePaymentStore) {
@@ -52,32 +58,55 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     }
 
     function darknodeSlasher() public view returns (DarknodeSlasher) {
-        return DarknodeSlasher(_payableAddress(address(darknodeRegistry().slasher())));
+        return
+            DarknodeSlasher(
+                _payableAddress(address(darknodeRegistry().slasher()))
+            );
     }
 
     // Shifter contracts
 
     function shifterRegistry() public view returns (ShifterRegistry) {
-        return ProtocolStorage._shifterRegistry;
+        return ProtocolState._shifterRegistry;
     }
 
-    function getShifters(address _start, uint256 _count) external view returns (address[] memory) {
+    function getShifters(address _start, uint256 _count)
+        external
+        view
+        returns (address[] memory)
+    {
         return shifterRegistry().getShifters(_start, _count);
     }
 
-    function getShiftedTokens(address _start, uint256 _count) external view returns (address[] memory) {
+    function getShiftedTokens(address _start, uint256 _count)
+        external
+        view
+        returns (address[] memory)
+    {
         return shifterRegistry().getShiftedTokens(_start, _count);
     }
 
-    function getShifterByToken(address _tokenAddress) external view returns (IShifter) {
+    function getShifterByToken(address _tokenAddress)
+        external
+        view
+        returns (IShifter)
+    {
         return shifterRegistry().getShifterByToken(_tokenAddress);
     }
 
-    function getShifterBySymbol(string calldata _tokenSymbol) external view returns (IShifter) {
+    function getShifterBySymbol(string calldata _tokenSymbol)
+        external
+        view
+        returns (IShifter)
+    {
         return shifterRegistry().getShifterBySymbol(_tokenSymbol);
     }
 
-    function getTokenBySymbol(string calldata _tokenSymbol) external view returns (address) {
+    function getTokenBySymbol(string calldata _tokenSymbol)
+        external
+        view
+        returns (address)
+    {
         return shifterRegistry().getTokenBySymbol(_tokenSymbol);
     }
 
@@ -86,20 +115,30 @@ contract ProtocolLogic is Initializable, ProtocolStorage {
     /// @notice Update the address of DarknodeRegistry. This could affect the
     /// addresses of DarknodeRegistryStore, DarknodePayment,
     /// DarknodePaymentStore and DarknodeSlasher.
-    function _updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry) public onlyOwner {
-        ProtocolStorage._darknodeRegistry = _newDarknodeRegistry;
+    function _updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry)
+        public
+        onlyOwner
+    {
+        ProtocolState._darknodeRegistry = _newDarknodeRegistry;
     }
 
     /// @notice Update the address of ShifterRegistry. This could affect the
     /// addresses of all of the shifters and shifted tokens.
-    function _updateShifterRegistry(ShifterRegistry _newShifterRegistry) public onlyOwner {
-        ProtocolStorage._shifterRegistry = _newShifterRegistry;
+    function _updateShifterRegistry(ShifterRegistry _newShifterRegistry)
+        public
+        onlyOwner
+    {
+        ProtocolState._shifterRegistry = _newShifterRegistry;
     }
 
     // Internal functions //////////////////////////////////////////////////////
 
     // Cast an address to a payable address
-    function _payableAddress(address a) internal pure returns (address payable) {
+    function _payableAddress(address a)
+        internal
+        pure
+        returns (address payable)
+    {
         return address(uint160(address(a)));
     }
 }
