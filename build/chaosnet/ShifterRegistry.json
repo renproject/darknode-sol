@@ -118,13 +118,24 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "isOwner",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_start",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_count",
+          "type": "uint256"
+        }
+      ],
+      "name": "getShiftedTokens",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "address[]",
           "name": "",
-          "type": "bool"
+          "type": "address[]"
         }
       ],
       "payable": false,
@@ -133,11 +144,17 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "owner",
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_tokenSymbol",
+          "type": "string"
+        }
+      ],
+      "name": "getShifterBySymbol",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IShifter",
           "name": "",
           "type": "address"
         }
@@ -147,97 +164,24 @@
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_token",
-          "type": "address"
-        }
-      ],
-      "name": "recoverTokens",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
+      "constant": true,
       "inputs": [
         {
           "internalType": "address",
           "name": "_tokenAddress",
           "type": "address"
-        },
+        }
+      ],
+      "name": "getShifterByToken",
+      "outputs": [
         {
-          "internalType": "address",
-          "name": "_shifterAddress",
+          "internalType": "contract IShifter",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "setShifter",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_tokenAddress",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_newShifterAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateShifter",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_symbol",
-          "type": "string"
-        }
-      ],
-      "name": "removeShifter",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -270,74 +214,6 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_start",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_count",
-          "type": "uint256"
-        }
-      ],
-      "name": "getShiftedTokens",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_tokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getShifterByToken",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_tokenSymbol",
-          "type": "string"
-        }
-      ],
-      "name": "getShifterBySymbol",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
           "internalType": "string",
           "name": "_tokenSymbol",
           "type": "string"
@@ -354,9 +230,133 @@
       "payable": false,
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "recoverTokens",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        }
+      ],
+      "name": "removeShifter",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_shifterAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setShifter",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_newShifterAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateShifter",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/ShifterRegistry.sol",
+  "sourcePath": "./contracts/Shifter/ShifterRegistry.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"

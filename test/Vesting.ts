@@ -56,7 +56,7 @@ contract("Vesting", (accounts) => {
         const duration = 6;
 
         const addVestingSchedule = async () => {
-            const nonce = randomBytes(32);
+            const nHash = randomBytes(32);
 
             const startTime = 0;
             const pHash = keccak256(rawEncode(
@@ -68,7 +68,7 @@ contract("Vesting", (accounts) => {
                 Ox(pHash),
                 amount.toNumber(),
                 vesting.address,
-                nonce,
+                nHash,
             );
             const sig = ecsign(Buffer.from(hashForSignature.slice(2), "hex"), privKey);
             const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
@@ -81,7 +81,7 @@ contract("Vesting", (accounts) => {
                 // Payload
                 beneficiary, startTime, duration,
                 // Required
-                amount, nonce, sigString,
+                amount, nHash, sigString,
             );
         };
 

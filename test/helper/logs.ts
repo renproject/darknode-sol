@@ -22,7 +22,7 @@ interface TransactionReceipt {
         status: boolean,
         logsBloom: string,
     };
-    logs: Array<{
+    logs: {
         logIndex: number,
         transactionIndex: number,
         transactionHash: string,
@@ -33,7 +33,7 @@ interface TransactionReceipt {
         id: string,
         event: string,
         args: object,
-    }>;
+    }[];
 }
 
 export const log = (event: string, args: object) => ({

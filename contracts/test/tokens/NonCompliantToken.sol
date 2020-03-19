@@ -1,6 +1,6 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract NCT_ERC20Basic {
     uint public totalSupply;

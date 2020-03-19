@@ -1,8 +1,8 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/String.sol";
@@ -39,8 +39,8 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     /// @notice The shiftOut fee in bips.
     uint16 public shiftOutFee;
 
-    /// @notice Each nHash can only be seen once.
-    mapping (bytes32=>bool) public status;
+    /// @notice Each signature can only be seen once.
+    mapping(bytes32 => bool) public status;
 
     // LogShiftIn and LogShiftOut contain a unique `shiftID` that identifies
     // the mint or burn event.
@@ -67,7 +67,14 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     ///        forwarded to the feeRecipient. In BIPS.
     /// @param _shiftOutFee The amount subtracted each shiftOut request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount) public {
+    constructor(
+        ERC20Shifted _token,
+        address _feeRecipient,
+        address _mintAuthority,
+        uint16 _shiftInFee,
+        uint16 _shiftOutFee,
+        uint256 _minShiftOutAmount
+    ) public {
         minShiftAmount = _minShiftOutAmount;
         token = _token;
         shiftInFee = _shiftInFee;
@@ -95,14 +102,20 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     ///
     /// @param _nextMintAuthority The address to start paying fees to.
     function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
-        require(_nextMintAuthority != address(0), "Shifter: mintAuthority cannot be set to address zero");
+        require(
+            _nextMintAuthority != address(0),
+            "Shifter: mintAuthority cannot be set to address zero"
+        );
         mintAuthority = _nextMintAuthority;
     }
 
     /// @notice Allow the owner to update the minimum shiftOut amount.
     ///
     /// @param _minShiftOutAmount The new min shiftOut amount.
-    function updateMinimumShiftOutAmount(uint256 _minShiftOutAmount) public onlyOwner {
+    function updateMinimumShiftOutAmount(uint256 _minShiftOutAmount)
+        public
+        onlyOwner
+    {
         minShiftAmount = _minShiftOutAmount;
     }
 
@@ -111,7 +124,10 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     /// @param _nextFeeRecipient The address to start paying fees to.
     function updateFeeRecipient(address _nextFeeRecipient) public onlyOwner {
         // ShiftIn and ShiftOut will fail if the feeRecipient is 0x0
-        require(_nextFeeRecipient != address(0x0), "Shifter: fee recipient cannot be 0x0");
+        require(
+            _nextFeeRecipient != address(0x0),
+            "Shifter: fee recipient cannot be 0x0"
+        );
 
         feeRecipient = _nextFeeRecipient;
     }
@@ -139,20 +155,37 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     /// @param _nHash (nonce hash) The hash of the nonce, amount and pHash.
     /// @param _sig The signature of the hash of the following values:
     ///        (pHash, amount, msg.sender, nHash), signed by the mintAuthority.
-    function shiftIn(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes memory _sig) public returns (uint256) {
+    function shiftIn(
+        bytes32 _pHash,
+        uint256 _amount,
+        bytes32 _nHash,
+        bytes memory _sig
+    ) public returns (uint256) {
         // Verify signature
-        bytes32 signedMessageHash = hashForSignature(_pHash, _amount, msg.sender, _nHash);
-        require(status[signedMessageHash] == false, "Shifter: nonce hash already spent");
+        bytes32 signedMessageHash = hashForSignature(
+            _pHash,
+            _amount,
+            msg.sender,
+            _nHash
+        );
+        require(
+            status[signedMessageHash] == false,
+            "Shifter: nonce hash already spent"
+        );
         if (!verifySignature(signedMessageHash, _sig)) {
             // Return a detailed string containing the hash and recovered
             // signer. This is somewhat costly but is only run in the revert
             // branch.
             revert(
-                String.add4(
-                    "Shifter: invalid signature - hash: ",
-                    String.fromBytes32(signedMessageHash),
-                    ", signer: ",
-                    String.fromAddress(ECDSA.recover(signedMessageHash, _sig))
+                String.add8(
+                    "Shifter: invalid signature. pHash: ",
+                    String.fromBytes32(_pHash),
+                    ", amount: ",
+                    String.fromUint(_amount),
+                    ", msg.sender: ",
+                    String.fromAddress(msg.sender),
+                    ", _nHash: ",
+                    String.fromBytes32(_nHash)
                 )
             );
         }
@@ -165,7 +198,12 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
         token.mint(feeRecipient, absoluteFee);
 
         // Emit a log with a unique shift ID
-        emit LogShiftIn(msg.sender, receivedAmount, nextShiftID, signedMessageHash);
+        emit LogShiftIn(
+            msg.sender,
+            receivedAmount,
+            nextShiftID,
+            signedMessageHash
+        );
         nextShiftID += 1;
 
         return receivedAmount;
@@ -179,11 +217,17 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
     ///        Bitcoin address.
     /// @param _amount The amount of the token being shifted out, in its
     ///        smallest value. (e.g. satoshis for BTC)
-    function shiftOut(bytes memory _to, uint256 _amount) public returns (uint256) {
+    function shiftOut(bytes memory _to, uint256 _amount)
+        public
+        returns (uint256)
+    {
         // The recipient must not be empty. Better validation is possible,
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "Shifter: to address is empty");
-        require(_amount >= minShiftAmount, "Shifter: amount is less than the minimum shiftOut amount");
+        require(
+            _amount >= minShiftAmount,
+            "Shifter: amount is less than the minimum shiftOut amount"
+        );
 
         // Burn full amount and mint fee
         uint256 absoluteFee = _amount.mul(shiftOutFee).div(BIPS_DENOMINATOR);
@@ -200,32 +244,87 @@ contract Shifter is IShifter, Claimable, CanReclaimTokens {
 
     /// @notice verifySignature checks the the provided signature matches the provided
     /// parameters.
-    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig) public view returns (bool) {
+    function verifySignature(bytes32 _signedMessageHash, bytes memory _sig)
+        public
+        view
+        returns (bool)
+    {
         return mintAuthority == ECDSA.recover(_signedMessageHash, _sig);
     }
 
     /// @notice hashForSignature hashes the parameters so that they can be signed.
-    function hashForSignature(bytes32 _pHash, uint256 _amount, address _to, bytes32 _nHash) public view returns (bytes32) {
-        return keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
+    function hashForSignature(
+        bytes32 _pHash,
+        uint256 _amount,
+        address _to,
+        bytes32 _nHash
+    ) public view returns (bytes32) {
+        return
+            keccak256(abi.encode(_pHash, _amount, address(token), _to, _nHash));
     }
 }
 
 /// @dev The following are not necessary for deploying BTCShifter or ZECShifter
 /// contracts, but are used to track deployments.
 contract BTCShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
-        }
+    constructor(
+        ERC20Shifted _token,
+        address _feeRecipient,
+        address _mintAuthority,
+        uint16 _shiftInFee,
+        uint16 _shiftOutFee,
+        uint256 _minShiftOutAmount
+    )
+        public
+        Shifter(
+            _token,
+            _feeRecipient,
+            _mintAuthority,
+            _shiftInFee,
+            _shiftOutFee,
+            _minShiftOutAmount
+        )
+    {}
 }
 
 contract ZECShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
-        }
+    constructor(
+        ERC20Shifted _token,
+        address _feeRecipient,
+        address _mintAuthority,
+        uint16 _shiftInFee,
+        uint16 _shiftOutFee,
+        uint256 _minShiftOutAmount
+    )
+        public
+        Shifter(
+            _token,
+            _feeRecipient,
+            _mintAuthority,
+            _shiftInFee,
+            _shiftOutFee,
+            _minShiftOutAmount
+        )
+    {}
 }
 
 contract BCHShifter is Shifter {
-    constructor(ERC20Shifted _token, address _feeRecipient, address _mintAuthority, uint16 _shiftInFee, uint16 _shiftOutFee, uint256 _minShiftOutAmount)
-        Shifter(_token, _feeRecipient, _mintAuthority, _shiftInFee, _shiftOutFee, _minShiftOutAmount) public {
-        }
+    constructor(
+        ERC20Shifted _token,
+        address _feeRecipient,
+        address _mintAuthority,
+        uint16 _shiftInFee,
+        uint16 _shiftOutFee,
+        uint256 _minShiftOutAmount
+    )
+        public
+        Shifter(
+            _token,
+            _feeRecipient,
+            _mintAuthority,
+            _shiftInFee,
+            _shiftOutFee,
+            _minShiftOutAmount
+        )
+    {}
 }

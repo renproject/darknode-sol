@@ -57,6 +57,61 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "_darknodeID",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "_darknodeOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_bond",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_publicKey",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_registeredAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_deregisteredAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "appendDarknode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "begin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -78,6 +133,111 @@
     },
     {
       "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodeBond",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodeDeregisteredAt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodeOwner",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodePublicKey",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "darknodeRegisteredAt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [],
       "name": "isOwner",
       "outputs": [
@@ -85,6 +245,27 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "next",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -137,6 +318,21 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "darknodeID",
+          "type": "address"
+        }
+      ],
+      "name": "removeDarknode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "ren",
@@ -170,97 +366,6 @@
         }
       ],
       "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_darknodeID",
-          "type": "address"
-        },
-        {
-          "internalType": "address payable",
-          "name": "_darknodeOwner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_bond",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_publicKey",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_registeredAt",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_deregisteredAt",
-          "type": "uint256"
-        }
-      ],
-      "name": "appendDarknode",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "begin",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "next",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "removeDarknode",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -305,114 +410,9 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeOwner",
-      "outputs": [
-        {
-          "internalType": "address payable",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeBond",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeRegisteredAt",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "darknodeDeregisteredAt",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "darknodeID",
-          "type": "address"
-        }
-      ],
-      "name": "darknodePublicKey",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "",
-          "type": "bytes"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
+  "sourcePath": "./contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"

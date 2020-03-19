@@ -17,6 +17,7 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 const Protocol = artifacts.require("Protocol");
+const BasicAdapter = artifacts.require("BasicAdapter");
 
 const networks = require("./networks.js");
 
@@ -44,6 +45,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     zZEC.address = addresses.zZEC || "";
     zBCH.address = addresses.zBCH || "";
     zBTC.address = addresses.zBTC || "";
+    BasicAdapter.address = addresses.BasicAdapter || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(Protocol.address);
@@ -61,10 +63,19 @@ module.exports = async function (deployer, network, [contractOwner]) {
     }
     const registry = await ShifterRegistry.at(ShifterRegistry.address);
 
-    const protocolShifterRegistry = await protocol.shifterRegistry.call({ from: contractOwner });
+    const protocolShifterRegistry = await protocol.shifterRegistry.call();
     if (protocolShifterRegistry.toLowerCase() !== registry.address.toLowerCase()) {
         deployer.logger.log(`Updating ShifterRegistry in Protocol contract. Was ${protocolShifterRegistry}, now is ${registry.address}`);
-        await protocol._updateShifterRegistry(registry.address, { from: contractOwner });
+        await protocol._updateShifterRegistry(registry.address);
+        actionCount++;
+    }
+
+    if (!BasicAdapter.address) {
+        deployer.logger.log(`Deploying BasicAdapter`);
+        await deployer.deploy(
+            BasicAdapter,
+            registry.address,
+        );
         actionCount++;
     }
 
@@ -174,5 +185,6 @@ module.exports = async function (deployer, network, [contractOwner]) {
         zZEC: zZEC.address,
         zBCH: zBCH.address,
         ShifterRegistry: ShifterRegistry.address,
+        BasicAdapter: BasicAdapter.address,
     });
 }

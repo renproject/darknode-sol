@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js";
 import BN from "bn.js";
 import chaiAsPromised from "chai-as-promised";
 import chaiBigNumber from "chai-bignumber";
+import { ECDSASignature } from "ethereumjs-util";
 import { keccak256, toChecksumAddress, toHex } from "web3-utils";
 
 import { DarknodeRegistryInstance } from "../../types/truffle-contracts";
@@ -41,6 +42,8 @@ export const Ox = (hex: string | BN | Buffer) => {
     const hexString = typeof hex === "string" ? hex : hex.toString("hex");
     return hexString.substring(0, 2) === "0x" ? hexString : `0x${hexString}`;
 };
+
+export const strip0x = (hex: string) => hex.substring(0, 2) === "0x" ? hex.slice(2) : hex;
 
 export const randomBytes = (bytes: number): string => {
     return Ox(crypto.randomBytes(bytes));
@@ -112,4 +115,8 @@ export const randomID = () => {
 export const encodeCallData = (functioName: string, parameterTypes: string[], parameters: any[]) => {
     return web3.eth.abi.encodeFunctionSignature(`${functioName}(${parameterTypes.join(",")})`) +
         web3.eth.abi.encodeParameters(parameterTypes, parameters).slice(2);
+};
+
+export const sigToString = (sig: ECDSASignature) => {
+    return Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 };

@@ -11,6 +11,9 @@ const networks = ["testnet", "devnet", "localnet", "chaosnet"];
 const path = require('path');
 const dirname = path.dirname(__filename);
 
+const cmp = (x, y) => x === y ? 0 : x > y ? 1 : -1;
+const sortAbi = (l, r) => cmp(l.type, r.type) === 0 ? cmp(l.name, r.name) : cmp(l.type, r.type);
+
 for (const network of networks) {
     const directory = path.join(dirname, `./${network}/*.json`);
     glob(directory, function (err, files) { // read the folder or folders if you want: example json/**/*.json
@@ -25,8 +28,8 @@ for (const network of networks) {
                 var obj = JSON.parse(data);
                 const newObj = {
                     contractName: obj.contractName,
-                    abi: obj.abi,
-                    sourcePath: obj.sourcePath,
+                    abi: obj.abi.sort(sortAbi),
+                    sourcePath: obj.sourcePath.replace(/.*\/darknode-sol\//g, "./"),
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,

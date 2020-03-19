@@ -1,7 +1,7 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
@@ -10,9 +10,11 @@ import "../libraries/CanReclaimTokens.sol";
 /// the Ethereum ledger. It exposes mint and burn functions that can only be
 /// called by it's associated Shifter.
 contract ERC20Shifted is ERC20, ERC20Detailed, Claimable, CanReclaimTokens {
-
     /* solium-disable-next-line no-empty-blocks */
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) public ERC20Detailed(_name, _symbol, _decimals) {}
+    constructor(string memory _name, string memory _symbol, uint8 _decimals)
+        public
+        ERC20Detailed(_name, _symbol, _decimals)
+    {}
 
     function burn(address _from, uint256 _amount) public onlyOwner {
         _burn(_from, _amount);
