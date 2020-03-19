@@ -1,4 +1,4 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
 import "../libraries/Claimable.sol";
 import "../libraries/Validate.sol";
@@ -8,7 +8,6 @@ import "../DarknodeRegistry/DarknodeRegistry.sol";
 /// deregister other misbehaving darknodes.
 /// Right now, it is a placeholder.
 contract DarknodeSlasher is Claimable {
-
     DarknodeRegistry public darknodeRegistry;
 
     uint256 public blacklistSlashPercent;
@@ -28,17 +27,18 @@ contract DarknodeSlasher is Claimable {
     /// @notice Emitted when the DarknodeRegistry is updated.
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
-    event LogDarknodeRegistryUpdated(DarknodeRegistry _previousDarknodeRegistry, DarknodeRegistry _nextDarknodeRegistry);
+    event LogDarknodeRegistryUpdated(
+        DarknodeRegistry _previousDarknodeRegistry,
+        DarknodeRegistry _nextDarknodeRegistry
+    );
 
-    /// @notice Restrict a function to have a valid percentage
+    /// @notice Restrict a function to have a valid percentage.
     modifier validPercent(uint256 _percent) {
         require(_percent <= 100, "DarknodeSlasher: invalid percentage");
         _;
     }
 
-    constructor(
-        DarknodeRegistry _darknodeRegistry
-    ) public {
+    constructor(DarknodeRegistry _darknodeRegistry) public {
         darknodeRegistry = _darknodeRegistry;
     }
 
@@ -46,22 +46,43 @@ contract DarknodeSlasher is Claimable {
     /// darknode registry contract.
     /// @param _darknodeRegistry The address of the Darknode Registry
     /// contract.
-    function updateDarknodeRegistry(DarknodeRegistry _darknodeRegistry) external onlyOwner {
-        require(address(_darknodeRegistry) != address(0x0), "DarknodeSlasher: invalid Darknode Registry address");
+    function updateDarknodeRegistry(DarknodeRegistry _darknodeRegistry)
+        external
+        onlyOwner
+    {
+        require(
+            address(_darknodeRegistry) != address(0x0),
+            "DarknodeSlasher: invalid Darknode Registry address"
+        );
         DarknodeRegistry previousDarknodeRegistry = darknodeRegistry;
         darknodeRegistry = _darknodeRegistry;
-        emit LogDarknodeRegistryUpdated(previousDarknodeRegistry, darknodeRegistry);
+        emit LogDarknodeRegistryUpdated(
+            previousDarknodeRegistry,
+            darknodeRegistry
+        );
     }
 
-    function setBlacklistSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+    function setBlacklistSlashPercent(uint256 _percentage)
+        public
+        validPercent(_percentage)
+        onlyOwner
+    {
         blacklistSlashPercent = _percentage;
     }
 
-    function setMaliciousSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+    function setMaliciousSlashPercent(uint256 _percentage)
+        public
+        validPercent(_percentage)
+        onlyOwner
+    {
         maliciousSlashPercent = _percentage;
     }
 
-    function setSecretRevealSlashPercent(uint256 _percentage) public validPercent(_percentage) onlyOwner {
+    function setSecretRevealSlashPercent(uint256 _percentage)
+        public
+        validPercent(_percentage)
+        onlyOwner
+    {
         secretRevealSlashPercent = _percentage;
     }
 
@@ -98,7 +119,10 @@ contract DarknodeSlasher is Claimable {
             _validRound2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
+        require(
+            !slashed[_height][_round][signer],
+            "DarknodeSlasher: already slashed"
+        );
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
@@ -119,7 +143,10 @@ contract DarknodeSlasher is Claimable {
             _blockhash2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
+        require(
+            !slashed[_height][_round][signer],
+            "DarknodeSlasher: already slashed"
+        );
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }
@@ -140,7 +167,10 @@ contract DarknodeSlasher is Claimable {
             _blockhash2,
             _signature2
         );
-        require(!slashed[_height][_round][signer], "DarknodeSlasher: already slashed");
+        require(
+            !slashed[_height][_round][signer],
+            "DarknodeSlasher: already slashed"
+        );
         slashed[_height][_round][signer] = true;
         darknodeRegistry.slash(signer, msg.sender, maliciousSlashPercent);
     }

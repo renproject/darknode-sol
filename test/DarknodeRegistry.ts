@@ -807,6 +807,77 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
     });
 
+    describe("upgrade DarknodeRegistry while maintaining store", async () => {
+        let newDNR: DarknodeRegistryInstance;
+
+        let preCountPreviousEpoch: BN;
+        let preCount: BN;
+        let preCountNextEpoch: BN;
+        let preDarknodes: string[];
+
+        before(async () => {
+
+            // Wait for epoch twice so that the number of darknodes in each
+            // epoch is the same.
+            await waitForEpoch(dnr);
+            await waitForEpoch(dnr);
+
+            preCountPreviousEpoch = new BN((await dnr.numDarknodesPreviousEpoch.call()).toString());
+            preCount = new BN((await dnr.numDarknodes.call()).toString());
+            preCountNextEpoch = new BN((await dnr.numDarknodesNextEpoch.call()).toString());
+            preDarknodes = await dnr.getDarknodes.call(NULL, 0);
+
+            // Deploy a new DNR and DNR store
+            newDNR = await DarknodeRegistry.new(
+                "test",
+                RenToken.address,
+                dnrs.address,
+                config.MINIMUM_BOND,
+                config.MINIMUM_POD_SIZE,
+                config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+            );
+            // Initiate ownership transfer of DNR store
+            await dnr.transferStoreOwnership(newDNR.address);
+
+            // Wait for epoch to populate numDarknodesPreviousEpoch
+            await waitForEpoch(newDNR);
+        });
+
+        after(async () => {
+            await newDNR.transferStoreOwnership(dnr.address);
+
+            await waitForEpoch(dnr);
+
+            new BN((await dnr.numDarknodes.call()).toString())
+                .should.bignumber.equal(preCount.add(new BN(1)));
+        });
+
+        it("number of darknodes is correct", async () => {
+
+            const countPreviousEpoch = new BN((await newDNR.numDarknodesPreviousEpoch.call()).toString());
+            const count = new BN((await newDNR.numDarknodes.call()).toString());
+            const countNextEpoch = new BN((await newDNR.numDarknodesNextEpoch.call()).toString());
+            const darknodes = await newDNR.getDarknodes.call(NULL, 0);
+
+            countPreviousEpoch.should.bignumber.equal(preCountPreviousEpoch);
+            count.should.bignumber.equal(preCount);
+            countNextEpoch.should.bignumber.equal(preCountNextEpoch);
+            darknodes.should.deep.equal(preDarknodes);
+
+            await ren.approve(newDNR.address, MINIMUM_BOND);
+            await newDNR.register(ID("10"), PUBK("10"));
+
+            new BN((await newDNR.numDarknodesNextEpoch.call()).toString())
+                .should.bignumber.equal(countNextEpoch.add(new BN(1)));
+
+            await waitForEpoch(newDNR);
+
+            new BN((await newDNR.numDarknodes.call()).toString())
+                .should.bignumber.equal(count.add(new BN(1)));
+        });
+
+    });
+
     // Takes 30 minutes - keep as it.skip when not running
     it.skip("[LONG] can register 6000 dark nodes", async () => {
         const MAX_DARKNODES = 6000;

@@ -145,21 +145,21 @@ contract("LinkedList", () => {
     });
 
     it("should return elements in the list", async () => {
-        let shifters = await linkedList.elements.call(NODE1, 1);
-        shifters[0].should.equal(NODE1);
-        shifters.length.should.equal(1);
+        let gateways = await linkedList.elements.call(NODE1, 1);
+        gateways[0].should.equal(NODE1);
+        gateways.length.should.equal(1);
 
-        shifters = await linkedList.elements.call(NODE2, 2);
-        shifters[0].should.equal(NODE2);
-        shifters[1].should.equal(NODE3);
-        shifters.length.should.equal(2);
+        gateways = await linkedList.elements.call(NODE2, 2);
+        gateways[0].should.equal(NODE2);
+        gateways[1].should.equal(NODE3);
+        gateways.length.should.equal(2);
 
         await linkedList.append(NODE4);
 
-        shifters = await linkedList.elements.call(NODE1, 10);
-        shifters[0].should.equal(NODE1);
-        shifters[3].should.equal(NODE4);
-        shifters.length.should.equal(10);
+        gateways = await linkedList.elements.call(NODE1, 10);
+        gateways[0].should.equal(NODE1);
+        gateways[3].should.equal(NODE4);
+        gateways.length.should.equal(10);
     });
 
 });

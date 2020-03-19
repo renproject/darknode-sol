@@ -1,12 +1,11 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
 import "../DarknodeRegistry/DarknodeRegistry.sol";
-import "../Shifter/ShifterRegistry.sol";
+import "../Gateway/GatewayRegistry.sol";
 
-/// @notice ProtocolStorage stores the values used by ProtocolLogic as a
+/// @notice ProtocolState stores the values used by ProtocolLogic as a
 /// separate contract to reduce the risk of memory slots being moved.
-contract ProtocolStorage {
-
+contract ProtocolState {
     address public owner;
 
     // NEW STORAGE VALUES SHOULD ONLY BE ADDED TO THE END OF THIS CONTRACT.
@@ -18,7 +17,6 @@ contract ProtocolStorage {
     // DarknodePayment, which in turn points to DarknodePaymentStore.
     DarknodeRegistry internal _darknodeRegistry;
 
-    // ShifterRegistry is used to access the Shifters and the shifted tokens.
-    ShifterRegistry internal _shifterRegistry;
-
+    // GatewayRegistry is used to access the Gateways and RenERC20s.
+    GatewayRegistry internal _gatewayRegistry;
 }

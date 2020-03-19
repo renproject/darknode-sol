@@ -1,6 +1,6 @@
-pragma solidity 0.5.12;
+pragma solidity 0.5.16;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
 
 /**
  * @title Claimable

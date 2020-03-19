@@ -592,168 +592,14 @@
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/darknode-sol/contracts/Shifter/Shifter.sol",
+  "sourcePath": "./contracts/Shifter/Shifter.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
       "events": {
-        "0xd79c73d5d7701ff70ab30939dd980af7276ff21617d890ff2ce150f3b5ea3d94": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "_to",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "name": "_amount",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "name": "_shiftID",
-              "type": "uint256"
-            }
-          ],
-          "name": "LogShiftIn",
-          "type": "event",
-          "signature": "0xd79c73d5d7701ff70ab30939dd980af7276ff21617d890ff2ce150f3b5ea3d94"
-        },
-        "0x1005efb915fb4efa25ffd0757ae0c14b27112a87bbfd7547daf01830cd499309": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "_to",
-              "type": "bytes"
-            },
-            {
-              "indexed": false,
-              "name": "_amount",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "name": "_shiftID",
-              "type": "uint256"
-            }
-          ],
-          "name": "LogShiftOut",
-          "type": "event",
-          "signature": "0x1005efb915fb4efa25ffd0757ae0c14b27112a87bbfd7547daf01830cd499309"
-        },
-        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
-        },
-        "0xa89f0464345cba972d0520be690db6998976b7f64b47fc3ec1658c14b9a4a96f": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "_to",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "name": "_amount",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "name": "_shiftID",
-              "type": "uint256"
-            },
-            {
-              "name": "_mintAuthority",
-              "type": "address"
-            },
-            {
-              "name": "_fee",
-              "type": "uint16"
-            }
-          ],
-          "name": "LogShiftIn",
-          "type": "event",
-          "payable": false,
-          "stateMutability": "nonpayable",
-          "signature": "0xa89f0464345cba972d0520be690db6998976b7f64b47fc3ec1658c14b9a4a96f"
-        },
-        "0x2275318eaeb892d338c6737eebf5f31747c1eab22b63ccbc00cd93d4e785c116": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "name": "_to",
-              "type": "bytes",
-              "internalType": "bytes"
-            },
-            {
-              "indexed": false,
-              "name": "_amount",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "indexed": true,
-              "name": "_shiftID",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "indexed": true,
-              "name": "_indexedTo",
-              "type": "bytes",
-              "internalType": "bytes"
-            }
-          ],
-          "name": "LogShiftOut",
-          "type": "event",
-          "signature": "0x2275318eaeb892d338c6737eebf5f31747c1eab22b63ccbc00cd93d4e785c116"
-        },
-        "0xc13a1166d81cd3b0b352a367aebab95f3a6f6bc695fdab8e9a9d335239c3861b": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "previousOwner",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "name": "newOwner",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "name": "_shiftID",
-              "type": "uint256"
-            }
-          ],
-          "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0xc13a1166d81cd3b0b352a367aebab95f3a6f6bc695fdab8e9a9d335239c3861b"
-        },
         "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502": {
           "anonymous": false,
           "inputs": [
@@ -783,14 +629,63 @@
             }
           ],
           "name": "LogShiftIn",
-          "type": "event",
-          "signature": "0x66519073cf8fb3a91e4ee5a511c26928b523e9641f0aed760af126159fb37502"
+          "type": "event"
+        },
+        "0x2275318eaeb892d338c6737eebf5f31747c1eab22b63ccbc00cd93d4e785c116": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "_to",
+              "type": "bytes"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_amount",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "_shiftID",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes",
+              "name": "_indexedTo",
+              "type": "bytes"
+            }
+          ],
+          "name": "LogShiftOut",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x8fB4F7D1ea9329697127F2784399301c0F8E6866",
-      "transactionHash": "0x2aec7edaca6eb03c77140c4dc1d2b09a1d3e6d9739174ed3e638303f62a87aac"
+      "address": "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
+      "transactionHash": "0xfe45563c091ef06a8ccf072fbc21dc69499a795dd9a36abd58bc66b18570b167"
     }
   },
-  "schemaVersion": "3.0.20"
+  "schemaVersion": "3.0.23"
 }
