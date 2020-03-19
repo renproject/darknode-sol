@@ -64,21 +64,21 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     /// linked-list.
     ///
     /// @param _darknodeID The darknode's ID.
-    /// @param _darknodeOwner The darknode's owner's address.
+    /// @param _darknodeOperator The darknode's owner's address.
     /// @param _bond The darknode's bond value.
     /// @param _publicKey The darknode's public key.
     /// @param _registeredAt The time stamp when the darknode is registered.
     /// @param _deregisteredAt The time stamp when the darknode is deregistered.
     function appendDarknode(
         address _darknodeID,
-        address payable _darknodeOwner,
+        address payable _darknodeOperator,
         uint256 _bond,
         bytes calldata _publicKey,
         uint256 _registeredAt,
         uint256 _deregisteredAt
     ) external onlyOwner {
         Darknode memory darknode = Darknode({
-            owner: _darknodeOwner,
+            owner: _darknodeOperator,
             bond: _bond,
             publicKey: _publicKey,
             registeredAt: _registeredAt,
@@ -143,7 +143,7 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     }
 
     /// @notice Returns the owner of a given darknode.
-    function darknodeOwner(address darknodeID)
+    function darknodeOperator(address darknodeID)
         external
         view
         onlyOwner

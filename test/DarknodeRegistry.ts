@@ -34,7 +34,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
         await dnr.epoch({ from: accounts[1] })
-            .should.be.rejectedWith(/DarknodeRegistry: not authorized/);
+            .should.be.rejectedWith(/DarknodeRegistry: not authorized to call first epoch/);
         await waitForEpoch(dnr);
 
         for (let i = 1; i < numAccounts; i++) {
@@ -298,7 +298,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can get the owner of the Dark Node", async () => {
-        (await dnr.getDarknodeOwner.call(ID("0"))).should.equal(accounts[0]);
+        (await dnr.getDarknodeOperator.call(ID("0"))).should.equal(accounts[0]);
     });
 
     it("can get the bond of the Dark Node", async () => {

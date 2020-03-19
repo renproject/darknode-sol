@@ -53,6 +53,25 @@ contract RenERC20 is
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
     }
+
+    function transfer(address recipient, uint256 amount) public returns (bool) {
+        require(
+            recipient != address(this),
+            "RenERC20: can't transfer to token address"
+        );
+        return super.transfer(recipient, amount);
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount)
+        public
+        returns (bool)
+    {
+        require(
+            recipient != address(this),
+            "RenERC20: can't transfer to token address"
+        );
+        return super.transferFrom(sender, recipient, amount);
+    }
 }
 
 /// @dev The following are not necessary for deploying renBTC or renZEC contracts,

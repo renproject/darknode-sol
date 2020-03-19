@@ -85,12 +85,13 @@ contract DarknodePayment is Claimable {
     );
 
     /// @notice Emitted when a darknode calls withdraw.
-    /// @param _payee The address of the darknode which withdrew.
+    /// @param _darknodeOperator The address of the darknode's operator.
+    /// @param _darknodeID The address of the darknode which withdrew.
     /// @param _value The amount of DAI withdrawn.
     /// @param _token The address of the token that was withdrawn.
     event LogDarknodeWithdrew(
-        address indexed _darknodeOwner,
-        address indexed _darknode,
+        address indexed _darknodeOperator,
+        address indexed _darknodeID,
         address indexed _token,
         uint256 _value
     );
@@ -200,11 +201,11 @@ contract DarknodePayment is Claimable {
     /// @param _darknode The address of the darknode.
     /// @param _token Which token to transfer.
     function withdraw(address _darknode, address _token) public {
-        address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(
+        address payable darknodeOperator = darknodeRegistry.getDarknodeOperator(
             _darknode
         );
         require(
-            darknodeOwner != address(0x0),
+            darknodeOperator != address(0x0),
             "DarknodePayment: invalid darknode owner"
         );
 
@@ -212,8 +213,13 @@ contract DarknodePayment is Claimable {
 
         // Skip if amount is zero.
         if (amount > 0) {
-            store.transfer(_darknode, _token, amount, darknodeOwner);
-            emit LogDarknodeWithdrew(darknodeOwner, _darknode, _token, amount);
+            store.transfer(_darknode, _token, amount, darknodeOperator);
+            emit LogDarknodeWithdrew(
+                darknodeOperator,
+                _darknode,
+                _token,
+                amount
+            );
         }
     }
 
