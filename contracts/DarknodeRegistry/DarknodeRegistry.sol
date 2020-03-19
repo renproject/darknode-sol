@@ -86,7 +86,11 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// @notice Emitted when a refund has been made.
     /// @param _operator The owner of the darknode.
     /// @param _amount The amount of REN that was refunded.
-    event LogDarknodeOwnerRefunded(address indexed _operator, uint256 _amount);
+    event LogDarknodeOwnerRefunded(
+        address indexed _operator,
+        address indexed _darknodeID,
+        uint256 _amount
+    );
 
     /// @notice Emitted when a darknode's bond is slashed.
     /// @param _operator The owner of the darknode.
@@ -498,7 +502,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         );
 
         // Emit an event.
-        emit LogDarknodeOwnerRefunded(darknodeOwner, amount);
+        emit LogDarknodeOwnerRefunded(darknodeOwner, _darknodeID, amount);
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.

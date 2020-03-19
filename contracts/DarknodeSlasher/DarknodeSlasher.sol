@@ -28,8 +28,8 @@ contract DarknodeSlasher is Claimable {
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
     event LogDarknodeRegistryUpdated(
-        DarknodeRegistry _previousDarknodeRegistry,
-        DarknodeRegistry _nextDarknodeRegistry
+        DarknodeRegistry indexed _previousDarknodeRegistry,
+        DarknodeRegistry indexed _nextDarknodeRegistry
     );
 
     /// @notice Restrict a function to have a valid percentage.

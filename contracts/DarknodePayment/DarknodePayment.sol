@@ -80,8 +80,8 @@ contract DarknodePayment is Claimable {
     /// @param _token The address of the token that was transferred.
     event LogPaymentReceived(
         address indexed _payer,
-        uint256 _amount,
-        address indexed _token
+        address indexed _token,
+        uint256 _amount
     );
 
     /// @notice Emitted when a darknode calls withdraw.
@@ -89,9 +89,10 @@ contract DarknodePayment is Claimable {
     /// @param _value The amount of DAI withdrawn.
     /// @param _token The address of the token that was withdrawn.
     event LogDarknodeWithdrew(
-        address indexed _payee,
-        uint256 _value,
-        address indexed _token
+        address indexed _darknodeOwner,
+        address indexed _darknode,
+        address indexed _token,
+        uint256 _value
     );
 
     /// @notice Emitted when the payout percent changes.
@@ -212,7 +213,7 @@ contract DarknodePayment is Claimable {
         // Skip if amount is zero.
         if (amount > 0) {
             store.transfer(_darknode, _token, amount, darknodeOwner);
-            emit LogDarknodeWithdrew(_darknode, amount, _token);
+            emit LogDarknodeWithdrew(darknodeOwner, _darknode, _token, amount);
         }
     }
 
@@ -230,7 +231,7 @@ contract DarknodePayment is Claimable {
     /// @notice Forward all payments to the DarknodePaymentStore.
     function() external payable {
         address(store).transfer(msg.value);
-        emit LogPaymentReceived(msg.sender, msg.value, ETHEREUM);
+        emit LogPaymentReceived(msg.sender, ETHEREUM, msg.value);
     }
 
     /// @notice The current balance of the contract available as reward for the
@@ -302,7 +303,7 @@ contract DarknodePayment is Claimable {
                 _value
             );
         }
-        emit LogPaymentReceived(msg.sender, receivedValue, _token);
+        emit LogPaymentReceived(msg.sender, _token, receivedValue);
     }
 
     /// @notice Forwards any tokens that have been sent to the DarknodePayment contract
