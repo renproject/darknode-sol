@@ -108,7 +108,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
             deployer.logger.log(`Deploying ${name} proxy`);
             await deployer.deploy(Token);
             const tokenProxy = await Token.at(Token.address);
-            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", name, symbol, decimals]));
+            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", "1", name, symbol, decimals]));
             actionCount++;
         }
         const token = await RenERC20.at(Token.address);

@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
-    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "generate": "truffle compile && typechain --target truffle './build/development/*.json'",
     "coverage": "yarn run generate && truffle run coverage",
     "test": "yarn run generate && truffle test",
     "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/chaosnet/*.json\"",

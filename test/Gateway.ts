@@ -32,7 +32,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
     const burnFees = new BN(15);
 
     before(async () => {
-        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
+        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
@@ -407,7 +407,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
         it("can retrieve gateways", async () => {
             { // Try to register token with an existing symbol
                 const altRenBTC = await RenERC20.new();
-                await altRenBTC.initialize(await web3.eth.net.getId(), owner, "500000000000000000", "renBTC", "renBTC", 8);
+                await altRenBTC.initialize(await web3.eth.net.getId(), owner, "500000000000000000", "1", "renBTC", "renBTC", 8);
                 await registry.setGateway(altRenBTC.address, NULL)
                     .should.be.rejectedWith(/GatewayRegistry: symbol already registered/);
             }

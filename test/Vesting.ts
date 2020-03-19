@@ -28,7 +28,7 @@ contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddr
 
     beforeEach(async () => {
         // Setup the environment
-        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
+        renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
 
         btcGateway = await BTCGateway.new(
             renbtc.address,

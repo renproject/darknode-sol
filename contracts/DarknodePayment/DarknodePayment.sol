@@ -208,17 +208,22 @@ contract DarknodePayment is Claimable {
         );
 
         uint256 amount = store.darknodeBalances(_darknode, _token);
-        require(amount > 0, "DarknodePayment: nothing to withdraw");
 
-        store.transfer(_darknode, _token, amount, darknodeOwner);
-        emit LogDarknodeWithdrew(_darknode, amount, _token);
+        // Skip if amount is zero.
+        if (amount > 0) {
+            store.transfer(_darknode, _token, amount, darknodeOwner);
+            emit LogDarknodeWithdrew(_darknode, amount, _token);
+        }
     }
 
-    function withdrawMultiple(address _darknode, address[] calldata _tokens)
-        external
-    {
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            withdraw(_darknode, _tokens[i]);
+    function withdrawMultiple(
+        address[] calldata _darknodes,
+        address[] calldata _tokens
+    ) external {
+        for (uint256 i = 0; i < _darknodes.length; i++) {
+            for (uint256 j = 0; j < _tokens.length; j++) {
+                withdraw(_darknodes[i], _tokens[j]);
+            }
         }
     }
 

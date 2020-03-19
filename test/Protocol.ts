@@ -1,7 +1,7 @@
 import {
     BTCGatewayInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    GatewayRegistryInstance, ProtocolInstance, ProtocolLogicInstance, renBTCInstance,
+    GatewayRegistryInstance, ProtocolLogicInstance, ProtocolProxyInstance, renBTCInstance,
     RenTokenInstance,
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
@@ -30,7 +30,7 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
     let renbtc: renBTCInstance;
     let btcGateway: BTCGatewayInstance;
     let protocol: ProtocolLogicInstance;
-    let protocolProxy: ProtocolInstance;
+    let protocolProxy: ProtocolProxyInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
