@@ -159,10 +159,10 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
         (await protocol.getGatewayByToken.call(renbtc.address))
             .should.equal(btcGateway.address);
 
-        (await protocol.getGatewayBySymbol.call("renBTC"))
+        (await protocol.getGatewayBySymbol.call("BTC"))
             .should.equal(btcGateway.address);
 
-        (await protocol.getTokenBySymbol.call("renBTC"))
+        (await protocol.getTokenBySymbol.call("BTC"))
             .should.equal(renbtc.address);
 
         { // The first 10 gateways starting from NULL

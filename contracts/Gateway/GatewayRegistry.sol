@@ -54,10 +54,12 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
     ///
     /// @param _token The address of the RenERC20 token contract.
     /// @param _gatewayContract The address of the Gateway contract.
-    function setGateway(address _token, address _gatewayContract)
+    function setGateway(string calldata _symbol, address _token, address _gatewayContract)
         external
         onlyOwner
     {
+        require(symbolIsValid(_symbol), "GatewayRegistry: symbol must be alphanumeric");
+
         // Check that token, Gateway and symbol haven't already been registered.
         require(
             !LinkedList.isInList(gatewayContractList, _gatewayContract),
@@ -67,9 +69,8 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
             gatewayByToken[_token] == address(0x0),
             "GatewayRegistry: token already registered"
         );
-        string memory symbol = RenERC20(_token).symbol();
         require(
-            tokenBySymbol[symbol] == address(0x0),
+            tokenBySymbol[_symbol] == address(0x0),
             "GatewayRegistry: symbol already registered"
         );
 
@@ -79,11 +80,11 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
         // Add to list of ren tokens.
         LinkedList.append(renTokenList, _token);
 
-        tokenBySymbol[symbol] = _token;
+        tokenBySymbol[_symbol] = _token;
         gatewayByToken[_token] = _gatewayContract;
         numGatewayContracts += 1;
 
-        emit LogGatewayRegistered(symbol, symbol, _token, _gatewayContract);
+        emit LogGatewayRegistered(_symbol, _symbol, _token, _gatewayContract);
     }
 
     /// @notice Allow the owner to update the Gateway contract for a given
@@ -205,5 +206,19 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
         returns (IERC20)
     {
         return IERC20(tokenBySymbol[_tokenSymbol]);
+    }
+
+    function symbolIsValid(string memory _tokenSymbol) public pure returns (bool) {
+        for (uint i = 0; i < bytes(_tokenSymbol).length; i++) {
+            uint8 char = uint8(bytes(_tokenSymbol)[i]);
+            if (!(
+                (char >= 65 && char <= 90) ||
+                (char >= 97 && char <= 122) ||
+                (char >= 48 && char <= 57)
+            )) {
+                return false;
+            }
+        }
+        return true;
     }
 }

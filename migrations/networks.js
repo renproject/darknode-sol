@@ -15,6 +15,8 @@ const config = {
     renBTCMinimumBurnAmount: 10000,
     renZECMinimumBurnAmount: 10000,
     renBCHMinimumBurnAmount: 10000,
+
+    tokenPrefix: "mock",
 }
 
 module.exports = {
@@ -45,6 +47,8 @@ module.exports = {
             ...config,
             mintAuthority: "TODO",
             proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "ren",
         },
     },
     chaosnet: {
@@ -78,6 +82,8 @@ module.exports = {
             MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
             mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1",
             proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "chaos",
         },
     },
     testnet: {
@@ -109,6 +115,8 @@ module.exports = {
             ...config,
             mintAuthority: "0x44Bb4eF43408072bC888Afd1a5986ba0Ce35Cb54",
             proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "test",
         },
     },
 
@@ -141,6 +149,8 @@ module.exports = {
             ...config,
             mintAuthority: "0x1B9d58208879AA9aa9E10040b34cF2b684237621",
             proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "dev",
         },
     },
 
@@ -173,6 +183,8 @@ module.exports = {
             ...config,
             mintAuthority: "0x04084f1cACCB87Dcab9a29a084281294dA96Bf44",
             proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "local",
         },
     },
 

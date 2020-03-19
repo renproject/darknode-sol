@@ -99,16 +99,18 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
 
     const chainID = await web3.eth.net.getId();
 
-    for (const [Token, Gateway, name, symbol, decimals, minimumBurnAmount] of [
-        [renBTC, BTCGateway, "renBTC", "renBTC", 8, config.renBTCMinimumBurnAmount],
-        [renZEC, ZECGateway, "renZEC", "renZEC", 8, config.renZECMinimumBurnAmount],
-        [renBCH, BCHGateway, "renBCH", "renBCH", 8, config.renBCHMinimumBurnAmount],
+    for (const [Token, Gateway, name, decimals, minimumBurnAmount] of [
+        [renBTC, BTCGateway, "BTC", 8, config.renBTCMinimumBurnAmount],
+        [renZEC, ZECGateway, "ZEC", 8, config.renZECMinimumBurnAmount],
+        [renBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
+        const symbol = `${config.tokenPrefix}${name}`;
+        
         if (!Token.address) {
-            deployer.logger.log(`Deploying ${name} proxy`);
+            deployer.logger.log(`Deploying ${symbol} proxy`);
             await deployer.deploy(Token);
             const tokenProxy = await Token.at(Token.address);
-            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", "1", name, symbol, decimals]));
+            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", "1", symbol, symbol, decimals]));
             actionCount++;
         }
         const token = await RenERC20.at(Token.address);
@@ -173,7 +175,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
             const otherRegistration = (await registry.getGatewayBySymbol.call(symbol));
             if (otherRegistration === NULL) {
                 deployer.logger.log(`Registering ${symbol} Gateway`);
-                await registry.setGateway(Token.address, Gateway.address);
+                await registry.setGateway(name, Token.address, Gateway.address);
             } else {
                 deployer.logger.log(`Updating registered ${symbol} Gateway (was ${otherRegistration})`);
                 await registry.updateGateway(Token.address, Gateway.address);

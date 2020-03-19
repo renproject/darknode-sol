@@ -43,7 +43,7 @@ contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddr
         await btcGateway.claimTokenOwnership();
 
         registry = await GatewayRegistry.new();
-        await registry.setGateway(renbtc.address, btcGateway.address);
+        await registry.setGateway("BTC", renbtc.address, btcGateway.address);
 
         // Setup the contracts for testing
         vesting = await Vesting.new(registry.address);

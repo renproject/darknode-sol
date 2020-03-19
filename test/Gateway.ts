@@ -342,10 +342,10 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
         });
 
         it("should be able to withdraw funds that are mistakenly sent to a token", async () => {
-            let renbtcValue = new BN(200000);
-            await mintTest(btcGateway, renbtcValue);
-            renbtcValue = removeFee(renbtcValue, mintFees);
-            await renbtc.transfer(renbtc.address, renbtcValue, { from: user });
+            // let renbtcValue = new BN(200000);
+            // await mintTest(btcGateway, renbtcValue);
+            // renbtcValue = removeFee(renbtcValue, mintFees);
+            // await renbtc.transfer(renbtc.address, renbtcValue, { from: user });
 
             const renAmount = 1000;
             const ren = await RenToken.deployed();
@@ -367,11 +367,11 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
             finalRenBalance.sub(initialRenBalance).should.bignumber.equal(renAmount);
 
             // Recover renBTC
-            const balanceBefore = new BN(await renbtc.balanceOf.call(owner));
-            await renbtc.recoverTokens(renbtc.address, { from: owner });
-            const balanceAfter = new BN(await renbtc.balanceOf.call(owner));
-            balanceAfter.sub(balanceBefore).should.bignumber.equal(renbtcValue);
-            await renbtc.transfer(user, renbtcValue);
+            // const balanceBefore = new BN(await renbtc.balanceOf.call(owner));
+            // await renbtc.recoverTokens(renbtc.address, { from: owner });
+            // const balanceAfter = new BN(await renbtc.balanceOf.call(owner));
+            // balanceAfter.sub(balanceBefore).should.bignumber.equal(renbtcValue);
+            // await renbtc.transfer(user, renbtcValue);
 
             // Recover ETH
             const forceSend = await ForceSend.new();
@@ -385,7 +385,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
             await renbtc.transferOwnership(btcGateway.address);
             await btcGateway.claimTokenOwnership();
 
-            await burnTest(btcGateway, renbtcValue);
+            // await burnTest(btcGateway, renbtcValue);
         });
     });
 
@@ -396,29 +396,51 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
             registry = await GatewayRegistry.new();
         });
 
+        it("symbol validation", async () => {
+            (await registry.symbolIsValid.call("BTC"))
+                .should.be.true;
+            (await registry.symbolIsValid.call("ZEC"))
+                .should.be.true;
+            (await registry.symbolIsValid.call("BCH"))
+                .should.be.true;
+
+            (await registry.symbolIsValid.call("zеc!"))
+                .should.be.false;
+
+            (await registry.symbolIsValid.call("zec"))
+                .should.be.true;
+            // Cyrillic letter "е".
+            (await registry.symbolIsValid.call("zеc"))
+                .should.be.false;
+        });
+
         it("can register gateways", async () => {
-            await registry.setGateway(renbtc.address, btcGateway.address);
-            await registry.setGateway(renbtc.address, btcGateway.address)
+            await registry.setGateway("BTC", renbtc.address, btcGateway.address);
+            await registry.setGateway("BTC", renbtc.address, btcGateway.address)
                 .should.be.rejectedWith(/GatewayRegistry: gateway already registered/);
-            await registry.setGateway(renbtc.address, NULL)
+            await registry.setGateway("BTC", renbtc.address, NULL)
                 .should.be.rejectedWith(/GatewayRegistry: token already registered/);
+
+            await registry.setGateway("BTC!", NULL, NULL)
+                .should.be.rejectedWith(/GatewayRegistry: symbol must be alphanumeric/);
+
         });
 
         it("can retrieve gateways", async () => {
             { // Try to register token with an existing symbol
                 const altRenBTC = await RenERC20.new();
                 await altRenBTC.initialize(await web3.eth.net.getId(), owner, "500000000000000000", "1", "renBTC", "renBTC", 8);
-                await registry.setGateway(altRenBTC.address, NULL)
+                await registry.setGateway("BTC", altRenBTC.address, NULL)
                     .should.be.rejectedWith(/GatewayRegistry: symbol already registered/);
             }
 
             (await registry.getGatewayByToken.call(renbtc.address))
                 .should.equal(btcGateway.address);
 
-            (await registry.getGatewayBySymbol.call("renBTC"))
+            (await registry.getGatewayBySymbol.call("BTC"))
                 .should.equal(btcGateway.address);
 
-            (await registry.getTokenBySymbol.call("renBTC"))
+            (await registry.getTokenBySymbol.call("BTC"))
                 .should.equal(renbtc.address);
 
             { // The first 10 gateways starting from NULL
@@ -489,9 +511,9 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
         });
 
         it("can deregister gateways", async () => {
-            await registry.removeGateway("renBTC");
+            await registry.removeGateway("BTC");
 
-            await registry.removeGateway("renBTC")
+            await registry.removeGateway("BTC")
                 .should.be.rejectedWith(/GatewayRegistry: symbol not registered/);
         });
 

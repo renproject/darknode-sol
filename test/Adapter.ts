@@ -42,7 +42,7 @@ contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) =
         );
 
         registry = await GatewayRegistry.new();
-        await registry.setGateway(renbtc.address, btcGateway.address);
+        await registry.setGateway("BTC", renbtc.address, btcGateway.address);
 
         await renbtc.transferOwnership(btcGateway.address);
         await btcGateway.claimTokenOwnership();
@@ -62,7 +62,7 @@ contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) =
 
         const pHash = keccak256(web3.eth.abi.encodeParameters(
             ["string", "address"],
-            ["renBTC", user],
+            ["BTC", user],
         ));
 
         const hash = await btcGateway.hashForSignature.call(pHash, value, basicAdapter.address, nHash);
@@ -70,12 +70,12 @@ contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) =
         const sigString = Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 
         const balanceBeforeMint = new BN((await renbtc.balanceOfUnderlying.call(user)).toString());
-        await basicAdapter.mint("renBTC", user, value, nHash, sigString);
+        await basicAdapter.mint("BTC", user, value, nHash, sigString);
         const balanceAfterMint = new BN((await renbtc.balanceOfUnderlying.call(user)).toString());
         balanceAfterMint.should.bignumber.equal(balanceBeforeMint.add(burnValue));
 
         await renbtc.approve(basicAdapter.address, burnValue, { from: user });
-        await basicAdapter.burn("renBTC", bitcoinAddress, burnValue, { from: user });
+        await basicAdapter.burn("BTC", bitcoinAddress, burnValue, { from: user });
         (await renbtc.balanceOfUnderlying.call(user)).should.bignumber.equal(balanceAfterMint.sub(burnValue));
     });
 });
