@@ -28,13 +28,20 @@ contract RenERC20 is
         uint256 _chainId,
         address _nextOwner,
         uint256 _initialRate,
+        string memory _version,
         string memory _name,
         string memory _symbol,
         uint8 _decimals
     ) public initializer {
         ERC20Detailed.initialize(_name, _symbol, _decimals);
         ERC20WithRate.initialize(_nextOwner, _initialRate);
-        ERC20WithPermit.initialize(_chainId, _name, _symbol, _decimals);
+        ERC20WithPermit.initialize(
+            _chainId,
+            _version,
+            _name,
+            _symbol,
+            _decimals
+        );
         Claimable.initialize(_nextOwner);
         CanReclaimTokens.initialize(_nextOwner);
     }
