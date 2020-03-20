@@ -36,7 +36,7 @@ jobs:
       - install_deps
       - run:
           name: Run tests
-          command: yarn run coverage && yarn run coveralls
+          command: NODE_OPTIONS=--max_old_space_size=4096 yarn run coverage && yarn run coveralls
 
 workflows:
   build:

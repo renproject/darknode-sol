@@ -292,8 +292,11 @@ contract("DarknodePayment", (accounts: string[]) => {
             await registerDarknode(1);
             await waitForEpoch(dnr);
             await waitForEpoch(dnr);
-            await dnp.withdraw(darknode1, dai.address)
-                .should.be.rejectedWith(/DarknodePayment: nothing to withdraw/);
+
+            const balanceBefore = await dai.balanceOf.call(owner);
+            await dnp.withdraw(darknode1, dai.address);
+            const balanceAfter = await dai.balanceOf.call(owner);
+            balanceAfter.should.be.bignumber.equal(balanceBefore);
         });
 
         it("can be paid DAI from a payee", async () => {
@@ -489,7 +492,7 @@ contract("DarknodePayment", (accounts: string[]) => {
             await tick(darknode1);
 
             // Withdraw for each darknode
-            await dnp.withdrawMultiple(darknode1, [dai.address, ETHEREUM_TOKEN_ADDRESS]);
+            await dnp.withdrawMultiple([darknode1], [dai.address, ETHEREUM_TOKEN_ADDRESS]);
         });
 
         it("cannot withdraw if a darknode owner is invalid", async () => {
@@ -514,13 +517,15 @@ contract("DarknodePayment", (accounts: string[]) => {
             await multiTick(1, numDarknodes);
 
             // First withdraw should pass
+            const balanceBefore = await dai.balanceOf.call(accounts[1]);
             await withdraw(darknode1);
+            const balanceAfter = await dai.balanceOf.call(accounts[1]);
+            balanceAfter.should.be.bignumber.greaterThan(balanceBefore);
 
             // Rest should fail
-            await dnp.withdraw(darknode1, dai.address)
-                .should.be.rejectedWith(/DarknodePayment: nothing to withdraw/);
-            await dnp.withdraw(darknode1, dai.address)
-                .should.be.rejectedWith(/DarknodePayment: nothing to withdraw/);
+            await dnp.withdraw(darknode1, dai.address);
+            const balanceAfterSecond = await dai.balanceOf.call(accounts[1]);
+            balanceAfterSecond.should.be.bignumber.eq(balanceAfter);
         });
 
         it("cannot tick if it is blacklisted", async () => {

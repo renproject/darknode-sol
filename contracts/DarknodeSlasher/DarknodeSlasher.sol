@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/Validate.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 
@@ -28,8 +28,8 @@ contract DarknodeSlasher is Claimable {
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
     event LogDarknodeRegistryUpdated(
-        DarknodeRegistry _previousDarknodeRegistry,
-        DarknodeRegistry _nextDarknodeRegistry
+        DarknodeRegistry indexed _previousDarknodeRegistry,
+        DarknodeRegistry indexed _nextDarknodeRegistry
     );
 
     /// @notice Restrict a function to have a valid percentage.

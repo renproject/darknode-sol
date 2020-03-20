@@ -70,7 +70,7 @@ contract Vesting is Ownable {
         bytes32 pHash = keccak256(
             abi.encode(_beneficiary, _startTime, _duration)
         );
-        uint256 finalAmountScaled = registry.getGatewayBySymbol("renBTC").mint(
+        uint256 finalAmountScaled = registry.getGatewayBySymbol("BTC").mint(
             pHash,
             _amount,
             _nHash,

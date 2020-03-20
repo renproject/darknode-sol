@@ -1,7 +1,7 @@
 import {
     BTCGatewayInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
     DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    GatewayRegistryInstance, ProtocolInstance, ProtocolLogicInstance, renBTCInstance,
+    GatewayRegistryInstance, ProtocolLogicInstance, ProtocolProxyInstance, renBTCInstance,
     RenTokenInstance,
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
@@ -15,10 +15,10 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
 const BTCGateway = artifacts.require("BTCGateway");
-const Protocol = artifacts.require("Protocol");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 
-contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
+contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) => {
 
     let dnp: DarknodePaymentInstance;
     let dnpStore: DarknodePaymentStoreInstance;
@@ -30,7 +30,7 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
     let renbtc: renBTCInstance;
     let btcGateway: BTCGatewayInstance;
     let protocol: ProtocolLogicInstance;
-    let protocolProxy: ProtocolInstance;
+    let protocolProxy: ProtocolProxyInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
@@ -42,8 +42,8 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         gatewayRegistry = await GatewayRegistry.deployed();
         renbtc = await renBTC.deployed();
         btcGateway = await BTCGateway.deployed();
-        protocol = await ProtocolLogic.at(Protocol.address);
-        protocolProxy = await Protocol.deployed();
+        protocol = await ProtocolLogic.at(ProtocolProxy.address);
+        protocolProxy = await ProtocolProxy.deployed();
         await waitForEpoch(dnr);
     });
 
@@ -80,9 +80,15 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         await protocol.transferOwnership(otherAccount);
 
         (await protocol.owner.call())
+            .should.equal(owner);
+
+        await protocol.claimOwnership({ from: otherAccount });
+
+        (await protocol.owner.call())
             .should.equal(otherAccount);
 
         await protocol.transferOwnership(owner, { from: otherAccount });
+        await protocol.claimOwnership({ from: owner });
 
         (await protocol.owner.call())
             .should.equal(owner);
@@ -122,13 +128,13 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         // Try to initialize again
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyOwner,
-            encodeCallData("initialize", ["address"], [owner]), { from: proxyOwner },
+            proxyGovernanceAddress,
+            encodeCallData(web3, "initialize", ["address"], [owner]), { from: proxyGovernanceAddress },
         )
             .should.be.rejectedWith(/revert$/);
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyOwner,
+            proxyGovernanceAddress,
             Buffer.from([]) as unknown as string,
         )
             .should.be.rejectedWith(/revert$/);
@@ -140,7 +146,7 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         await protocolProxy.upgradeTo(newLogic.address, { from: owner })
             .should.be.rejectedWith(/revert$/);
 
-        await protocolProxy.upgradeTo(newLogic.address, { from: proxyOwner });
+        await protocolProxy.upgradeTo(newLogic.address, { from: proxyGovernanceAddress });
         (await protocol.renToken.call())
             .should.equal(ren.address);
     });
@@ -153,10 +159,10 @@ contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
         (await protocol.getGatewayByToken.call(renbtc.address))
             .should.equal(btcGateway.address);
 
-        (await protocol.getGatewayBySymbol.call("renBTC"))
+        (await protocol.getGatewayBySymbol.call("BTC"))
             .should.equal(btcGateway.address);
 
-        (await protocol.getTokenBySymbol.call("renBTC"))
+        (await protocol.getTokenBySymbol.call("BTC"))
             .should.equal(renbtc.address);
 
         { // The first 10 gateways starting from NULL

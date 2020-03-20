@@ -1,0 +1,27 @@
+diff --git a/node_modules/@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol b/node_modules/@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol
+index d85ce09..1d34ab2 100644
+--- a/node_modules/@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol
++++ b/node_modules/@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol
+@@ -28,7 +28,7 @@ library ECDSA {
+     function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
+         // Check the signature length
+         if (signature.length != 65) {
+-            return (address(0));
++            revert("ECDSA: signature length is invalid");
+         }
+ 
+         // Divide the signature in r, s and v variables
+@@ -55,11 +55,11 @@ library ECDSA {
+         // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept
+         // these malleable signatures as well.
+         if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+-            return address(0);
++            revert("ECDSA: signature.s is in the wrong range");
+         }
+ 
+         if (v != 27 && v != 28) {
+-            return address(0);
++            revert("ECDSA: signature.v is in the wrong range");
+         }
+ 
+         // If the signature is valid (and not malleable), return the signer address

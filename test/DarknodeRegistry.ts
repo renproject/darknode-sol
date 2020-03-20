@@ -34,7 +34,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
         await dnr.epoch({ from: accounts[1] })
-            .should.be.rejectedWith(/DarknodeRegistry: not authorized/);
+            .should.be.rejectedWith(/DarknodeRegistry: not authorized to call first epoch/);
         await waitForEpoch(dnr);
 
         for (let i = 1; i < numAccounts; i++) {
@@ -298,7 +298,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("can get the owner of the Dark Node", async () => {
-        (await dnr.getDarknodeOwner.call(ID("0"))).should.equal(accounts[0]);
+        (await dnr.getDarknodeOperator.call(ID("0"))).should.equal(accounts[0]);
     });
 
     it("can get the bond of the Dark Node", async () => {
@@ -629,6 +629,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             config.MINIMUM_BOND,
             config.MINIMUM_POD_SIZE,
             config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+            0,
         );
 
         // [ACTION] Initiate ownership transfer to wrong account
@@ -777,6 +778,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 config.MINIMUM_BOND,
                 config.MINIMUM_POD_SIZE,
                 config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+                0,
             );
             // Initiate ownership transfer of DNR store
             await newDNRstore.transferOwnership(newDNR.address);
@@ -835,6 +837,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 config.MINIMUM_BOND,
                 config.MINIMUM_POD_SIZE,
                 config.MINIMUM_EPOCH_INTERVAL_SECONDS,
+                0,
             );
             // Initiate ownership transfer of DNR store
             await dnr.transferStoreOwnership(newDNR.address);

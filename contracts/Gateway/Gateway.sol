@@ -3,7 +3,7 @@ pragma solidity 0.5.16;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/String.sol";
 import "./RenERC20.sol";
 import "./interfaces/IGateway.sol";

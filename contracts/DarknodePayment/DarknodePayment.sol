@@ -80,18 +80,20 @@ contract DarknodePayment is Claimable {
     /// @param _token The address of the token that was transferred.
     event LogPaymentReceived(
         address indexed _payer,
-        uint256 _amount,
-        address indexed _token
+        address indexed _token,
+        uint256 _amount
     );
 
     /// @notice Emitted when a darknode calls withdraw.
-    /// @param _payee The address of the darknode which withdrew.
+    /// @param _darknodeOperator The address of the darknode's operator.
+    /// @param _darknodeID The address of the darknode which withdrew.
     /// @param _value The amount of DAI withdrawn.
     /// @param _token The address of the token that was withdrawn.
     event LogDarknodeWithdrew(
-        address indexed _payee,
-        uint256 _value,
-        address indexed _token
+        address indexed _darknodeOperator,
+        address indexed _darknodeID,
+        address indexed _token,
+        uint256 _value
     );
 
     /// @notice Emitted when the payout percent changes.
@@ -199,33 +201,43 @@ contract DarknodePayment is Claimable {
     /// @param _darknode The address of the darknode.
     /// @param _token Which token to transfer.
     function withdraw(address _darknode, address _token) public {
-        address payable darknodeOwner = darknodeRegistry.getDarknodeOwner(
+        address payable darknodeOperator = darknodeRegistry.getDarknodeOperator(
             _darknode
         );
         require(
-            darknodeOwner != address(0x0),
+            darknodeOperator != address(0x0),
             "DarknodePayment: invalid darknode owner"
         );
 
         uint256 amount = store.darknodeBalances(_darknode, _token);
-        require(amount > 0, "DarknodePayment: nothing to withdraw");
 
-        store.transfer(_darknode, _token, amount, darknodeOwner);
-        emit LogDarknodeWithdrew(_darknode, amount, _token);
+        // Skip if amount is zero.
+        if (amount > 0) {
+            store.transfer(_darknode, _token, amount, darknodeOperator);
+            emit LogDarknodeWithdrew(
+                darknodeOperator,
+                _darknode,
+                _token,
+                amount
+            );
+        }
     }
 
-    function withdrawMultiple(address _darknode, address[] calldata _tokens)
-        external
-    {
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            withdraw(_darknode, _tokens[i]);
+    function withdrawMultiple(
+        address[] calldata _darknodes,
+        address[] calldata _tokens
+    ) external {
+        for (uint256 i = 0; i < _darknodes.length; i++) {
+            for (uint256 j = 0; j < _tokens.length; j++) {
+                withdraw(_darknodes[i], _tokens[j]);
+            }
         }
     }
 
     /// @notice Forward all payments to the DarknodePaymentStore.
     function() external payable {
         address(store).transfer(msg.value);
-        emit LogPaymentReceived(msg.sender, msg.value, ETHEREUM);
+        emit LogPaymentReceived(msg.sender, ETHEREUM, msg.value);
     }
 
     /// @notice The current balance of the contract available as reward for the
@@ -236,7 +248,8 @@ contract DarknodePayment is Claimable {
         returns (uint256)
     {
         uint256 total = store.availableBalance(_token).sub(
-            unclaimedRewards[_token]
+            unclaimedRewards[_token],
+            "DarknodePayment: unclaimed rewards exceed total rewards"
         );
         return total.div(100).mul(currentCyclePayoutPercent);
     }
@@ -296,7 +309,7 @@ contract DarknodePayment is Claimable {
                 _value
             );
         }
-        emit LogPaymentReceived(msg.sender, receivedValue, _token);
+        emit LogPaymentReceived(msg.sender, _token, receivedValue);
     }
 
     /// @notice Forwards any tokens that have been sent to the DarknodePayment contract
@@ -434,7 +447,8 @@ contract DarknodePayment is Claimable {
             // Only increment balance if shares were allocated last cycle
             if (previousCycleRewardShare[token] > 0) {
                 unclaimedRewards[token] = unclaimedRewards[token].sub(
-                    previousCycleRewardShare[token]
+                    previousCycleRewardShare[token],
+                    "DarknodePayment: share exceeds unclaimed rewards"
                 );
                 store.incrementDarknodeBalance(
                     _darknode,
@@ -471,7 +485,10 @@ contract DarknodePayment is Claimable {
     ///
     /// @param _token The address of the token to deregister.
     function _deregisterToken(address _token) private {
-        address lastToken = registeredTokens[registeredTokens.length.sub(1)];
+        address lastToken = registeredTokens[registeredTokens.length.sub(
+            1,
+            "DarknodePayment: no tokens registered"
+        )];
         uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
         // Move the last token to _token's position and update it's index
         registeredTokens[deletedTokenIndex] = lastToken;

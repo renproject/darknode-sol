@@ -4,6 +4,8 @@ const NULL = "0x0000000000000000000000000000000000000000";
 
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 
+const RenERC20 = artifacts.require("RenERC20");
+
 const BTCGateway = artifacts.require("BTCGateway");
 const renBTC = artifacts.require("renBTC");
 
@@ -16,17 +18,18 @@ const renBCH = artifacts.require("renBCH");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
-const Protocol = artifacts.require("Protocol");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
 const BasicAdapter = artifacts.require("BasicAdapter");
 
 const networks = require("./networks.js");
+const { encodeCallData } = require("./encode");
 
 /**
  * @param {any} deployer
  * @param {string} network
  * @param {any[]} accounts
  */
-module.exports = async function (deployer, network, [contractOwner]) {
+module.exports = async function (deployer, network, [contractOwner, proxyGovernanceAddress]) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
@@ -34,6 +37,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
     const _mintAuthority = config.mintAuthority || contractOwner;
+    proxyGovernanceAddress = proxyGovernanceAddress || config.proxyGovernanceAddress;
 
     // TODO: _feeRecipient should be the DarknodePayment contract
     const _feeRecipient = DarknodePaymentStore.address || addresses.DarknodePaymentStore || contractOwner;
@@ -46,9 +50,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
     renBCH.address = addresses.renBCH || "";
     renBTC.address = addresses.renBTC || "";
     BasicAdapter.address = addresses.BasicAdapter || "";
+    RenERC20.address = addresses.RenERC20 || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-    const protocol = await ProtocolLogic.at(Protocol.address);
+    const protocol = await ProtocolLogic.at(ProtocolProxy.address);
 
     let actionCount = 0;
 
@@ -86,16 +91,29 @@ module.exports = async function (deployer, network, [contractOwner]) {
     //     deployer.logger.log("Unable to call darknodePayment.changeCycle()");
     // }
 
-    for (const [Token, Gateway, name, symbol, decimals, minimumBurnAmount] of [
-        [renBTC, BTCGateway, "renBTC", "renBTC", 8, config.renBTCMinimumBurnAmount],
-        [renZEC, ZECGateway, "renZEC", "renZEC", 8, config.renZECMinimumBurnAmount],
-        [renBCH, BCHGateway, "renBCH", "renBCH", 8, config.renBCHMinimumBurnAmount],
+    if (!RenERC20.address) {
+        deployer.logger.log(`Deploying RenERC20 logic`);
+        await deployer.deploy(RenERC20);
+        actionCount++;
+    }
+
+    const chainID = await web3.eth.net.getId();
+
+    for (const [Token, Gateway, name, decimals, minimumBurnAmount] of [
+        [renBTC, BTCGateway, "BTC", 8, config.renBTCMinimumBurnAmount],
+        [renZEC, ZECGateway, "ZEC", 8, config.renZECMinimumBurnAmount],
+        [renBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
+        const symbol = `${config.tokenPrefix}${name}`;
+        
         if (!Token.address) {
-            await deployer.deploy(Token, name, symbol, decimals);
+            deployer.logger.log(`Deploying ${symbol} proxy`);
+            await deployer.deploy(Token);
+            const tokenProxy = await Token.at(Token.address);
+            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", "1", symbol, symbol, decimals]));
             actionCount++;
         }
-        const token = await Token.at(Token.address);
+        const token = await RenERC20.at(Token.address);
 
         if (!Gateway.address) {
             await deployer.deploy(
@@ -157,7 +175,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
             const otherRegistration = (await registry.getGatewayBySymbol.call(symbol));
             if (otherRegistration === NULL) {
                 deployer.logger.log(`Registering ${symbol} Gateway`);
-                await registry.setGateway(Token.address, Gateway.address);
+                await registry.setGateway(name, Token.address, Gateway.address);
             } else {
                 deployer.logger.log(`Updating registered ${symbol} Gateway (was ${otherRegistration})`);
                 await registry.updateGateway(Token.address, Gateway.address);

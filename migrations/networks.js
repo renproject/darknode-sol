@@ -9,17 +9,19 @@ const config = {
     MALICIOUS_SLASH_PERCENT: 50, // Slash 50% of the bond
     SECRET_REVEAL_SLASH_PERCENT: 100, // Slash 100% of the bond
     mintAuthority: "", // Darknode public key
-    proxyOwner: "",
+    proxyGovernanceAddress: "",
     mintFee: 10,
     burnFee: 10,
     renBTCMinimumBurnAmount: 10000,
     renZECMinimumBurnAmount: 10000,
     renBCHMinimumBurnAmount: 10000,
+
+    tokenPrefix: "mock",
 }
 
 module.exports = {
     mainnet: {
-        Protocol: "",
+        ProtocolProxy: "",
         ProtocolLogic: "",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
         DarknodeSlasher: "0x0000000000000000000000000000000000000000",
@@ -32,18 +34,21 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        GatewayRegistry: "",
-        renZEC: "",
+        RenERC20: "",
         BTCGateway: "",
-        renBTC: "",
         ZECGateway: "",
-        renBCH: "",
         BCHGateway: "",
+        renBTC: "",
+        renZEC: "",
+        renBCH: "",
+        GatewayRegistry: "",
 
         config: {
             ...config,
             mintAuthority: "TODO",
-            proxyOwner: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+            proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "ren",
         },
     },
     chaosnet: {
@@ -52,7 +57,7 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        Protocol: "0xeF4de0E97D92757520D78c4d49d8151964f6a85B",
+        ProtocolProxy: "0xeF4de0E97D92757520D78c4d49d8151964f6a85B",
         ProtocolLogic: "0xa638f33388747d5f62411273f4be8919ed8c94b4",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
         DarknodeSlasher: "0x7AdD7E6F431Cfa23dFfce61DD9749810dc678B16",
@@ -61,6 +66,7 @@ module.exports = {
         DarknodePayment: "0x376D835c6Dc5d06C6335915B36ffe9734D3E4faa",
         DarknodePaymentStore: "0x311999EE72B5826D664FD4F3aC09c0C462eFfe49",
 
+        RenERC20: "",
         BTCGateway: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
         ZECGateway: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
         BCHGateway: "0xa76beA11766E0b66bD952bc357CF027742021a8C",
@@ -75,11 +81,13 @@ module.exports = {
             ...config,
             MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
             mintAuthority: "0x5D0b91e8a8037C3EBB55f52D76BFc64CaBEBCAE1",
-            proxyOwner: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+            proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "chaos",
         },
     },
     testnet: {
-        Protocol: "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
+        ProtocolProxy: "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
         ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
@@ -92,6 +100,7 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
+        RenERC20: "",
         BTCGateway: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
         ZECGateway: "0x1615f5a285134925Fb4D87812827863fde046fDa",
         BCHGateway: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
@@ -105,12 +114,14 @@ module.exports = {
         config: {
             ...config,
             mintAuthority: "0x44Bb4eF43408072bC888Afd1a5986ba0Ce35Cb54",
-            proxyOwner: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+            proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "test",
         },
     },
 
     devnet: {
-        Protocol: "0x1deB773B50B66b0e65e62E41380355a1A2BEd2e1",
+        ProtocolProxy: "0x1deB773B50B66b0e65e62E41380355a1A2BEd2e1",
         ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0xf29c5726F9f8afA51CE39658e713dc40692218C5",
@@ -123,6 +134,7 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
+        RenERC20: "",
         BTCGateway: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
         ZECGateway: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
         BCHGateway: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
@@ -136,12 +148,14 @@ module.exports = {
         config: {
             ...config,
             mintAuthority: "0x1B9d58208879AA9aa9E10040b34cF2b684237621",
-            proxyOwner: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+            proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "dev",
         },
     },
 
     localnet: {
-        Protocol: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
+        ProtocolProxy: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
         ProtocolLogic: "0xcfb2fD20211552216755E318aD091d0d1C3a39a7",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
         DarknodeSlasher: "0x8447EfA2a06bfEf230c93fa60f8a82EEfEA5A427",
@@ -154,6 +168,7 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
+        RenERC20: "",
         BTCGateway: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
         ZECGateway: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
         BCHGateway: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
@@ -167,7 +182,9 @@ module.exports = {
         config: {
             ...config,
             mintAuthority: "0x04084f1cACCB87Dcab9a29a084281294dA96Bf44",
-            proxyOwner: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+            proxyGovernanceAddress: "0x5E2603499eddc325153d96445A6c44487F0d1859",
+
+            tokenPrefix: "local",
         },
     },
 
