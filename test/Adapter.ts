@@ -4,7 +4,7 @@ import { Account } from "web3-eth-accounts";
 import { keccak256 } from "web3-utils";
 
 import {
-    BTCGatewayInstance, GatewayRegistryInstance, RenERC20Instance,
+    BTCGatewayInstance, GatewayLogicInstance, GatewayRegistryInstance, RenERC20Instance,
 } from "../types/truffle-contracts";
 import { deployProxy, Ox, randomBytes } from "./helper/testUtils";
 
@@ -13,9 +13,10 @@ const BTCGateway = artifacts.require("BTCGateway");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
 const RenERC20 = artifacts.require("RenERC20");
+const GatewayLogic = artifacts.require("GatewayLogic");
 
 contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) => {
-    let btcGateway: BTCGatewayInstance;
+    let btcGateway: GatewayLogicInstance;
     let renbtc: RenERC20Instance;
     let registry: GatewayRegistryInstance;
 
@@ -32,14 +33,7 @@ contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) =
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
-        btcGateway = await BTCGateway.new(
-            renbtc.address,
-            feeRecipient,
-            mintAuthority.address,
-            mintFees,
-            burnFees,
-            10000,
-        );
+        btcGateway = await deployProxy<GatewayLogicInstance>(web3, BTCGateway, GatewayLogic, proxyGovernanceAddress, [{ type: "address", value: renbtc.address }, { type: "address", value: feeRecipient }, { type: "address", value: mintAuthority.address }, { type: "uint16", value: mintFees }, { type: "uint16", value: burnFees }, { type: "uint256", value: 10000 }], { from: owner });
 
         registry = await GatewayRegistry.new();
         await registry.setGateway("BTC", renbtc.address, btcGateway.address);
