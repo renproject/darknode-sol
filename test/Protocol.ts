@@ -1,8 +1,8 @@
 import {
-    DarknodePaymentInstance, DarknodePaymentStoreInstance, DarknodeRegistryInstance,
-    DarknodeRegistryStoreInstance, DarknodeSlasherInstance, GatewayLogicInstance,
+    BTCGatewayInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
+    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
     GatewayRegistryInstance, ProtocolLogicInstance, ProtocolProxyInstance, renBTCInstance,
-    RenTokenInstance,
+    RenProxyAdminInstance, RenTokenInstance,
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
 
@@ -17,8 +17,9 @@ const renBTC = artifacts.require("renBTC");
 const BTCGateway = artifacts.require("BTCGateway");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
+const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
-contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) => {
+contract("Protocol", ([owner, otherAccount]: string[]) => {
 
     let dnp: DarknodePaymentInstance;
     let dnpStore: DarknodePaymentStoreInstance;
@@ -28,9 +29,10 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
     let slasher: DarknodeSlasherInstance;
     let gatewayRegistry: GatewayRegistryInstance;
     let renbtc: renBTCInstance;
-    let btcGateway: GatewayLogicInstance;
+    let btcGateway: BTCGatewayInstance;
     let protocol: ProtocolLogicInstance;
     let protocolProxy: ProtocolProxyInstance;
+    let renProxyAdmin: RenProxyAdminInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
@@ -44,6 +46,7 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
         btcGateway = await BTCGateway.deployed();
         protocol = await ProtocolLogic.at(ProtocolProxy.address);
         protocolProxy = await ProtocolProxy.deployed();
+        renProxyAdmin = await RenProxyAdmin.deployed();
         await waitForEpoch(dnr);
     });
 
@@ -128,13 +131,13 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
         // Try to initialize again
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyGovernanceAddress,
-            encodeCallData(web3, "initialize", ["address"], [owner]), { from: proxyGovernanceAddress },
+            renProxyAdmin.address,
+            encodeCallData(web3, "initialize", ["address"], [owner]), { from: owner },
         )
             .should.be.rejectedWith(/revert$/);
         await protocolProxy.initialize(
             ProtocolLogic.address,
-            proxyGovernanceAddress,
+            renProxyAdmin.address,
             Buffer.from([]) as unknown as string,
         )
             .should.be.rejectedWith(/revert$/);
@@ -143,10 +146,10 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
         const newLogic = await ProtocolLogic.new();
 
         // Wrong address
-        await protocolProxy.upgradeTo(newLogic.address, { from: owner })
+        await renProxyAdmin.upgrade(protocolProxy.address, newLogic.address, { from: otherAccount })
             .should.be.rejectedWith(/revert$/);
 
-        await protocolProxy.upgradeTo(newLogic.address, { from: proxyGovernanceAddress });
+        await renProxyAdmin.upgrade(protocolProxy.address, newLogic.address, { from: owner });
         (await protocol.renToken.call())
             .should.equal(ren.address);
     });
