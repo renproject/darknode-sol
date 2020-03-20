@@ -70,7 +70,7 @@ contract Vesting is Ownable {
         bytes32 pHash = keccak256(
             abi.encode(_beneficiary, _startTime, _duration)
         );
-        uint256 finalAmount = registry.getGatewayBySymbol("renBTC").mint(
+        uint256 finalAmountScaled = registry.getGatewayBySymbol("renBTC").mint(
             pHash,
             _amount,
             _nHash,
@@ -81,7 +81,7 @@ contract Vesting is Ownable {
         VestingSchedule memory schedule = VestingSchedule({
             startTime: _startTime == 0 ? now : _startTime,
             duration: _duration,
-            amount: finalAmount,
+            amount: finalAmountScaled,
             monthsClaimed: 0,
             amountClaimed: 0
         });
@@ -108,7 +108,7 @@ contract Vesting is Ownable {
         // Burn the tokens using the Gateway contract. This will burn the
         // tokens after taking a fee. The Darknodes will watch for this event to
         // transfer the user the Bitcoin.
-        registry.getGatewayBySymbol("renBTC").burn(_to, amountClaimable);
+        registry.getGatewayBySymbol("BTC").burn(_to, amountClaimable);
     }
 
     /// @notice Retrieves the claimable amount for a given beneficiary.

@@ -152,21 +152,21 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     ///
     /// @param _pHash (payload hash) The hash of the payload associated with the
     ///        mint.
-    /// @param _amount The amount of the token being minted, in its smallest
+    /// @param _amountUnderlying The amount of the token being minted, in its smallest
     ///        value. (e.g. satoshis for BTC).
     /// @param _nHash (nonce hash) The hash of the nonce, amount and pHash.
     /// @param _sig The signature of the hash of the following values:
     ///        (pHash, amount, msg.sender, nHash), signed by the mintAuthority.
     function mint(
         bytes32 _pHash,
-        uint256 _amount,
+        uint256 _amountUnderlying,
         bytes32 _nHash,
         bytes memory _sig
     ) public returns (uint256) {
         // Verify signature
         bytes32 signedMessageHash = hashForSignature(
             _pHash,
-            _amount,
+            _amountUnderlying,
             msg.sender,
             _nHash
         );
@@ -183,7 +183,7 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
                     "Gateway: invalid signature. pHash: ",
                     String.fromBytes32(_pHash),
                     ", amount: ",
-                    String.fromUint(_amount),
+                    String.fromUint(_amountUnderlying),
                     ", msg.sender: ",
                     String.fromAddress(msg.sender),
                     ", _nHash: ",
@@ -193,17 +193,35 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         }
         status[signedMessageHash] = true;
 
+        uint256 amountScaled = token.fromUnderlying(_amountUnderlying);
+
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFee = _amount.mul(mintFee).div(BIPS_DENOMINATOR);
-        uint256 receivedAmount = _amount.sub(absoluteFee);
-        token.mint(msg.sender, receivedAmount);
-        token.mint(feeRecipient, absoluteFee);
+        uint256 absoluteFeeScaled = amountScaled.mul(mintFee).div(
+            BIPS_DENOMINATOR
+        );
+        uint256 receivedAmountScaled = amountScaled.sub(
+            absoluteFeeScaled,
+            "Gateway: fee exceeds amount"
+        );
+
+        // Mint amount minus the fee
+        token.mint(msg.sender, receivedAmountScaled);
+        // Mint the fee
+        token.mint(feeRecipient, absoluteFeeScaled);
 
         // Emit a log with a unique identifier 'n'.
-        emit LogMint(msg.sender, receivedAmount, nextN, signedMessageHash);
+        uint256 receivedAmountUnderlying = token.toUnderlying(
+            receivedAmountScaled
+        );
+        emit LogMint(
+            msg.sender,
+            receivedAmountUnderlying,
+            nextN,
+            signedMessageHash
+        );
         nextN += 1;
 
-        return receivedAmount;
+        return receivedAmountScaled;
     }
 
     /// @notice burn destroys tokens after taking a fee for the `_feeRecipient`,
@@ -221,25 +239,41 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
         // but would need to be customized for each destination ledger.
         require(_to.length != 0, "Gateway: to address is empty");
 
-        // Burn full amount and mint fee
-        uint256 absoluteFee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
-        token.burn(msg.sender, _amount);
-        token.mint(feeRecipient, absoluteFee);
+        // Calculate fee, subtract it from amount being burnt.
+        uint256 fee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
+        uint256 amountAfterFee = _amount.sub(
+            fee,
+            "Gateway: fee exceeds amount"
+        );
 
-        // Emit a log with a unique identifier 'n'.
-        uint256 receivedValue = _amount.sub(absoluteFee);
+        // If the underlying token has a higher precision, adjust the scaled
+        // amount so that only representable values are burnt.
+        uint256 amountAfterFeeUnderlying = token.toUnderlying(amountAfterFee);
+        uint256 amountAfterFeeRepresentable = token.fromUnderlying(
+            amountAfterFeeUnderlying
+        );
+
+        // The amount being burnt is the sum of the representable amount and the
+        // fee.
+        uint256 burnAmount = amountAfterFeeRepresentable.add(fee);
+        assert(burnAmount <= _amount);
+
+        // Burn the whole amount, and then re-mint the fee.
+
+        token.burn(msg.sender, burnAmount);
+        token.mint(feeRecipient, fee);
 
         require(
             // Must be strictly greater, to that the release transaction is of
             // at least one unit.
-            _amount > minimumBurnAmount,
+            amountAfterFeeUnderlying > minimumBurnAmount,
             "Gateway: amount is less than the minimum burn amount"
         );
 
-        emit LogBurn(_to, receivedValue, nextN, _to);
+        emit LogBurn(_to, amountAfterFeeUnderlying, nextN, _to);
         nextN += 1;
 
-        return receivedValue;
+        return amountAfterFeeUnderlying;
     }
 
     /// @notice verifySignature checks the the provided signature matches the provided

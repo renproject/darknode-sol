@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 
 import "./IGateway.sol";
 
@@ -31,13 +31,13 @@ interface IGatewayRegistry {
     function getGateways(address _start, uint256 _count)
         external
         view
-        returns (IGateway[] memory);
+        returns (address[] memory);
 
     /// @dev To get all the registered RenERC20s use count = 0.
     function getRenTokens(address _start, uint256 _count)
         external
         view
-        returns (IERC20[] memory);
+        returns (address[] memory);
 
     /// @notice Returns the Gateway contract for the given RenERC20
     ///         address.
