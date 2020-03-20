@@ -36,7 +36,7 @@ contract ProtocolLogic is
 
     // Darknode contracts
 
-    function darknodeRegistry() public view returns (DarknodeRegistry) {
+    function darknodeRegistry() public view returns (DarknodeRegistryLogic) {
         return ProtocolStateV1._darknodeRegistry;
     }
 
@@ -121,7 +121,7 @@ contract ProtocolLogic is
     /// @notice Update the address of DarknodeRegistry. This could affect the
     /// addresses of DarknodeRegistryStore, DarknodePayment,
     /// DarknodePaymentStore and DarknodeSlasher.
-    function _updateDarknodeRegistry(DarknodeRegistry _newDarknodeRegistry)
+    function _updateDarknodeRegistry(DarknodeRegistryLogic _newDarknodeRegistry)
         public
         onlyOwner
     {

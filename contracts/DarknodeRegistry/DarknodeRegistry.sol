@@ -1,6 +1,8 @@
 pragma solidity 0.5.16;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "../RenToken/RenToken.sol";
 import "./DarknodeRegistryStore.sol";
@@ -16,9 +18,7 @@ interface IDarknodePayment {
 
 interface IDarknodeSlasher {}
 
-/// @notice DarknodeRegistry is responsible for the registration and
-/// deregistration of Darknodes.
-contract DarknodeRegistry is Claimable, CanReclaimTokens {
+contract DarknodeRegistryStateV1 {
     using SafeMath for uint256;
 
     string public VERSION; // Passed in as a constructor parameter.
@@ -64,7 +64,15 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// Darknode Slasher allows darknodes to vote on bond slashing.
     IDarknodeSlasher public slasher;
     IDarknodeSlasher public nextSlasher;
+}
 
+/// @notice DarknodeRegistry is responsible for the registration and
+/// deregistration of Darknodes.
+contract DarknodeRegistryLogic is
+    Claimable,
+    CanReclaimTokens,
+    DarknodeRegistryStateV1
+{
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeOperator The owner of the darknode.
     /// @param _darknodeID The ID of the darknode that was registered.
@@ -194,7 +202,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     ///        Darknode.
     /// @param _minimumPodSize The minimum size of a Darknode pod.
     /// @param _minimumEpochIntervalSeconds The minimum number of seconds between epochs.
-    constructor(
+    function initialize(
         string memory _VERSION,
         RenToken _renAddress,
         DarknodeRegistryStore _storeAddress,
@@ -202,7 +210,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         uint256 _minimumPodSize,
         uint256 _minimumEpochIntervalSeconds,
         uint256 _minimumRegistrationIntervalSeconds
-    ) public {
+    ) public initializer {
         Claimable.initialize(msg.sender);
         CanReclaimTokens.initialize(msg.sender);
         VERSION = _VERSION;
@@ -345,7 +353,7 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
     /// @notice Allows the contract owner to initiate an ownership transfer of
     /// the DarknodeRegistryStore.
     /// @param _newOwner The address to transfer the ownership to.
-    function transferStoreOwnership(DarknodeRegistry _newOwner)
+    function transferStoreOwnership(DarknodeRegistryLogic _newOwner)
         external
         onlyOwner
     {
@@ -759,3 +767,6 @@ contract DarknodeRegistry is Claimable, CanReclaimTokens {
         return (nPreviousEpoch, nCurrentEpoch, nNextEpoch);
     }
 }
+
+/* solium-disable-next-line no-empty-blocks */
+contract DarknodeRegistryProxy is InitializableAdminUpgradeabilityProxy {}

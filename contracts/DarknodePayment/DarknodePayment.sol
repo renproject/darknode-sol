@@ -20,7 +20,7 @@ contract DarknodePayment is Claimable {
     /// @notice The special address for Ether.
     address public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    DarknodeRegistry public darknodeRegistry; // Passed in as a constructor parameter.
+    DarknodeRegistryLogic public darknodeRegistry; // Passed in as a constructor parameter.
 
     /// @notice DarknodePaymentStore is the storage contract for darknode
     ///         payments.
@@ -121,8 +121,8 @@ contract DarknodePayment is Claimable {
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
     event LogDarknodeRegistryUpdated(
-        DarknodeRegistry indexed _previousDarknodeRegistry,
-        DarknodeRegistry indexed _nextDarknodeRegistry
+        DarknodeRegistryLogic indexed _previousDarknodeRegistry,
+        DarknodeRegistryLogic indexed _nextDarknodeRegistry
     );
 
     /// @notice Restrict a function registered dark nodes to call a function.
@@ -158,7 +158,7 @@ contract DarknodePayment is Claimable {
     ///        contract.
     constructor(
         string memory _VERSION,
-        DarknodeRegistry _darknodeRegistry,
+        DarknodeRegistryLogic _darknodeRegistry,
         DarknodePaymentStore _darknodePaymentStore,
         uint256 _cyclePayoutPercent
     ) public validPercent(_cyclePayoutPercent) {
@@ -179,7 +179,7 @@ contract DarknodePayment is Claimable {
     /// darknode registry contract.
     /// @param _darknodeRegistry The address of the Darknode Registry
     /// contract.
-    function updateDarknodeRegistry(DarknodeRegistry _darknodeRegistry)
+    function updateDarknodeRegistry(DarknodeRegistryLogic _darknodeRegistry)
         external
         onlyOwner
     {
@@ -187,7 +187,7 @@ contract DarknodePayment is Claimable {
             address(_darknodeRegistry) != address(0x0),
             "DarknodePayment: invalid Darknode Registry address"
         );
-        DarknodeRegistry previousDarknodeRegistry = darknodeRegistry;
+        DarknodeRegistryLogic previousDarknodeRegistry = darknodeRegistry;
         darknodeRegistry = _darknodeRegistry;
         emit LogDarknodeRegistryUpdated(
             previousDarknodeRegistry,

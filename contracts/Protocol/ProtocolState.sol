@@ -15,7 +15,7 @@ contract ProtocolStateV1 {
 
     // DarknodeRegistry also points to RenToken, DarknodeRegistryStore and
     // DarknodePayment, which in turn points to DarknodePaymentStore.
-    DarknodeRegistry internal _darknodeRegistry;
+    DarknodeRegistryLogic internal _darknodeRegistry;
 
     // GatewayRegistry is used to access the Gateways and RenERC20s.
     GatewayRegistry internal _gatewayRegistry;
