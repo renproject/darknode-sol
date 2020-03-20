@@ -7,10 +7,11 @@ const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
+const ProtocolLogicV1 = artifacts.require("ProtocolLogicV1");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
@@ -44,12 +45,13 @@ module.exports = async function (deployer, network, [contractOwner]) {
 
     RenToken.address = addresses.RenToken || "";
     DarknodeSlasher.address = addresses.DarknodeSlasher || "";
-    DarknodeRegistry.address = addresses.DarknodeRegistry || "";
+    DarknodeRegistryProxy.address = addresses.DarknodeRegistryProxy || "";
+    DarknodeRegistryLogicV1.address = addresses.DarknodeRegistryLogicV1 || "";
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
     ProtocolProxy.address = addresses.ProtocolProxy || "";
-    ProtocolLogic.address = addresses.ProtocolLogic || "";
+    ProtocolLogicV1.address = addresses.ProtocolLogicV1 || "";
     RenProxyAdmin.address = addresses.RenProxyAdmin || "";
     const tokens = addresses.tokens || {};
 
@@ -64,9 +66,9 @@ module.exports = async function (deployer, network, [contractOwner]) {
     let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
 
     /** PROTOCOL **************************************************************/
-    if (!ProtocolLogic.address) {
-        deployer.logger.log("Deploying ProtocolLogic");
-        await deployer.deploy(ProtocolLogic);
+    if (!ProtocolLogicV1.address) {
+        deployer.logger.log("Deploying ProtocolLogicV1");
+        await deployer.deploy(ProtocolLogicV1);
         actionCount++;
     }
 
@@ -75,18 +77,18 @@ module.exports = async function (deployer, network, [contractOwner]) {
         deployer.logger.log("Deploying ProtocolProxy");
         await deployer.deploy(ProtocolProxy);
         protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
-        await protocolProxy.initialize(ProtocolLogic.address, renProxyAdmin.address, encodeCallData(web3, "initialize", ["address"], [contractOwner]));
+        await protocolProxy.initialize(ProtocolLogicV1.address, renProxyAdmin.address, encodeCallData(web3, "initialize", ["address"], [contractOwner]));
         actionCount++;
     } else {
         protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
     }
 
     const protocolProxyLogic = await renProxyAdmin.getProxyImplementation(protocolProxy.address);
-    if (protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
-        throw new Error("ERROR: ProtocolProxy is pointing to out-dated ProtocolLogic.");
+    if (protocolProxyLogic.toLowerCase() !== ProtocolLogicV1.address.toLowerCase()) {
+        throw new Error("ERROR: ProtocolProxy is pointing to out-dated ProtocolLogicV1.");
     }
 
-    const protocol = await ProtocolLogic.at(ProtocolProxy.address);
+    const protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
 
     /** Ren TOKEN *************************************************************/
     if (!RenToken.address) {
@@ -107,36 +109,40 @@ module.exports = async function (deployer, network, [contractOwner]) {
     }
     const darknodeRegistryStore = await DarknodeRegistryStore.at(DarknodeRegistryStore.address);
 
-    if (!DarknodeRegistry.address) {
+    if (!DarknodeRegistryLogicV1.address) {
+        deployer.logger.log("Deploying DarknodeRegistryLogicV1");
+        await deployer.deploy(DarknodeRegistryLogicV1);
+    }
+    const darknodeRegistryLogic = await DarknodeRegistryLogicV1.at(DarknodeRegistryLogicV1.address);
+
+    if (!DarknodeRegistryProxy.address) {
         deployer.logger.log("Deploying DarknodeRegistry");
-        await deployer.deploy(
-            DarknodeRegistry,
-            VERSION_STRING,
-            RenToken.address,
-            DarknodeRegistryStore.address,
-            config.MINIMUM_BOND,
-            config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL_SECONDS,
-            0,
-        );
+        await deployer.deploy(DarknodeRegistryProxy);
+        protocolProxy = await DarknodeRegistryProxy.at(DarknodeRegistryProxy.address);
+        await protocolProxy.initialize(darknodeRegistryLogic.address, renProxyAdmin.address, encodeCallData(
+            web3,
+            "initialize",
+            ["string", "address", "address", "uint256", "uint256", "uint256", "uint256"],
+            [VERSION_STRING, RenToken.address, DarknodeRegistryStore.address, config.MINIMUM_BOND.toString(), config.MINIMUM_POD_SIZE, config.MINIMUM_EPOCH_INTERVAL_SECONDS, 0,],
+        ));
         actionCount++;
     }
-    const darknodeRegistry = await DarknodeRegistry.at(DarknodeRegistry.address);
+    const darknodeRegistry = await DarknodeRegistryLogicV1.at(DarknodeRegistryProxy.address);
 
     const storeOwner = await darknodeRegistryStore.owner.call();
-    if (storeOwner !== DarknodeRegistry.address) {
+    if (storeOwner !== darknodeRegistry.address) {
         deployer.logger.log("Linking DarknodeRegistryStore and DarknodeRegistry")
         if (storeOwner === contractOwner) {
             // Initiate ownership transfer of DNR store 
-            await darknodeRegistryStore.transferOwnership(DarknodeRegistry.address);
+            await darknodeRegistryStore.transferOwnership(darknodeRegistry.address);
 
             // Claim ownership
             deployer.logger.log(`Claiming DNRS ownership in DNR`);
             await darknodeRegistry.claimStoreOwnership();
         } else {
             deployer.logger.log(`Transferring DNRS ownership from ${storeOwner} to new DNR`);
-            const oldDNR = await DarknodeRegistry.at(storeOwner);
-            oldDNR.transferStoreOwnership(DarknodeRegistry.address);
+            const oldDNR = await DarknodeRegistryLogicV1.at(storeOwner);
+            oldDNR.transferStoreOwnership(darknodeRegistry.address);
             // This will also call claim, but we try anyway because older
             // contracts didn't:
             try {
@@ -163,16 +169,16 @@ module.exports = async function (deployer, network, [contractOwner]) {
         deployer.logger.log("Deploying DarknodeSlasher");
         await deployer.deploy(
             DarknodeSlasher,
-            DarknodeRegistry.address,
+            darknodeRegistry.address,
         );
         actionCount++;
     }
     const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
 
     const dnrInSlasher = await slasher.darknodeRegistry.call();
-    if (dnrInSlasher.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+    if (dnrInSlasher.toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in Slasher");
-        await slasher.updateDarknodeRegistry(DarknodeRegistry.address);
+        await slasher.updateDarknodeRegistry(darknodeRegistry.address);
         actionCount++;
     }
 
@@ -223,7 +229,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
         await deployer.deploy(
             DarknodePayment,
             VERSION_STRING,
-            DarknodeRegistry.address,
+            darknodeRegistry.address,
             DarknodePaymentStore.address,
             config.DARKNODE_PAYOUT_PERCENT, // Reward payout percentage (50% is paid out at any given cycle)
         );
@@ -249,9 +255,9 @@ module.exports = async function (deployer, network, [contractOwner]) {
     }
 
     const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();
-    if (dnrInDarknodePayment.toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+    if (dnrInDarknodePayment.toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Updating DNR in DNP");
-        await darknodePayment.updateDarknodeRegistry(DarknodeRegistry.address);
+        await darknodePayment.updateDarknodeRegistry(darknodeRegistry.address);
         actionCount++;
     }
 
@@ -292,9 +298,9 @@ module.exports = async function (deployer, network, [contractOwner]) {
     // }
 
     // Set the darknode payment cycle changer to the darknode registry
-    if ((await darknodePayment.cycleChanger()).toLowerCase() !== DarknodeRegistry.address.toLowerCase()) {
+    if ((await darknodePayment.cycleChanger()).toLowerCase() !== darknodeRegistry.address.toLowerCase()) {
         deployer.logger.log("Setting the DarknodePayment's cycle changer");
-        await darknodePayment.updateCycleChanger(DarknodeRegistry.address);
+        await darknodePayment.updateCycleChanger(darknodeRegistry.address);
         actionCount++;
     }
 
@@ -302,10 +308,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
 
     deployer.logger.log({
         Protocol: ProtocolProxy.address,
-        ProtocolLogic: ProtocolLogic.address,
+        ProtocolLogicV1: ProtocolLogicV1.address,
         RenToken: RenToken.address,
         DarknodeSlasher: DarknodeSlasher.address,
-        DarknodeRegistry: DarknodeRegistry.address,
+        DarknodeRegistry: darknodeRegistry.address,
         DarknodeRegistryStore: DarknodeRegistryStore.address,
         DarknodePayment: DarknodePayment.address,
         DarknodePaymentStore: DarknodePaymentStore.address,

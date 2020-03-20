@@ -6,9 +6,9 @@ import BN from "bn.js";
 import chaiAsPromised from "chai-as-promised";
 import chaiBigNumber from "chai-bignumber";
 import { ECDSASignature } from "ethereumjs-util";
-import { keccak256, toChecksumAddress, toHex } from "web3-utils";
+import { keccak256, toChecksumAddress } from "web3-utils";
 
-import { DarknodeRegistryInstance, RenERC20Instance } from "../../types/truffle-contracts";
+import { DarknodeRegistryLogicV1Instance } from "../../types/truffle-contracts";
 // Import chai log helper
 import "./logs";
 
@@ -95,7 +95,7 @@ export const increaseTime = async (seconds: number) => {
     } while (currentTimestamp < target);
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryInstance) {
+export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
     const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     while (true) {
         // Must be an on-chain call, or the time won't be updated

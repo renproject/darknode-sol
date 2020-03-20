@@ -1,8 +1,8 @@
 import BN from "bn.js";
 
 import {
-    CycleChangerInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
-    DarknodeRegistryInstance, DarknodeSlasherInstance, ERC20Instance, RenTokenInstance,
+    DarknodePaymentInstance, DarknodePaymentStoreInstance, DarknodeRegistryLogicV1Instance,
+    DarknodeSlasherInstance, ERC20Instance, RenTokenInstance,
 } from "../types/truffle-contracts";
 import { ETHEREUM_TOKEN_ADDRESS, MINIMUM_BOND, NULL, PUBK, waitForEpoch } from "./helper/testUtils";
 
@@ -11,7 +11,8 @@ const RenToken = artifacts.require("RenToken");
 const ERC20 = artifacts.require("PaymentToken");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const DarknodePayment = artifacts.require("DarknodePayment");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
@@ -22,7 +23,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let store: DarknodePaymentStoreInstance;
     let dai: ERC20Instance;
     let erc20Token: ERC20Instance;
-    let dnr: DarknodeRegistryInstance;
+    let dnr: DarknodeRegistryLogicV1Instance;
     let dnp: DarknodePaymentInstance;
     let ren: RenTokenInstance;
     let slasher: DarknodeSlasherInstance;
@@ -31,15 +32,14 @@ contract("DarknodePayment", (accounts: string[]) => {
     const darknode1 = accounts[1];
     const darknode2 = accounts[2];
     const darknode3 = accounts[3];
-    const darknode4 = accounts[4];
-    const darknode5 = accounts[5];
     const darknode6 = accounts[6];
 
     before(async () => {
         ren = await RenToken.deployed();
         dai = await ERC20.new();
         erc20Token = await ERC20.new();
-        dnr = await DarknodeRegistry.deployed();
+        const dnrProxy = await DarknodeRegistryProxy.deployed();
+        dnr = await DarknodeRegistryLogicV1.at(dnrProxy.address);
         store = await DarknodePaymentStore.deployed();
         dnp = await DarknodePayment.deployed();
         slasher = await DarknodeSlasher.deployed();

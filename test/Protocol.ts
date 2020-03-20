@@ -1,7 +1,7 @@
 import {
     BTCGatewayInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
-    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    GatewayRegistryInstance, ProtocolLogicInstance, ProtocolProxyInstance, renBTCInstance,
+    DarknodeRegistryLogicV1Instance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
+    GatewayRegistryInstance, ProtocolLogicV1Instance, ProtocolProxyInstance, renBTCInstance,
     RenProxyAdminInstance, RenTokenInstance,
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
@@ -10,13 +10,14 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
 const BTCGateway = artifacts.require("BTCGateway");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
+const ProtocolLogicV1 = artifacts.require("ProtocolLogicV1");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 contract("Protocol", ([owner, otherAccount]: string[]) => {
@@ -25,26 +26,27 @@ contract("Protocol", ([owner, otherAccount]: string[]) => {
     let dnpStore: DarknodePaymentStoreInstance;
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryInstance;
+    let dnr: DarknodeRegistryLogicV1Instance;
     let slasher: DarknodeSlasherInstance;
     let gatewayRegistry: GatewayRegistryInstance;
     let renbtc: renBTCInstance;
     let btcGateway: BTCGatewayInstance;
-    let protocol: ProtocolLogicInstance;
+    let protocol: ProtocolLogicV1Instance;
     let protocolProxy: ProtocolProxyInstance;
     let renProxyAdmin: RenProxyAdminInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        const dnrProxy = await DarknodeRegistryProxy.deployed();
+        dnr = await DarknodeRegistryLogicV1.at(dnrProxy.address);
         dnp = await DarknodePayment.deployed();
         dnpStore = await DarknodePaymentStore.deployed();
         slasher = await DarknodeSlasher.deployed();
         gatewayRegistry = await GatewayRegistry.deployed();
         renbtc = await renBTC.deployed();
         btcGateway = await BTCGateway.deployed();
-        protocol = await ProtocolLogic.at(ProtocolProxy.address);
+        protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
         protocolProxy = await ProtocolProxy.deployed();
         renProxyAdmin = await RenProxyAdmin.deployed();
         await waitForEpoch(dnr);
@@ -130,20 +132,20 @@ contract("Protocol", ([owner, otherAccount]: string[]) => {
     it("Proxy functions", async () => {
         // Try to initialize again
         await protocolProxy.initialize(
-            ProtocolLogic.address,
+            ProtocolLogicV1.address,
             renProxyAdmin.address,
             encodeCallData(web3, "initialize", ["address"], [owner]), { from: owner },
         )
             .should.be.rejectedWith(/revert$/);
         await protocolProxy.initialize(
-            ProtocolLogic.address,
+            ProtocolLogicV1.address,
             renProxyAdmin.address,
             Buffer.from([]) as unknown as string,
         )
             .should.be.rejectedWith(/revert$/);
 
         // Upgrade logic
-        const newLogic = await ProtocolLogic.new();
+        const newLogic = await ProtocolLogicV1.new();
 
         // Wrong address
         await renProxyAdmin.upgrade(protocolProxy.address, newLogic.address, { from: otherAccount })
