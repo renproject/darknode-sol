@@ -1,7 +1,9 @@
 pragma solidity 0.5.16;
 
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 
 import "../Governance/Claimable.sol";
 import "../libraries/String.sol";
@@ -9,14 +11,7 @@ import "./RenERC20.sol";
 import "./interfaces/IGateway.sol";
 import "../libraries/CanReclaimTokens.sol";
 
-/// @notice Gateway handles verifying mint and burn requests. A mintAuthority
-/// approves new assets to be minted by providing a digital signature. An owner
-/// of an asset can request for it to be burnt.
-contract Gateway is IGateway, Claimable, CanReclaimTokens {
-    using SafeMath for uint256;
-
-    uint8 public version = 2;
-
+contract GatewayStateV1 {
     uint256 constant BIPS_DENOMINATOR = 10000;
     uint256 public minimumBurnAmount;
 
@@ -44,6 +39,19 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     // LogMint and LogBurn contain a unique `n` that identifies
     // the mint or burn event.
     uint256 public nextN = 0;
+}
+
+/// @notice Gateway handles verifying mint and burn requests. A mintAuthority
+/// approves new assets to be minted by providing a digital signature. An owner
+/// of an asset can request for it to be burnt.
+contract GatewayLogic is
+    Initializable,
+    Claimable,
+    CanReclaimTokens,
+    IGateway,
+    GatewayStateV1
+{
+    using SafeMath for uint256;
 
     event LogMint(
         address indexed _to,
@@ -66,14 +74,14 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     ///        forwarded to the feeRecipient. In BIPS.
     /// @param _burnFee The amount subtracted each burn request and
     ///        forwarded to the feeRecipient. In BIPS.
-    constructor(
+    function initialize(
         RenERC20 _token,
         address _feeRecipient,
         address _mintAuthority,
         uint16 _mintFee,
         uint16 _burnFee,
         uint256 _minimumBurnAmount
-    ) public {
+    ) public initializer {
         Claimable.initialize(msg.sender);
         CanReclaimTokens.initialize(msg.sender);
         minimumBurnAmount = _minimumBurnAmount;
@@ -94,7 +102,10 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     }
 
     /// @notice Allow the owner to update the owner of the RenERC20 token.
-    function transferTokenOwnership(Gateway _nextTokenOwner) public onlyOwner {
+    function transferTokenOwnership(GatewayLogic _nextTokenOwner)
+        public
+        onlyOwner
+    {
         token.transferOwnership(address(_nextTokenOwner));
         _nextTokenOwner.claimTokenOwnership();
     }
@@ -298,67 +309,17 @@ contract Gateway is IGateway, Claimable, CanReclaimTokens {
     }
 }
 
-/// @dev The following are not necessary for deploying BTCGateway or ZECGateway
-/// contracts, but are used to track deployments.
-contract BTCGateway is Gateway {
-    constructor(
-        RenERC20 _token,
-        address _feeRecipient,
-        address _mintAuthority,
-        uint16 _mintFee,
-        uint16 _burnFee,
-        uint256 _minimumBurnAmount
-    )
-        public
-        Gateway(
-            _token,
-            _feeRecipient,
-            _mintAuthority,
-            _mintFee,
-            _burnFee,
-            _minimumBurnAmount
-        )
-    {}
-}
+/* solium-disable-next-line no-empty-blocks */
+contract GatewayProxy is InitializableAdminUpgradeabilityProxy {}
 
-contract ZECGateway is Gateway {
-    constructor(
-        RenERC20 _token,
-        address _feeRecipient,
-        address _mintAuthority,
-        uint16 _mintFee,
-        uint16 _burnFee,
-        uint256 _minimumBurnAmount
-    )
-        public
-        Gateway(
-            _token,
-            _feeRecipient,
-            _mintAuthority,
-            _mintFee,
-            _burnFee,
-            _minimumBurnAmount
-        )
-    {}
-}
+/// @dev The following duplicates are not necessary for deploying BTCGateway or
+/// ZECGateway contracts, but are used to track deployments.
 
-contract BCHGateway is Gateway {
-    constructor(
-        RenERC20 _token,
-        address _feeRecipient,
-        address _mintAuthority,
-        uint16 _mintFee,
-        uint16 _burnFee,
-        uint256 _minimumBurnAmount
-    )
-        public
-        Gateway(
-            _token,
-            _feeRecipient,
-            _mintAuthority,
-            _mintFee,
-            _burnFee,
-            _minimumBurnAmount
-        )
-    {}
-}
+/* solium-disable-next-line no-empty-blocks */
+contract BTCGateway is GatewayProxy {}
+
+/* solium-disable-next-line no-empty-blocks */
+contract ZECGateway is GatewayProxy {}
+
+/* solium-disable-next-line no-empty-blocks */
+contract BCHGateway is GatewayProxy {}
