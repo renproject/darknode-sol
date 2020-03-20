@@ -43,7 +43,7 @@ contract BasicAdapter is GSNRecipient {
             ),
             "token transfer failed"
         );
-        registry.getGatewayBySymbol(_symbol).burnUnderlying(_to, _amount);
+        registry.getGatewayBySymbol(_symbol).burn(_to, _amount);
     }
 
     // GSN functions

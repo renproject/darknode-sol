@@ -108,7 +108,7 @@ contract Vesting is Ownable {
         // Burn the tokens using the Gateway contract. This will burn the
         // tokens after taking a fee. The Darknodes will watch for this event to
         // transfer the user the Bitcoin.
-        registry.getGatewayBySymbol("BTC").burnUnderlying(_to, amountClaimable);
+        registry.getGatewayBySymbol("BTC").burn(_to, amountClaimable);
     }
 
     /// @notice Retrieves the claimable amount for a given beneficiary.
