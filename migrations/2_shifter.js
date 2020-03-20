@@ -22,6 +22,7 @@ const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
 const BasicAdapter = artifacts.require("BasicAdapter");
+const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
 const { encodeCallData } = require("./encode");
@@ -31,7 +32,7 @@ const { encodeCallData } = require("./encode");
  * @param {string} network
  * @param {any[]} accounts
  */
-module.exports = async function (deployer, network, [contractOwner, proxyGovernanceAddress]) {
+module.exports = async function (deployer, network, [contractOwner]) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
@@ -39,7 +40,6 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
     const _mintAuthority = config.mintAuthority || contractOwner;
-    proxyGovernanceAddress = proxyGovernanceAddress || config.proxyGovernanceAddress;
 
     // TODO: _feeRecipient should be the DarknodePayment contract
     const _feeRecipient = DarknodePaymentStore.address || addresses.DarknodePaymentStore || contractOwner;
@@ -57,6 +57,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(ProtocolProxy.address);
+    let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
 
     let actionCount = 0;
 
@@ -119,7 +120,7 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
             deployer.logger.log(`Deploying ${symbol} proxy`);
             await deployer.deploy(Token);
             const tokenProxy = await Token.at(Token.address);
-            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(
+            await tokenProxy.initialize(RenERC20.address, renProxyAdmin.address, encodeCallData(
                 web3,
                 "initialize",
                 ["uint256", "address", "uint256", "string", "string", "string", "uint8"],
@@ -129,11 +130,16 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
         }
         const token = await RenERC20.at(Token.address);
 
+        const tokenProxyLogic = await renProxyAdmin.getProxyImplementation(Token.address);
+        if (tokenProxyLogic.toLowerCase() !== RenERC20.address.toLowerCase()) {
+            throw new Error(`ERROR: ${name} token is pointing to out-dated ProtocolLogic.`);
+        }
+
         if (!Gateway.address) {
             deployer.logger.log(`Deploying ${symbol} Gateway proxy`);
             await deployer.deploy(Gateway);
             const tokenProxy = await Gateway.at(Gateway.address);
-            await tokenProxy.initialize(GatewayLogic.address, proxyGovernanceAddress, encodeCallData(
+            await tokenProxy.initialize(GatewayLogic.address, renProxyAdmin.address, encodeCallData(
                 web3,
                 "initialize",
                 ["address", "address", "address", "uint16", "uint16", "uint256"],
@@ -149,6 +155,11 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
             actionCount++;
         }
         const tokenGateway = await GatewayLogic.at(Gateway.address);
+
+        const gatewayProxyLogic = await renProxyAdmin.getProxyImplementation(Gateway.address);
+        if (gatewayProxyLogic.toLowerCase() !== GatewayLogic.address.toLowerCase()) {
+            throw new Error(`ERROR: ${name} gateway is pointing to out-dated ProtocolLogic.`);
+        }
 
         const gatewayMintAuthority = await tokenGateway.mintAuthority.call();
         if (gatewayMintAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {

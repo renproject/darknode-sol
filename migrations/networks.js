@@ -21,6 +21,7 @@ const config = {
 
 module.exports = {
     mainnet: {
+        RenProxyAdmin: "",
         ProtocolProxy: "",
         ProtocolLogic: "",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
@@ -58,6 +59,7 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
+        RenProxyAdmin: "",
         ProtocolProxy: "0xeF4de0E97D92757520D78c4d49d8151964f6a85B",
         ProtocolLogic: "0xa638f33388747d5f62411273f4be8919ed8c94b4",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
@@ -89,6 +91,7 @@ module.exports = {
         },
     },
     testnet: {
+        RenProxyAdmin: "",
         ProtocolProxy: "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
         ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
@@ -124,6 +127,7 @@ module.exports = {
     },
 
     devnet: {
+        RenProxyAdmin: "",
         ProtocolProxy: "0x1deB773B50B66b0e65e62E41380355a1A2BEd2e1",
         ProtocolLogic: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
@@ -159,6 +163,7 @@ module.exports = {
     },
 
     localnet: {
+        RenProxyAdmin: "",
         ProtocolProxy: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
         ProtocolLogic: "0xcfb2fD20211552216755E318aD091d0d1C3a39a7",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",

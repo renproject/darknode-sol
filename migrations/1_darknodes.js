@@ -11,6 +11,7 @@ const DarknodeRegistry = artifacts.require("DarknodeRegistry");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
 const ProtocolLogic = artifacts.require("ProtocolLogic");
+const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
 
@@ -31,14 +32,13 @@ const gitCommit = () => execSync("git describe --always --long").toString().trim
  * @param {any} deployer
  * @param {string} network
  */
-module.exports = async function (deployer, network, [contractOwner, proxyGovernanceAddress]) {
+module.exports = async function (deployer, network, [contractOwner]) {
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
 
     const addresses = networks[network] || {};
     const config = networks[network] ? networks[network].config : networks.config;
-    proxyGovernanceAddress = proxyGovernanceAddress || config.proxyGovernanceAddress;
 
     const VERSION_STRING = `${network}-${gitCommit()}`;
 
@@ -50,9 +50,18 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
     DarknodePayment.address = addresses.DarknodePayment || "";
     ProtocolProxy.address = addresses.ProtocolProxy || "";
     ProtocolLogic.address = addresses.ProtocolLogic || "";
+    RenProxyAdmin.address = addresses.RenProxyAdmin || "";
     const tokens = addresses.tokens || {};
 
     let actionCount = 0;
+
+    /** PROXY ADMIN ***********************************************************/
+    if (!RenProxyAdmin.address) {
+        deployer.logger.log("Deploying Proxy ");
+        await deployer.deploy(RenProxyAdmin);
+        actionCount++;
+    }
+    let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
 
     /** PROTOCOL **************************************************************/
     if (!ProtocolLogic.address) {
@@ -66,18 +75,15 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
         deployer.logger.log("Deploying ProtocolProxy");
         await deployer.deploy(ProtocolProxy);
         protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
-        await protocolProxy.initialize(ProtocolLogic.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["address"], [contractOwner]));
+        await protocolProxy.initialize(ProtocolLogic.address, renProxyAdmin.address, encodeCallData(web3, "initialize", ["address"], [contractOwner]));
         actionCount++;
     } else {
         protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
     }
 
-    if (ProtocolLogic.address === "") { // protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
-        const protocolProxyLogic = await protocolProxy.implementation.call({ from: proxyGovernanceAddress });
-        deployer.logger.log(`Upgrading Protocol proxy's logic contract. Was ${protocolProxyLogic}, now is ${ProtocolLogic.address}`);
-        if (proxyGovernanceAddress !== contract)
-            await protocolProxy.upgradeTo(ProtocolLogic.address, { from: proxyGovernanceAddress });
-        actionCount++;
+    const protocolProxyLogic = await renProxyAdmin.getProxyImplementation(protocolProxy.address);
+    if (protocolProxyLogic.toLowerCase() !== ProtocolLogic.address.toLowerCase()) {
+        throw new Error("ERROR: ProtocolProxy is pointing to out-dated ProtocolLogic.");
     }
 
     const protocol = await ProtocolLogic.at(ProtocolProxy.address);
