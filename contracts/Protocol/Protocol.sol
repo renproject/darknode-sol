@@ -22,9 +22,9 @@ import "../Governance/Claimable.sol";
 /* solium-disable-next-line no-empty-blocks */
 contract ProtocolProxy is InitializableAdminUpgradeabilityProxy {}
 
-/// @notice ProtocolLogic implements the getter functions for the Protocol proxy
+/// @notice ProtocolLogicV1 implements the getter functions for the Protocol proxy
 /// as well as onlyOwner functions for updating the values in ProtocolState.
-contract ProtocolLogic is
+contract ProtocolLogicV1 is
     Initializable,
     Claimable,
     ProtocolStateV1,
@@ -36,7 +36,7 @@ contract ProtocolLogic is
 
     // Darknode contracts
 
-    function darknodeRegistry() public view returns (DarknodeRegistryLogic) {
+    function darknodeRegistry() public view returns (DarknodeRegistryLogicV1) {
         return ProtocolStateV1._darknodeRegistry;
     }
 
@@ -121,10 +121,9 @@ contract ProtocolLogic is
     /// @notice Update the address of DarknodeRegistry. This could affect the
     /// addresses of DarknodeRegistryStore, DarknodePayment,
     /// DarknodePaymentStore and DarknodeSlasher.
-    function _updateDarknodeRegistry(DarknodeRegistryLogic _newDarknodeRegistry)
-        public
-        onlyOwner
-    {
+    function _updateDarknodeRegistry(
+        DarknodeRegistryLogicV1 _newDarknodeRegistry
+    ) public onlyOwner {
         ProtocolStateV1._darknodeRegistry = _newDarknodeRegistry;
     }
 

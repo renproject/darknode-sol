@@ -8,7 +8,7 @@ import "../DarknodeRegistry/DarknodeRegistry.sol";
 /// deregister other misbehaving darknodes.
 /// Right now, it is a placeholder.
 contract DarknodeSlasher is Claimable {
-    DarknodeRegistryLogic public darknodeRegistry;
+    DarknodeRegistryLogicV1 public darknodeRegistry;
 
     uint256 public blacklistSlashPercent;
     uint256 public maliciousSlashPercent;
@@ -28,8 +28,8 @@ contract DarknodeSlasher is Claimable {
     /// @param _previousDarknodeRegistry The address of the old registry.
     /// @param _nextDarknodeRegistry The address of the new registry.
     event LogDarknodeRegistryUpdated(
-        DarknodeRegistryLogic indexed _previousDarknodeRegistry,
-        DarknodeRegistryLogic indexed _nextDarknodeRegistry
+        DarknodeRegistryLogicV1 indexed _previousDarknodeRegistry,
+        DarknodeRegistryLogicV1 indexed _nextDarknodeRegistry
     );
 
     /// @notice Restrict a function to have a valid percentage.
@@ -38,7 +38,7 @@ contract DarknodeSlasher is Claimable {
         _;
     }
 
-    constructor(DarknodeRegistryLogic _darknodeRegistry) public {
+    constructor(DarknodeRegistryLogicV1 _darknodeRegistry) public {
         Claimable.initialize(msg.sender);
         darknodeRegistry = _darknodeRegistry;
     }
@@ -47,7 +47,7 @@ contract DarknodeSlasher is Claimable {
     /// darknode registry contract.
     /// @param _darknodeRegistry The address of the Darknode Registry
     /// contract.
-    function updateDarknodeRegistry(DarknodeRegistryLogic _darknodeRegistry)
+    function updateDarknodeRegistry(DarknodeRegistryLogicV1 _darknodeRegistry)
         external
         onlyOwner
     {
@@ -55,7 +55,7 @@ contract DarknodeSlasher is Claimable {
             address(_darknodeRegistry) != address(0x0),
             "DarknodeSlasher: invalid Darknode Registry address"
         );
-        DarknodeRegistryLogic previousDarknodeRegistry = darknodeRegistry;
+        DarknodeRegistryLogicV1 previousDarknodeRegistry = darknodeRegistry;
         darknodeRegistry = _darknodeRegistry;
         emit LogDarknodeRegistryUpdated(
             previousDarknodeRegistry,

@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../Governance/Claimable.sol";
 
-/// @notice RenERC20 represents a digital asset that has been bridged on to
-/// the Ethereum ledger. It exposes mint and burn functions that can only be
-/// called by it's associated Gateway contract.
+/// @notice ERC20WithRate allows for a more dynamic fee model by storing a rate
+/// that tracks the number of the underlying asset's unit represented by a
+/// single ERC20 token.
 contract ERC20WithRate is Initializable, Ownable, ERC20 {
     using SafeMath for uint256;
 

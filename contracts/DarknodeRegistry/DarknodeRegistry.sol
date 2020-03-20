@@ -68,7 +68,7 @@ contract DarknodeRegistryStateV1 {
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistryLogic is
+contract DarknodeRegistryLogicV1 is
     Claimable,
     CanReclaimTokens,
     DarknodeRegistryStateV1
@@ -353,7 +353,7 @@ contract DarknodeRegistryLogic is
     /// @notice Allows the contract owner to initiate an ownership transfer of
     /// the DarknodeRegistryStore.
     /// @param _newOwner The address to transfer the ownership to.
-    function transferStoreOwnership(DarknodeRegistryLogic _newOwner)
+    function transferStoreOwnership(DarknodeRegistryLogicV1 _newOwner)
         external
         onlyOwner
     {
