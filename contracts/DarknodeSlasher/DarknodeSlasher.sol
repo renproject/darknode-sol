@@ -39,6 +39,7 @@ contract DarknodeSlasher is Claimable {
     }
 
     constructor(DarknodeRegistry _darknodeRegistry) public {
+        Claimable.initialize(msg.sender);
         darknodeRegistry = _darknodeRegistry;
     }
 

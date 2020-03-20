@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/LinkedList.sol";
@@ -53,6 +53,8 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RenToken contract.
     constructor(string memory _VERSION, RenToken _ren) public {
+        Claimable.initialize(msg.sender);
+        CanReclaimTokens.initialize(msg.sender);
         VERSION = _VERSION;
         ren = _ren;
         blacklistRecoverableToken(address(ren));

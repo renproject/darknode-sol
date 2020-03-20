@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/GSN/GSNRecipient.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
 
 import "../IGateway.sol";
 import "../IGatewayRegistry.sol";
@@ -9,6 +9,7 @@ contract BasicAdapter is GSNRecipient {
     IGatewayRegistry registry;
 
     constructor(IGatewayRegistry _registry) public {
+        GSNRecipient.initialize();
         registry = _registry;
     }
 

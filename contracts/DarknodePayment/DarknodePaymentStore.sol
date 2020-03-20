@@ -1,8 +1,8 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 import "../libraries/Claimable.sol";
 import "../libraries/ERC20WithFees.sol";
@@ -30,6 +30,7 @@ contract DarknodePaymentStore is Claimable {
     ///
     /// @param _VERSION A string defining the contract version.
     constructor(string memory _VERSION) public {
+        Claimable.initialize(msg.sender);
         VERSION = _VERSION;
     }
 

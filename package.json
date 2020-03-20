@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/contracts-ethereum-package": "^2.4.0",
     "@openzeppelin/upgrades": "^2.7.2"
   },
   "devDependencies": {

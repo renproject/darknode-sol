@@ -1,9 +1,9 @@
 pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Pausable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 
 contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
     string private constant _name = "REN";
@@ -14,12 +14,10 @@ contract RenToken is Ownable, ERC20Detailed, ERC20Pausable, ERC20Burnable {
         10**uint256(_decimals);
 
     /// @notice The RenToken Constructor.
-    constructor()
-        public
-        ERC20Burnable()
-        ERC20Pausable()
-        ERC20Detailed(_name, _symbol, _decimals)
-    {
+    constructor() public {
+        ERC20Pausable.initialize(msg.sender);
+        ERC20Detailed.initialize(_name, _symbol, _decimals);
+        Ownable.initialize(msg.sender);
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 
