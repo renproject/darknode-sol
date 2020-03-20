@@ -14,9 +14,6 @@ interface IBurnGateway {
     function burn(bytes calldata _to, uint256 _amountScaled)
         external
         returns (uint256);
-    function burnUnderlying(bytes calldata _to, uint256 _amount)
-        external
-        returns (uint256);
     function burnFee() external view returns (uint256);
 }
 
@@ -32,9 +29,6 @@ interface IGateway {
     function mintFee() external view returns (uint256);
     // is IBurnGateway
     function burn(bytes calldata _to, uint256 _amountScaled)
-        external
-        returns (uint256);
-    function burnUnderlying(bytes calldata _to, uint256 _amount)
         external
         returns (uint256);
     function burnFee() external view returns (uint256);
