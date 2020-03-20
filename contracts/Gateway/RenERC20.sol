@@ -46,12 +46,16 @@ contract RenERC20LogicV1 is
         CanReclaimTokens.initialize(_nextOwner);
     }
 
-    function burn(address _from, uint256 _amount) public onlyOwner {
-        _burn(_from, _amount);
-    }
-
+    /// @notice mint can only be called by the tokens' associated Gateway
+    /// contract. See Gateway's mint function instead.
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
+    }
+
+    /// @notice burn can only be called by the tokens' associated Gateway
+    /// contract. See Gateway's burn functions instead.
+    function burn(address _from, uint256 _amount) public onlyOwner {
+        _burn(_from, _amount);
     }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
