@@ -116,15 +116,10 @@ export const randomID = () => {
 };
 
 export const deployProxy = async <T>(web3: Web3, ProxyContract: Truffle.Contract<any>, LogicContract: Truffle.Contract<any>, proxyGovernanceAddress: string, params: { type: string, value: any, name?: string }[], options?: { from: string }): Promise<T> => {
-    let logicAddress = LogicContract.address;
-    // if (!logicAddress) {
     const logicContract = await LogicContract.new();
-    logicAddress = logicContract.address;
-    // }
-
     const proxy = await ProxyContract.new();
 
-    await proxy.initialize(logicAddress, proxyGovernanceAddress, encodeCallData(web3, "initialize", params.map(p => p.type), params.map(p => p.value)), options);
+    await proxy.initialize(logicContract.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", params.map(p => p.type), params.map(p => p.value)), options);
     return await LogicContract.at(proxy.address);
 };
 

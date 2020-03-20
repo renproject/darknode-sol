@@ -1,6 +1,6 @@
 import {
-    BTCGatewayInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
-    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
+    DarknodePaymentInstance, DarknodePaymentStoreInstance, DarknodeRegistryInstance,
+    DarknodeRegistryStoreInstance, DarknodeSlasherInstance, GatewayLogicInstance,
     GatewayRegistryInstance, ProtocolLogicInstance, ProtocolProxyInstance, renBTCInstance,
     RenTokenInstance,
 } from "../types/truffle-contracts";
@@ -28,7 +28,7 @@ contract("Protocol", ([owner, proxyGovernanceAddress, otherAccount]: string[]) =
     let slasher: DarknodeSlasherInstance;
     let gatewayRegistry: GatewayRegistryInstance;
     let renbtc: renBTCInstance;
-    let btcGateway: BTCGatewayInstance;
+    let btcGateway: GatewayLogicInstance;
     let protocol: ProtocolLogicInstance;
     let protocolProxy: ProtocolProxyInstance;
 

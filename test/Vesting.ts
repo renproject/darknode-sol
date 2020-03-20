@@ -4,7 +4,8 @@ import { rawEncode } from "ethereumjs-abi";
 import { ecsign, keccak256 } from "ethereumjs-util";
 
 import {
-    BTCGatewayInstance, GatewayRegistryInstance, RenERC20Instance, VestingInstance,
+    BTCGatewayInstance, GatewayLogicInstance, GatewayRegistryInstance, RenERC20Instance,
+    VestingInstance,
 } from "../types/truffle-contracts";
 import { deployProxy, increaseTime, Ox, randomBytes } from "./helper/testUtils";
 
@@ -13,16 +14,18 @@ const GatewayRegistry = artifacts.require("GatewayRegistry");
 const renBTC = artifacts.require("renBTC");
 const RenERC20 = artifacts.require("RenERC20");
 const Vesting = artifacts.require("Vesting");
+const GatewayLogic = artifacts.require("GatewayLogic");
 
 contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddress]) => {
-    let btcGateway: BTCGatewayInstance;
+    let btcGateway: GatewayLogicInstance;
     let renbtc: RenERC20Instance;
     let vesting: VestingInstance;
     let registry: GatewayRegistryInstance;
 
     const mintAuthority = web3.eth.accounts.create();
     const privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
-    const feeInBips = new BN(10);
+    const burnFees = new BN(5);
+    const mintFees = new BN(15);
 
     const month = 24 * 60 * 60 * 365 / 12;
 
@@ -30,15 +33,7 @@ contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddr
         // Setup the environment
         renbtc = await deployProxy<RenERC20Instance>(web3, renBTC, RenERC20, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
 
-        btcGateway = await BTCGateway.new(
-            renbtc.address,
-            feeRecipient,
-            mintAuthority.address,
-            feeInBips,
-            feeInBips,
-            10000,
-        );
-
+        btcGateway = await deployProxy<GatewayLogicInstance>(web3, BTCGateway, GatewayLogic, proxyGovernanceAddress, [{ type: "address", value: renbtc.address }, { type: "address", value: feeRecipient }, { type: "address", value: mintAuthority.address }, { type: "uint16", value: mintFees.toNumber() }, { type: "uint16", value: burnFees.toNumber() }, { type: "uint256", value: 10000 }], { from: owner });
         await renbtc.transferOwnership(btcGateway.address);
         await btcGateway.claimTokenOwnership();
 

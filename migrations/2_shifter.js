@@ -6,6 +6,8 @@ const GatewayRegistry = artifacts.require("GatewayRegistry");
 
 const RenERC20 = artifacts.require("RenERC20");
 
+const GatewayLogic = artifacts.require("GatewayLogic");
+
 const BTCGateway = artifacts.require("BTCGateway");
 const renBTC = artifacts.require("renBTC");
 
@@ -46,11 +48,12 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
     ZECGateway.address = addresses.ZECGateway || "";
     BCHGateway.address = addresses.BCHGateway || "";
     GatewayRegistry.address = addresses.GatewayRegistry || "";
+    GatewayLogic.address = addresses.GatewayLogic || "";
     renZEC.address = addresses.renZEC || "";
     renBCH.address = addresses.renBCH || "";
     renBTC.address = addresses.renBTC || "";
     BasicAdapter.address = addresses.BasicAdapter || "";
-    RenERC20.address = addresses.RenERC20 || "";
+    RenERC20.address = addresses.RenERC20Logic || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogic.at(ProtocolProxy.address);
@@ -97,6 +100,12 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
         actionCount++;
     }
 
+    if (!GatewayLogic.address) {
+        deployer.logger.log(`Deploying GatewayLogic logic`);
+        await deployer.deploy(GatewayLogic);
+        actionCount++;
+    }
+
     const chainID = await web3.eth.net.getId();
 
     for (const [Token, Gateway, name, decimals, minimumBurnAmount] of [
@@ -105,29 +114,41 @@ module.exports = async function (deployer, network, [contractOwner, proxyGoverna
         [renBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
         const symbol = `${config.tokenPrefix}${name}`;
-        
+
         if (!Token.address) {
             deployer.logger.log(`Deploying ${symbol} proxy`);
             await deployer.deploy(Token);
             const tokenProxy = await Token.at(Token.address);
-            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(web3, "initialize", ["uint256", "address", "uint256", "string", "string", "string", "uint8"], [chainID, contractOwner, "1000000000000000000", "1", symbol, symbol, decimals]));
+            await tokenProxy.initialize(RenERC20.address, proxyGovernanceAddress, encodeCallData(
+                web3,
+                "initialize",
+                ["uint256", "address", "uint256", "string", "string", "string", "uint8"],
+                [chainID, contractOwner, "1000000000000000000", "1", symbol, symbol, decimals])
+            );
             actionCount++;
         }
         const token = await RenERC20.at(Token.address);
 
         if (!Gateway.address) {
-            await deployer.deploy(
-                Gateway,
-                Token.address,
-                _feeRecipient,
-                _mintAuthority,
-                config.mintFee,
-                config.burnFee,
-                minimumBurnAmount,
+            deployer.logger.log(`Deploying ${symbol} Gateway proxy`);
+            await deployer.deploy(Gateway);
+            const tokenProxy = await Gateway.at(Gateway.address);
+            await tokenProxy.initialize(GatewayLogic.address, proxyGovernanceAddress, encodeCallData(
+                web3,
+                "initialize",
+                ["address", "address", "address", "uint16", "uint16", "uint256"],
+                [
+                    Token.address,
+                    _feeRecipient,
+                    _mintAuthority,
+                    config.mintFee,
+                    config.burnFee,
+                    minimumBurnAmount,
+                ])
             );
             actionCount++;
         }
-        const tokenGateway = await Gateway.at(Gateway.address);
+        const tokenGateway = await GatewayLogic.at(Gateway.address);
 
         const gatewayMintAuthority = await tokenGateway.mintAuthority.call();
         if (gatewayMintAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {

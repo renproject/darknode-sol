@@ -34,7 +34,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20: "",
+        RenERC20Logic: "",
+        GatewayLogic: "",
         BTCGateway: "",
         ZECGateway: "",
         BCHGateway: "",
@@ -66,7 +67,8 @@ module.exports = {
         DarknodePayment: "0x376D835c6Dc5d06C6335915B36ffe9734D3E4faa",
         DarknodePaymentStore: "0x311999EE72B5826D664FD4F3aC09c0C462eFfe49",
 
-        RenERC20: "",
+        RenERC20Logic: "",
+        GatewayLogic: "",
         BTCGateway: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
         ZECGateway: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
         BCHGateway: "0xa76beA11766E0b66bD952bc357CF027742021a8C",
@@ -100,7 +102,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20: "",
+        RenERC20Logic: "",
+        GatewayLogic: "",
         BTCGateway: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
         ZECGateway: "0x1615f5a285134925Fb4D87812827863fde046fDa",
         BCHGateway: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
@@ -134,7 +137,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20: "",
+        RenERC20Logic: "",
+        GatewayLogic: "",
         BTCGateway: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
         ZECGateway: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
         BCHGateway: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
@@ -168,7 +172,8 @@ module.exports = {
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20: "",
+        RenERC20Logic: "",
+        GatewayLogic: "",
         BTCGateway: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
         ZECGateway: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
         BCHGateway: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
