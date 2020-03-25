@@ -257,21 +257,13 @@ contract GatewayLogicV1 is
             "Gateway: fee exceeds amount"
         );
 
-        // If the underlying token has a higher precision, adjust the scaled
-        // amount so that only representable values are burnt.
+        // If the scaled token can represent more precision than the underlying
+        // token, the difference is lost. This won't exceed 1 sat, so is
+        // negligible compared to burning and transaction fees.
         uint256 amountAfterFeeUnderlying = token.toUnderlying(amountAfterFee);
-        uint256 amountAfterFeeRepresentable = token.fromUnderlying(
-            amountAfterFeeUnderlying
-        );
-
-        // The amount being burnt is the sum of the representable amount and the
-        // fee.
-        uint256 burnAmount = amountAfterFeeRepresentable.add(fee);
-        assert(burnAmount <= _amount);
 
         // Burn the whole amount, and then re-mint the fee.
-
-        token.burn(msg.sender, burnAmount);
+        token.burn(msg.sender, _amount);
         token.mint(feeRecipient, fee);
 
         require(

@@ -123,7 +123,9 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
                 ),
             ]);
 
-        (await renbtc.balanceOf.call(user)).should.bignumber.equal(balanceBefore.sub(subtractedValueScaled));
+        // Should be at most 1 less than the expected value.
+        (await renbtc.balanceOf.call(user)).should.bignumber.lte(balanceBefore.sub(subtractedValueScaled));
+        (await renbtc.balanceOf.call(user)).should.bignumber.gte(balanceBefore.sub(subtractedValueScaled).sub(new BN(1)));
     };
 
     describe("can mint and burn", () => {
