@@ -4,7 +4,7 @@ import hashjs from "hash.js";
 
 // import { config } from "../migrations/networks";
 import {
-    DarknodePaymentStoreInstance, DarknodeRegistryInstance, DarknodeRegistryStoreInstance,
+    DarknodePaymentStoreInstance, DarknodeRegistryLogicV1Instance, DarknodeRegistryStoreInstance,
     DarknodeSlasherInstance, RenTokenInstance,
 } from "../types/truffle-contracts";
 import {
@@ -16,20 +16,17 @@ import {
     generateSecretMessage,
 } from "./Validate";
 
-const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
-const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 const numDarknodes = 5;
 
 contract("DarknodeSlasher", (accounts: string[]) => {
 
-    let store: DarknodePaymentStoreInstance;
     let ren: RenTokenInstance;
-    let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryInstance;
+    let dnr: DarknodeRegistryLogicV1Instance;
     let slasher: DarknodeSlasherInstance;
     const darknodes = new Array<Darknode>();
 
@@ -37,9 +34,8 @@ contract("DarknodeSlasher", (accounts: string[]) => {
 
     before(async () => {
         ren = await RenToken.deployed();
-        dnrs = await DarknodeRegistryStore.deployed();
-        dnr = await DarknodeRegistry.deployed();
-        store = await DarknodePaymentStore.deployed();
+        const dnrProxy = await DarknodeRegistryProxy.deployed();
+        dnr = await DarknodeRegistryLogicV1.at(dnrProxy.address);
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
         await waitForEpoch(dnr);

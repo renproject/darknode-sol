@@ -16,7 +16,7 @@ contract GatewayStateV1 {
     uint256 public minimumBurnAmount;
 
     /// @notice Each Gateway is tied to a specific RenERC20 token.
-    RenERC20 public token;
+    RenERC20LogicV1 public token;
 
     /// @notice The mintAuthority is an address that can sign mint requests.
     address public mintAuthority;
@@ -44,7 +44,7 @@ contract GatewayStateV1 {
 /// @notice Gateway handles verifying mint and burn requests. A mintAuthority
 /// approves new assets to be minted by providing a digital signature. An owner
 /// of an asset can request for it to be burnt.
-contract GatewayLogic is
+contract GatewayLogicV1 is
     Initializable,
     Claimable,
     CanReclaimTokens,
@@ -75,7 +75,7 @@ contract GatewayLogic is
     /// @param _burnFee The amount subtracted each burn request and
     ///        forwarded to the feeRecipient. In BIPS.
     function initialize(
-        RenERC20 _token,
+        RenERC20LogicV1 _token,
         address _feeRecipient,
         address _mintAuthority,
         uint16 _mintFee,
@@ -102,7 +102,7 @@ contract GatewayLogic is
     }
 
     /// @notice Allow the owner to update the owner of the RenERC20 token.
-    function transferTokenOwnership(GatewayLogic _nextTokenOwner)
+    function transferTokenOwnership(GatewayLogicV1 _nextTokenOwner)
         public
         onlyOwner
     {

@@ -4,9 +4,9 @@ const NULL = "0x0000000000000000000000000000000000000000";
 
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 
-const RenERC20 = artifacts.require("RenERC20");
+const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");
 
-const GatewayLogic = artifacts.require("GatewayLogic");
+const GatewayLogicV1 = artifacts.require("GatewayLogicV1");
 
 const BTCGateway = artifacts.require("BTCGateway");
 const renBTC = artifacts.require("renBTC");
@@ -19,7 +19,7 @@ const renBCH = artifacts.require("renBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
+const ProtocolLogicV1 = artifacts.require("ProtocolLogicV1");
 const ProtocolProxy = artifacts.require("ProtocolProxy");
 const BasicAdapter = artifacts.require("BasicAdapter");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
@@ -48,15 +48,15 @@ module.exports = async function (deployer, network, [contractOwner]) {
     ZECGateway.address = addresses.ZECGateway || "";
     BCHGateway.address = addresses.BCHGateway || "";
     GatewayRegistry.address = addresses.GatewayRegistry || "";
-    GatewayLogic.address = addresses.GatewayLogic || "";
+    GatewayLogicV1.address = addresses.GatewayLogicV1 || "";
     renZEC.address = addresses.renZEC || "";
     renBCH.address = addresses.renBCH || "";
     renBTC.address = addresses.renBTC || "";
     BasicAdapter.address = addresses.BasicAdapter || "";
-    RenERC20.address = addresses.RenERC20Logic || "";
+    RenERC20LogicV1.address = addresses.RenERC20Logic || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
-    const protocol = await ProtocolLogic.at(ProtocolProxy.address);
+    const protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
     let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
 
     let actionCount = 0;
@@ -95,15 +95,15 @@ module.exports = async function (deployer, network, [contractOwner]) {
     //     deployer.logger.log("Unable to call darknodePayment.changeCycle()");
     // }
 
-    if (!RenERC20.address) {
-        deployer.logger.log(`Deploying RenERC20 logic`);
-        await deployer.deploy(RenERC20);
+    if (!RenERC20LogicV1.address) {
+        deployer.logger.log(`Deploying RenERC20LogicV1 logic`);
+        await deployer.deploy(RenERC20LogicV1);
         actionCount++;
     }
 
-    if (!GatewayLogic.address) {
-        deployer.logger.log(`Deploying GatewayLogic logic`);
-        await deployer.deploy(GatewayLogic);
+    if (!GatewayLogicV1.address) {
+        deployer.logger.log(`Deploying GatewayLogicV1 logic`);
+        await deployer.deploy(GatewayLogicV1);
         actionCount++;
     }
 
@@ -120,7 +120,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
             deployer.logger.log(`Deploying ${symbol} proxy`);
             await deployer.deploy(Token);
             const tokenProxy = await Token.at(Token.address);
-            await tokenProxy.initialize(RenERC20.address, renProxyAdmin.address, encodeCallData(
+            await tokenProxy.initialize(RenERC20LogicV1.address, renProxyAdmin.address, encodeCallData(
                 web3,
                 "initialize",
                 ["uint256", "address", "uint256", "string", "string", "string", "uint8"],
@@ -128,18 +128,18 @@ module.exports = async function (deployer, network, [contractOwner]) {
             );
             actionCount++;
         }
-        const token = await RenERC20.at(Token.address);
+        const token = await RenERC20LogicV1.at(Token.address);
 
         const tokenProxyLogic = await renProxyAdmin.getProxyImplementation(Token.address);
-        if (tokenProxyLogic.toLowerCase() !== RenERC20.address.toLowerCase()) {
-            throw new Error(`ERROR: ${name} token is pointing to out-dated ProtocolLogic.`);
+        if (tokenProxyLogic.toLowerCase() !== RenERC20LogicV1.address.toLowerCase()) {
+            throw new Error(`ERROR: ${name} token is pointing to out-dated ProtocolLogicV1.`);
         }
 
         if (!Gateway.address) {
             deployer.logger.log(`Deploying ${symbol} Gateway proxy`);
             await deployer.deploy(Gateway);
             const tokenProxy = await Gateway.at(Gateway.address);
-            await tokenProxy.initialize(GatewayLogic.address, renProxyAdmin.address, encodeCallData(
+            await tokenProxy.initialize(GatewayLogicV1.address, renProxyAdmin.address, encodeCallData(
                 web3,
                 "initialize",
                 ["address", "address", "address", "uint16", "uint16", "uint256"],
@@ -154,11 +154,11 @@ module.exports = async function (deployer, network, [contractOwner]) {
             );
             actionCount++;
         }
-        const tokenGateway = await GatewayLogic.at(Gateway.address);
+        const tokenGateway = await GatewayLogicV1.at(Gateway.address);
 
         const gatewayProxyLogic = await renProxyAdmin.getProxyImplementation(Gateway.address);
-        if (gatewayProxyLogic.toLowerCase() !== GatewayLogic.address.toLowerCase()) {
-            throw new Error(`ERROR: ${name} gateway is pointing to out-dated ProtocolLogic.`);
+        if (gatewayProxyLogic.toLowerCase() !== GatewayLogicV1.address.toLowerCase()) {
+            throw new Error(`ERROR: ${name} gateway is pointing to out-dated ProtocolLogicV1.`);
         }
 
         const gatewayMintAuthority = await tokenGateway.mintAuthority.call();

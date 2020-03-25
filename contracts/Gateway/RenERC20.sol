@@ -14,7 +14,7 @@ import "./ERC20WithPermit.sol";
 /// @notice RenERC20 represents a digital asset that has been bridged on to
 /// the Ethereum ledger. It exposes mint and burn functions that can only be
 /// called by it's associated Gateway contract.
-contract RenERC20 is
+contract RenERC20LogicV1 is
     Initializable,
     ERC20,
     ERC20Detailed,
@@ -55,6 +55,9 @@ contract RenERC20 is
     }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
+        // Disallow sending tokens to the ERC20 contract address - a common
+        // mistake caused by the Ethereum transaction's `to` needing to be
+        // the token's address.
         require(
             recipient != address(this),
             "RenERC20: can't transfer to token address"
@@ -66,6 +69,8 @@ contract RenERC20 is
         public
         returns (bool)
     {
+        // Disallow sending tokens to the ERC20 contract address (see comment
+        // in `transfer`).
         require(
             recipient != address(this),
             "RenERC20: can't transfer to token address"

@@ -1,20 +1,23 @@
 import BN from "bn.js";
 
 import {
-    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    RenTokenInstance,
+    DarknodeRegistryLogicV1Instance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
+    RenProxyAdminInstance, RenTokenInstance,
 } from "../types/truffle-contracts";
 import {
-    ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK, waitForEpoch,
+    deployProxy, ID, MINIMUM_BOND, MINIMUM_EPOCH_INTERVAL_SECONDS, MINIMUM_POD_SIZE, NULL, PUBK,
+    waitForEpoch,
 } from "./helper/testUtils";
 
 const Claimer = artifacts.require("Claimer");
 const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 const NormalToken = artifacts.require("NormalToken");
+const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const { config } = require("../migrations/networks");
 
@@ -24,14 +27,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryInstance;
+    let dnr: DarknodeRegistryLogicV1Instance;
     let slasher: DarknodeSlasherInstance;
+    let proxyAdmin: RenProxyAdminInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        const dnrProxy = await DarknodeRegistryProxy.deployed();
+        dnr = await DarknodeRegistryLogicV1.at(dnrProxy.address);
         slasher = await DarknodeSlasher.deployed();
+        proxyAdmin = await RenProxyAdmin.deployed();
         await dnr.updateSlasher(slasher.address);
         await dnr.epoch({ from: accounts[1] })
             .should.be.rejectedWith(/DarknodeRegistry: not authorized to call first epoch/);
@@ -622,15 +628,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("transfer ownership of the dark node store", async () => {
-        const newDnr = await DarknodeRegistry.new(
-            "test",
-            RenToken.address,
-            dnrs.address,
-            config.MINIMUM_BOND,
-            config.MINIMUM_POD_SIZE,
-            config.MINIMUM_EPOCH_INTERVAL_SECONDS,
-            0,
-        );
+        const newDnr = await deployProxy<DarknodeRegistryLogicV1Instance>(web3, DarknodeRegistryProxy, DarknodeRegistryLogicV1, proxyAdmin.address, [{ type: "string", value: "test", }, { type: "address", value: RenToken.address, }, { type: "address", value: dnrs.address, }, { type: "uint256", value: config.MINIMUM_BOND.toString(), }, { type: "uint256", value: config.MINIMUM_POD_SIZE, }, { type: "uint256", value: config.MINIMUM_EPOCH_INTERVAL_SECONDS, }, { type: "uint256", value: 0 }], { from: accounts[0] });
 
         // [ACTION] Initiate ownership transfer to wrong account
         await dnr.transferStoreOwnership(newDnr.address);
@@ -766,20 +764,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     describe("when darknode payment is not set", async () => {
         let newDNRstore: DarknodeRegistryStoreInstance;
-        let newDNR: DarknodeRegistryInstance;
+        let newDNR: DarknodeRegistryLogicV1Instance;
 
         before(async () => {
             // Deploy a new DNR and DNR store
             newDNRstore = await DarknodeRegistryStore.new("test", RenToken.address);
-            newDNR = await DarknodeRegistry.new(
-                "test",
-                RenToken.address,
-                newDNRstore.address,
-                config.MINIMUM_BOND,
-                config.MINIMUM_POD_SIZE,
-                config.MINIMUM_EPOCH_INTERVAL_SECONDS,
-                0,
-            );
+            newDNR = await deployProxy<DarknodeRegistryLogicV1Instance>(web3, DarknodeRegistryProxy, DarknodeRegistryLogicV1, proxyAdmin.address, [{ type: "string", value: "test", }, { type: "address", value: RenToken.address, }, { type: "address", value: newDNRstore.address, }, { type: "uint256", value: config.MINIMUM_BOND.toString(), }, { type: "uint256", value: config.MINIMUM_POD_SIZE, }, { type: "uint256", value: config.MINIMUM_EPOCH_INTERVAL_SECONDS, }, { type: "uint256", value: 0 }], { from: accounts[0] });
+
             // Initiate ownership transfer of DNR store
             await newDNRstore.transferOwnership(newDNR.address);
             await newDNR.claimStoreOwnership();
@@ -810,7 +801,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     describe("upgrade DarknodeRegistry while maintaining store", async () => {
-        let newDNR: DarknodeRegistryInstance;
+        let newDNR: DarknodeRegistryLogicV1Instance;
 
         let preCountPreviousEpoch: BN;
         let preCount: BN;
@@ -830,15 +821,8 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             preDarknodes = await dnr.getDarknodes.call(NULL, 0);
 
             // Deploy a new DNR and DNR store
-            newDNR = await DarknodeRegistry.new(
-                "test",
-                RenToken.address,
-                dnrs.address,
-                config.MINIMUM_BOND,
-                config.MINIMUM_POD_SIZE,
-                config.MINIMUM_EPOCH_INTERVAL_SECONDS,
-                0,
-            );
+            newDNR = await deployProxy<DarknodeRegistryLogicV1Instance>(web3, DarknodeRegistryProxy, DarknodeRegistryLogicV1, proxyAdmin.address, [{ type: "string", value: "test", }, { type: "address", value: RenToken.address, }, { type: "address", value: dnrs.address, }, { type: "uint256", value: config.MINIMUM_BOND.toString(), }, { type: "uint256", value: config.MINIMUM_POD_SIZE, }, { type: "uint256", value: config.MINIMUM_EPOCH_INTERVAL_SECONDS, }, { type: "uint256", value: 0 }], { from: accounts[0] });
+
             // Initiate ownership transfer of DNR store
             await dnr.transferStoreOwnership(newDNR.address);
 
