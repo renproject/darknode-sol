@@ -62,7 +62,7 @@
         },
         {
           "internalType": "address payable",
-          "name": "_darknodeOwner",
+          "name": "_darknodeOperator",
           "type": "address"
         },
         {
@@ -182,7 +182,7 @@
           "type": "address"
         }
       ],
-      "name": "darknodeOwner",
+      "name": "darknodeOperator",
       "outputs": [
         {
           "internalType": "address payable",
@@ -234,6 +234,21 @@
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -412,10 +427,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -425,26 +440,25 @@
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": true,
+              "internalType": "address",
               "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x3eA70E8eE1C4e0Fe9Cc2b120d72800f093a39665",
-      "transactionHash": "0x6d1f151291f7ba397f43af2ec0071ba675c5565c4ba00e4d4ebcba8414f79fd9"
+      "address": "0x3ccF0cd02ff15b59Ce2B152CdDE78551eFd34a62",
+      "transactionHash": "0xcfff9860ac1589c3c0611ac9846ca556412f93f057724906194deff7501d77ca"
     }
   },
-  "schemaVersion": "3.0.20"
+  "schemaVersion": "3.0.23"
 }

@@ -1,7 +1,13 @@
 {
-  "contractName": "ShifterRegistry",
+  "contractName": "GatewayRegistry",
   "abi": [
     {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -19,17 +25,17 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "_token",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_shifterAddress",
+          "name": "_gatewayContract",
           "type": "address"
         }
       ],
-      "name": "LogShifterDeregistered",
+      "name": "LogGatewayDeregistered",
       "type": "event"
     },
     {
@@ -50,17 +56,17 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "_token",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_shifterAddress",
+          "name": "_gatewayContract",
           "type": "address"
         }
       ],
-      "name": "LogShifterRegistered",
+      "name": "LogGatewayRegistered",
       "type": "event"
     },
     {
@@ -69,23 +75,23 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "_token",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_currentShifterAddress",
+          "name": "_currentGatewayContract",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_newShifterAddress",
+          "name": "_newGatewayContract",
           "type": "address"
         }
       ],
-      "name": "LogShifterUpdated",
+      "name": "LogGatewayUpdated",
       "type": "event"
     },
     {
@@ -135,6 +141,48 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_tokenSymbol",
+          "type": "string"
+        }
+      ],
+      "name": "getGatewayBySymbol",
+      "outputs": [
+        {
+          "internalType": "contract IGateway",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "getGatewayByToken",
+      "outputs": [
+        {
+          "internalType": "contract IGateway",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_start",
           "type": "address"
@@ -145,7 +193,7 @@
           "type": "uint256"
         }
       ],
-      "name": "getShiftedTokens",
+      "name": "getGateways",
       "outputs": [
         {
           "internalType": "address[]",
@@ -161,48 +209,6 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "string",
-          "name": "_tokenSymbol",
-          "type": "string"
-        }
-      ],
-      "name": "getShifterBySymbol",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_tokenAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getShifterByToken",
-      "outputs": [
-        {
-          "internalType": "contract IShifter",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
           "internalType": "address",
           "name": "_start",
           "type": "address"
@@ -213,7 +219,7 @@
           "type": "uint256"
         }
       ],
-      "name": "getShifters",
+      "name": "getRenTokens",
       "outputs": [
         {
           "internalType": "address[]",
@@ -237,13 +243,28 @@
       "name": "getTokenBySymbol",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "contract IERC20",
           "name": "",
           "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -315,7 +336,7 @@
           "type": "string"
         }
       ],
-      "name": "removeShifter",
+      "name": "removeGateway",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -334,20 +355,46 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        },
+        {
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "_token",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_shifterAddress",
+          "name": "_gatewayContract",
           "type": "address"
         }
       ],
-      "name": "setShifter",
+      "name": "setGateway",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_tokenSymbol",
+          "type": "string"
+        }
+      ],
+      "name": "symbolIsValid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -370,149 +417,141 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "_token",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_newShifterAddress",
+          "name": "_newGatewayContract",
           "type": "address"
         }
       ],
-      "name": "updateShifter",
+      "name": "updateGateway",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/Shifter/ShifterRegistry.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/Gateway/GatewayRegistry.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
       "events": {
+        "0xea98e49727cf7c3a8c3926a036a6d41047c9b766d9109f22962950f37a2094aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_symbol",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "string",
+              "name": "_indexedSymbol",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_token",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_gatewayContract",
+              "type": "address"
+            }
+          ],
+          "name": "LogGatewayDeregistered",
+          "type": "event"
+        },
+        "0xd433aae9ea620c1976ff88f75c629f477dbffe6bf277edad8a31c983117ab32a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_symbol",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "string",
+              "name": "_indexedSymbol",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_token",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_gatewayContract",
+              "type": "address"
+            }
+          ],
+          "name": "LogGatewayRegistered",
+          "type": "event"
+        },
+        "0x2dc9e208c924a5b14066ecb7121b371da427e696ad69456ed07a52cd2a710d99": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_token",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_currentGatewayContract",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_newGatewayContract",
+              "type": "address"
+            }
+          ],
+          "name": "LogGatewayUpdated",
+          "type": "event"
+        },
         "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": true,
+              "internalType": "address",
               "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
-          "constant": false,
-          "outputs": [],
-          "payable": false,
-          "stateMutability": "nonpayable"
-        },
-        "0xad1b5a1f09ea4cf872d9274b59cccba2c4fb43f92eaf5a54b705449417adce1e": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "name": "_symbol",
-              "type": "string",
-              "internalType": "string"
-            },
-            {
-              "indexed": true,
-              "name": "_indexedSymbol",
-              "type": "string",
-              "internalType": "string"
-            },
-            {
-              "indexed": true,
-              "name": "_tokenAddress",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "_shifterAddress",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "LogShifterRegistered",
-          "type": "event",
-          "signature": "0xad1b5a1f09ea4cf872d9274b59cccba2c4fb43f92eaf5a54b705449417adce1e"
-        },
-        "0x7fa2fe506a0201656c1d87a8927899ad716ebd71b23fdabce40b56ae22056963": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "name": "_symbol",
-              "type": "string",
-              "internalType": "string"
-            },
-            {
-              "indexed": true,
-              "name": "_indexedSymbol",
-              "type": "string",
-              "internalType": "string"
-            },
-            {
-              "indexed": true,
-              "name": "_tokenAddress",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "_shifterAddress",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "LogShifterDeregistered",
-          "type": "event",
-          "signature": "0x7fa2fe506a0201656c1d87a8927899ad716ebd71b23fdabce40b56ae22056963"
-        },
-        "0x78ef5fc29fe65855a5352e3954d6839f596542b47b3aeb40b84596358d06f09a": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "_tokenAddress",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "_currentShifterAddress",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "_newShifterAddress",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "LogShifterUpdated",
-          "type": "event",
-          "signature": "0x78ef5fc29fe65855a5352e3954d6839f596542b47b3aeb40b84596358d06f09a"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
-      "transactionHash": "0x1e22e004b96b05783a012f8073432e2413f925af2207edd0afb0918293102708"
+      "address": "0x5F051E588f39D95bc6c1742f6FA98B103aa0E5c8",
+      "transactionHash": "0x4bfcb638efe6e5fffa5faff18aee30bcf024dc16631fe3aa8f54507156ab53c8"
     }
   },
-  "schemaVersion": "3.0.20"
+  "schemaVersion": "3.0.23"
 }

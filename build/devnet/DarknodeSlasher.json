@@ -4,7 +4,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_darknodeRegistry",
           "type": "address"
         }
@@ -17,14 +17,14 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "contract DarknodeRegistry",
+          "indexed": true,
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_previousDarknodeRegistry",
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "contract DarknodeRegistry",
+          "indexed": true,
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_nextDarknodeRegistry",
           "type": "address"
         }
@@ -117,13 +117,28 @@
       "name": "darknodeRegistry",
       "outputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "",
           "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -526,7 +541,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_darknodeRegistry",
           "type": "address"
         }
@@ -538,59 +553,57 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/DarknodeSlasher/DarknodeSlasher.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/DarknodeSlasher/DarknodeSlasher.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
       "events": {
-        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
-            },
-            {
-              "indexed": true,
-              "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
-            }
-          ],
-          "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
-        },
         "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7": {
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
-              "internalType": "contract DarknodeRegistry",
+              "indexed": true,
+              "internalType": "contract DarknodeRegistryLogicV1",
               "name": "_previousDarknodeRegistry",
               "type": "address"
             },
             {
-              "indexed": false,
-              "internalType": "contract DarknodeRegistry",
+              "indexed": true,
+              "internalType": "contract DarknodeRegistryLogicV1",
               "name": "_nextDarknodeRegistry",
               "type": "address"
             }
           ],
           "name": "LogDarknodeRegistryUpdated",
-          "type": "event",
-          "signature": "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7"
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0xf29c5726F9f8afA51CE39658e713dc40692218C5",
-      "transactionHash": "0xb2437f82bfcc177ef12d333398529606917e9854b9083fb6404c3cfe5d56dc71"
+      "address": "0xf4E4AdbDDfd6EBc9457ad7ab9249f63701942BE3",
+      "transactionHash": "0x90d5073a4b448075a93399bdc7352d2feff1b39c4a10b95659a3db4a8acf78df"
     }
   },
-  "schemaVersion": "3.0.20"
+  "schemaVersion": "3.0.23"
 }
