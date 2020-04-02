@@ -20,39 +20,43 @@ const config = {
 
 module.exports = {
     mainnet: {
-        RenProxyAdmin: "",
-        ProtocolProxy: "",
-        ProtocolLogicV1: "",
+        RenProxyAdmin: "0xDf1D8eD27C54bBE5833320cf5a19fd9E73530145",
         RenToken: "0x408e41876cCCDC0F92210600ef50372656052a38",
-        DarknodeSlasher: "0x0000000000000000000000000000000000000000",
+        DarknodeSlasher: "0x64512ff05a27756694E306e483cBB725F1754C0e",
+
+        // Protocol
+        ProtocolLogicV1: "0x8b49f212F2236F4f49bBeff878a73051a8915DE0",
+        ProtocolProxy: "0xc25167fFa19B4d9d03c7d5aa4682c7063F345b66",
 
         // DNR
-        DarknodeRegistryLogicV1: "",
-        DarknodeRegistryProxy: "0x34bd421C7948Bc16f826Fd99f9B785929b121633",
-        DarknodeRegistryStore: "0x06df0657ba5e8f5339e742212669f6e7ee3c5057",
+        DarknodeRegistryStore: "0x60Ab11FE605D2A2C3cf351824816772a131f8782",
+        DarknodeRegistryLogicV1: "0x33b53A700de61b6be01d65A758b3635584bCF140",
+        DarknodeRegistryProxy: "0x2D7b6C95aFeFFa50C068D50f89C5C0014e054f0A",
 
         // DNP
-        DarknodePayment: "0x5a7802E66b067cB1770ee5b1165AA201690A8B6a",
-        DarknodePaymentStore: "0x731Ea4Ba77fF184d89dBeB160A0078274Acbe9D2",
+        DarknodePaymentStore: "0xE33417797d6b8Aec9171d0d6516E88002fbe23E7",
+        DarknodePayment: "0x098e1708b920EFBdD7afe33Adb6a4CBa30c370B9",
 
         tokens: {
             DAI: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20Logic: "",
-        GatewayLogicV1: "",
-        BTCGateway: "",
-        ZECGateway: "",
-        BCHGateway: "",
-        renBTC: "",
-        renZEC: "",
-        renBCH: "",
-        GatewayRegistry: "",
+        RenERC20LogicV1: "0xe2d6cCAC3EE3A21AbF7BeDBE2E107FfC0C037e80",
+        GatewayLogicV1: "0x402ec534BaF9e8Dd2968c57fDea368f3856460d6",
+        BTCGateway: "0xe4b679400F0f267212D5D812B95f58C83243EE71",
+        ZECGateway: "0xc3BbD5aDb611dd74eCa6123F05B18acc886e122D",
+        BCHGateway: "0xCc4FF5b8A4A7adb35F00ff0CBf53784e07c3C52F",
+        renBTC: "0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D",
+        renZEC: "0x1C5db575E2Ff833E46a2E9864C22F4B22E0B37C2",
+        renBCH: "0x459086F2376525BdCebA5bDDA135e4E9d3FeF5bf",
+        GatewayRegistry: "0xe80d347DF1209a76DD9d2319d62912ba98C54DDD",
+
+        BasicAdapter: "0x32666B64e9fD0F44916E1378Efb2CFa3B3B96e80",
 
         config: {
             ...config,
-            mintAuthority: "TODO",
+            mintAuthority: "0x0000000000000000000000000000000000000001",
 
             tokenPrefix: "ren",
         },
@@ -79,7 +83,7 @@ module.exports = {
         DarknodePaymentStore: "0x311999EE72B5826D664FD4F3aC09c0C462eFfe49",
 
 
-        RenERC20Logic: "",
+        RenERC20LogicV1: "",
         GatewayLogicV1: "",
         BTCGateway: "0x1258d7FF385d1d81017d4a3d464c02f74C61902a",
         ZECGateway: "0x2b59Ef3Eb28c7388c7eC69d43a9b8E585C461d5b",
@@ -100,37 +104,51 @@ module.exports = {
         },
     },
     testnet: {
-        RenProxyAdmin: "",
-        ProtocolProxy: "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
-        ProtocolLogicV1: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
+        /* 1_darknodes.js */
+
+        RenProxyAdmin: "0x4C695C4Aa6238f0A7092733180328c2E64C912C7",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
+
+        // Protocol
+        ProtocolLogicV1: "0x43d39d7ea61741f26E09D377F4E79B1F847Dc356",
+        ProtocolProxy: "0x59e23c087cA9bd9ce162875811CD6e99134D6d0F",
 
         // DNR
-        DarknodeRegistryLogicV1: "",
-        DarknodeRegistryProxy: "0xf33AEd5bEfd9e9a2E92495Ea971c57866C39869f",
-        DarknodeRegistryStore: "0xc24146aE71470C2f8749DA0738b09434E0220d92",
+        DarknodeRegistryStore: "0x9daa16aA19e37f3de06197a8B5E638EC5e487392",
+        DarknodeRegistryLogicV1: "0x046EDe9916e13De79d5530b67FF5dEbB7B72742C",
+        DarknodeRegistryProxy: "0x9954C9F839b31E82bc9CA98F234313112D269712",
 
         // DNP
-        DarknodePayment: "0x4Fc1f776ddfeb7AC1A93Cbb9FcbeFdda7e3C838E",
-        DarknodePaymentStore: "0x823c22F1e17766271a5986D9faa12bcfFDeb701B",
+        DarknodePaymentStore: "0x0EC73cCDCd8e643d909D0c4b663Eb1B2Fb0b1e1C",
+        DarknodePayment: "0x023f2e94C3eb128D3bFa6317a3fF860BF93C1616",
+
+        // Slasher
+        DarknodeSlasher: "0x5B403bdC360A447290758c8BA779c44cdFC3476F",
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20Logic: "",
-        GatewayLogicV1: "",
-        BTCGateway: "0x7e6E1D8F26D2b49B2fB4C3B6f5b7dad8d8ea781b",
-        ZECGateway: "0x1615f5a285134925Fb4D87812827863fde046fDa",
-        BCHGateway: "0xea08e98E56f1088E2001fAB8369A1c9fEEc58Ec9",
-        renBTC: "0xc6069E8DeA210C937A846db2CEbC0f58ca111f26",
-        renZEC: "0xB9b5B5346BF8CA9bc02f4F9d8947916b7CA9C97E",
-        renBCH: "0x7bdb2A8231eB4E4795749F01f0241940a8166575",
-        GatewayRegistry: "0xbA563a8510d86dE95F5a50007E180d6d4966ad12",
+        /* 2_shifter.js */
 
-        BasicAdapter: "0xdCb0B03c2fc9F0b3aF7742C3C1262db436BF5443",
+        GatewayRegistry: "0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D",
+        BasicAdapter: "0x7DDFA2e5435027f6e13Ca8Db2f32ebd5551158Bb",
+
+        RenERC20LogicV1: "0xCe77c29b479bDF510f39bc4A2e43B0E4344fAB0f",
+        GatewayLogicV1: "0x080d856994Fed1124c93AcA580aF035a86e9e9c7",
+
+        // BTC
+        renBTC: "0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f",
+        BTCGateway: "0x55363c0dBf97Ff9C0e31dAfe0fC99d3e9ce50b8A",
+
+        // ZEC
+        renZEC: "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610",
+        ZECGateway: "0xAACbB1e7bA99F2Ed6bd02eC96C2F9a52013Efe2d",
+
+        // BCH
+        renBCH: "0x618dC53e856b1A601119F2Fed5F1E873bCf7Bd6e",
+        BCHGateway: "0x9827c8a66a2259fd926E7Fd92EA8DF7ed1D813b1",
 
         config: {
             ...config,
@@ -141,37 +159,46 @@ module.exports = {
     },
 
     devnet: {
-        RenProxyAdmin: "",
-        ProtocolProxy: "0x1deB773B50B66b0e65e62E41380355a1A2BEd2e1",
-        ProtocolLogicV1: "0x6e35dBBE88A3746600E6e80DE52c6c5b062c6FBf",
+        /* 1_darknodes.js */
+
+        RenProxyAdmin: "0xA2C9D593bC096FbB3Cf5b869270645C470E5416B",
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "0xf29c5726F9f8afA51CE39658e713dc40692218C5",
+        DarknodeSlasher: "0xf4E4AdbDDfd6EBc9457ad7ab9249f63701942BE3",
+
+        // Protocol
+        ProtocolLogicV1: "0x4535CB2f0697e797C534cb0853F25470A9f59037",
+        ProtocolProxy: "0x5045E727D9D9AcDe1F6DCae52B078EC30dC95455",
 
         // DNR
-        DarknodeRegistryLogicV1: "",
-        DarknodeRegistryProxy: "0x00bC610a8080e251bABA56488241eB832D95a699",
-        DarknodeRegistryStore: "0x3eA70E8eE1C4e0Fe9Cc2b120d72800f093a39665",
+        DarknodeRegistryStore: "0x3ccF0cd02ff15b59Ce2B152CdDE78551eFd34a62",
+        DarknodeRegistryLogicV1: "0x26D6fEC1C904EB5b86ACed6BB804b4ed35208704",
+        DarknodeRegistryProxy: "0x7B69e5e15D4c24c353Fea56f72E4C0c5B93dCb71",
 
         // DNP
-        DarknodePayment: "0x388f0B88a814C8dA63F4574DF10C8987E29560e7",
-        DarknodePaymentStore: "0xa013EEb63525cDaa94D7FcD08cB822265b6044Fe",
+        DarknodePaymentStore: "0xfb98D6900330844CeAce6Ae4ae966D272bE1aeC3",
+        DarknodePayment: "0xC7F24fEDfbbAA5248E1F5a160cC30Dcbff9F1176",
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20Logic: "",
-        GatewayLogicV1: "",
-        BTCGateway: "0xCAae05102081Eea2Dc573488f44fe7e45f5BD441",
-        ZECGateway: "0x494644199dE72f32E320d99E48169DE0d7977BA8",
-        BCHGateway: "0x112dBA369B25cebbb739d7576F6E4aC2b582448A",
-        renBTC: "0x916B8012E1813E5924a3Eca400dBE6C7055a8484",
-        renZEC: "0x71b6A19Fc832bD9C739489EcBEa67ab41261026F",
-        renBCH: "0xfC1bc29e7a7282DA195f9b8A824cf242c770673F",
-        GatewayRegistry: "0xc7B310c18D78f175812CFfD8896d3cC959aC28d6",
+        /* 2_shifter.js */
 
-        BasicAdapter: "0x4D322a1DAA623F93F7C44F606f57F5f4D9925f8b",
+        GatewayRegistry: "0x5F051E588f39D95bc6c1742f6FA98B103aa0E5c8",
+        BasicAdapter: "0xFABDB1F53Ef8B080332621cBc9F820a39e7A1B83",
+
+        RenERC20LogicV1: "0xE121991B5DAB075E33C30E5C36EB5FFa9B2Af1A4",
+        GatewayLogicV1: "0xcADcCC772991d8c49c6242604d334f8a0B07A039",
+
+        renBTC: "0x581347fc652f9FCdbCA8372A4f65404C4154e93b",
+        BTCGateway: "0xb4fc6D131A44A3b44668E997Ce0CE00A52D4D9ed",
+
+        renZEC: "0x6f35D542f3E0886281fb6152010fb52aC6B931F6",
+        ZECGateway: "0x3E31c6E07Eb4C471A6443e90E304E9C68dcdEd7d",
+
+        renBCH: "0x148234809A551c131951bD01640494eecB905b08",
+        BCHGateway: "0x86efB11aF3f2c3E3df525a851e3F28E03F4Dcb17",
 
         config: {
             ...config,
@@ -182,37 +209,47 @@ module.exports = {
     },
 
     localnet: {
-        RenProxyAdmin: "",
-        ProtocolProxy: "0x28e4aA30e99F6B80acAf82Cc384a2438AF245204",
-        ProtocolLogicV1: "0xcfb2fD20211552216755E318aD091d0d1C3a39a7",
+        /* 1_darknodes.js */
+
+        RenProxyAdmin: "0xC822a36df55b8f88E48417A4765C7Fe27170D8eC",
+
         RenToken: "0x2cd647668494c1b15743ab283a0f980d90a87394",
-        DarknodeSlasher: "0x8447EfA2a06bfEf230c93fa60f8a82EEfEA5A427",
+        DarknodeSlasher: "0x65852e7ECC0eC12dC7e4b198D72e0D590029cDa9",
+
+        // Protocol
+        ProtocolLogicV1: "0xbD276BBAba798339007546392DAEF201EaFA780C",
+        ProtocolProxy: "0xE773eDEb42c56aD10456595b8e03C26BC6cde468",
 
         // DNR
-        DarknodeRegistryLogicV1: "",
-        DarknodeRegistryProxy: "0x226DE25a04AE3b133D6611614D3f24B7B787Abd6",
-        DarknodeRegistryStore: "0xA89F46C8daA8E8fe6F4dcc8361205d14b8E2A617",
+        DarknodeRegistryStore: "0xB38e11c615e14aE44173170763753733410D7432",
+        DarknodeRegistryLogicV1: "0xCd5e48F6F48abAFA46266395AD1C1B7b2219d0aE",
+        DarknodeRegistryProxy: "0x6adCF5Ba6e299Cf18D839795997A3c6844f37175",
 
         // DNP
-        DarknodePayment: "0x0C6445A8D3120e52B05A5892E562e53A6ae17Eb9",
-        DarknodePaymentStore: "0xee9de0Ab7BB06B063B44677382FE95C87b497358",
+        DarknodePaymentStore: "0x45378fF097d385a342557D291dE59f44f4250982",
+        DarknodePayment: "0x6C71C070e99a2585A72Ae3C8199d9326Ad9E898F",
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
             ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
-        RenERC20Logic: "",
-        GatewayLogicV1: "",
-        BTCGateway: "0x7012ECc13De5Ce416C14C013d9b02b7c37154b37",
-        ZECGateway: "0x69AC72Cb35B1AA818e90842C048719a3246ba0BE",
-        BCHGateway: "0x175b4A3cC812efd35fc3Ef86F5B1088ced85D96E",
-        renBTC: "0xDE027035d33CEB2757685E325de1A0b924aA73E6",
-        renZEC: "0xB7b7be50B13E6817afBb30C93161D0eB388b8f08",
-        renBCH: "0x679F9e30549311fE7FEE0Eae44CE09e043a44055",
-        GatewayRegistry: "0x33666067A7741B9e88520285C96B776E73281811",
+        /* 2_shifter.js */
 
-        BasicAdapter: "",
+        GatewayRegistry: "0x1832eb340d558a3c05C48247C6dF862Fde863ebB",
+        BasicAdapter: "0xD98d8EFF683129d040357439AbA49577452ECcaA",
+
+        RenERC20LogicV1: "0x4337DBfAC0348cd81c167CdB382d0c0B43e60187",
+        GatewayLogicV1: "0xb862cE796ac356E4F26507Fa297D5D07Ee4EC8EB",
+
+        renBTC: "0x74D4d4528E948bCebAE54810F2100B9278cb8dEc",
+        BTCGateway: "0xA86B7E2C8f45334EE63A379c6C84EAC539d98acA",
+
+        renZEC: "0x1c2B80b7444FC6235DE9ABdf68900E4EDb2b2617",
+        ZECGateway: "0x36e668b46DF1b4DfFb843FF8dbb6DBf7200AEAC9",
+
+        renBCH: "0xDF75fb289007DEedcd60f34a069D2941D3448E22",
+        BCHGateway: "0xEA96469Cd32D00b2EA1B00d9796e70b71134eD3f",
 
         config: {
             ...config,

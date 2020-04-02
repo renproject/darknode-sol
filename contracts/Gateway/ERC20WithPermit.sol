@@ -84,6 +84,5 @@ contract ERC20WithPermit is Initializable, ERC20, ERC20Detailed {
         require(nonce == nonces[holder]++, "ERC20WithRate: invalid nonce");
         uint256 amount = allowed ? uint256(-1) : 0;
         _approve(holder, spender, amount);
-        emit Approval(holder, spender, amount);
     }
 }

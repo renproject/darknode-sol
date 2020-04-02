@@ -29,7 +29,7 @@ for (const network of networks) {
                 const newObj = {
                     contractName: obj.contractName,
                     abi: obj.abi.sort(sortAbi),
-                    sourcePath: obj.sourcePath.replace(/.*\/darknode-sol\//g, "./"),
+                    sourcePath: obj.sourcePath.replace(/.*\/ren-sol\//g, "~/github/renproject/ren-sol/"),
                     compiler: obj.compiler,
                     networks: obj.networks,
                     schemaVersion: obj.schemaVersion,

@@ -53,6 +53,7 @@ contract GatewayLogicV1 is
 {
     using SafeMath for uint256;
 
+    event LogMintAuthorityUpdated(address indexed _newMintAuthority);
     event LogMint(
         address indexed _to,
         uint256 _amount,
@@ -65,6 +66,15 @@ contract GatewayLogicV1 is
         uint256 indexed _n,
         bytes indexed _indexedTo
     );
+
+    /// @notice Only allow the Darknode Payment contract.
+    modifier onlyOwnerOrMintAuthority() {
+        require(
+            msg.sender == mintAuthority || msg.sender == owner(),
+            "Gateway: caller is not the owner or mint authority"
+        );
+        _;
+    }
 
     /// @param _token The RenERC20 this Gateway is responsible for.
     /// @param _feeRecipient The recipient of burning and minting fees.
@@ -113,12 +123,18 @@ contract GatewayLogicV1 is
     /// @notice Allow the owner to update the fee recipient.
     ///
     /// @param _nextMintAuthority The address to start paying fees to.
-    function updateMintAuthority(address _nextMintAuthority) public onlyOwner {
+    function updateMintAuthority(address _nextMintAuthority)
+        public
+        onlyOwnerOrMintAuthority
+    {
+        // The mint authority should not be set to 0, which is the result
+        // returned by ecrecover for an invalid signature.
         require(
             _nextMintAuthority != address(0),
             "Gateway: mintAuthority cannot be set to address zero"
         );
         mintAuthority = _nextMintAuthority;
+        emit LogMintAuthorityUpdated(mintAuthority);
     }
 
     /// @notice Allow the owner to update the minimum burn amount.
@@ -302,16 +318,16 @@ contract GatewayLogicV1 is
 }
 
 /* solium-disable-next-line no-empty-blocks */
-contract GatewayProxy is InitializableAdminUpgradeabilityProxy {}
+// contract GatewayProxy is InitializableAdminUpgradeabilityProxy {}
 
 /// @dev The following duplicates are not necessary for deploying BTCGateway or
 /// ZECGateway contracts, but are used to track deployments.
 
 /* solium-disable-next-line no-empty-blocks */
-contract BTCGateway is GatewayProxy {}
+contract BTCGateway is InitializableAdminUpgradeabilityProxy {}
 
 /* solium-disable-next-line no-empty-blocks */
-contract ZECGateway is GatewayProxy {}
+contract ZECGateway is InitializableAdminUpgradeabilityProxy {}
 
 /* solium-disable-next-line no-empty-blocks */
-contract BCHGateway is GatewayProxy {}
+contract BCHGateway is InitializableAdminUpgradeabilityProxy {}

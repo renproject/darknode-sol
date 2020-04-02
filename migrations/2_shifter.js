@@ -1,6 +1,7 @@
 /// <reference types="../types/truffle-contracts" />
 
 const NULL = "0x0000000000000000000000000000000000000000";
+const NULL1 = "0x0000000000000000000000000000000000000001";
 
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 
@@ -9,13 +10,13 @@ const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");
 const GatewayLogicV1 = artifacts.require("GatewayLogicV1");
 
 const BTCGateway = artifacts.require("BTCGateway");
-const renBTC = artifacts.require("renBTC");
+const RenBTC = artifacts.require("RenBTC");
 
 const ZECGateway = artifacts.require("ZECGateway");
-const renZEC = artifacts.require("renZEC");
+const RenZEC = artifacts.require("RenZEC");
 
 const BCHGateway = artifacts.require("BCHGateway");
-const renBCH = artifacts.require("renBCH");
+const RenBCH = artifacts.require("RenBCH");
 
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
@@ -33,6 +34,8 @@ const { encodeCallData } = require("./encode");
  * @param {any[]} accounts
  */
 module.exports = async function (deployer, network, [contractOwner]) {
+    const Ox = web3.utils.toChecksumAddress;
+
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
 
     network = network.replace("-fork", "");
@@ -49,11 +52,11 @@ module.exports = async function (deployer, network, [contractOwner]) {
     BCHGateway.address = addresses.BCHGateway || "";
     GatewayRegistry.address = addresses.GatewayRegistry || "";
     GatewayLogicV1.address = addresses.GatewayLogicV1 || "";
-    renZEC.address = addresses.renZEC || "";
-    renBCH.address = addresses.renBCH || "";
-    renBTC.address = addresses.renBTC || "";
+    RenZEC.address = addresses.renZEC || "";
+    RenBCH.address = addresses.renBCH || "";
+    RenBTC.address = addresses.renBTC || "";
     BasicAdapter.address = addresses.BasicAdapter || "";
-    RenERC20LogicV1.address = addresses.RenERC20Logic || "";
+    RenERC20LogicV1.address = addresses.RenERC20LogicV1 || "";
 
     const darknodePayment = await DarknodePayment.at(DarknodePayment.address);
     const protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
@@ -73,7 +76,7 @@ module.exports = async function (deployer, network, [contractOwner]) {
     const registry = await GatewayRegistry.at(GatewayRegistry.address);
 
     const protocolGatewayRegistry = await protocol.gatewayRegistry.call();
-    if (protocolGatewayRegistry.toLowerCase() !== registry.address.toLowerCase()) {
+    if (Ox(protocolGatewayRegistry) !== Ox(registry.address)) {
         deployer.logger.log(`Updating GatewayRegistry in Protocol contract. Was ${protocolGatewayRegistry}, now is ${registry.address}`);
         await protocol._updateGatewayRegistry(registry.address);
         actionCount++;
@@ -100,21 +103,45 @@ module.exports = async function (deployer, network, [contractOwner]) {
         await deployer.deploy(RenERC20LogicV1);
         actionCount++;
     }
+    const renERC20Logic = await RenERC20LogicV1.at(RenERC20LogicV1.address);
+
+    // Initialize RenERC20Logic so others can't.
+    if (Ox(await renERC20Logic.owner()) === Ox(NULL)) {
+        deployer.logger.log("Ensuring RenERC20Logic is initialized");
+        await renERC20Logic.initialize(0, contractOwner, "1000000000000000000", "1", "", "", 0);
+        actionCount++;
+    }
 
     if (!GatewayLogicV1.address) {
         deployer.logger.log(`Deploying GatewayLogicV1 logic`);
         await deployer.deploy(GatewayLogicV1);
         actionCount++;
     }
+    const gatewayLogic = await GatewayLogicV1.at(GatewayLogicV1.address);
+
+    // Initialize GatewayLogic so others can't.
+    if (Ox(await gatewayLogic.owner()) === Ox(NULL)) {
+        deployer.logger.log("Ensuring GatewayLogic is initialized");
+        await gatewayLogic.initialize(
+            NULL,
+            NULL1,
+            NULL1,
+            10000,
+            10000,
+            0
+        );
+        actionCount++;
+    }
 
     const chainID = await web3.eth.net.getId();
 
     for (const [Token, Gateway, name, decimals, minimumBurnAmount] of [
-        [renBTC, BTCGateway, "BTC", 8, config.renBTCMinimumBurnAmount],
-        [renZEC, ZECGateway, "ZEC", 8, config.renZECMinimumBurnAmount],
-        [renBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
+        [RenBTC, BTCGateway, "BTC", 8, config.renBTCMinimumBurnAmount],
+        [RenZEC, ZECGateway, "ZEC", 8, config.renZECMinimumBurnAmount],
+        [RenBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
         const symbol = `${config.tokenPrefix}${name}`;
+        // console.log(`Handling ${symbol}`);
 
         if (!Token.address) {
             deployer.logger.log(`Deploying ${symbol} proxy`);
@@ -131,8 +158,10 @@ module.exports = async function (deployer, network, [contractOwner]) {
         const token = await RenERC20LogicV1.at(Token.address);
 
         const tokenProxyLogic = await renProxyAdmin.getProxyImplementation(Token.address);
-        if (tokenProxyLogic.toLowerCase() !== RenERC20LogicV1.address.toLowerCase()) {
-            throw new Error(`ERROR: ${name} token is pointing to out-dated ProtocolLogicV1.`);
+        if (Ox(tokenProxyLogic) !== Ox(RenERC20LogicV1.address)) {
+            deployer.logger.log(`${symbol} is pointing to out-dated RenERC20Logic.`);
+            await renProxyAdmin.upgrade(Token.address, RenERC20LogicV1.address);
+            actionCount++;
         }
 
         if (!Gateway.address) {
@@ -156,23 +185,25 @@ module.exports = async function (deployer, network, [contractOwner]) {
         }
         const tokenGateway = await GatewayLogicV1.at(Gateway.address);
 
-        const gatewayProxyLogic = await renProxyAdmin.getProxyImplementation(Gateway.address);
-        if (gatewayProxyLogic.toLowerCase() !== GatewayLogicV1.address.toLowerCase()) {
-            throw new Error(`ERROR: ${name} gateway is pointing to out-dated ProtocolLogicV1.`);
+        const gatewayProxyLogic = await renProxyAdmin.getProxyImplementation(tokenGateway.address);
+        if (Ox(gatewayProxyLogic) !== Ox(GatewayLogicV1.address)) {
+            deployer.logger.log(`${symbol} gateway is pointing to out-dated GatewayLogic.`);
+            await renProxyAdmin.upgrade(tokenGateway.address, GatewayLogicV1.address);
+            actionCount++;
         }
 
         const gatewayMintAuthority = await tokenGateway.mintAuthority.call();
-        if (gatewayMintAuthority.toLowerCase() !== _mintAuthority.toLowerCase()) {
+        if (Ox(gatewayMintAuthority) !== Ox(_mintAuthority)) {
             deployer.logger.log(`Updating mint authority in ${symbol} Gateway. Was ${gatewayMintAuthority}, now is ${_mintAuthority}`);
             await tokenGateway.updateMintAuthority(_mintAuthority);
             actionCount++;
         }
 
         const tokenOwner = await token.owner.call();
-        if (tokenOwner !== Gateway.address) {
+        if (Ox(tokenOwner) !== Ox(tokenGateway.address)) {
             deployer.logger.log(`Transferring ${symbol} ownership`);
 
-            if (tokenOwner === contractOwner) {
+            if (Ox(tokenOwner) === Ox(contractOwner)) {
                 await token.transferOwnership(tokenGateway.address);
 
                 // Update token's Gateway contract
@@ -203,9 +234,9 @@ module.exports = async function (deployer, network, [contractOwner]) {
         }
 
         const registered = await registry.getGatewayByToken.call(Token.address);
-        if (registered === NULL || registered !== Gateway.address) {
+        if (Ox(registered) === Ox(NULL) || Ox(registered) !== Ox(Gateway.address)) {
             const otherRegistration = (await registry.getGatewayBySymbol.call(symbol));
-            if (otherRegistration === NULL) {
+            if (Ox(otherRegistration) === Ox(NULL)) {
                 deployer.logger.log(`Registering ${symbol} Gateway`);
                 await registry.setGateway(name, Token.address, Gateway.address);
             } else {
@@ -216,8 +247,8 @@ module.exports = async function (deployer, network, [contractOwner]) {
         }
 
         const feeRecipient = await tokenGateway.feeRecipient.call();
-        if (feeRecipient.toLowerCase() !== DarknodePaymentStore.address.toLowerCase()) {
-            deployer.logger.log(`Updating fee recipient for ${symbol} Gateway. Was ${feeRecipient.toLowerCase()}, now is ${_feeRecipient.toLowerCase()}`);
+        if (Ox(feeRecipient) !== Ox(DarknodePaymentStore.address)) {
+            deployer.logger.log(`Updating fee recipient for ${symbol} Gateway. Was ${Ox(feeRecipient)}, now is ${Ox(_feeRecipient)}`);
             await tokenGateway.updateFeeRecipient(_feeRecipient);
             actionCount++;
         }
@@ -227,14 +258,25 @@ module.exports = async function (deployer, network, [contractOwner]) {
 
     /** LOG *******************************************************************/
 
-    deployer.logger.log({
-        BTCGateway: BTCGateway.address,
-        ZECGateway: ZECGateway.address,
-        BCHGateway: BCHGateway.address,
-        renBTC: renBTC.address,
-        renZEC: renZEC.address,
-        renBCH: renBCH.address,
-        GatewayRegistry: GatewayRegistry.address,
-        BasicAdapter: BasicAdapter.address,
-    });
+    deployer.logger.log(`
+        /* 2_shifter.js */
+
+        GatewayRegistry: "${GatewayRegistry.address}",
+        BasicAdapter: "${BasicAdapter.address}",
+
+        RenERC20LogicV1: "${RenERC20LogicV1.address}",
+        GatewayLogicV1: "${GatewayLogicV1.address}",
+
+        // BTC
+        renBTC: "${RenBTC.address}",
+        BTCGateway: "${BTCGateway.address}",
+
+        // ZEC
+        renZEC: "${RenZEC.address}",
+        ZECGateway: "${ZECGateway.address}",
+
+        // BCH
+        renBCH: "${RenBCH.address}",
+        BCHGateway: "${BCHGateway.address}",`
+    );
 }
