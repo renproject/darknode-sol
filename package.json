@@ -1,6 +1,6 @@
 {
   "name": "darknode-sol",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
     "generate": "truffle compile && typechain --target truffle './build/development/*.json'",

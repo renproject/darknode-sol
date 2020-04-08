@@ -16,7 +16,7 @@ const RenToken = artifacts.require("RenToken");
 const Claimer = artifacts.require("Claimer");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
 const BTCGateway = artifacts.require("BTCGateway");
-const renBTC = artifacts.require("renBTC");
+const RenBTC = artifacts.require("RenBTC");
 const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");
 const GatewayLogicV1 = artifacts.require("GatewayLogicV1");
 
@@ -33,7 +33,7 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
     const burnFees = new BN(15);
 
     before(async () => {
-        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, renBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
+        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, RenBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 
@@ -249,8 +249,11 @@ contract("Gateway", ([owner, feeRecipient, user, malicious, proxyGovernanceAddre
 
         it("can upgrade mint authority", async () => {
             await (btcGateway.updateMintAuthority(malicious, { from: malicious }))
-                .should.be.rejectedWith(/Ownable: caller is not the owner/);
+                .should.be.rejectedWith(/Gateway: caller is not the owner or mint authority/);
+            // Owner can update mint authority
             await btcGateway.updateMintAuthority(user, { from: owner });
+            // Mint authority can update mint authority
+            await btcGateway.updateMintAuthority(user, { from: user });
             await btcGateway.updateMintAuthority(mintAuthority.address, { from: owner });
         });
 

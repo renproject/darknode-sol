@@ -11,7 +11,7 @@ import { deployProxy, Ox, randomBytes } from "./helper/testUtils";
 const BasicAdapter = artifacts.require("BasicAdapter");
 const BTCGateway = artifacts.require("BTCGateway");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
-const renBTC = artifacts.require("renBTC");
+const RenBTC = artifacts.require("RenBTC");
 const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");
 const GatewayLogicV1 = artifacts.require("GatewayLogicV1");
 
@@ -29,7 +29,7 @@ contract.skip("Adapter", ([owner, feeRecipient, user, proxyGovernanceAddress]) =
     const burnFees = new BN(15);
 
     before(async () => {
-        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, renBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
+        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, RenBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
         mintAuthority = web3.eth.accounts.create();
         privKey = Buffer.from(mintAuthority.privateKey.slice(2), "hex");
 

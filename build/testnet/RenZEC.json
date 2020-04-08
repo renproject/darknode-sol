@@ -1,5 +1,5 @@
 {
-  "contractName": "Protocol",
+  "contractName": "RenZEC",
   "abi": [
     {
       "anonymous": false,
@@ -164,10 +164,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/Protocol/Protocol.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/Gateway/RenERC20.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -189,8 +189,7 @@
             }
           ],
           "name": "AdminChanged",
-          "type": "event",
-          "signature": "0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f"
+          "type": "event"
         },
         "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b": {
           "anonymous": false,
@@ -203,13 +202,12 @@
             }
           ],
           "name": "Upgraded",
-          "type": "event",
-          "signature": "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x8E28748620EA6f1285761AF41f311Cf6d05b188B",
-      "transactionHash": "0xf4577193f369d4db1499c168020e32ea5158170f93990a13a2471848050e28a8"
+      "address": "0x42805DA220DF1f8a33C16B0DF9CE876B9d416610"
     }
-  }
+  },
+  "schemaVersion": "3.0.23"
 }

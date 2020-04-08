@@ -11,7 +11,7 @@ import { deployProxy, increaseTime, Ox, randomBytes } from "./helper/testUtils";
 
 const BTCGateway = artifacts.require("BTCGateway");
 const GatewayRegistry = artifacts.require("GatewayRegistry");
-const renBTC = artifacts.require("renBTC");
+const RenBTC = artifacts.require("RenBTC");
 const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");
 const Vesting = artifacts.require("Vesting");
 const GatewayLogicV1 = artifacts.require("GatewayLogicV1");
@@ -31,7 +31,7 @@ contract.skip("Vesting", ([owner, feeRecipient, beneficiary, proxyGovernanceAddr
 
     beforeEach(async () => {
         // Setup the environment
-        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, renBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
+        renbtc = await deployProxy<RenERC20LogicV1Instance>(web3, RenBTC, RenERC20LogicV1, proxyGovernanceAddress, [{ type: "uint256", value: await web3.eth.net.getId() }, { type: "address", value: owner }, { type: "uint256", value: "500000000000000000" }, { type: "string", value: "1" }, { type: "string", value: "renBTC" }, { type: "string", value: "renBTC" }, { type: "uint8", value: 8 }], { from: owner });
 
         btcGateway = await deployProxy<GatewayLogicV1Instance>(web3, BTCGateway, GatewayLogicV1, proxyGovernanceAddress, [{ type: "address", value: renbtc.address }, { type: "address", value: feeRecipient }, { type: "address", value: mintAuthority.address }, { type: "uint16", value: mintFees.toNumber() }, { type: "uint16", value: burnFees.toNumber() }, { type: "uint256", value: 10000 }], { from: owner });
         await renbtc.transferOwnership(btcGateway.address);

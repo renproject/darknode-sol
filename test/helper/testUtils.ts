@@ -48,6 +48,9 @@ export const Ox = (hex: string | BN | Buffer) => {
 
 export const strip0x = (hex: string) => hex.substring(0, 2) === "0x" ? hex.slice(2) : hex;
 
+export const hexToBuffer = (hex: string | BN | Buffer) =>
+    BN.isBN(hex) ? hex.toBuffer() : Buffer.isBuffer(hex) ? hex : Buffer.from(strip0x(hex), "hex");
+
 export const randomBytes = (bytes: number): string => {
     return Ox(crypto.randomBytes(bytes));
 };
@@ -126,3 +129,5 @@ export const deployProxy = async <T>(web3: Web3, ProxyContract: Truffle.Contract
 export const sigToString = (sig: ECDSASignature) => {
     return Ox(`${sig.r.toString("hex")}${sig.s.toString("hex")}${(sig.v).toString(16)}`);
 };
+
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

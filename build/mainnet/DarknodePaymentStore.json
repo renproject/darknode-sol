@@ -6248,13 +6248,34 @@
   },
   "networks": {
     "1": {
-      "events": {},
+      "events": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        }
+      },
       "links": {},
-      "address": "0x731Ea4Ba77fF184d89dBeB160A0078274Acbe9D2"
+      "address": "0xE33417797d6b8Aec9171d0d6516E88002fbe23E7"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-03-23T11:03:08.872Z",
+  "updatedAt": "2020-03-30T04:17:17.315Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "availableBalance(address)": {
