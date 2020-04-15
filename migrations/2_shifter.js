@@ -31,9 +31,10 @@ const { encodeCallData } = require("./encode");
 /**
  * @param {any} deployer
  * @param {string} network
- * @param {any[]} accounts
  */
-module.exports = async function (deployer, network, [contractOwner]) {
+module.exports = async function (deployer, network) {
+    const contractOwner = (await web3.eth.getAccounts())[0];
+
     const Ox = web3.utils.toChecksumAddress;
 
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);

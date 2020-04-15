@@ -35,7 +35,8 @@ const gitCommit = () => execSync("git describe --always --long").toString().trim
  * @param {any} deployer
  * @param {string} network
  */
-module.exports = async function (deployer, network, [contractOwner]) {
+module.exports = async function (deployer, network) {
+    const contractOwner = (await web3.eth.getAccounts())[0];
     const Ox = web3.utils.toChecksumAddress;
 
     deployer.logger.log(`Deploying to ${network} (${network.replace("-fork", "")})...`);
