@@ -8,11 +8,6 @@
 
 Ren is powered by the RenVM — the Ren Virtual Machine — in a decentralized network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
 
-## Docs
-
-* [Darknode Registry](./docs/01-darknode-registry.md)
-* [Darknode Payments](./docs/02-darknode-payments.md)
-
 ## Tests
 
 Install the dependencies.
