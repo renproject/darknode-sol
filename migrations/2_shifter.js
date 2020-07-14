@@ -33,6 +33,7 @@ const { encodeCallData } = require("./encode");
  * @param {string} network
  */
 module.exports = async function (deployer, network) {
+
     const contractOwner = (await web3.eth.getAccounts())[0];
 
     const Ox = web3.utils.toChecksumAddress;
@@ -189,7 +190,7 @@ module.exports = async function (deployer, network) {
         const gatewayProxyLogic = await renProxyAdmin.getProxyImplementation(tokenGateway.address);
         if (Ox(gatewayProxyLogic) !== Ox(GatewayLogicV1.address)) {
             deployer.logger.log(`${symbol} gateway is pointing to out-dated GatewayLogic.`);
-            await renProxyAdmin.upgrade(tokenGateway.address, GatewayLogicV1.address);
+            await renProxyAdmin.upgrade.write(tokenGateway.address, GatewayLogicV1.address);
             actionCount++;
         }
 

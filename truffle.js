@@ -24,7 +24,8 @@ const mainNetwork = {
   provider: () => new HDWalletProvider(process.env.MNEMONIC_MAINNET, `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`),
   network_id: 1,
   gas: 8721975,
-  gasPrice: 5.1 * GWEI,
+  gasPrice: 18 * GWEI,
+  networkCheckTimeout: 10000,
 };
 
 module.exports = {

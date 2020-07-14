@@ -5,6 +5,7 @@
   "scripts": {
     "generate": "truffle compile && typechain --target truffle './build/development/*.json'",
     "coverage": "yarn run generate && truffle run coverage",
+    "build": "yarn run generate && truffle build",
     "test": "yarn run generate && truffle test",
     "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/chaosnet/*.json\"",
     "bindings:go": "solc --optimize darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades @openzeppelin/contracts=`pwd`/node_modules/@openzeppelin/contracts --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') | abigen -pkg bindings --out bindings.go --abi -",

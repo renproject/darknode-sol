@@ -3,9 +3,7 @@ import { rawEncode, solidityPack } from "ethereumjs-abi";
 import { ecrecover, ecsign, isValidSignature, keccak256, pubToAddress } from "ethereumjs-util";
 import { toChecksumAddress } from "web3-utils";
 
-import {
-    RenERC20Instance, RenERC20LogicV1Instance, RenProxyAdminInstance,
-} from "../types/truffle-contracts";
+import { RenERC20LogicV1Instance, RenProxyAdminInstance } from "../types/truffle-contracts";
 import { log } from "./helper/logs";
 import {
     deployProxy, hexToBuffer, increaseTime, NULL, NULL32, Ox, randomID, sleep,
@@ -17,7 +15,7 @@ const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const MAX = new BN(2).pow(new BN(256)).sub(new BN(1));
 
-const signPermit = async (token: RenERC20Instance, privateKey: Buffer, from: string, to: string, allowed: boolean) => {
+const signPermit = async (token: RenERC20LogicV1Instance, privateKey: Buffer, from: string, to: string, allowed: boolean) => {
     const nonce = await token.nonces.call(from);
     const expiry = Math.round(new Date().getTime() / 1000) + 1 /* second */;
 
@@ -53,7 +51,7 @@ const signPermit = async (token: RenERC20Instance, privateKey: Buffer, from: str
     return { r, s, v, nonce, expiry };
 };
 
-const submitPermit = async (token: RenERC20Instance, privateKey: Buffer, from: string, to: string, allowed: boolean) => {
+const submitPermit = async (token: RenERC20LogicV1Instance, privateKey: Buffer, from: string, to: string, allowed: boolean) => {
     const { r, s, v, nonce, expiry } = await signPermit(token, privateKey, from, to, allowed);
 
     return token.permit(from, to, nonce, expiry, allowed, v, Ox(r), Ox(s), { from: to });
@@ -61,7 +59,7 @@ const submitPermit = async (token: RenERC20Instance, privateKey: Buffer, from: s
 
 contract("ERC20WithPermit", ([owner, secondUser, malicious]) => {
 
-    let token: RenERC20Instance;
+    let token: RenERC20LogicV1Instance;
     let proxyAdmin: RenProxyAdminInstance;
 
     const firstUserAcc = web3.eth.accounts.create();

@@ -324,10 +324,16 @@ contract GatewayLogicV1 is
 /// ZECGateway contracts, but are used to track deployments.
 
 /* solium-disable-next-line no-empty-blocks */
-contract BTCGateway is InitializableAdminUpgradeabilityProxy {}
+contract BTCGateway is InitializableAdminUpgradeabilityProxy {
+
+}
 
 /* solium-disable-next-line no-empty-blocks */
-contract ZECGateway is InitializableAdminUpgradeabilityProxy {}
+contract ZECGateway is InitializableAdminUpgradeabilityProxy {
+
+}
 
 /* solium-disable-next-line no-empty-blocks */
-contract BCHGateway is InitializableAdminUpgradeabilityProxy {}
+contract BCHGateway is InitializableAdminUpgradeabilityProxy {
+
+}
