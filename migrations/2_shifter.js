@@ -143,7 +143,7 @@ module.exports = async function (deployer, network) {
         [RenBCH, BCHGateway, "BCH", 8, config.renBCHMinimumBurnAmount],
     ]) {
         const symbol = `${config.tokenPrefix}${name}`;
-        // console.log(`Handling ${symbol}`);
+        deployer.logger.log(`Handling ${symbol}`);
 
         if (!Token.address) {
             deployer.logger.log(`Deploying ${symbol} proxy`);

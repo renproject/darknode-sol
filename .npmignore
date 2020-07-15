@@ -1,0 +1,44 @@
+# Node / NPM / Yarn
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / test artifacts
+coverage
+dist
+coverageEnv
+coverage.json
+.coveralls.yml
+.coverage_artifacts
+.coverage_contracts
+*output.log
+
+# Configuration files
+*.env
+.env*
+
+# OS files
+.DS_Store
+
+# Solidity
+.node-xmlhttprequest-sync-*
+scTopics
+allFiredEvents
+in_complete_tests
+build/development
+local_*
+bindings.go
+types
+
+
+# npmignore - content above this line is automatically generated and modifications may be omitted
+# see npmjs.com/npmignore for more details.
+test
+.circleci
+.github
+.vscode
+.gitattributes
+.solcover.js
+tsconfig.json
+tslint.json

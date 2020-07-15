@@ -1,5 +1,5 @@
 {
-  "name": "darknode-sol",
+  "name": "@renproject/sol",
   "version": "1.0.0",
   "repository": "https://github.io/renproject/darknode-sol",
   "scripts": {
@@ -14,7 +14,8 @@
     "deploy": "truffle migrate --network $NETWORK 2>&1 | tee $NETWORK-output.log",
     "deploy-skipDryRun": "truffle migrate --network $NETWORK --skipDryRun 2>&1 | tee $NETWORK-output.log",
     "clean-build": "echo  \"Have all contracts been verified on Etherscan? Continuing in 10 seconds...\" && sleep 10 && grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
-    "verify": "truffle run verify --network $NETWORK"
+    "verify": "truffle run verify --network $NETWORK",
+    "prepare-release": "npmignore"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.0",
@@ -38,6 +39,7 @@
     "ethereumjs-abi": "^0.6.8",
     "ganache-cli": "^6.9.1",
     "hash.js": "^1.1.7",
+    "npmignore": "^0.2.0",
     "patch-package": "^6.2.1",
     "solc": "^0.5.16",
     "solidity-coverage": "^0.7.2",

@@ -11,6 +11,10 @@ module.exports = {
         // Migration contract.
         "migrations/Migrations.sol",
 
+	// Examples
+	"Gateway/adapters/BasicAdapter.sol",
+	"Gateway/examples/Vesting.sol",
+
         // Contracts for assisting the tests.
         "test/ERC20WithFeesTest.sol",
         "test/tokens/ImpreciseToken.sol",
