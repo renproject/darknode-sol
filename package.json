@@ -2,6 +2,7 @@
   "name": "@renproject/sol",
   "version": "1.0.0",
   "repository": "https://github.io/renproject/darknode-sol",
+  "public": true,
   "scripts": {
     "generate": "truffle compile && typechain --target truffle './build/development/*.json'",
     "coverage": "yarn run generate && truffle run coverage",

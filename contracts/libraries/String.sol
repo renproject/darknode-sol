@@ -51,7 +51,7 @@ library String {
         return string(str);
     }
 
-    /// @notice Append four strings.
+    /// @notice Append eight strings.
     function add8(
         string memory a,
         string memory b,
