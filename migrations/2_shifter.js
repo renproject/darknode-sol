@@ -237,7 +237,7 @@ module.exports = async function (deployer, network) {
 
         const registered = await registry.getGatewayByToken.call(Token.address);
         if (Ox(registered) === Ox(NULL) || Ox(registered) !== Ox(Gateway.address)) {
-            const otherRegistration = (await registry.getGatewayBySymbol.call(symbol));
+            const otherRegistration = (await registry.getGatewayBySymbol.call(name));
             if (Ox(otherRegistration) === Ox(NULL)) {
                 deployer.logger.log(`Registering ${symbol} Gateway`);
                 await registry.setGateway(name, Token.address, Gateway.address);
