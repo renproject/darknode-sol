@@ -221,6 +221,45 @@ module.exports = {
         },
     },
 
+    rinkebyDevnet: {
+        /* 1_darknodes.js */
+
+        RenProxyAdmin: "0xed01c6323829CbFD3b6bAC8Baa11C7aC8A0F26fb",
+        RenToken: "0x8BCCcA938b311029948F70249709CAd7c0F28Bb4",
+
+        // Protocol
+        ProtocolLogicV1: "0x9Cc2d9cCea0AE9f7EDD91Cf91ab74074EeDbABE1",
+        ProtocolProxy: "0xc5786B864D1DaF57D653470f2fd0c921dC080953",
+
+        // DNR
+        DarknodeRegistryStore: "0x93151b8c88A7f6004656556880e2a3E701452375",
+        DarknodeRegistryLogicV1: "0xD46dc8a22B980C871207bC57b0e524C46cfB4c1B",
+        DarknodeRegistryProxy: "0x74d0651259Cd63e7c15Dc11e3787dB1D80D41d9E",
+
+        // DNP
+        DarknodePaymentStore: "0x0a1b343bB36dA2593d15162c8e0370eF5E0085B1",
+        DarknodePayment: "0x40BC55A28f07D2208c1a9Da4008912BFcc617463",
+
+        // Slasher
+        DarknodeSlasher: "0x78eFADC45D1ba7a2E51072F73b3C2E5Be1ca1B10",
+
+        tokens: {
+            DAI: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+
+        /* 2_shifter.js */
+
+        GatewayRegistry: "0xcF9F36668ad5b28B336B248a67268AFcF1ECbdbF",
+
+        config: {
+            ...config,
+            mintAuthority: "0xbb8c61159153d8a6ffd555584d1ac77fd57feca7",
+
+            tokenPrefix: "dev",
+        },
+    },
+
     localnet: {
         /* 1_darknodes.js */
 

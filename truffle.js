@@ -28,10 +28,21 @@ const mainNetwork = {
   networkCheckTimeout: 10000,
 };
 
+const ethRinkebyNetwork = {
+  // @ts-ignore
+  provider: () => new HDWalletProvider(process.env.MNEMONIC_TESTNET || process.env.MNEMONIC_KOVAN, `https://rinkeby.infura.io/v3/${process.env.INFURA_KEY}`),
+  network_id: 4,
+  // gas: 6721975,
+  // gasPrice: 6.5 * GWEI,
+  networkCheckTimeout: 10000,
+};
+
+
 module.exports = {
   networks: {
     localnet: kovanNetwork,
     devnet: kovanNetwork,
+    rinkebyDevnet: ethRinkebyNetwork,
     testnet: kovanNetwork,
     mainnet: mainNetwork,
     chaosnet: mainNetwork,

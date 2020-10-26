@@ -18,7 +18,8 @@ contract DarknodePayment is Claimable {
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice The special address for Ether.
-    address public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address
+        public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     DarknodeRegistryLogicV1 public darknodeRegistry; // Passed in as a constructor parameter.
 
@@ -514,5 +515,4 @@ contract DarknodePayment is Claimable {
         }
         pendingTokens.length = 0;
     }
-
 }

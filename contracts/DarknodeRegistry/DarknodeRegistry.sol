@@ -13,6 +13,7 @@ interface IDarknodePaymentStore {}
 
 interface IDarknodePayment {
     function changeCycle() external returns (uint256);
+
     function store() external view returns (IDarknodePaymentStore);
 }
 
@@ -439,11 +440,11 @@ contract DarknodeRegistryLogicV1 is
     /// @param _guilty The guilty prover whose bond is being slashed.
     /// @param _challenger The challenger who should receive a portion of the bond as reward.
     /// @param _percentage The total percentage  of bond to be slashed.
-    function slash(address _guilty, address _challenger, uint256 _percentage)
-        external
-        onlySlasher
-        onlyDarknode(_guilty)
-    {
+    function slash(
+        address _guilty,
+        address _challenger,
+        uint256 _percentage
+    ) external onlySlasher onlyDarknode(_guilty) {
         require(_percentage <= 100, "DarknodeRegistry: invalid percent");
 
         // If the darknode has not been deregistered then deregister it
@@ -730,7 +731,11 @@ contract DarknodeRegistryLogicV1 is
     function getDarknodeCountFromEpochs()
         private
         view
-        returns (uint256, uint256, uint256)
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
     {
         // Begin with the first node in the list
         uint256 nPreviousEpoch = 0;
@@ -768,4 +773,6 @@ contract DarknodeRegistryLogicV1 is
 }
 
 /* solium-disable-next-line no-empty-blocks */
-contract DarknodeRegistryProxy is InitializableAdminUpgradeabilityProxy {}
+contract DarknodeRegistryProxy is InitializableAdminUpgradeabilityProxy {
+
+}

@@ -18,7 +18,8 @@ contract DarknodePaymentStore is Claimable {
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice The special address for Ether.
-    address public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address
+        public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Mapping of darknode -> token -> balance.
     mapping(address => mapping(address => uint256)) public darknodeBalances;
@@ -117,5 +118,4 @@ contract DarknodePaymentStore is Claimable {
             ERC20(_token).safeTransfer(_recipient, _amount);
         }
     }
-
 }
