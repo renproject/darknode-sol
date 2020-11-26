@@ -11,6 +11,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 */
 
+/*
+
+Modification: INITIAL_MINIMUM_DELAY has been added to allow for initial set-up
+calls with a shorter delay. Once setDelay has been called for the first time,
+this no longer has any effect.
+
+INITIAL_MINIMUM_DELAY has been set to 0.
+
+*/
+
 pragma solidity 0.5.16;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
@@ -47,6 +57,7 @@ contract Timelock {
     );
 
     uint256 public constant GRACE_PERIOD = 14 days;
+    uint256 public constant INITIAL_MINIMUM_DELAY = 0 days;
     uint256 public constant MINIMUM_DELAY = 2 days;
     uint256 public constant MAXIMUM_DELAY = 30 days;
 
@@ -58,8 +69,8 @@ contract Timelock {
 
     constructor(address admin_, uint256 delay_) public {
         require(
-            delay_ >= MINIMUM_DELAY,
-            "Timelock::constructor: Delay must exceed minimum delay."
+            delay_ >= INITIAL_MINIMUM_DELAY,
+            "Timelock::constructor: Delay must exceed initial minimum delay."
         );
         require(
             delay_ <= MAXIMUM_DELAY,
