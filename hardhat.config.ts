@@ -1,6 +1,10 @@
 import { task } from "hardhat/config";
-import "@nomiclabs/hardhat-waffle";
 import { HardhatUserConfig } from "hardhat/config";
+
+// Plugins
+import "@nomiclabs/hardhat-waffle";
+import "hardhat-typechain";
+import "solidity-coverage";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html

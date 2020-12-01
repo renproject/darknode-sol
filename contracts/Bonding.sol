@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ownership/Claimable.sol";
 import "./BondNFT.sol";
 
+// import "hardhat/console.sol";
+
 contract BondingGovernance is Claimable {
-    uint256 constant MIN_REDEEM_DELAY = 0 days;
     uint256 constant MAX_REDEEM_DELAY = 365 days;
 
     /**
@@ -20,7 +21,6 @@ contract BondingGovernance is Claimable {
      * redeem delay, up to a maximum of 365 days.
      */
     function setRedeemDelay(uint256 _redeemDelay) public onlyOwner {
-        require(_redeemDelay >= MIN_REDEEM_DELAY, "Bonding: redeemDelay smaller than minimum delay");
         require(_redeemDelay <= MAX_REDEEM_DELAY, "Bonding: redeemDelay larger than maximum delay");
         redeemDelay = _redeemDelay;
     }
@@ -85,6 +85,7 @@ contract Bonding is BondingGovernance {
      * NFT representing their bonded tokens.
      */
     function enter() public returns (uint256) {
+        require(token.allowance(msg.sender, address(this)) >= bondAmount, "Bonding: insufficient balance for bond");
         token.transferFrom(msg.sender, address(this), bondAmount);
         uint256 nftId = nft.mint(msg.sender);
 
@@ -101,7 +102,6 @@ contract Bonding is BondingGovernance {
         require(exitedAt[_nftId] == 0, "Bonding: already exited");
         // solium-disable security/no-block-members
         exitedAt[_nftId] = block.timestamp;
-
         emit Exited(_nftId, msg.sender);
     }
 
@@ -111,7 +111,7 @@ contract Bonding is BondingGovernance {
      */
     function redeem(uint256 _nftId) public onlyNFTOwner(_nftId) {
         require(exitedAt[_nftId] > 0, "Bonding: must exit first");
-        require(exitedAt[_nftId] <= (block.timestamp + BondingGovernance.redeemDelay), "Bonding: must wait redeem delay after exiting");
+        require(block.timestamp >= exitedAt[_nftId] + BondingGovernance.redeemDelay, "Bonding: must wait redeem delay after exiting");
         delete exitedAt[_nftId];
         nft.burn(_nftId);
         token.transfer(msg.sender, bondAmount);

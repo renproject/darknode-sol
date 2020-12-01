@@ -1,7 +1,10 @@
 node_modules
 
 #Hardhat files
-cache
-artifacts
+/cache
+/artifacts
+/typechain
+/coverage/
+/coverage.json
 
 .vscode
