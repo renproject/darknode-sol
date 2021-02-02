@@ -16,7 +16,7 @@
     "verify": "truffle run verify --network $NETWORK"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/contracts": "^3.4.0",
     "@openzeppelin/upgrades": "^2.7.2"
   },
   "devDependencies": {
