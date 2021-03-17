@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 interface IMintGateway {
     function mint(
@@ -7,6 +7,7 @@ interface IMintGateway {
         bytes32 _nHash,
         bytes calldata _sig
     ) external returns (uint256);
+
     function mintFee() external view returns (uint256);
 }
 
@@ -14,6 +15,7 @@ interface IBurnGateway {
     function burn(bytes calldata _to, uint256 _amountScaled)
         external
         returns (uint256);
+
     function burnFee() external view returns (uint256);
 }
 
@@ -26,10 +28,13 @@ interface IGateway {
         bytes32 _nHash,
         bytes calldata _sig
     ) external returns (uint256);
+
     function mintFee() external view returns (uint256);
+
     // is IBurnGateway
     function burn(bytes calldata _to, uint256 _amountScaled)
         external
         returns (uint256);
+
     function burnFee() external view returns (uint256);
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
@@ -633,6 +633,24 @@ contract DarknodeRegistryLogicV1 is
             (previousEpoch.blocktime - deregistrationInterval);
     }
 
+    /// @notice Returns the registration time of a given darknode.
+    function darknodeRegisteredAt(address darknodeID)
+        external
+        view
+        returns (uint256)
+    {
+        return store.darknodeRegisteredAt(darknodeID);
+    }
+
+    /// @notice Returns the deregistration time of a given darknode.
+    function darknodeDeregisteredAt(address darknodeID)
+        external
+        view
+        returns (uint256)
+    {
+        return store.darknodeDeregisteredAt(darknodeID);
+    }
+
     /// @notice Returns if a darknode is in the registered state.
     function isRegistered(address _darknodeID) public view returns (bool) {
         return isRegisteredInEpoch(_darknodeID, currentEpoch);
@@ -659,8 +677,8 @@ contract DarknodeRegistryLogicV1 is
         uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
         bool registered = registeredAt != 0 && registeredAt <= _epoch.blocktime;
-        bool notDeregistered = deregisteredAt == 0 ||
-            deregisteredAt > _epoch.blocktime;
+        bool notDeregistered =
+            deregisteredAt == 0 || deregisteredAt > _epoch.blocktime;
         // The Darknode has been registered and has not yet been deregistered,
         // although it might be pending deregistration
         return registered && notDeregistered;

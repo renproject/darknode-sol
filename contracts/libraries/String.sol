@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 library String {
     /// @notice Convert a uint value to its decimal string representation

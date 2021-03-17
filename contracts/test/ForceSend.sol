@@ -1,6 +1,6 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-contract ForceSend  {
+contract ForceSend {
     function send(address payable recipient) public payable {
         selfdestruct(recipient);
     }

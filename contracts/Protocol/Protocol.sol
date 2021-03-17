@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
@@ -21,13 +21,13 @@ import "../Governance/Claimable.sol";
 /// separate contract to reduce the risk of memory slots being moved.
 contract ProtocolStateV1 {
     /**
-    *
-    * NOTICE: New variables should be added to a new contract ProtocolStateV2,
-    * not added to ProtocolStateV1. ProtocolStateV1 should not be changed once
-    * the Protocol contract has been deployed. ProtocolLogicV1 should then inherit
-    * both ProtocolStateV1 and ProtocolStateV2.
-    *
-    */
+     *
+     * NOTICE: New variables should be added to a new contract ProtocolStateV2,
+     * not added to ProtocolStateV1. ProtocolStateV1 should not be changed once
+     * the Protocol contract has been deployed. ProtocolLogicV1 should then inherit
+     * both ProtocolStateV1 and ProtocolStateV2.
+     *
+     */
 
     // These are all private so that the getter interfaced can be changed
     // if necessary.
@@ -168,4 +168,6 @@ contract ProtocolLogicV1 is
 
 /// @notice Protocol is a directory of the current contract addresses.
 /* solium-disable-next-line no-empty-blocks */
-contract ProtocolProxy is InitializableAdminUpgradeabilityProxy {}
+contract ProtocolProxy is InitializableAdminUpgradeabilityProxy {
+
+}

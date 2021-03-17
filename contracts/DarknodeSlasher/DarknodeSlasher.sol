@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "../Governance/Claimable.sol";
 import "../libraries/Validate.sol";
@@ -16,7 +16,8 @@ contract DarknodeSlasher is Claimable {
 
     // Malicious Darknodes can be slashed for each height and round
     // mapping of height -> round -> guilty address -> slashed
-    mapping(uint256 => mapping(uint256 => mapping(address => bool))) public slashed;
+    mapping(uint256 => mapping(uint256 => mapping(address => bool)))
+        public slashed;
 
     // mapping of darknodes which have revealed their secret
     mapping(address => bool) public secretRevealed;
@@ -87,10 +88,11 @@ contract DarknodeSlasher is Claimable {
         secretRevealSlashPercent = _percentage;
     }
 
-    function slash(address _guilty, address _challenger, uint256 _percentage)
-        external
-        onlyOwner
-    {
+    function slash(
+        address _guilty,
+        address _challenger,
+        uint256 _percentage
+    ) external onlyOwner {
         darknodeRegistry.slash(_guilty, _challenger, _percentage);
     }
 
@@ -110,16 +112,17 @@ contract DarknodeSlasher is Claimable {
         uint256 _validRound2,
         bytes calldata _signature2
     ) external {
-        address signer = Validate.duplicatePropose(
-            _height,
-            _round,
-            _blockhash1,
-            _validRound1,
-            _signature1,
-            _blockhash2,
-            _validRound2,
-            _signature2
-        );
+        address signer =
+            Validate.duplicatePropose(
+                _height,
+                _round,
+                _blockhash1,
+                _validRound1,
+                _signature1,
+                _blockhash2,
+                _validRound2,
+                _signature2
+            );
         require(
             !slashed[_height][_round][signer],
             "DarknodeSlasher: already slashed"
@@ -136,14 +139,15 @@ contract DarknodeSlasher is Claimable {
         bytes calldata _blockhash2,
         bytes calldata _signature2
     ) external {
-        address signer = Validate.duplicatePrevote(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1,
-            _blockhash2,
-            _signature2
-        );
+        address signer =
+            Validate.duplicatePrevote(
+                _height,
+                _round,
+                _blockhash1,
+                _signature1,
+                _blockhash2,
+                _signature2
+            );
         require(
             !slashed[_height][_round][signer],
             "DarknodeSlasher: already slashed"
@@ -160,14 +164,15 @@ contract DarknodeSlasher is Claimable {
         bytes calldata _blockhash2,
         bytes calldata _signature2
     ) external {
-        address signer = Validate.duplicatePrecommit(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1,
-            _blockhash2,
-            _signature2
-        );
+        address signer =
+            Validate.duplicatePrecommit(
+                _height,
+                _round,
+                _blockhash1,
+                _signature1,
+                _blockhash2,
+                _signature2
+            );
         require(
             !slashed[_height][_round][signer],
             "DarknodeSlasher: already slashed"
@@ -185,15 +190,8 @@ contract DarknodeSlasher is Claimable {
         uint256 _f,
         bytes calldata _signature
     ) external {
-        address signer = Validate.recoverSecret(
-            _a,
-            _b,
-            _c,
-            _d,
-            _e,
-            _f,
-            _signature
-        );
+        address signer =
+            Validate.recoverSecret(_a, _b, _c, _d, _e, _f, _signature);
         require(!secretRevealed[signer], "DarknodeSlasher: already slashed");
         secretRevealed[signer] = true;
         darknodeRegistry.slash(signer, msg.sender, secretRevealSlashPercent);

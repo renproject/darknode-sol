@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/upgrades/contracts/upgradeability/ProxyAdmin.sol";
 
@@ -9,4 +9,6 @@ import "@openzeppelin/upgrades/contracts/upgradeability/ProxyAdmin.sol";
  * the governance address of both the proxy and the delegate contract logic.
  */
 /* solium-disable-next-line no-empty-blocks */
-contract RenProxyAdmin is ProxyAdmin {}
+contract RenProxyAdmin is ProxyAdmin {
+
+}

@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
@@ -77,13 +77,14 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
         uint256 _registeredAt,
         uint256 _deregisteredAt
     ) external onlyOwner {
-        Darknode memory darknode = Darknode({
-            owner: _darknodeOperator,
-            bond: _bond,
-            publicKey: _publicKey,
-            registeredAt: _registeredAt,
-            deregisteredAt: _deregisteredAt
-        });
+        Darknode memory darknode =
+            Darknode({
+                owner: _darknodeOperator,
+                bond: _bond,
+                publicKey: _publicKey,
+                registeredAt: _registeredAt,
+                deregisteredAt: _deregisteredAt
+            });
         darknodeRegistry[_darknodeID] = darknode;
         LinkedList.append(darknodes, _darknodeID);
     }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "../Governance/Claimable.sol";
 import "./RenERC20.sol";
@@ -54,11 +54,15 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
     ///
     /// @param _token The address of the RenERC20 token contract.
     /// @param _gatewayContract The address of the Gateway contract.
-    function setGateway(string calldata _symbol, address _token, address _gatewayContract)
-        external
-        onlyOwner
-    {
-        require(symbolIsValid(_symbol), "GatewayRegistry: symbol must be alphanumeric");
+    function setGateway(
+        string calldata _symbol,
+        address _token,
+        address _gatewayContract
+    ) external onlyOwner {
+        require(
+            symbolIsValid(_symbol),
+            "GatewayRegistry: symbol must be alphanumeric"
+        );
 
         // Check that token, Gateway and symbol haven't already been registered.
         require(
@@ -208,14 +212,18 @@ contract GatewayRegistry is Claimable, CanReclaimTokens {
         return IERC20(tokenBySymbol[_tokenSymbol]);
     }
 
-    function symbolIsValid(string memory _tokenSymbol) public pure returns (bool) {
-        for (uint i = 0; i < bytes(_tokenSymbol).length; i++) {
+    function symbolIsValid(string memory _tokenSymbol)
+        public
+        pure
+        returns (bool)
+    {
+        for (uint256 i = 0; i < bytes(_tokenSymbol).length; i++) {
             uint8 char = uint8(bytes(_tokenSymbol)[i]);
-            if (!(
-                (char >= 65 && char <= 90) ||
-                (char >= 97 && char <= 122) ||
-                (char >= 48 && char <= 57)
-            )) {
+            if (
+                !((char >= 65 && char <= 90) ||
+                    (char >= 97 && char <= 122) ||
+                    (char >= 48 && char <= 57))
+            ) {
                 return false;
             }
         }

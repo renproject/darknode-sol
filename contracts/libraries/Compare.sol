@@ -1,12 +1,15 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 library Compare {
-
-    function bytesEqual(bytes memory a, bytes memory b) internal pure returns (bool) {
+    function bytesEqual(bytes memory a, bytes memory b)
+        internal
+        pure
+        returns (bool)
+    {
         if (a.length != b.length) {
             return false;
         }
-        for (uint i = 0; i < a.length; i ++) {
+        for (uint256 i = 0; i < a.length; i++) {
             if (a[i] != b[i]) {
                 return false;
             }

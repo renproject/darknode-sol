@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -18,8 +18,8 @@ contract DarknodePayment is Claimable {
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice The special address for Ether.
-    address
-        public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant ETHEREUM =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     DarknodeRegistryLogicV1 public darknodeRegistry; // Passed in as a constructor parameter.
 
@@ -202,9 +202,8 @@ contract DarknodePayment is Claimable {
     /// @param _darknode The address of the darknode.
     /// @param _token Which token to transfer.
     function withdraw(address _darknode, address _token) public {
-        address payable darknodeOperator = darknodeRegistry.getDarknodeOperator(
-            _darknode
-        );
+        address payable darknodeOperator =
+            darknodeRegistry.getDarknodeOperator(_darknode);
         require(
             darknodeOperator != address(0x0),
             "DarknodePayment: invalid darknode owner"
@@ -248,10 +247,11 @@ contract DarknodePayment is Claimable {
         view
         returns (uint256)
     {
-        uint256 total = store.availableBalance(_token).sub(
-            unclaimedRewards[_token],
-            "DarknodePayment: unclaimed rewards exceed total rewards"
-        );
+        uint256 total =
+            store.availableBalance(_token).sub(
+                unclaimedRewards[_token],
+                "DarknodePayment: unclaimed rewards exceed total rewards"
+            );
         return total.div(100).mul(currentCyclePayoutPercent);
     }
 
@@ -486,10 +486,13 @@ contract DarknodePayment is Claimable {
     ///
     /// @param _token The address of the token to deregister.
     function _deregisterToken(address _token) private {
-        address lastToken = registeredTokens[registeredTokens.length.sub(
-            1,
-            "DarknodePayment: no tokens registered"
-        )];
+        address lastToken =
+            registeredTokens[
+                registeredTokens.length.sub(
+                    1,
+                    "DarknodePayment: no tokens registered"
+                )
+            ];
         uint256 deletedTokenIndex = registeredTokenIndex[_token].sub(1);
         // Move the last token to _token's position and update it's index
         registeredTokens[deletedTokenIndex] = lastToken;

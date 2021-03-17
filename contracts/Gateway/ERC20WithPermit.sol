@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
@@ -20,7 +20,8 @@ contract ERC20WithPermit is Initializable, ERC20, ERC20Detailed {
     bytes32 public DOMAIN_SEPARATOR;
     // PERMIT_TYPEHASH is the value returned from
     // keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)")
-    bytes32 public constant PERMIT_TYPEHASH = 0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
+    bytes32 public constant PERMIT_TYPEHASH =
+        0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
 
     function initialize(
         uint256 _chainId,
@@ -55,22 +56,23 @@ contract ERC20WithPermit is Initializable, ERC20, ERC20Detailed {
         bytes32 r,
         bytes32 s
     ) external {
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                DOMAIN_SEPARATOR,
-                keccak256(
-                    abi.encode(
-                        PERMIT_TYPEHASH,
-                        holder,
-                        spender,
-                        nonce,
-                        expiry,
-                        allowed
+        bytes32 digest =
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    DOMAIN_SEPARATOR,
+                    keccak256(
+                        abi.encode(
+                            PERMIT_TYPEHASH,
+                            holder,
+                            spender,
+                            nonce,
+                            expiry,
+                            allowed
+                        )
                     )
                 )
-            )
-        );
+            );
 
         require(holder != address(0), "ERC20WithRate: address must not be 0x0");
         require(
