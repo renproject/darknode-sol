@@ -15,8 +15,8 @@ const config = {
     renZECMinimumBurnAmount: 10000,
     renBCHMinimumBurnAmount: 10000,
 
-    tokenPrefix: "mock",
-}
+    tokenPrefix: "mock"
+};
 
 module.exports = {
     mainnet: {
@@ -39,7 +39,7 @@ module.exports = {
 
         tokens: {
             DAI: "0x6b175474e89094c44da98b954eedeac495271d0f",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         RenERC20LogicV1: "0xe2d6cCAC3EE3A21AbF7BeDBE2E107FfC0C037e80",
@@ -57,14 +57,15 @@ module.exports = {
         config: {
             ...config,
             mintAuthority: "0x7f64e4e4b2d7589eb0ac8439c0e639856aeceee7",
+            // devFund: "",
 
-            tokenPrefix: "ren",
-        },
+            tokenPrefix: "ren"
+        }
     },
     chaosnet: {
         tokens: {
             DAI: "0x6b175474e89094c44da98b954eedeac495271d0f",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         /* 1_darknodes.js */
@@ -113,8 +114,8 @@ module.exports = {
             MINIMUM_BOND: new BN(10000).mul(new BN(10).pow(new BN(18))),
             mintAuthority: "0x1D1A5e08Cb784BA16d69F25551Aea5C49482505c",
 
-            tokenPrefix: "chaos",
-        },
+            tokenPrefix: "chaos"
+        }
     },
     testnet: {
         /* 1_darknodes.js */
@@ -140,7 +141,7 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         /* 2_shifter.js */
@@ -167,8 +168,8 @@ module.exports = {
             ...config,
             mintAuthority: "0x44Bb4eF43408072bC888Afd1a5986ba0Ce35Cb54",
 
-            tokenPrefix: "test",
-        },
+            tokenPrefix: "test"
+        }
     },
 
     devnet: {
@@ -193,7 +194,7 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         /* 2_shifter.js */
@@ -217,8 +218,8 @@ module.exports = {
             ...config,
             mintAuthority: "0x1B9d58208879AA9aa9E10040b34cF2b684237621",
 
-            tokenPrefix: "dev",
-        },
+            tokenPrefix: "dev"
+        }
     },
 
     rinkebyDevnet: {
@@ -245,7 +246,7 @@ module.exports = {
 
         tokens: {
             DAI: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         /* 2_shifter.js */
@@ -256,8 +257,8 @@ module.exports = {
             ...config,
             mintAuthority: "0xbb8c61159153d8a6ffd555584d1ac77fd57feca7",
 
-            tokenPrefix: "dev",
-        },
+            tokenPrefix: "dev"
+        }
     },
 
     localnet: {
@@ -283,7 +284,7 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
         },
 
         /* 2_shifter.js */
@@ -307,9 +308,9 @@ module.exports = {
             ...config,
             mintAuthority: "0x04084f1cACCB87Dcab9a29a084281294dA96Bf44",
 
-            tokenPrefix: "local",
-        },
+            tokenPrefix: "local"
+        }
     },
 
-    config,
-}
+    config
+};

@@ -1,10 +1,9 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "../libraries/Validate.sol";
 
 /// @notice Validate is a library for validating malicious darknode behaviour.
 contract ValidateTest {
-
     function duplicatePropose(
         uint256 _height,
         uint256 _round,
@@ -15,16 +14,17 @@ contract ValidateTest {
         uint256 _validRound2,
         bytes memory _signature2
     ) public pure returns (address) {
-        return Validate.duplicatePropose(
-            _height,
-            _round,
-            _blockhash1,
-            _validRound1,
-            _signature1,
-            _blockhash2,
-            _validRound2,
-            _signature2
-        );
+        return
+            Validate.duplicatePropose(
+                _height,
+                _round,
+                _blockhash1,
+                _validRound1,
+                _signature1,
+                _blockhash2,
+                _validRound2,
+                _signature2
+            );
     }
 
     function recoverPropose(
@@ -34,13 +34,14 @@ contract ValidateTest {
         uint256 _validRound,
         bytes memory _signature
     ) public pure returns (address) {
-        return Validate.recoverPropose(
-            _height,
-            _round,
-            _blockhash,
-            _validRound,
-            _signature
-        );
+        return
+            Validate.recoverPropose(
+                _height,
+                _round,
+                _blockhash,
+                _validRound,
+                _signature
+            );
     }
 
     function duplicatePrevote(
@@ -51,14 +52,15 @@ contract ValidateTest {
         bytes memory _blockhash2,
         bytes memory _signature2
     ) public pure returns (address) {
-        return Validate.duplicatePrevote(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1,
-            _blockhash2,
-            _signature2
-        );
+        return
+            Validate.duplicatePrevote(
+                _height,
+                _round,
+                _blockhash1,
+                _signature1,
+                _blockhash2,
+                _signature2
+            );
     }
 
     function recoverPrevote(
@@ -67,12 +69,7 @@ contract ValidateTest {
         bytes memory _blockhash,
         bytes memory _signature
     ) public pure returns (address) {
-        return Validate.recoverPrevote(
-            _height,
-            _round,
-            _blockhash,
-            _signature
-        );
+        return Validate.recoverPrevote(_height, _round, _blockhash, _signature);
     }
 
     function duplicatePrecommit(
@@ -83,14 +80,15 @@ contract ValidateTest {
         bytes memory _blockhash2,
         bytes memory _signature2
     ) public pure returns (address) {
-        return Validate.duplicatePrecommit(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1,
-            _blockhash2,
-            _signature2
-        );
+        return
+            Validate.duplicatePrecommit(
+                _height,
+                _round,
+                _blockhash1,
+                _signature1,
+                _blockhash2,
+                _signature2
+            );
     }
 
     function recoverPrecommit(
@@ -99,12 +97,8 @@ contract ValidateTest {
         bytes memory _blockhash,
         bytes memory _signature
     ) public pure returns (address) {
-        return Validate.recoverPrecommit(
-            _height,
-            _round,
-            _blockhash,
-            _signature
-        );
+        return
+            Validate.recoverPrecommit(_height, _round, _blockhash, _signature);
     }
 
     function proposeMessage(
@@ -113,12 +107,8 @@ contract ValidateTest {
         bytes memory _blockhash,
         uint256 _validRound
     ) public pure returns (bytes memory) {
-        return Validate.proposeMessage(
-            _height,
-            _round,
-            _blockhash,
-            _validRound
-        );
+        return
+            Validate.proposeMessage(_height, _round, _blockhash, _validRound);
     }
 
     function prevoteMessage(
@@ -126,11 +116,7 @@ contract ValidateTest {
         uint256 _round,
         bytes memory _blockhash
     ) public pure returns (bytes memory) {
-        return Validate.prevoteMessage(
-            _height,
-            _round,
-            _blockhash
-        );
+        return Validate.prevoteMessage(_height, _round, _blockhash);
     }
 
     function precommitMessage(
@@ -138,11 +124,7 @@ contract ValidateTest {
         uint256 _round,
         bytes memory _blockhash
     ) public pure returns (bytes memory) {
-        return Validate.precommitMessage(
-            _height,
-            _round,
-            _blockhash
-        );
+        return Validate.precommitMessage(_height, _round, _blockhash);
     }
 
     function recoverSecret(
@@ -154,15 +136,7 @@ contract ValidateTest {
         uint256 _f,
         bytes memory _signature
     ) public pure returns (address) {
-        return Validate.recoverSecret(
-            _a,
-            _b,
-            _c,
-            _d,
-            _e,
-            _f,
-            _signature
-        );
+        return Validate.recoverSecret(_a, _b, _c, _d, _e, _f, _signature);
     }
 
     function secretMessage(
@@ -173,13 +147,6 @@ contract ValidateTest {
         uint256 _e,
         uint256 _f
     ) public pure returns (bytes memory) {
-        return Validate.secretMessage(
-            _a,
-            _b,
-            _c,
-            _d,
-            _e,
-            _f
-        );
+        return Validate.secretMessage(_a, _b, _c, _d, _e, _f);
     }
 }

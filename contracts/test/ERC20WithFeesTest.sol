@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -17,11 +17,12 @@ contract ERC20WithFeesTest {
     function deposit(address _token, uint256 _value) external {
         balances[_token] = ERC20(_token).balanceOf(address(this));
 
-        uint256 newValue = ERC20(_token).safeTransferFromWithFees(
-            msg.sender,
-            address(this),
-            _value
-        );
+        uint256 newValue =
+            ERC20(_token).safeTransferFromWithFees(
+                msg.sender,
+                address(this),
+                _value
+            );
         balances[_token] = balances[_token].add(newValue);
         require(
             ERC20(_token).balanceOf(address(this)) == balances[_token],

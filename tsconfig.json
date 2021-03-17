@@ -1,17 +1,8 @@
 {
     "compilerOptions": {
-        "typeRoots": [
-            "./types"
-        ],
-        "lib": [
-            "es2015"
-        ],
-        "types": [
-            "node",
-            "mocha",
-            "truffle-contracts",
-            "chai"
-        ],
+        "typeRoots": ["./types"],
+        "lib": ["es2015"],
+        "types": ["node", "mocha", "truffle-contracts", "chai"],
         "module": "commonjs",
         "noImplicitAny": true,
         "noImplicitReturns": true,

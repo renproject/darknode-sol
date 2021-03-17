@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
@@ -69,10 +69,11 @@ contract RenERC20LogicV1 is
         return super.transfer(recipient, amount);
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount)
-        public
-        returns (bool)
-    {
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) public returns (bool) {
         // Disallow sending tokens to the ERC20 contract address (see comment
         // in `transfer`).
         require(
@@ -90,10 +91,16 @@ contract RenERC20LogicV1 is
 /// but are used to track deployments.
 
 /* solium-disable-next-line no-empty-blocks */
-contract RenBTC is InitializableAdminUpgradeabilityProxy {}
+contract RenBTC is InitializableAdminUpgradeabilityProxy {
+
+}
 
 /* solium-disable-next-line no-empty-blocks */
-contract RenZEC is InitializableAdminUpgradeabilityProxy {}
+contract RenZEC is InitializableAdminUpgradeabilityProxy {
+
+}
 
 /* solium-disable-next-line no-empty-blocks */
-contract RenBCH is InitializableAdminUpgradeabilityProxy {}
+contract RenBCH is InitializableAdminUpgradeabilityProxy {
+
+}

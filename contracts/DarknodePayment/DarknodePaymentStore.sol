@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -18,8 +18,8 @@ contract DarknodePaymentStore is Claimable {
     string public VERSION; // Passed in as a constructor parameter.
 
     /// @notice The special address for Ether.
-    address
-        public constant ETHEREUM = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant ETHEREUM =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Mapping of darknode -> token -> balance.
     mapping(address => mapping(address => uint256)) public darknodeBalances;
@@ -81,7 +81,9 @@ contract DarknodePaymentStore is Claimable {
             "DarknodePaymentStore: insufficient contract balance"
         );
 
-        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token]
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][
+            _token
+        ]
             .add(_amount);
         lockedBalances[_token] = lockedBalances[_token].add(_amount);
     }
@@ -102,7 +104,9 @@ contract DarknodePaymentStore is Claimable {
             darknodeBalances[_darknode][_token] >= _amount,
             "DarknodePaymentStore: insufficient darknode balance"
         );
-        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][_token]
+        darknodeBalances[_darknode][_token] = darknodeBalances[_darknode][
+            _token
+        ]
             .sub(
             _amount,
             "DarknodePaymentStore: insufficient darknode balance for transfer"

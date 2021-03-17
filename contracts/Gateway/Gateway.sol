@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
@@ -191,12 +191,8 @@ contract GatewayLogicV1 is
         bytes memory _sig
     ) public returns (uint256) {
         // Verify signature
-        bytes32 signedMessageHash = hashForSignature(
-            _pHash,
-            _amountUnderlying,
-            msg.sender,
-            _nHash
-        );
+        bytes32 signedMessageHash =
+            hashForSignature(_pHash, _amountUnderlying, msg.sender, _nHash);
         require(
             status[signedMessageHash] == false,
             "Gateway: nonce hash already spent"
@@ -223,13 +219,10 @@ contract GatewayLogicV1 is
         uint256 amountScaled = token.fromUnderlying(_amountUnderlying);
 
         // Mint `amount - fee` for the recipient and mint `fee` for the minter
-        uint256 absoluteFeeScaled = amountScaled.mul(mintFee).div(
-            BIPS_DENOMINATOR
-        );
-        uint256 receivedAmountScaled = amountScaled.sub(
-            absoluteFeeScaled,
-            "Gateway: fee exceeds amount"
-        );
+        uint256 absoluteFeeScaled =
+            amountScaled.mul(mintFee).div(BIPS_DENOMINATOR);
+        uint256 receivedAmountScaled =
+            amountScaled.sub(absoluteFeeScaled, "Gateway: fee exceeds amount");
 
         // Mint amount minus the fee
         token.mint(msg.sender, receivedAmountScaled);
@@ -237,9 +230,8 @@ contract GatewayLogicV1 is
         token.mint(feeRecipient, absoluteFeeScaled);
 
         // Emit a log with a unique identifier 'n'.
-        uint256 receivedAmountUnderlying = token.toUnderlying(
-            receivedAmountScaled
-        );
+        uint256 receivedAmountUnderlying =
+            token.toUnderlying(receivedAmountScaled);
         emit LogMint(
             msg.sender,
             receivedAmountUnderlying,
@@ -268,10 +260,8 @@ contract GatewayLogicV1 is
 
         // Calculate fee, subtract it from amount being burnt.
         uint256 fee = _amount.mul(burnFee).div(BIPS_DENOMINATOR);
-        uint256 amountAfterFee = _amount.sub(
-            fee,
-            "Gateway: fee exceeds amount"
-        );
+        uint256 amountAfterFee =
+            _amount.sub(fee, "Gateway: fee exceeds amount");
 
         // If the scaled token can represent more precision than the underlying
         // token, the difference is lost. This won't exceed 1 sat, so is

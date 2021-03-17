@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 
@@ -26,20 +26,22 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPropose(
-            _height,
-            _round,
-            _blockhash1,
-            _validRound1,
-            _signature1
-        );
-        address signer2 = recoverPropose(
-            _height,
-            _round,
-            _blockhash2,
-            _validRound2,
-            _signature2
-        );
+        address signer1 =
+            recoverPropose(
+                _height,
+                _round,
+                _blockhash1,
+                _validRound1,
+                _signature1
+            );
+        address signer2 =
+            recoverPropose(
+                _height,
+                _round,
+                _blockhash2,
+                _validRound2,
+                _signature2
+            );
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
@@ -97,18 +99,10 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPrevote(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1
-        );
-        address signer2 = recoverPrevote(
-            _height,
-            _round,
-            _blockhash2,
-            _signature2
-        );
+        address signer1 =
+            recoverPrevote(_height, _round, _blockhash1, _signature1);
+        address signer2 =
+            recoverPrevote(_height, _round, _blockhash2, _signature2);
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
@@ -160,18 +154,10 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPrecommit(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1
-        );
-        address signer2 = recoverPrecommit(
-            _height,
-            _round,
-            _blockhash2,
-            _signature2
-        );
+        address signer1 =
+            recoverPrecommit(_height, _round, _blockhash1, _signature1);
+        address signer2 =
+            recoverPrecommit(_height, _round, _blockhash2, _signature2);
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }

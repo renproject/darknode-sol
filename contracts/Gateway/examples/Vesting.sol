@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "../GatewayRegistry.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/Math.sol";
@@ -67,24 +67,25 @@ contract Vesting is Ownable {
         // Construct the payload hash and mint new tokens using the Gateway
         // contract. This will verify the signature to ensure the Darknodes have
         // received the Bitcoin.
-        bytes32 pHash = keccak256(
-            abi.encode(_beneficiary, _startTime, _duration)
-        );
-        uint256 finalAmountScaled = registry.getGatewayBySymbol("BTC").mint(
-            pHash,
-            _amount,
-            _nHash,
-            _sig
-        );
+        bytes32 pHash =
+            keccak256(abi.encode(_beneficiary, _startTime, _duration));
+        uint256 finalAmountScaled =
+            registry.getGatewayBySymbol("BTC").mint(
+                pHash,
+                _amount,
+                _nHash,
+                _sig
+            );
 
         // Construct a vesting schedule and assign it to the beneficiary.
-        VestingSchedule memory schedule = VestingSchedule({
-            startTime: _startTime == 0 ? now : _startTime,
-            duration: _duration,
-            amount: finalAmountScaled,
-            monthsClaimed: 0,
-            amountClaimed: 0
-        });
+        VestingSchedule memory schedule =
+            VestingSchedule({
+                startTime: _startTime == 0 ? now : _startTime,
+                duration: _duration,
+                amount: finalAmountScaled,
+                monthsClaimed: 0,
+                amountClaimed: 0
+            });
 
         schedules[_beneficiary] = schedule;
     }
@@ -131,12 +132,12 @@ contract Vesting is Ownable {
 
         // Calculate the months elapsed and amount claimable since the last
         // claim attempt.
-        uint256 monthsClaimable = Math
-            .min(schedule.duration, elapsedMonths)
-            .sub(schedule.monthsClaimed);
-        uint256 amountClaimable = schedule.amount.mul(monthsClaimable).div(
-            schedule.duration
-        );
+        uint256 monthsClaimable =
+            Math.min(schedule.duration, elapsedMonths).sub(
+                schedule.monthsClaimed
+            );
+        uint256 amountClaimable =
+            schedule.amount.mul(monthsClaimable).div(schedule.duration);
 
         return (monthsClaimable, amountClaimable);
     }

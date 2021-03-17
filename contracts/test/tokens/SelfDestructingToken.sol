@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -10,8 +10,8 @@ contract SelfDestructingToken is ERC20, ERC20Detailed, Ownable {
     string private constant _symbol = "SDT";
     uint8 private constant _decimals = 18;
 
-    uint256 public constant INITIAL_SUPPLY = 1000000000 *
-        10**uint256(_decimals);
+    uint256 public constant INITIAL_SUPPLY =
+        1000000000 * 10**uint256(_decimals);
 
     /// @notice The SelfDestructingToken Constructor.
     constructor() public {

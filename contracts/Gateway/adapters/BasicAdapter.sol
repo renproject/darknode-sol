@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
 
@@ -23,18 +23,21 @@ contract BasicAdapter is GSNRecipient {
         bytes calldata _sig
     ) external {
         bytes32 payloadHash = keccak256(abi.encode(_symbol, _recipient));
-        uint256 amount = registry.getGatewayBySymbol(_symbol).mint(
-            payloadHash,
-            _amount,
-            _nHash,
-            _sig
-        );
+        uint256 amount =
+            registry.getGatewayBySymbol(_symbol).mint(
+                payloadHash,
+                _amount,
+                _nHash,
+                _sig
+            );
         registry.getTokenBySymbol(_symbol).transfer(_recipient, amount);
     }
 
-    function burn(string calldata _symbol, bytes calldata _to, uint256 _amount)
-        external
-    {
+    function burn(
+        string calldata _symbol,
+        bytes calldata _to,
+        uint256 _amount
+    ) external {
         require(
             registry.getTokenBySymbol(_symbol).transferFrom(
                 _msgSender(),
