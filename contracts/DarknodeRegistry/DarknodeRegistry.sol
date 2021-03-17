@@ -633,24 +633,6 @@ contract DarknodeRegistryLogicV1 is
             (previousEpoch.blocktime - deregistrationInterval);
     }
 
-    /// @notice Returns the registration time of a given darknode.
-    function darknodeRegisteredAt(address darknodeID)
-        external
-        view
-        returns (uint256)
-    {
-        return store.darknodeRegisteredAt(darknodeID);
-    }
-
-    /// @notice Returns the deregistration time of a given darknode.
-    function darknodeDeregisteredAt(address darknodeID)
-        external
-        view
-        returns (uint256)
-    {
-        return store.darknodeDeregisteredAt(darknodeID);
-    }
-
     /// @notice Returns if a darknode is in the registered state.
     function isRegistered(address _darknodeID) public view returns (bool) {
         return isRegisteredInEpoch(_darknodeID, currentEpoch);
