@@ -493,19 +493,17 @@ contract ClaimlessRewardsWithdrawHandler is
         uint256 start = 0;
         uint256 end = epochTimestamps.length.sub(1);
 
-        // Iterate while start not meets end
+        // Binary search. Relies on `epochTimestamps` being sorted.
         while (start <= end) {
-            // Find the mid index
+            // Check if the middle element satisfies the conditions.
             uint256 mid = (start + end) / 2;
-
-            // If element is present at mid, return True
             if (
                 epochTimestamps[mid] >= _target &&
                 (mid == 0 || epochTimestamps[mid - 1] < _target)
             ) {
                 return epochTimestamps[mid];
             }
-            // Else look in left or right half accordingly
+            // Restrict the search space.
             else if (epochTimestamps[mid] < _target) {
                 start = mid + 1;
             } else {
