@@ -20,9 +20,7 @@ import {
     increaseTime,
     NULL,
     NULL32,
-    Ox,
-    randomID,
-    sleep
+    Ox
 } from "./helper/testUtils";
 
 const RenERC20LogicV1 = artifacts.require("RenERC20LogicV1");

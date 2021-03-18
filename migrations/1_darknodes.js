@@ -6,6 +6,7 @@ const { execSync } = require("child_process");
 const RenToken = artifacts.require("RenToken");
 const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
+const ClaimlessRewards = artifacts.require("ClaimlessRewards");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
@@ -62,6 +63,7 @@ module.exports = async function(deployer, network) {
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
+    ClaimlessRewards.address = addresses.ClaimlessRewards || "";
     ProtocolProxy.address = addresses.ProtocolProxy || "";
     ProtocolLogicV1.address = addresses.ProtocolLogicV1 || "";
     RenProxyAdmin.address = addresses.RenProxyAdmin || "";
@@ -381,6 +383,19 @@ module.exports = async function(deployer, network) {
             darknodeRegistry.address,
             DarknodePaymentStore.address,
             config.DARKNODE_PAYOUT_PERCENT // Reward payout percentage (50% is paid out at any given cycle)
+        );
+        actionCount++;
+    }
+
+    if (!ClaimlessRewards.address) {
+        // Deploy Darknode Payment
+        deployer.logger.log("Deploying ClaimlessRewards");
+        await deployer.deploy(
+            ClaimlessRewards,
+            darknodeRegistry.address,
+            DarknodePaymentStore.address,
+            config.communityFund || contractOwner,
+            config.communityFundNumerator || 50000
         );
         actionCount++;
     }

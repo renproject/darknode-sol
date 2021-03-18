@@ -128,8 +128,7 @@ export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {
-            await dnr.epoch();
-            return;
+            return await dnr.epoch();
         } catch (err) {
             // epoch reverted, epoch interval hasn't passed
         }
@@ -138,10 +137,6 @@ export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
         // await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
     }
 }
-
-export const randomID = () => {
-    return keccak256(Math.random().toString());
-};
 
 export const deployProxy = async <T>(
     web3: Web3,
@@ -176,3 +171,81 @@ export const sigToString = (sig: ECDSASignature) => {
 
 export const sleep = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms));
+
+export const HOURS = 60 * 60;
+export const DAYS = 24 * HOURS;
+
+export const getBalance = async (
+    token: string,
+    address: string
+): Promise<BigNumber> => {
+    if (token === ETHEREUM) {
+        return new BigNumber((await web3.eth.getBalance(address)).toString());
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return new BigNumber(
+            (await tokenContract.balanceOf.call(address)).toString()
+        );
+    }
+};
+
+export const getSymbol = async (token: string): Promise<string> => {
+    if (token === ETHEREUM) {
+        return "ETH";
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return await tokenContract.symbol.call();
+    }
+};
+
+export const getDecimals = async (token: string): Promise<number> => {
+    if (token === ETHEREUM) {
+        return 18;
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return parseInt((await tokenContract.decimals.call()).toString(), 10);
+    }
+};
+
+export const transferToken = async (
+    token: string,
+    to: string,
+    amount: BigNumber | string | number | BN
+): Promise<TransactionReceipt> => {
+    if (token === ETHEREUM) {
+        const from = (await web3.eth.getAccounts())[0];
+        return ((await web3.eth.sendTransaction({
+            to,
+            value: amount.toString(),
+            from
+        })) as unknown) as TransactionReceipt;
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return (await tokenContract.transfer(to, amount.toString())).receipt;
+    }
+};
+
+export const isPromise = <T>(x: any): x is Promise<T> => {
+    return !!x.then;
+};
+
+export const toBN = <
+    X extends (string | number | BN) | Promise<string | number | BN>
+>(
+    inp: X
+): X extends string | number | BN ? BigNumber : Promise<BigNumber> => {
+    if (isPromise<string | number | BN>(inp)) {
+        return inp.then(x => new BigNumber(x.toString())) as X extends
+            | string
+            | number
+            | BN
+            ? BigNumber
+            : Promise<BigNumber>;
+    } else {
+        return new BigNumber(inp.toString()) as X extends string | number | BN
+            ? BigNumber
+            : Promise<BigNumber>;
+    }
+};
+
+export const range = (n: number) => Array.from(new Array(n)).map((_, i) => i);

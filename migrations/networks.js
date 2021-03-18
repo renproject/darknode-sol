@@ -57,7 +57,7 @@ module.exports = {
         config: {
             ...config,
             mintAuthority: "0x7f64e4e4b2d7589eb0ac8439c0e639856aeceee7",
-            // devFund: "",
+            // communityFund: "",
 
             tokenPrefix: "ren"
         }
