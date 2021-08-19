@@ -22,6 +22,10 @@ contract DarknodePaymentMigrator is Claimable {
         tokens = _tokens;
     }
 
+    function setTokens(address[] memory _tokens) public onlyOwner {
+        tokens = _tokens;
+    }
+
     function claimStoreOwnership() external {
         require(msg.sender == address(dnp), "Not darknode payment contract");
         DarknodePaymentStore store = dnp.store();
@@ -33,14 +37,16 @@ contract DarknodePaymentMigrator is Claimable {
 
             uint256 unclaimed = store.availableBalance(token);
 
-            store.incrementDarknodeBalance(address(0x0), token, unclaimed);
+            if (unclaimed > 0) {
+                store.incrementDarknodeBalance(address(0x0), token, unclaimed);
 
-            store.transfer(
-                address(0x0),
-                token,
-                unclaimed,
-                _payableAddress(owner())
-            );
+                store.transfer(
+                    address(0x0),
+                    token,
+                    unclaimed,
+                    _payableAddress(owner())
+                );
+            }
         }
 
         store.transferOwnership(address(dnp));

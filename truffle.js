@@ -20,12 +20,13 @@ const kovanNetwork = {
     // @ts-ignore
     provider: () =>
         new HDWalletProvider(
-            process.env.MNEMONIC_KOVAN,
+            process.env.MNEMONIC_TESTNET,
             `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`
         ),
     network_id: 42,
     gas: 6721975,
-    gasPrice: 6.5 * GWEI
+    gasPrice: 6.5 * GWEI,
+    networkCheckTimeout: 20000
 };
 
 const mainNetwork = {
@@ -36,16 +37,16 @@ const mainNetwork = {
             `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`
         ),
     network_id: 1,
-    gas: 8721975,
-    gasPrice: 18 * GWEI,
-    networkCheckTimeout: 10000
+    gas: 6721975,
+    gasPrice: 42 * GWEI,
+    networkCheckTimeout: 20000
 };
 
 const ethRinkebyNetwork = {
     // @ts-ignore
     provider: () =>
         new HDWalletProvider(
-            process.env.MNEMONIC_TESTNET || process.env.MNEMONIC_KOVAN,
+            process.env.MNEMONIC_TESTNET || process.env.MNEMONIC_TESTNET,
             `https://rinkeby.infura.io/v3/${process.env.INFURA_KEY}`
         ),
     network_id: 4,
@@ -70,11 +71,11 @@ module.exports = {
     },
     mocha: {
         // // Use with `npm run test`, not with `npm run coverage`
-        // reporter: "eth-gas-reporter",
-        // reporterOptions: {
-        //   currency: 'USD',
-        //   gasPrice: 21
-        // },
+        reporter: "eth-gas-reporter",
+        reporterOptions: {
+            currency: "USD",
+            gasPrice: 21
+        },
         enableTimeouts: false,
         useColors: true,
         bail: false

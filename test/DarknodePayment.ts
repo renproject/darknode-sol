@@ -3,10 +3,12 @@ import BN from "bn.js";
 import {
     DarknodePaymentInstance,
     DarknodePaymentStoreInstance,
+    DarknodeRegistryForwarderInstance,
     DarknodeRegistryLogicV1Instance,
     DarknodeSlasherInstance,
     ERC20Instance,
-    RenTokenInstance
+    RenTokenInstance,
+    DarknodePaymentMigratorInstance
 } from "../types/truffle-contracts";
 import {
     ETHEREUM,
@@ -25,6 +27,10 @@ const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
+const DarknodeRegistryForwarder = artifacts.require(
+    "DarknodeRegistryForwarder"
+);
+const DarknodePaymentMigrator = artifacts.require("DarknodePaymentMigrator");
 
 const { config } = require("../migrations/networks");
 
@@ -36,6 +42,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentInstance;
     let ren: RenTokenInstance;
     let slasher: DarknodeSlasherInstance;
+    let forwarder: DarknodeRegistryForwarderInstance;
 
     const owner = accounts[0];
     const darknode1 = accounts[1];
@@ -53,6 +60,9 @@ contract("DarknodePayment", (accounts: string[]) => {
         dnp = await DarknodePayment.deployed();
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
+
+        forwarder = await DarknodeRegistryForwarder.new(dnr.address);
+        await dnp.updateDarknodeRegistry(forwarder.address);
 
         await waitForEpoch(dnr);
 
@@ -542,6 +552,14 @@ contract("DarknodePayment", (accounts: string[]) => {
             (
                 await dnp.registeredTokenIndex.call(ETHEREUM)
             ).should.bignumber.equal(0);
+
+            const darknodePaymentMigrator = await DarknodePaymentMigrator.new(
+                dnp.address,
+                [ETHEREUM]
+            );
+
+            (await store.owner.call()).should.equal(dnp.address);
+            await dnp.transferStoreOwnership(darknodePaymentMigrator.address);
         });
 
         it("can pay out DAI when darknodes withdraw", async () => {

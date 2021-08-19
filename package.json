@@ -16,6 +16,7 @@
         "deploy-skipDryRun": "truffle migrate --network $NETWORK --skipDryRun 2>&1 | tee $NETWORK-output.log",
         "clean-build": "echo  \"Have all contracts been verified on Etherscan? Continuing in 10 seconds...\" && sleep 10 && grep -R -l 'networks\": {}' build --exclude-dir=development | xargs rm; node build/clean.js",
         "verify": "truffle run verify --network $NETWORK",
+        "docs": "solidity-docgen --exclude contracts/migrations,contracts/test --solc-module solc --templates ./templates --helpers ./templates/helpers.js --extension=mdx",
         "prepare-release": "npmignore"
     },
     "dependencies": {

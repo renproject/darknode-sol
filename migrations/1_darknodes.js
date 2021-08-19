@@ -11,8 +11,9 @@ const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const ProtocolProxy = artifacts.require("ProtocolProxy");
-const ProtocolLogicV1 = artifacts.require("ProtocolLogicV1");
+const Protocol = artifacts.require("Protocol");
+const ClaimRewards = artifacts.require("ClaimRewards");
+const GetOperatorDarknodes = artifacts.require("GetOperatorDarknodes");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
@@ -64,12 +65,29 @@ module.exports = async function(deployer, network) {
     DarknodePaymentStore.address = addresses.DarknodePaymentStore || "";
     DarknodePayment.address = addresses.DarknodePayment || "";
     ClaimlessRewards.address = addresses.ClaimlessRewards || "";
-    ProtocolProxy.address = addresses.ProtocolProxy || "";
-    ProtocolLogicV1.address = addresses.ProtocolLogicV1 || "";
+    Protocol.address = addresses.Protocol || "";
     RenProxyAdmin.address = addresses.RenProxyAdmin || "";
+    GetOperatorDarknodes.address = addresses.GetOperatorDarknodes || "";
+    ClaimRewards.address = addresses.ClaimRewards || "";
     const tokens = addresses.tokens || {};
 
     let actionCount = 0;
+
+    /** GetOperatorDarknodes **************************************************************/
+
+    // !!! 0x4e27a3e21e747cf875ad5829b6d9cb7700b8b5f0
+    // if (!GetOperatorDarknodes.address) {
+    //     deployer.logger.log("Deploying GetOperatorDarknodes");
+    //     await deployer.deploy(
+    //         GetOperatorDarknodes,
+    //         DarknodeRegistryProxy.address
+    //     );
+    //     actionCount++;
+    // }
+    // const getOperatorDarknodes = await GetOperatorDarknodes.at(
+    //     GetOperatorDarknodes.address
+    // );
+    return;
 
     /** PROXY ADMIN ***********************************************************/
     if (!RenProxyAdmin.address) {
@@ -79,53 +97,32 @@ module.exports = async function(deployer, network) {
     }
     let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
 
+    /** ClaimRewards **************************************************************/
+    if (!ClaimRewards.address) {
+        deployer.logger.log("Deploying ClaimRewards");
+        await deployer.deploy(ClaimRewards);
+        actionCount++;
+    }
+    const claimRewards = await ClaimRewards.at(ClaimRewards.address);
+
+    // /** GetOperatorDarknodes **************************************************************/
+    // if (!GetOperatorDarknodes.address) {
+    //     deployer.logger.log("Deploying GetOperatorDarknodes");
+    //     await deployer.deploy(GetOperatorDarknodes);
+    //     actionCount++;
+    // }
+    // const getOperatorDarknodes = await GetOperatorDarknodes.at(
+    //     GetOperatorDarknodes.address
+    // );
+
     /** PROTOCOL **************************************************************/
-    if (!ProtocolLogicV1.address) {
-        deployer.logger.log("Deploying ProtocolLogicV1");
-        await deployer.deploy(ProtocolLogicV1);
+    if (!Protocol.address) {
+        deployer.logger.log("Deploying Protocol");
+        await deployer.deploy(Protocol);
         actionCount++;
     }
-    const protocolLogic = await ProtocolLogicV1.at(ProtocolLogicV1.address);
-    const protocolParameters = { types: ["address"], values: [contractOwner] };
-
-    // Initialize ProtocolLogic so others can't initialize it.
-    const protocolLogicOwner = await protocolLogic.owner.call();
-    if (Ox(protocolLogicOwner) === Ox(NULL)) {
-        deployer.logger.log("Ensuring ProtocolLogic is initialized");
-        await protocolLogic.initialize(...protocolParameters.values);
-        actionCount++;
-    }
-
-    let protocolProxy;
-    if (!ProtocolProxy.address) {
-        deployer.logger.log("Deploying ProtocolProxy");
-        await deployer.deploy(ProtocolProxy);
-        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
-        await protocolProxy.initialize(
-            protocolLogic.address,
-            renProxyAdmin.address,
-            encodeCallData(
-                web3,
-                "initialize",
-                protocolParameters.types,
-                protocolParameters.values
-            )
-        );
-        actionCount++;
-    } else {
-        protocolProxy = await ProtocolProxy.at(ProtocolProxy.address);
-    }
-
-    const protocolProxyLogic = await renProxyAdmin.getProxyImplementation(
-        protocolProxy.address
-    );
-    if (Ox(protocolProxyLogic) !== Ox(ProtocolLogicV1.address)) {
-        throw new Error(
-            "ERROR: ProtocolProxy is pointing to out-dated ProtocolLogicV1."
-        );
-    }
-
-    const protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
+    const protocol = await Protocol.at(Protocol.address);
+    await protocol.setContract("DarknodeRegistry", darknodeRegistry.address);
 
     /** Ren TOKEN *************************************************************/
     if (!RenToken.address) {
@@ -431,9 +428,11 @@ module.exports = async function(deployer, network) {
 
     const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();
     if (Ox(dnrInDarknodePayment) !== Ox(darknodeRegistry.address)) {
-        deployer.logger.log("Updating DNR in DNP");
-        await darknodePayment.updateDarknodeRegistry(darknodeRegistry.address);
-        actionCount++;
+        deployer.logger.log("DNP is still pointing to Forwarder.");
+
+        // deployer.logger.log("Updating DNR in DNP");
+        // await darknodePayment.updateDarknodeRegistry(darknodeRegistry.address);
+        // actionCount++;
     }
 
     const darknodePaymentStore = await DarknodePaymentStore.at(
@@ -500,8 +499,7 @@ module.exports = async function(deployer, network) {
         RenToken: "${RenToken.address}",
 
         // Protocol
-        ProtocolLogicV1: "${ProtocolLogicV1.address}",
-        ProtocolProxy: "${ProtocolProxy.address}",
+        Protocol: "${Protocol.address}",
     
         // DNR
         DarknodeRegistryStore: "${DarknodeRegistryStore.address}",
