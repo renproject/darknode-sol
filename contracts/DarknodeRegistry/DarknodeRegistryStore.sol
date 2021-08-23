@@ -1,8 +1,8 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
-import "../libraries/Claimable.sol";
+import "../Governance/Claimable.sol";
 import "../libraries/LinkedList.sol";
 import "../RenToken/RenToken.sol";
 import "../libraries/CanReclaimTokens.sol";
@@ -53,6 +53,8 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     /// @param _VERSION A string defining the contract version.
     /// @param _ren The address of the RenToken contract.
     constructor(string memory _VERSION, RenToken _ren) public {
+        Claimable.initialize(msg.sender);
+        CanReclaimTokens.initialize(msg.sender);
         VERSION = _VERSION;
         ren = _ren;
         blacklistRecoverableToken(address(ren));
@@ -62,31 +64,32 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     /// linked-list.
     ///
     /// @param _darknodeID The darknode's ID.
-    /// @param _darknodeOwner The darknode's owner's address
-    /// @param _bond The darknode's bond value
-    /// @param _publicKey The darknode's public key
+    /// @param _darknodeOperator The darknode's owner's address.
+    /// @param _bond The darknode's bond value.
+    /// @param _publicKey The darknode's public key.
     /// @param _registeredAt The time stamp when the darknode is registered.
     /// @param _deregisteredAt The time stamp when the darknode is deregistered.
     function appendDarknode(
         address _darknodeID,
-        address payable _darknodeOwner,
+        address payable _darknodeOperator,
         uint256 _bond,
         bytes calldata _publicKey,
         uint256 _registeredAt,
         uint256 _deregisteredAt
     ) external onlyOwner {
-        Darknode memory darknode = Darknode({
-            owner: _darknodeOwner,
-            bond: _bond,
-            publicKey: _publicKey,
-            registeredAt: _registeredAt,
-            deregisteredAt: _deregisteredAt
-        });
+        Darknode memory darknode =
+            Darknode({
+                owner: _darknodeOperator,
+                bond: _bond,
+                publicKey: _publicKey,
+                registeredAt: _registeredAt,
+                deregisteredAt: _deregisteredAt
+            });
         darknodeRegistry[_darknodeID] = darknode;
         LinkedList.append(darknodes, _darknodeID);
     }
 
-    /// @notice Returns the address of the first darknode in the store
+    /// @notice Returns the address of the first darknode in the store.
     function begin() external view onlyOwner returns (address) {
         return LinkedList.begin(darknodes);
     }
@@ -141,7 +144,7 @@ contract DarknodeRegistryStore is Claimable, CanReclaimTokens {
     }
 
     /// @notice Returns the owner of a given darknode.
-    function darknodeOwner(address darknodeID)
+    function darknodeOperator(address darknodeID)
         external
         view
         onlyOwner

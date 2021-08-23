@@ -6,7 +6,7 @@
 const glob = require("glob");
 const fs = require("fs");
 
-const networks = ["testnet", "devnet", "localnet", "chaosnet"];
+const networks = ["testnet", "devnet", "localnet", "chaosnet", "mainnet", "main"];
 
 const path = require('path');
 const dirname = path.dirname(__filename);
@@ -25,25 +25,29 @@ for (const network of networks) {
                 if (err) {
                     console.error(`error while reading the contents of ${file}`, err);
                 }
-                var obj = JSON.parse(data);
-                const newObj = {
-                    contractName: obj.contractName,
-                    abi: obj.abi.sort(sortAbi),
-                    sourcePath: obj.sourcePath.replace(/.*\/darknode-sol\//g, "./"),
-                    compiler: obj.compiler,
-                    networks: obj.networks,
-                    schemaVersion: obj.schemaVersion,
+                try {
+                    var obj = JSON.parse(data);
+                    const newObj = {
+                        contractName: obj.contractName,
+                        abi: obj.abi.sort(sortAbi),
+                        sourcePath: obj.sourcePath.replace(/.*\/ren-sol\//g, "~/github/renproject/ren-sol/"),
+                        compiler: obj.compiler,
+                        networks: obj.networks,
+                        schemaVersion: obj.schemaVersion,
 
-                    // Included for Etherscan verification
-                    // bytecode: obj.bytecode,
-                }
-                const newData = JSON.stringify(newObj, null, "  ");
+                        // Included for Etherscan verification
+                        // bytecode: obj.bytecode,
+                    }
+                    const newData = JSON.stringify(newObj, null, "  ");
 
-                if (data !== newData) {
-                    fs.writeFile(file, JSON.stringify(newObj, null, "  "), function (err) {
-                        if (err) return console.error(err);
-                        console.info(` Updated \x1b[33m${file}\x1b[0m.`);
-                    });
+                    if (data !== newData) {
+                        fs.writeFile(file, JSON.stringify(newObj, null, "  "), function (err) {
+                            if (err) return console.error(err);
+                            console.info(` Updated \x1b[33m${file}\x1b[0m.`);
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error processing ${file}`, error);
                 }
             });
         });

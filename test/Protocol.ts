@@ -1,8 +1,16 @@
 import {
-    BTCShifterInstance, DarknodePaymentInstance, DarknodePaymentStoreInstance,
-    DarknodeRegistryInstance, DarknodeRegistryStoreInstance, DarknodeSlasherInstance,
-    ProtocolInstance, ProtocolLogicInstance, RenTokenInstance, ShifterRegistryInstance,
-    zBTCInstance,
+    BTCGatewayInstance,
+    DarknodePaymentInstance,
+    DarknodePaymentStoreInstance,
+    DarknodeRegistryLogicV1Instance,
+    DarknodeRegistryStoreInstance,
+    DarknodeSlasherInstance,
+    GatewayRegistryInstance,
+    ProtocolLogicV1Instance,
+    ProtocolProxyInstance,
+    RenBTCInstance,
+    RenProxyAdminInstance,
+    RenTokenInstance
 } from "../types/truffle-contracts";
 import { encodeCallData, NULL, waitForEpoch } from "./helper/testUtils";
 
@@ -10,198 +18,229 @@ const DarknodePayment = artifacts.require("DarknodePayment");
 const DarknodePaymentStore = artifacts.require("DarknodePaymentStore");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
-const DarknodeRegistry = artifacts.require("DarknodeRegistry");
+const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
+const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const ShifterRegistry = artifacts.require("ShifterRegistry");
-const zBTC = artifacts.require("zBTC");
-const BTCShifter = artifacts.require("BTCShifter");
-const Protocol = artifacts.require("Protocol");
-const ProtocolLogic = artifacts.require("ProtocolLogic");
+const GatewayRegistry = artifacts.require("GatewayRegistry");
+const RenBTC = artifacts.require("RenBTC");
+const BTCGateway = artifacts.require("BTCGateway");
+const ProtocolProxy = artifacts.require("ProtocolProxy");
+const ProtocolLogicV1 = artifacts.require("ProtocolLogicV1");
+const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
-contract("Protocol", ([owner, proxyOwner, otherAccount]: string[]) => {
-
+contract("Protocol", ([owner, otherAccount]: string[]) => {
     let dnp: DarknodePaymentInstance;
-    let dnps: DarknodePaymentStoreInstance;
+    let dnpStore: DarknodePaymentStoreInstance;
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryInstance;
+    let dnr: DarknodeRegistryLogicV1Instance;
     let slasher: DarknodeSlasherInstance;
-    let shifterRegistry: ShifterRegistryInstance;
-    let zbtc: zBTCInstance;
-    let btcShifter: BTCShifterInstance;
-    let protocol: ProtocolLogicInstance;
-    let protocolProxy: ProtocolInstance;
+    let gatewayRegistry: GatewayRegistryInstance;
+    let renbtc: RenBTCInstance;
+    let btcGateway: BTCGatewayInstance;
+    let protocol: ProtocolLogicV1Instance;
+    let protocolProxy: ProtocolProxyInstance;
+    let renProxyAdmin: RenProxyAdminInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
-        dnr = await DarknodeRegistry.deployed();
+        const dnrProxy = await DarknodeRegistryProxy.deployed();
+        dnr = await DarknodeRegistryLogicV1.at(dnrProxy.address);
         dnp = await DarknodePayment.deployed();
-        dnps = await DarknodePaymentStore.deployed();
+        dnpStore = await DarknodePaymentStore.deployed();
         slasher = await DarknodeSlasher.deployed();
-        shifterRegistry = await ShifterRegistry.deployed();
-        zbtc = await zBTC.deployed();
-        btcShifter = await BTCShifter.deployed();
-        protocol = await ProtocolLogic.at(Protocol.address);
-        protocolProxy = await Protocol.deployed();
+        gatewayRegistry = await GatewayRegistry.deployed();
+        renbtc = await RenBTC.deployed();
+        btcGateway = await BTCGateway.deployed();
+        protocol = await ProtocolLogicV1.at(ProtocolProxy.address);
+        protocolProxy = await ProtocolProxy.deployed();
+        renProxyAdmin = await RenProxyAdmin.deployed();
         await waitForEpoch(dnr);
     });
 
     it("Address getters", async () => {
-        (await protocol.renToken.call())
-            .should.equal(ren.address);
+        (await protocol.renToken.call()).should.equal(ren.address);
 
-        (await protocol.darknodeRegistry.call())
-            .should.equal(dnr.address);
+        (await protocol.darknodeRegistry.call()).should.equal(dnr.address);
 
-        (await protocol.darknodeRegistryStore.call())
-            .should.equal(dnrs.address);
+        (await protocol.darknodeRegistryStore.call()).should.equal(
+            dnrs.address
+        );
 
-        (await protocol.darknodePayment.call())
-            .should.equal(dnp.address);
+        (await protocol.darknodePayment.call()).should.equal(dnp.address);
 
-        (await protocol.darknodePaymentStore.call())
-            .should.equal(dnps.address);
+        (await protocol.darknodePaymentStore.call()).should.equal(
+            dnpStore.address
+        );
 
-        (await protocol.darknodeSlasher.call())
-            .should.equal(slasher.address);
+        (await protocol.darknodeSlasher.call()).should.equal(slasher.address);
 
-        (await protocol.shifterRegistry.call())
-            .should.equal(shifterRegistry.address);
+        (await protocol.gatewayRegistry.call()).should.equal(
+            gatewayRegistry.address
+        );
     });
 
     it("Protocol owner", async () => {
-        (await protocol.owner.call())
-            .should.equal(owner);
+        (await protocol.owner.call()).should.equal(owner);
 
-        await protocol.transferOwnership(otherAccount, { from: otherAccount })
+        await protocol
+            .transferOwnership(otherAccount, { from: otherAccount })
             .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
         await protocol.transferOwnership(otherAccount);
 
-        (await protocol.owner.call())
-            .should.equal(otherAccount);
+        (await protocol.owner.call()).should.equal(owner);
+
+        await protocol.claimOwnership({ from: otherAccount });
+
+        (await protocol.owner.call()).should.equal(otherAccount);
 
         await protocol.transferOwnership(owner, { from: otherAccount });
+        await protocol.claimOwnership({ from: owner });
 
-        (await protocol.owner.call())
-            .should.equal(owner);
+        (await protocol.owner.call()).should.equal(owner);
     });
 
     it("Update DarknodeRegistry address", async () => {
-        await protocol._updateDarknodeRegistry(NULL, { from: otherAccount })
+        await protocol
+            ._updateDarknodeRegistry(NULL, { from: otherAccount })
             .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
         await protocol._updateDarknodeRegistry(NULL);
 
-        (await protocol.darknodeRegistry.call())
-            .should.equal(NULL);
+        (await protocol.darknodeRegistry.call()).should.equal(NULL);
 
         await protocol._updateDarknodeRegistry(dnr.address);
 
-        (await protocol.darknodeRegistry.call())
-            .should.equal(dnr.address);
+        (await protocol.darknodeRegistry.call()).should.equal(dnr.address);
     });
 
-    it("Update ShifterRegistry address", async () => {
-        await protocol._updateShifterRegistry(NULL, { from: otherAccount })
+    it("Update GatewayRegistry address", async () => {
+        await protocol
+            ._updateGatewayRegistry(NULL, { from: otherAccount })
             .should.be.rejectedWith(/Ownable: caller is not the owner/);
 
-        await protocol._updateShifterRegistry(NULL);
+        await protocol._updateGatewayRegistry(NULL);
 
-        (await protocol.shifterRegistry.call())
-            .should.equal(NULL);
+        (await protocol.gatewayRegistry.call()).should.equal(NULL);
 
-        await protocol._updateShifterRegistry(shifterRegistry.address);
+        await protocol._updateGatewayRegistry(gatewayRegistry.address);
 
-        (await protocol.shifterRegistry.call())
-            .should.equal(shifterRegistry.address);
+        (await protocol.gatewayRegistry.call()).should.equal(
+            gatewayRegistry.address
+        );
     });
 
     it("Proxy functions", async () => {
         // Try to initialize again
-        await protocolProxy.initialize(
-            ProtocolLogic.address,
-            proxyOwner,
-            encodeCallData("initialize", ["address"], [owner]), { from: proxyOwner },
-        )
+        await protocolProxy
+            .initialize(
+                ProtocolLogicV1.address,
+                renProxyAdmin.address,
+                encodeCallData(web3, "initialize", ["address"], [owner]),
+                { from: owner }
+            )
             .should.be.rejectedWith(/revert$/);
-        await protocolProxy.initialize(
-            ProtocolLogic.address,
-            proxyOwner,
-            Buffer.from([]) as unknown as string,
-        )
+        await protocolProxy
+            .initialize(
+                ProtocolLogicV1.address,
+                renProxyAdmin.address,
+                (Buffer.from([]) as unknown) as string
+            )
             .should.be.rejectedWith(/revert$/);
 
         // Upgrade logic
-        const newLogic = await ProtocolLogic.new();
+        const newLogic = await ProtocolLogicV1.new();
 
         // Wrong address
-        await protocolProxy.upgradeTo(newLogic.address, { from: owner })
+        await renProxyAdmin
+            .upgrade(protocolProxy.address, newLogic.address, {
+                from: otherAccount
+            })
             .should.be.rejectedWith(/revert$/);
 
-        await protocolProxy.upgradeTo(newLogic.address, { from: proxyOwner });
-        (await protocol.renToken.call())
-            .should.equal(ren.address);
+        await renProxyAdmin.upgrade(protocolProxy.address, newLogic.address, {
+            from: owner
+        });
+        (await protocol.renToken.call()).should.equal(ren.address);
     });
 
-    it("Shifter functions", async () => {
+    it("Gateway functions", async () => {
+        (
+            await gatewayRegistry.getGatewayByToken.call(renbtc.address)
+        ).should.equal(btcGateway.address);
 
-        (await shifterRegistry.getShifterByToken.call(zbtc.address))
-            .should.equal(btcShifter.address);
+        (await protocol.getGatewayByToken.call(renbtc.address)).should.equal(
+            btcGateway.address
+        );
 
-        (await protocol.getShifterByToken.call(zbtc.address))
-            .should.equal(btcShifter.address);
+        (await protocol.getGatewayBySymbol.call("BTC")).should.equal(
+            btcGateway.address
+        );
 
-        (await protocol.getShifterBySymbol.call("zBTC"))
-            .should.equal(btcShifter.address);
+        (await protocol.getTokenBySymbol.call("BTC")).should.equal(
+            renbtc.address
+        );
 
-        (await protocol.getTokenBySymbol.call("zBTC"))
-            .should.equal(zbtc.address);
+        {
+            // The first 10 gateways starting from NULL
+            const gateways = await protocol.getGateways.call(NULL, 10);
+            gateways[0].should.equal(btcGateway.address);
+            gateways[9].should.equal(NULL);
+            gateways.length.should.equal(10);
 
-        { // The first 10 shifters starting from NULL
-            const shifters = await protocol.getShifters.call(NULL, 10);
-            shifters[0].should.equal(btcShifter.address);
-            shifters[9].should.equal(NULL);
-            shifters.length.should.equal(10);
-
-            const shiftedTokens = await protocol.getShiftedTokens.call(NULL, 10);
-            shiftedTokens[0].should.equal(zbtc.address);
-            shiftedTokens[9].should.equal(NULL);
-            shiftedTokens.length.should.equal(10);
+            const renTokens = await protocol.getRenTokens.call(NULL, 10);
+            renTokens[0].should.equal(renbtc.address);
+            renTokens[9].should.equal(NULL);
+            renTokens.length.should.equal(10);
         }
 
-        { // Get all the shifters starting from NULL
-            const shifters = await protocol.getShifters.call(NULL, 0);
-            shifters[0].should.equal(btcShifter.address);
-            shifters.length.should.equal(3);
+        {
+            // Get all the gateways starting from NULL
+            const gateways = await protocol.getGateways.call(NULL, 0);
+            gateways[0].should.equal(btcGateway.address);
+            gateways.length.should.equal(3);
 
-            const shiftedTokens = await protocol.getShiftedTokens.call(NULL, 0);
-            shiftedTokens[0].should.equal(zbtc.address);
-            shiftedTokens.length.should.equal(3);
+            const renTokens = await protocol.getRenTokens.call(NULL, 0);
+            renTokens[0].should.equal(renbtc.address);
+            renTokens.length.should.equal(3);
         }
 
-        { // Starting from first entry
-            const shifters = await protocol.getShifters.call(btcShifter.address, 10);
-            shifters[0].should.equal(btcShifter.address);
-            shifters[9].should.equal(NULL);
-            shifters.length.should.equal(10);
+        {
+            // Starting from first entry
+            const gateways = await protocol.getGateways.call(
+                btcGateway.address,
+                10
+            );
+            gateways[0].should.equal(btcGateway.address);
+            gateways[9].should.equal(NULL);
+            gateways.length.should.equal(10);
 
-            const shiftedTokens = await protocol.getShiftedTokens.call(zbtc.address, 10);
-            shiftedTokens[0].should.equal(zbtc.address);
-            shiftedTokens[9].should.equal(NULL);
-            shiftedTokens.length.should.equal(10);
+            const renTokens = await protocol.getRenTokens.call(
+                renbtc.address,
+                10
+            );
+            renTokens[0].should.equal(renbtc.address);
+            renTokens[9].should.equal(NULL);
+            renTokens.length.should.equal(10);
         }
 
-        { // Get all the shifters starting from first entry
-            const shifters = await shifterRegistry.getShifters.call(btcShifter.address, 0);
-            shifters[0].should.equal(btcShifter.address);
-            shifters.length.should.equal(3);
+        {
+            // Get all the gateways starting from first entry
+            const gateways = await gatewayRegistry.getGateways.call(
+                btcGateway.address,
+                0
+            );
+            gateways[0].should.equal(btcGateway.address);
+            gateways.length.should.equal(3);
 
-            const shiftedTokens = await shifterRegistry.getShiftedTokens.call(zbtc.address, 0);
-            shiftedTokens[0].should.equal(zbtc.address);
-            shiftedTokens.length.should.equal(3);
+            const renTokens = await gatewayRegistry.getRenTokens.call(
+                renbtc.address,
+                0
+            );
+            renTokens[0].should.equal(renbtc.address);
+            renTokens.length.should.equal(3);
         }
     });
-
 });

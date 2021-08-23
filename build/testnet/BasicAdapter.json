@@ -4,7 +4,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract IShifterRegistry",
+          "internalType": "contract IGatewayRegistry",
           "name": "_registry",
           "type": "address"
         }
@@ -99,6 +99,31 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_to",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "burn",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "getHubAddr",
@@ -111,6 +136,50 @@
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_nHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_sig",
+          "type": "bytes"
+        }
+      ],
+      "name": "mint",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -181,66 +250,15 @@
     },
     {
       "constant": false,
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_symbol",
-          "type": "string"
-        },
-        {
-          "internalType": "address",
-          "name": "_recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_nHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_sig",
-          "type": "bytes"
-        }
-      ],
-      "name": "shiftIn",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_symbol",
-          "type": "string"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_to",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "shiftOut",
+      "inputs": [],
+      "name": "setDefaultRelayHub",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
-  "sourcePath": "/home/noah/github/renproject/ren-sol/contracts/Shifter/adapters/BasicAdapter.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/Gateway/adapters/BasicAdapter.sol",
   "compiler": {
     "name": "solc",
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
@@ -269,8 +287,7 @@
         }
       },
       "links": {},
-      "address": "0xdCb0B03c2fc9F0b3aF7742C3C1262db436BF5443",
-      "transactionHash": "0xf95ef09320622c1479ead3dc410fcd246fe0d284f0151607df6e5712638fcec5"
+      "address": "0x7DDFA2e5435027f6e13Ca8Db2f32ebd5551158Bb"
     }
   },
   "schemaVersion": "3.0.23"

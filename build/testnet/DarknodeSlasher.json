@@ -4,7 +4,7 @@
     {
       "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_darknodeRegistry",
           "type": "address"
         }
@@ -17,14 +17,14 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "contract DarknodeRegistry",
+          "indexed": true,
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_previousDarknodeRegistry",
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "contract DarknodeRegistry",
+          "indexed": true,
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_nextDarknodeRegistry",
           "type": "address"
         }
@@ -117,13 +117,28 @@
       "name": "darknodeRegistry",
       "outputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "",
           "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -526,7 +541,7 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract DarknodeRegistry",
+          "internalType": "contract DarknodeRegistryLogicV1",
           "name": "_darknodeRegistry",
           "type": "address"
         }
@@ -538,10 +553,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/DarknodeSlasher/DarknodeSlasher.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/DarknodeSlasher/DarknodeSlasher.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -550,21 +565,20 @@
           "anonymous": false,
           "inputs": [
             {
-              "indexed": false,
-              "internalType": "contract DarknodeRegistry",
+              "indexed": true,
+              "internalType": "contract DarknodeRegistryLogicV1",
               "name": "_previousDarknodeRegistry",
               "type": "address"
             },
             {
-              "indexed": false,
-              "internalType": "contract DarknodeRegistry",
+              "indexed": true,
+              "internalType": "contract DarknodeRegistryLogicV1",
               "name": "_nextDarknodeRegistry",
               "type": "address"
             }
           ],
           "name": "LogDarknodeRegistryUpdated",
-          "type": "event",
-          "signature": "0xf9f6dd5c784f63cc27c1079c73574a73485a6c2e7f7e2181c5eb2be8c693cfb7"
+          "type": "event"
         },
         "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
           "anonymous": false,
@@ -583,14 +597,13 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x06f44b3a0C2621D581Fe667Ec2170F6A5Be02BD0",
-      "transactionHash": "0xd85b6cb12f10fe59826fa1dd41362b5000fd43a11d3dcce1a29c70f2a4f1f1c5"
+      "address": "0x5B403bdC360A447290758c8BA779c44cdFC3476F",
+      "transactionHash": "0xc8d3510ed09372406ee1bffc9e8e794d01afcdf16345f0f7e1c4d9fc2a2de82b"
     }
   },
-  "schemaVersion": "3.0.17"
+  "schemaVersion": "3.0.23"
 }

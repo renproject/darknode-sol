@@ -1,17 +1,21 @@
 module.exports = {
-    copyPackages: ["@openzeppelin/contracts"], // needed to import from node_modules
+    copyPackages: ["@openzeppelin/contracts-ethereum-package"], // needed to import from node_modules.
     testrpcOptions: "-d --accounts 10 --port 8555",
     skipFiles: [
-        // REN token
+        // REN token.
         "RenToken/RenToken.sol",
 
-        // Contract for building bindings
+        // Contract for building bindings.
         "test/Bindings.sol",
 
-        // Migration contract
+        // Migration contract.
         "migrations/Migrations.sol",
 
-        // Contracts for assisting the tests
+        // Examples
+        "Gateway/adapters/BasicAdapter.sol",
+        "Gateway/examples/Vesting.sol",
+
+        // Contracts for assisting the tests.
         "test/ERC20WithFeesTest.sol",
         "test/tokens/ImpreciseToken.sol",
         "test/tokens/SelfDestructingToken.sol",
@@ -24,6 +28,6 @@ module.exports = {
         "test/StringTest.sol",
         "test/CompareTest.sol",
         "test/tokens/PaymentToken.sol",
-        "test/CycleChanger.sol",
-    ],
+        "test/CycleChanger.sol"
+    ]
 };

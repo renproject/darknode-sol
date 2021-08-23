@@ -1,50 +1,72 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 contract NCT_ERC20Basic {
-    uint public totalSupply;
-    function balanceOf(address who) public view returns (uint);
-    function transfer(address to, uint value) public;
-    event Transfer(address indexed from, address indexed to, uint value);
+    uint256 public totalSupply;
+
+    function balanceOf(address who) public view returns (uint256);
+
+    function transfer(address to, uint256 value) public;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
 contract NCT_BasicToken is NCT_ERC20Basic {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
-    mapping(address => uint) balances;
+    mapping(address => uint256) balances;
 
-    modifier onlyPayloadSize(uint size) {
-        if(msg.data.length < size + 4) {
+    modifier onlyPayloadSize(uint256 size) {
+        if (msg.data.length < size + 4) {
             revert();
         }
         _;
     }
 
-    function transfer(address _to, uint _value) public onlyPayloadSize(2 * 32) {
+    function transfer(address _to, uint256 _value)
+        public
+        onlyPayloadSize(2 * 32)
+    {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
         emit Transfer(msg.sender, _to, _value);
     }
 
-    function balanceOf(address _owner) public view returns (uint balance) {
+    function balanceOf(address _owner) public view returns (uint256 balance) {
         return balances[_owner];
     }
-
 }
 
 contract NCT_ERC20 is NCT_ERC20Basic {
-    function allowance(address owner, address spender) public view returns (uint);
-    function transferFrom(address from, address to, uint value) public;
-    function approve(address spender, uint value) public;
-    event Approval(address indexed owner, address indexed spender, uint value);
+    function allowance(address owner, address spender)
+        public
+        view
+        returns (uint256);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) public;
+
+    function approve(address spender, uint256 value) public;
+
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
 
 contract NCT_StandardToken is NCT_BasicToken, NCT_ERC20 {
+    mapping(address => mapping(address => uint256)) allowed;
 
-    mapping (address => mapping (address => uint)) allowed;
-
-    function transferFrom(address _from, address _to, uint _value) public onlyPayloadSize(3 * 32) {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    ) public onlyPayloadSize(3 * 32) {
         uint256 _allowance = allowed[_from][msg.sender];
 
         balances[_to] = balances[_to].add(_value);
@@ -53,17 +75,20 @@ contract NCT_StandardToken is NCT_BasicToken, NCT_ERC20 {
         emit Transfer(_from, _to, _value);
     }
 
-    function approve(address _spender, uint _value) public {
+    function approve(address _spender, uint256 _value) public {
         if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) revert();
 
         allowed[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
     }
 
-    function allowance(address _owner, address _spender) public view returns (uint remaining) {
+    function allowance(address _owner, address _spender)
+        public
+        view
+        returns (uint256 remaining)
+    {
         return allowed[_owner][_spender];
     }
-
 }
 
 contract NonCompliantToken is NCT_StandardToken {

@@ -149,6 +149,21 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "isOwner",
@@ -290,10 +305,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/DarknodePayment/DarknodePaymentStore.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/DarknodePayment/DarknodePaymentStore.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -303,26 +318,25 @@
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": true,
+              "internalType": "address",
               "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x823c22F1e17766271a5986D9faa12bcfFDeb701B",
-      "transactionHash": "0x4e9584aa1c62f066d628078ad538f684d67cbf4f3159a0fb1853f3dd759f53d0"
+      "address": "0x0EC73cCDCd8e643d909D0c4b663Eb1B2Fb0b1e1C",
+      "transactionHash": "0x40434a705a19dcee892f8f7ba35b2a161745040a51ec67d366279ed19ff55088"
     }
   },
-  "schemaVersion": "3.0.17"
+  "schemaVersion": "3.0.23"
 }

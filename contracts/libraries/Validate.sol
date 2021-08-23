@@ -1,16 +1,17 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 
 import "../libraries/String.sol";
 import "../libraries/Compare.sol";
 
 /// @notice Validate is a library for validating malicious darknode behaviour.
 library Validate {
-    /// @notice Recovers two propose messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if propose messages were different
+    /// @notice Recovers two propose messages and checks if they were signed by
+    ///         the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if propose messages were
+    ///         different.
     function duplicatePropose(
         uint256 _height,
         uint256 _round,
@@ -25,20 +26,22 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPropose(
-            _height,
-            _round,
-            _blockhash1,
-            _validRound1,
-            _signature1
-        );
-        address signer2 = recoverPropose(
-            _height,
-            _round,
-            _blockhash2,
-            _validRound2,
-            _signature2
-        );
+        address signer1 =
+            recoverPropose(
+                _height,
+                _round,
+                _blockhash1,
+                _validRound1,
+                _signature1
+            );
+        address signer2 =
+            recoverPropose(
+                _height,
+                _round,
+                _blockhash2,
+                _validRound2,
+                _signature2
+            );
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
@@ -79,10 +82,11 @@ library Validate {
             );
     }
 
-    /// @notice Recovers two prevote messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if prevote messages were different
+    /// @notice Recovers two prevote messages and checks if they were signed by
+    ///         the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if prevote messages were
+    ///         different.
     function duplicatePrevote(
         uint256 _height,
         uint256 _round,
@@ -95,18 +99,10 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPrevote(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1
-        );
-        address signer2 = recoverPrevote(
-            _height,
-            _round,
-            _blockhash2,
-            _signature2
-        );
+        address signer1 =
+            recoverPrevote(_height, _round, _blockhash1, _signature1);
+        address signer2 =
+            recoverPrevote(_height, _round, _blockhash2, _signature2);
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }
@@ -141,10 +137,11 @@ library Validate {
             );
     }
 
-    /// @notice Recovers two precommit messages and checks if they were signed by the same
-    ///         darknode. If they were different but the height and round were the same,
-    ///         then the darknode was behaving maliciously.
-    /// @return The address of the signer if and only if precommit messages were different
+    /// @notice Recovers two precommit messages and checks if they were signed
+    ///         by the same darknode. If they were different but the height and
+    ///         round were the same, then the darknode was behaving maliciously.
+    /// @return The address of the signer if and only if precommit messages were
+    ///         different.
     function duplicatePrecommit(
         uint256 _height,
         uint256 _round,
@@ -157,18 +154,10 @@ library Validate {
             !Compare.bytesEqual(_signature1, _signature2),
             "Validate: same signature"
         );
-        address signer1 = recoverPrecommit(
-            _height,
-            _round,
-            _blockhash1,
-            _signature1
-        );
-        address signer2 = recoverPrecommit(
-            _height,
-            _round,
-            _blockhash2,
-            _signature2
-        );
+        address signer1 =
+            recoverPrecommit(_height, _round, _blockhash1, _signature1);
+        address signer2 =
+            recoverPrecommit(_height, _round, _blockhash2, _signature2);
         require(signer1 == signer2, "Validate: different signer");
         return signer1;
     }

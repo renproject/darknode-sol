@@ -62,7 +62,7 @@
         },
         {
           "internalType": "address payable",
-          "name": "_darknodeOwner",
+          "name": "_darknodeOperator",
           "type": "address"
         },
         {
@@ -105,6 +105,21 @@
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "blacklistRecoverableToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -167,7 +182,7 @@
           "type": "address"
         }
       ],
-      "name": "darknodeOwner",
+      "name": "darknodeOperator",
       "outputs": [
         {
           "internalType": "address payable",
@@ -222,6 +237,21 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nextOwner",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "isOwner",
@@ -261,6 +291,21 @@
       "constant": true,
       "inputs": [],
       "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "pendingOwner",
       "outputs": [
         {
           "internalType": "address",
@@ -382,10 +427,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "1": {
@@ -395,26 +440,25 @@
           "inputs": [
             {
               "indexed": true,
+              "internalType": "address",
               "name": "previousOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": true,
+              "internalType": "address",
               "name": "newOwner",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0xE8d0C5D4ca958C8619Ab1B98cA901d65340C48B1",
-      "transactionHash": "0xe01fb109de8724dcc84e42ad8470dc40234dab708303fb64dce781e0becf824e"
+      "address": "0x4C2f0533af3792695e71699Ff221205f7FA47579",
+      "transactionHash": "0x277bc7b304317abd9d776c3143498f2ef23b102dc7f1ff056ead4d7e8983b7e2"
     }
   },
-  "schemaVersion": "3.0.16"
+  "schemaVersion": "3.0.23"
 }

@@ -1,19 +1,18 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Pausable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 
 contract PaymentToken is ERC20Pausable, ERC20Burnable, ERC20Detailed {
-
-    string private constant _name = "PaymentToken";
-    string private constant _symbol = "PAYT";
     uint8 private constant _decimals = 18;
 
-    uint256 public constant INITIAL_SUPPLY = 1000000000 * 10**uint256(_decimals);
+    uint256 public constant INITIAL_SUPPLY =
+        1000000000 * 10**uint256(_decimals);
 
-    /// @notice The RenToken Constructor.
-    constructor() ERC20Burnable() ERC20Pausable() ERC20Detailed(_name, _symbol, _decimals) public {
+    constructor(string memory symbol) public {
+        ERC20Pausable.initialize(msg.sender);
+        ERC20Detailed.initialize(symbol, symbol, _decimals);
         _mint(msg.sender, INITIAL_SUPPLY);
     }
 }

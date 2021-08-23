@@ -10,6 +10,9 @@ dist
 coverageEnv
 coverage.json
 .coveralls.yml
+.coverage_artifacts
+.coverage_contracts
+*output.log
 
 # Configuration files
 *.env

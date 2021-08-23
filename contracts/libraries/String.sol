@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
 library String {
     /// @notice Convert a uint value to its decimal string representation
@@ -22,7 +22,7 @@ library String {
         return string(bstr);
     }
 
-    /// @notice Convert a bytes32 value to its hex string representation
+    /// @notice Convert a bytes32 value to its hex string representation.
     function fromBytes32(bytes32 _value) internal pure returns (string memory) {
         bytes memory alphabet = "0123456789abcdef";
 
@@ -36,7 +36,7 @@ library String {
         return string(str);
     }
 
-    /// @notice Convert an address to its hex string representation
+    /// @notice Convert an address to its hex string representation.
     function fromAddress(address _addr) internal pure returns (string memory) {
         bytes32 value = bytes32(uint256(_addr));
         bytes memory alphabet = "0123456789abcdef";
@@ -51,7 +51,7 @@ library String {
         return string(str);
     }
 
-    /// @notice Append four strings
+    /// @notice Append eight strings.
     function add8(
         string memory a,
         string memory b,

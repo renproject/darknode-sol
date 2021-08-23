@@ -1,13 +1,20 @@
-pragma solidity 0.5.16;
+pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract CanReclaimTokens is Ownable {
+import "../Governance/Claimable.sol";
+
+contract CanReclaimTokens is Claimable {
     using SafeERC20 for ERC20;
 
     mapping(address => bool) private recoverableTokensBlacklist;
+
+    function initialize(address _nextOwner) public initializer {
+        Claimable.initialize(_nextOwner);
+    }
 
     function blacklistRecoverableToken(address _token) public onlyOwner {
         recoverableTokensBlacklist[_token] = true;

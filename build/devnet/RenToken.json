@@ -334,6 +334,46 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "internalType": "uint8",
+          "name": "decimals",
+          "type": "uint8"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
       "name": "isOwner",
@@ -579,10 +619,10 @@
       "type": "function"
     }
   ],
-  "sourcePath": "./contracts/RenToken/RenToken.sol",
+  "sourcePath": "~/github/renproject/ren-sol/contracts/RenToken/RenToken.sol",
   "compiler": {
     "name": "solc",
-    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
     "42": {
@@ -710,8 +750,9 @@
         }
       },
       "links": {},
-      "address": "0x2cd647668494c1b15743ab283a0f980d90a87394"
+      "address": "0x2cd647668494c1b15743ab283a0f980d90a87394",
+      "transactionHash": "0xc0240fedd500768ccfdba93ab039d8a3585e8551b66eaa2c5c0e4c31004fc410"
     }
   },
-  "schemaVersion": "3.0.20"
+  "schemaVersion": "3.0.23"
 }

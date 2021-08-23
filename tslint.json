@@ -1,17 +1,10 @@
 {
-    "extends": [
-        "tslint:recommended"
-    ],
+    "extends": ["tslint:recommended"],
     "linterOptions": {
-        "exclude": [
-            "node_modules"
-        ]
+        "exclude": ["node_modules"]
     },
     "rules": {
-        "quotemark": [
-            true,
-            "double"
-        ],
+        "quotemark": [true, "double"],
         "variable-name": [
             true,
             "ban-keywords",
