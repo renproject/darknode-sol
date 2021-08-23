@@ -1,75 +1,132 @@
 # `⚖️ darknode-sol`
-## Solidity smart contracts used by Ren Darknodes
+
+## Ethereum smart contracts for managing darknodes
 
 [![CircleCI](https://circleci.com/gh/renproject/darknode-sol.svg?style=shield)](https://circleci.com/gh/renproject/darknode-sol)
 [![Coverage Status](https://coveralls.io/repos/github/renproject/darknode-sol/badge.svg?branch=master)](https://coveralls.io/github/renproject/darknode-sol?branch=master)
 
-**`darknode-sol`** contains a collection of Ethereum smart contracts utilized by the Ren Darknodes, written in Solidity. Ren bootstraps off Ethereum as a trusted third-party computer to handle Darknode registration and fee payouts.
+Ren has two repositories for its Solidity contract:
 
-Ren is powered by the RenVM — the Ren Virtual Machine — in a decentralized network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
+- `darknode-sol` (this repository) - contracts on Ethereum for managing darknode registrations.
+- [`gateway-sol`](https://github.com/renproject/gateway-sol) - contracts on multiple EVM chains for minting and burning of ren-assets.
 
-## Tests
+Ren bootstraps off Ethereum to handle the REN token and darknode registrations.
 
-Install the dependencies.
+## ~ [Documentation](https://renproject.github.io/ren-client-docs/contracts/) ~
 
-```
-yarn install
-```
+- For the latest contract addresses, see the [contract addresses](https://renproject.github.io/ren-client-docs/contracts/deployments) page.
+- For a summary of each contract, see the [summary of contracts](https://renproject.github.io/ren-client-docs/contracts/summary) page.
 
-Run the `ganache-cli` or an alternate Ethereum test RPC server on port 8545. The `-d` flag will use a deterministic mnemonic for reproducibility.
+<details>
 
-```sh
-yarn ganache-cli -d
-```
+<summary>Development notes</summary>
 
-Run the Truffle test suite.
+# Boilerplate for ethereum solidity smart contract development
 
-```sh
-yarn run test
-```
+## INSTALL
 
-## Coverage
-
-Run the Truffle test suite with coverage.
-
-```sh
-yarn run coverage
+```bash
+yarn
 ```
 
-Open the coverage file.
+## TEST
 
-```sh
-open ./coverage/index.html
+```bash
+yarn test
 ```
 
-## Deploying
+## SCRIPTS
 
-Add a `.env`, filling in the mnemonic and Infura key:
+Here is the list of npm scripts you can execute:
 
-```sh
-MNEMONIC_KOVAN="..."
-MNEMONIC_MAINNET="..."
-INFURA_KEY="..."
-```
+Some of them relies on [./config/\_scripts.js](./config/_scripts.js) to allow parameterizing it via command line argument (have a look inside if you need modifications)
+<br/><br/>
 
-Deploy to Kovan:
+`yarn prepare`
 
-```sh
-NETWORK=kovan yarn run deploy
-```
+As a standard lifecycle npm script, it is executed automatically upon install. It generate config file and typechain to get you started with type safe contract interactions
+<br/><br/>
 
-See `1_darknodes.js` for additional instructions.
+`yarn lint`, `yarn lint:fix`, `yarn format` and `yarn format:fix`
 
-## Verifying Contract Code
+These will lint and format check your code. the `:fix` version will modifiy the files to match the requirement specified in `.eslintrc` and `.prettierrc.`
+<br/><br/>
 
-Add an Etherscan API key to your `.env`:
+`yarn compile`
 
-```
-ETHERSCAN_KEY="..."
-```
+These will compile your contracts
+<br/><br/>
 
-Run the following (replacing the network and contract name):
+`yarn void:deploy`
 
-```sh
-NETWORK=mainnet yarn run verify Contract1 Contract2
-```
+This will deploy your contracts on the in-memory hardhat network and exit, leaving no trace. quick way to ensure deployments work as intended without consequences
+<br/><br/>
+
+`yarn test [mocha args...]`
+
+These will execute your tests using mocha. you can pass extra arguments to mocha
+<br/><br/>
+
+`yarn coverage`
+
+These will produce a coverage report in the `coverage/` folder
+<br/><br/>
+
+`yarn gas`
+
+These will produce a gas report for function used in the tests
+<br/><br/>
+
+`yarn dev`
+
+These will run a local hardhat network on `localhost:8545` and deploy your contracts on it. Plus it will watch for any changes and redeploy them.
+<br/><br/>
+
+`yarn local:dev`
+
+This assumes a local node it running on `localhost:8545`. It will deploy your contracts on it. Plus it will watch for any changes and redeploy them.
+<br/><br/>
+
+`yarn execute <network> <file.ts> [args...]`
+
+This will execute the script `<file.ts>` against the specified network
+<br/><br/>
+
+`yarn deploy <network> [args...]`
+
+This will deploy the contract on the specified network.
+
+Behind the scene it uses `hardhat deploy` command so you can append any argument for it
+<br/><br/>
+
+`yarn export <network> <file.json>`
+
+This will export the abi+address of deployed contract to `<file.json>`
+<br/><br/>
+
+`yarn fork:execute <network> [--blockNumber <blockNumber>] [--deploy] <file.ts> [args...]`
+
+This will execute the script `<file.ts>` against a temporary fork of the specified network
+
+if `--deploy` is used, deploy scripts will be executed
+<br/><br/>
+
+`yarn fork:deploy <network> [--blockNumber <blockNumber>] [args...]`
+
+This will deploy the contract against a temporary fork of the specified network.
+
+Behind the scene it uses `hardhat deploy` command so you can append any argument for it
+<br/><br/>
+
+`yarn fork:test <network> [--blockNumber <blockNumber>] [mocha args...]`
+
+This will test the contract against a temporary fork of the specified network.
+<br/><br/>
+
+`yarn fork:dev <network> [--blockNumber <blockNumber>] [args...]`
+
+This will deploy the contract against a fork of the specified network and it will keep running as a node.
+
+Behind the scene it uses `hardhat node` command so you can append any argument for it
+
+</details>
