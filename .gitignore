@@ -6,8 +6,9 @@ yarn-error.log*
 
 # Build / test artifacts
 coverage*
-artifacts*
-dist
+artifacts/
+cache/
+dist/
 coverageEnv
 coverage.json
 .coveralls.yml
