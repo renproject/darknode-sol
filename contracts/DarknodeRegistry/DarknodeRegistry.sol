@@ -282,8 +282,7 @@ contract DarknodeRegistryLogicV1 is
     /// until the end of the epoch. After another epoch, the bond can be
     /// refunded by calling the refund method.
     /// @param _darknodeID The darknode ID that will be deregistered. The caller
-    ///        of this method store.darknodeRegisteredAt(_darknodeID) must be
-    //         the owner of this darknode.
+    ///        of this method must be the owner of this darknode.
     function deregister(address _darknodeID)
         external
         onlyDeregisterable(_darknodeID)
@@ -631,6 +630,24 @@ contract DarknodeRegistryLogicV1 is
             isDeregistered(_darknodeID) &&
             store.darknodeDeregisteredAt(_darknodeID) <=
             (previousEpoch.blocktime - deregistrationInterval);
+    }
+
+    /// @notice Returns the registration time of a given darknode.
+    function darknodeRegisteredAt(address darknodeID)
+        external
+        view
+        returns (uint256)
+    {
+        return store.darknodeRegisteredAt(darknodeID);
+    }
+
+    /// @notice Returns the deregistration time of a given darknode.
+    function darknodeDeregisteredAt(address darknodeID)
+        external
+        view
+        returns (uint256)
+    {
+        return store.darknodeDeregisteredAt(darknodeID);
     }
 
     /// @notice Returns if a darknode is in the registered state.

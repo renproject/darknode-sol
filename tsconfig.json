@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "typeRoots": ["./types"],
+        "typeRoots": ["types"],
         "lib": ["es2015"],
-        "types": ["node", "mocha", "truffle-contracts", "chai"],
+        "types": ["node", "mocha", "truffle-typings", "chai"],
         "module": "commonjs",
         "noImplicitAny": true,
         "noImplicitReturns": true,
@@ -10,5 +10,9 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "esModuleInterop": true
-    }
+    },
+    "include": [
+        "test",
+        "types"
+    ]
 }

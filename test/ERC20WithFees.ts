@@ -55,26 +55,26 @@ contract("ERC20WithFees", accounts => {
 
             it("approve and transferFrom", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Approve and deposit
                 await token.approve(mock.address, VALUE);
                 await mock.deposit(token.address, VALUE);
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(before.sub(new BN(VALUE)));
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after.add(new BN(VALUE.sub(FEE))));
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
+                    before.sub(new BN(VALUE))
+                );
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after.add(new BN(VALUE.sub(FEE)))
+                );
             });
 
             it("transfer", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 const NEW_VALUE = VALUE.sub(FEE);
                 const NEW_FEE = NEW_VALUE.mul(new BN(testCase.fees)).div(
@@ -85,20 +85,18 @@ contract("ERC20WithFees", accounts => {
                 await mock.withdraw(token.address, NEW_VALUE);
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
                     before.add(new BN(NEW_VALUE.sub(NEW_FEE)))
                 );
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after.sub(new BN(NEW_VALUE)));
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after.sub(new BN(NEW_VALUE))
+                );
             });
 
             it("throws for invalid transferFrom", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Approve and deposit
                 await token.approve(mock.address, 0);
@@ -109,18 +107,18 @@ contract("ERC20WithFees", accounts => {
                     );
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(before);
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after);
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
+                    before
+                );
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after
+                );
             });
 
             it("throws for invalid transferFrom (with fee)", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Approve and deposit
                 await token.approve(mock.address, 0);
@@ -131,18 +129,18 @@ contract("ERC20WithFees", accounts => {
                     );
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(before);
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after);
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
+                    before
+                );
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after
+                );
             });
 
             it("throws for invalid transfer", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Withdraw
                 await mock
@@ -152,12 +150,12 @@ contract("ERC20WithFees", accounts => {
                     );
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(before);
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after);
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
+                    before
+                );
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after
+                );
             });
 
             it("throws for invalid approve", async () => {
@@ -171,8 +169,8 @@ contract("ERC20WithFees", accounts => {
                 );
 
                 // Get balances before transferring back
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Approve twice without resetting allowance
                 await mock.approve(token.address, NEW_VALUE);
@@ -196,20 +194,18 @@ contract("ERC20WithFees", accounts => {
                 ).div(new BN(1000));
 
                 // Compare balances after depositing
-                (
-                    await token.balanceOf.call(accounts[0])
-                ).should.bignumber.equal(
+                (await token.balanceOf(accounts[0])).should.bignumber.equal(
                     before.add(new BN(NEW_NEW_VALUE.sub(NEW_NEW_FEE)))
                 );
-                (
-                    await token.balanceOf.call(mock.address)
-                ).should.bignumber.equal(after.sub(new BN(NEW_NEW_VALUE)));
+                (await token.balanceOf(mock.address)).should.bignumber.equal(
+                    after.sub(new BN(NEW_NEW_VALUE))
+                );
             });
 
             it("throws for naive deposit if it has fees", async () => {
                 // Get balances before depositing
-                const before = new BN(await token.balanceOf.call(accounts[0]));
-                const after = new BN(await token.balanceOf.call(mock.address));
+                const before = new BN(await token.balanceOf(accounts[0]));
+                const after = new BN(await token.balanceOf(mock.address));
 
                 // Approve and deposit
                 await token.approve(mock.address, VALUE);
@@ -224,13 +220,11 @@ contract("ERC20WithFees", accounts => {
                     await mock.naiveDeposit(token.address, VALUE);
 
                     // Compare balances after depositing
-                    (
-                        await token.balanceOf.call(accounts[0])
-                    ).should.bignumber.equal(
+                    (await token.balanceOf(accounts[0])).should.bignumber.equal(
                         before.sub(new BN(VALUE.sub(FEE)))
                     );
                     (
-                        await token.balanceOf.call(mock.address)
+                        await token.balanceOf(mock.address)
                     ).should.bignumber.equal(after.add(new BN(VALUE)));
                 }
             });

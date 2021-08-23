@@ -69,14 +69,14 @@ export const randomAddress = (): string => {
 };
 
 const increaseTimeHelper = async (seconds: number) => {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         // tslint:disable-next-line: no-floating-promises
         return web3.currentProvider.send(
             {
                 jsonrpc: "2.0",
                 method: "evm_increaseTime",
                 params: [seconds],
-                id: 0
+                id: 0,
             } as any,
             ((err: Error) => {
                 if (err) {
@@ -88,7 +88,7 @@ const increaseTimeHelper = async (seconds: number) => {
                         jsonrpc: "2.0",
                         method: "evm_mine",
                         params: [],
-                        id: new Date().getSeconds()
+                        id: new Date().getSeconds(),
                     } as any,
                     ((innerErr: Error) => {
                         if (innerErr) {
@@ -123,13 +123,12 @@ export const increaseTime = async (seconds: number) => {
 export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
     // const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     const timeout = new BN(
-        (await dnr.minimumEpochInterval.call()).toString()
+        (await dnr.minimumEpochInterval()).toString()
     ).toNumber();
     while (true) {
         // Must be an on-chain call, or the time won't be updated
         try {
-            await dnr.epoch();
-            return;
+            return await dnr.epoch();
         } catch (err) {
             // epoch reverted, epoch interval hasn't passed
         }
@@ -138,10 +137,6 @@ export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
         // await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
     }
 }
-
-export const randomID = () => {
-    return keccak256(Math.random().toString());
-};
 
 export const deployProxy = async <T>(
     web3: Web3,
@@ -160,8 +155,8 @@ export const deployProxy = async <T>(
         encodeCallData(
             web3,
             "initialize",
-            params.map(p => p.type),
-            params.map(p => p.value)
+            params.map((p) => p.type),
+            params.map((p) => p.value)
         ),
         options
     );
@@ -175,4 +170,82 @@ export const sigToString = (sig: ECDSASignature) => {
 };
 
 export const sleep = (ms: number) =>
-    new Promise(resolve => setTimeout(resolve, ms));
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+export const HOURS = 60 * 60;
+export const DAYS = 24 * HOURS;
+
+export const getBalance = async (
+    token: string,
+    address: string
+): Promise<BigNumber> => {
+    if (token === ETHEREUM) {
+        return new BigNumber((await web3.eth.getBalance(address)).toString());
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return new BigNumber(
+            (await tokenContract.balanceOf(address)).toString()
+        );
+    }
+};
+
+export const getSymbol = async (token: string): Promise<string> => {
+    if (token === ETHEREUM) {
+        return "ETH";
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return await tokenContract.symbol();
+    }
+};
+
+export const getDecimals = async (token: string): Promise<number> => {
+    if (token === ETHEREUM) {
+        return 18;
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return parseInt((await tokenContract.decimals()).toString(), 10);
+    }
+};
+
+export const transferToken = async (
+    token: string,
+    to: string,
+    amount: BigNumber | string | number | BN
+): Promise<TransactionReceipt> => {
+    if (token === ETHEREUM) {
+        const from = (await web3.eth.getAccounts())[0];
+        return (await web3.eth.sendTransaction({
+            to,
+            value: amount.toString(),
+            from,
+        })) as unknown as TransactionReceipt;
+    } else {
+        const tokenContract = await ERC20.at(token);
+        return (await tokenContract.transfer(to, amount.toString())).receipt;
+    }
+};
+
+export const isPromise = <T>(x: any): x is Promise<T> => {
+    return !!x.then;
+};
+
+export const toBN = <
+    X extends (string | number | BN) | Promise<string | number | BN>
+>(
+    inp: X
+): X extends string | number | BN ? BigNumber : Promise<BigNumber> => {
+    if (isPromise<string | number | BN>(inp)) {
+        return inp.then((x) => new BigNumber(x.toString())) as X extends
+            | string
+            | number
+            | BN
+            ? BigNumber
+            : Promise<BigNumber>;
+    } else {
+        return new BigNumber(inp.toString()) as X extends string | number | BN
+            ? BigNumber
+            : Promise<BigNumber>;
+    }
+};
+
+export const range = (n: number) => Array.from(new Array(n)).map((_, i) => i);

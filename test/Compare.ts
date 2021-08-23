@@ -18,10 +18,7 @@ contract("Compare", accounts => {
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             expect(
-                await CompareInstance.bytesEqual.call(
-                    hexBlockhash1,
-                    hexBlockhash2
-                )
+                await CompareInstance.bytesEqual(hexBlockhash1, hexBlockhash2)
             ).to.be.false;
         });
 
@@ -29,26 +26,17 @@ contract("Compare", accounts => {
             const blockhash1 = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             expect(
-                await CompareInstance.bytesEqual.call(
-                    hexBlockhash1,
-                    hexBlockhash1
-                )
+                await CompareInstance.bytesEqual(hexBlockhash1, hexBlockhash1)
             ).to.be.true;
             const hexBlockhash2 = web3.utils.asciiToHex("abcdefghijk");
             expect(
-                await CompareInstance.bytesEqual.call(
-                    hexBlockhash2,
-                    hexBlockhash2
-                )
+                await CompareInstance.bytesEqual(hexBlockhash2, hexBlockhash2)
             ).to.be.true;
             const hexBlockhash3 = web3.utils.asciiToHex(
                 "hukrasefaakuflehlafsefhuha2h293f8"
             );
             expect(
-                await CompareInstance.bytesEqual.call(
-                    hexBlockhash3,
-                    hexBlockhash3
-                )
+                await CompareInstance.bytesEqual(hexBlockhash3, hexBlockhash3)
             ).to.be.true;
         });
     });
@@ -60,10 +48,7 @@ contract("Compare", accounts => {
             const hexBlockhash1 = web3.utils.asciiToHex(blockhash1);
             const hexBlockhash2 = web3.utils.asciiToHex(blockhash2);
             expect(
-                await CompareInstance.bytesEqual.call(
-                    hexBlockhash1,
-                    hexBlockhash2
-                )
+                await CompareInstance.bytesEqual(hexBlockhash1, hexBlockhash2)
             ).to.be.false;
         });
     });
