@@ -51,14 +51,7 @@ contract("Validate", (accounts: string[]) => {
             msg.should.be.equal(
                 "Secret(ShamirShare(3,7,S256N(10),S256PrivKey(S256N(81804755166950992694975918889421430561708705428859269028015361660142001064486),S256P(90693014804679621771165998959262552553277008236216558633727798007697162314221),S256P(65631258835468800295340604864107498262349560547191423452833833494209803247319))))"
             );
-            const rawMsg = await validateTest.secretMessage.call(
-                a,
-                b,
-                c,
-                d,
-                e,
-                f
-            );
+            const rawMsg = await validateTest.secretMessage(a, b, c, d, e, f);
             msg.should.be.equal(web3.utils.hexToAscii(rawMsg));
         });
 
@@ -74,7 +67,7 @@ contract("Validate", (accounts: string[]) => {
                 blockhash,
                 validRound
             );
-            const rawMsg = await validateTest.proposeMessage.call(
+            const rawMsg = await validateTest.proposeMessage(
                 height,
                 round,
                 hexBlockhash,
@@ -89,7 +82,7 @@ contract("Validate", (accounts: string[]) => {
             const blockhash = "XTsJ2rO2yD47tg3JfmakVRXLzeou4SMtZvsMc6lkr6o";
             const hexBlockhash = web3.utils.asciiToHex(blockhash);
             const prevoteMsg = generatePrevoteMessage(height, round, blockhash);
-            const rawMsg = await validateTest.prevoteMessage.call(
+            const rawMsg = await validateTest.prevoteMessage(
                 height,
                 round,
                 hexBlockhash
@@ -107,7 +100,7 @@ contract("Validate", (accounts: string[]) => {
                 round,
                 blockhash
             );
-            const rawMsg = await validateTest.precommitMessage.call(
+            const rawMsg = await validateTest.precommitMessage(
                 height,
                 round,
                 hexBlockhash
@@ -140,7 +133,7 @@ contract("Validate", (accounts: string[]) => {
                     "hex"
                 )}${sig.v.toString(16)}`
             );
-            const signer = await validateTest.recoverPropose.call(
+            const signer = await validateTest.recoverPropose(
                 height,
                 round,
                 hexBlockhash,
@@ -167,7 +160,7 @@ contract("Validate", (accounts: string[]) => {
                     "hex"
                 )}${sig.v.toString(16)}`
             );
-            const signer = await validateTest.recoverPrevote.call(
+            const signer = await validateTest.recoverPrevote(
                 height,
                 round,
                 hexBlockhash,
@@ -197,7 +190,7 @@ contract("Validate", (accounts: string[]) => {
                     "hex"
                 )}${sig.v.toString(16)}`
             );
-            const signer = await validateTest.recoverPrecommit.call(
+            const signer = await validateTest.recoverPrecommit(
                 height,
                 round,
                 hexBlockhash,
@@ -231,7 +224,7 @@ contract("Validate", (accounts: string[]) => {
                     "hex"
                 )}${sig.v.toString(16)}`
             );
-            const signer = await validateTest.recoverSecret.call(
+            const signer = await validateTest.recoverSecret(
                 a,
                 b,
                 c,

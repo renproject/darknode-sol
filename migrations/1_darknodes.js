@@ -173,7 +173,7 @@ module.exports = async function(deployer, network) {
     };
 
     // Initialize darknodeRegistryLogic so others can't initialize it.
-    const darknodeRegistryLogicOwner = await darknodeRegistryLogic.owner.call();
+    const darknodeRegistryLogicOwner = await darknodeRegistryLogic.owner();
     if (Ox(darknodeRegistryLogicOwner) === Ox(NULL)) {
         deployer.logger.log("Ensuring DarknodeRegistryLogic is initialized");
         await darknodeRegistryLogic.initialize(
@@ -231,14 +231,14 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
 
-    const storeOwner = await darknodeRegistryStore.owner.call();
+    const storeOwner = await darknodeRegistryStore.owner();
     if (Ox(storeOwner) !== Ox(darknodeRegistry.address)) {
         deployer.logger.log(
             "Linking DarknodeRegistryStore and DarknodeRegistry"
         );
         if (Ox(storeOwner) === Ox(contractOwner)) {
             // Initiate ownership transfer of DNR store
-            const pendingOwner = await darknodeRegistryStore.pendingOwner.call();
+            const pendingOwner = await darknodeRegistryStore.pendingOwner();
             if (Ox(pendingOwner) !== Ox(darknodeRegistry.address)) {
                 deployer.logger.log(
                     "Transferring DarknodeRegistryStore ownership"
@@ -269,7 +269,7 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
 
-    const protocolDarknodeRegistry = await protocol.getContract.call(
+    const protocolDarknodeRegistry = await protocol.getContract(
         "DarknodeRegistry"
     );
     if (Ox(protocolDarknodeRegistry) !== Ox(darknodeRegistry.address)) {
@@ -283,7 +283,7 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
 
-    const renInDNR = await darknodeRegistry.ren.call();
+    const renInDNR = await darknodeRegistry.ren();
     if (Ox(renInDNR) !== Ox(RenToken.address)) {
         console.error(
             `ERROR! DNR is pointing to wrong REN token - ${Ox(
@@ -294,7 +294,7 @@ module.exports = async function(deployer, network) {
         );
     }
 
-    const renInDNRS = await darknodeRegistryStore.ren.call();
+    const renInDNRS = await darknodeRegistryStore.ren();
     if (Ox(renInDNRS) !== Ox(RenToken.address)) {
         console.error(
             `ERROR! DNRS is pointing to wrong REN token - ${Ox(
@@ -315,7 +315,7 @@ module.exports = async function(deployer, network) {
     }
     const slasher = await DarknodeSlasher.at(DarknodeSlasher.address);
 
-    const dnrInSlasher = await slasher.darknodeRegistry.call();
+    const dnrInSlasher = await slasher.darknodeRegistry();
     if (Ox(dnrInSlasher) !== Ox(darknodeRegistry.address)) {
         deployer.logger.log("Updating DNR in Slasher");
         await slasher.updateDarknodeRegistry(darknodeRegistry.address);
@@ -324,7 +324,7 @@ module.exports = async function(deployer, network) {
 
     // Set the slash percentages
     const blacklistSlashPercent = new BN(
-        await slasher.blacklistSlashPercent.call()
+        await slasher.blacklistSlashPercent()
     ).toNumber();
     if (blacklistSlashPercent !== config.BLACKLIST_SLASH_PERCENT) {
         deployer.logger.log("Setting blacklist slash percent");
@@ -334,7 +334,7 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
     const maliciousSlashPercent = new BN(
-        await slasher.maliciousSlashPercent.call()
+        await slasher.maliciousSlashPercent()
     ).toNumber();
     if (maliciousSlashPercent !== config.MALICIOUS_SLASH_PERCENT) {
         deployer.logger.log("Setting malicious slash percent");
@@ -344,7 +344,7 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
     const secretRevealSlashPercent = new BN(
-        await slasher.secretRevealSlashPercent.call()
+        await slasher.secretRevealSlashPercent()
     ).toNumber();
     if (secretRevealSlashPercent !== config.SECRET_REVEAL_SLASH_PERCENT) {
         deployer.logger.log("Setting secret reveal slash percent");
@@ -354,8 +354,8 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
 
-    const currentSlasher = await darknodeRegistry.slasher.call();
-    const nextSlasher = await darknodeRegistry.nextSlasher.call();
+    const currentSlasher = await darknodeRegistry.slasher();
+    const nextSlasher = await darknodeRegistry.nextSlasher();
     if (
         Ox(currentSlasher) != Ox(DarknodeSlasher.address) &&
         Ox(nextSlasher) != Ox(DarknodeSlasher.address)
@@ -416,9 +416,9 @@ module.exports = async function(deployer, network) {
         const tokenAddress = tokens[tokenName];
         const registered =
             (
-                await darknodePayment.registeredTokenIndex.call(tokenAddress)
+                await darknodePayment.registeredTokenIndex(tokenAddress)
             ).toString() !== "0";
-        const pendingRegistration = await darknodePayment.tokenPendingRegistration.call(
+        const pendingRegistration = await darknodePayment.tokenPendingRegistration(
             tokenAddress
         );
         if (!registered && !pendingRegistration) {
@@ -430,7 +430,7 @@ module.exports = async function(deployer, network) {
         }
     }
 
-    const dnrInDarknodePayment = await darknodePayment.darknodeRegistry.call();
+    const dnrInDarknodePayment = await darknodePayment.darknodeRegistry();
     if (Ox(dnrInDarknodePayment) !== Ox(darknodeRegistry.address)) {
         deployer.logger.log("DNP is still pointing to Forwarder.");
 
@@ -442,7 +442,7 @@ module.exports = async function(deployer, network) {
     const darknodePaymentStore = await DarknodePaymentStore.at(
         DarknodePaymentStore.address
     );
-    const currentOwner = await darknodePaymentStore.owner.call();
+    const currentOwner = await darknodePaymentStore.owner();
     if (Ox(currentOwner) !== Ox(DarknodePayment.address)) {
         deployer.logger.log("Linking DarknodePaymentStore and DarknodePayment");
 

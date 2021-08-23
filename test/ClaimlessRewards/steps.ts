@@ -35,15 +35,15 @@ const registerToken = async (
 
     for (const token of tokens) {
         // Precondition. The token is not registered.
-        (await rewards.isRegistered.call(token)).should.equal(false);
-        const allTokens = await rewards.getRegisteredTokens.call();
+        (await rewards.isRegistered(token)).should.equal(false);
+        const allTokens = await rewards.getRegisteredTokens();
 
         // Effect. Register the token.
         await rewards.registerToken(token);
 
         // Postcondition. The token is registered.
-        (await rewards.isRegistered.call(token)).should.equal(true);
-        (await rewards.getRegisteredTokens.call()).should.deep.equal([
+        (await rewards.isRegistered(token)).should.equal(true);
+        (await rewards.getRegisteredTokens()).should.deep.equal([
             ...allTokens,
             token
         ]);
@@ -58,15 +58,15 @@ const deregisterToken = async (
 
     for (const token of tokens) {
         // Precondition. The token is registered.
-        (await rewards.isRegistered.call(token)).should.equal(true);
-        const allTokens = await rewards.getRegisteredTokens.call();
+        (await rewards.isRegistered(token)).should.equal(true);
+        const allTokens = await rewards.getRegisteredTokens();
 
         // Effect. Deregister the token.
         await rewards.deregisterToken(token);
 
         // Postcondition. The token is not registered.
-        (await rewards.isRegistered.call(token)).should.equal(false);
-        (await rewards.getRegisteredTokens.call()).should.deep.equal(
+        (await rewards.isRegistered(token)).should.equal(false);
+        (await rewards.getRegisteredTokens()).should.deep.equal(
             allTokens.filter(x => x !== token)
         );
     }
@@ -77,47 +77,44 @@ const changeCycle = async (
     time: number,
     epoch?: boolean
 ) => {
-    const latestTimestamp = await toBN(rewards.latestCycleTimestamp.call());
-    const storeAddress = await rewards.store.call();
+    const latestTimestamp = await toBN(rewards.latestCycleTimestamp());
+    const storeAddress = await rewards.store();
     const store = await DarknodePaymentStore.at(storeAddress);
-    const dnrAddress = await rewards.darknodeRegistry.call();
+    const dnrAddress = await rewards.darknodeRegistry();
     const dnr = await DarknodeRegistry.at(dnrAddress);
-    const communityFund = await rewards.communityFund.call();
+    const communityFund = await rewards.communityFund();
 
-    const tokens = await rewards.getRegisteredTokens.call();
+    const tokens = await rewards.getRegisteredTokens();
     let freeBeforeMap = OrderedMap<string, BigNumber>();
     let communityFundBalanceBeforeMap = OrderedMap<string, BigNumber>();
     let darknodePoolBeforeMap = OrderedMap<string, BigNumber>();
     let shareBeforeMap = OrderedMap<string, BigNumber>();
     for (const token of tokens) {
-        const freeBefore = await toBN(store.availableBalance.call(token));
+        const freeBefore = await toBN(store.availableBalance(token));
         freeBeforeMap = freeBeforeMap.set(token, freeBefore);
 
         const communityFundBalanceBefore = await toBN(
-            rewards.darknodeBalances.call(communityFund, token)
+            rewards.darknodeBalances(communityFund, token)
         );
         communityFundBalanceBeforeMap = communityFundBalanceBeforeMap.set(
             token,
             communityFundBalanceBefore
         );
         const darknodePoolBefore = await toBN(
-            rewards.darknodeBalances.call(NULL, token)
+            rewards.darknodeBalances(NULL, token)
         );
         darknodePoolBeforeMap = darknodePoolBeforeMap.set(
             token,
             darknodePoolBefore
         );
         const shareBefore = await toBN(
-            rewards.cycleCumulativeTokenShares.call(
-                latestTimestamp.toFixed(),
-                token
-            )
+            rewards.cycleCumulativeTokenShares(latestTimestamp.toFixed(), token)
         );
         shareBeforeMap = shareBeforeMap.set(token, shareBefore);
     }
-    const shares = await toBN(dnr.numDarknodes.call());
+    const shares = await toBN(dnr.numDarknodes());
     const epochTimestampCountBefore = await toBN(
-        rewards.epochTimestampsLength.call()
+        rewards.epochTimestampsLength()
     );
 
     // Effect. Change the cycle.
@@ -132,7 +129,7 @@ const changeCycle = async (
     // Postcondition. Check that the cycle's timestamp is stored correctly.
     const block = await web3.eth.getBlock(tx.receipt.blockNumber);
     const timestamp = new BigNumber(block.timestamp);
-    const newLatestTimestamp = await toBN(rewards.latestCycleTimestamp.call());
+    const newLatestTimestamp = await toBN(rewards.latestCycleTimestamp());
     // Check if the epoch happened too recently to a cycle, so no cycle was
     // called.
     const expectedTimestamp = epoch
@@ -145,7 +142,7 @@ const changeCycle = async (
     newLatestTimestamp.should.not.bignumber.equal(latestTimestamp);
     newLatestTimestamp.should.bignumber.equal(expectedTimestamp);
     const epochTimestampCountAfter = await toBN(
-        rewards.epochTimestampsLength.call()
+        rewards.epochTimestampsLength()
     );
     if (epoch) {
         epochTimestampCountAfter.should.bignumber.equal(
@@ -158,9 +155,9 @@ const changeCycle = async (
         .minus(latestTimestamp)
         .dividedToIntegerBy(1 * HOURS)
         .toNumber();
-    const numerator = await toBN(rewards.hourlyPayoutWithheldNumerator.call());
+    const numerator = await toBN(rewards.hourlyPayoutWithheldNumerator());
     const denominator = await toBN(
-        rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR.call()
+        rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR()
     );
     let numeratorSeries = numerator;
     for (let i = 0; i < hours; i++) {
@@ -169,9 +166,7 @@ const changeCycle = async (
             .div(denominator)
             .integerValue(BigNumber.ROUND_DOWN);
     }
-    const communityFundNumerator = await toBN(
-        rewards.communityFundNumerator.call()
-    );
+    const communityFundNumerator = await toBN(rewards.communityFundNumerator());
 
     for (const token of tokens) {
         const freeBefore = freeBeforeMap.get(token);
@@ -201,7 +196,7 @@ const changeCycle = async (
 
         // Postcondition. The stored share is the correct amount.
         const shareAfter = await toBN(
-            rewards.cycleCumulativeTokenShares.call(
+            rewards.cycleCumulativeTokenShares(
                 newLatestTimestamp.toFixed(),
                 token
             )
@@ -211,7 +206,7 @@ const changeCycle = async (
 
         // Postcondition. The darknode pool increased by the correct amount.
         const darknodePoolAfter = await toBN(
-            rewards.darknodeBalances.call(NULL, token)
+            rewards.darknodeBalances(NULL, token)
         );
         darknodePoolAfter
             .minus(darknodePoolBefore)
@@ -219,14 +214,14 @@ const changeCycle = async (
 
         // Postcondition. The community fund increased by the correct amount.
         const communityFundBalanceAfter = await toBN(
-            rewards.darknodeBalances.call(communityFund, token)
+            rewards.darknodeBalances(communityFund, token)
         );
         communityFundBalanceAfter
             .minus(communityFundBalanceBefore)
             .should.bignumber.equal(communityFundPaidout);
 
         // Postcondition. The free amount decreased by the correct amount.
-        const freeAfter = await toBN(store.availableBalance.call(token));
+        const freeAfter = await toBN(store.availableBalance(token));
         freeBefore
             .minus(freeAfter)
             .should.bignumber.equal(
@@ -252,10 +247,10 @@ const addRewards = async (
     token: string,
     amount: BigNumber | number | string | BN
 ) => {
-    const storeAddress = await rewards.store.call();
+    const storeAddress = await rewards.store();
     const balanceBefore = await getBalance(token, storeAddress);
     const store = await DarknodePaymentStore.at(storeAddress);
-    const freeBefore = await toBN(store.availableBalance.call(token));
+    const freeBefore = await toBN(store.availableBalance(token));
 
     // Effect. Transfer token to the store contract.
     await transferToken(token, storeAddress, amount);
@@ -263,7 +258,7 @@ const addRewards = async (
     // Postcondition. The balance after has increased by the amount added.
     const balanceAfter = await getBalance(token, storeAddress);
     balanceAfter.minus(balanceBefore).should.bignumber.equal(amount);
-    const freeAfter = await toBN(store.availableBalance.call(token));
+    const freeAfter = await toBN(store.availableBalance(token));
     freeAfter.minus(freeBefore).should.bignumber.equal(amount);
 
     console.log(
@@ -289,10 +284,10 @@ const withdraw = async (
     let balanceBeforeMap = OrderedMap<string, BigNumber>();
     // let legacyBalanceMap = OrderedMap<string, OrderedMap<string, BigNumber>>();
     // let shareBeforeMap = OrderedMap<string, OrderedMap<string, BigNumber>>();
-    const storeAddress = await rewards.store.call();
+    const storeAddress = await rewards.store();
     const store = await DarknodePaymentStore.at(storeAddress);
-    const currentCycle = await toBN(rewards.latestCycleTimestamp.call());
-    const dnrAddress = await rewards.darknodeRegistry.call();
+    const currentCycle = await toBN(rewards.latestCycleTimestamp());
+    const dnrAddress = await rewards.darknodeRegistry();
     const dnr = await DarknodeRegistry.at(dnrAddress);
     for (const token of tokens) {
         const balanceBefore = await getBalance(token, from);
@@ -300,7 +295,7 @@ const withdraw = async (
 
         for (const darknode of darknodes) {
             const withdrawable = await toBN(
-                rewards.darknodeBalances.call(darknode, token)
+                rewards.darknodeBalances(darknode, token)
             );
             withdrawableMap = withdrawableMap.set(
                 darknode,
@@ -313,32 +308,30 @@ const withdraw = async (
             // Precondition. The withdrawable amount should be the correct
             // amount, including any legacy balance left-over.
             const nodeRegistered = await toBN(
-                dnr.darknodeRegisteredAt.call(darknode)
+                dnr.darknodeRegisteredAt(darknode)
             );
             const nodeDeregistered = await toBN(
-                dnr.darknodeDeregisteredAt.call(darknode)
+                dnr.darknodeDeregisteredAt(darknode)
             );
             // Node not registered.
             if (nodeRegistered.isZero()) {
                 continue;
             }
             const legacyBalance = await toBN(
-                store.darknodeBalances.call(darknode, token)
+                store.darknodeBalances(darknode, token)
             );
             let lastWithdrawn = await toBN(
-                rewards.rewardsLastClaimed.call(darknode, token)
+                rewards.rewardsLastClaimed(darknode, token)
             );
             if (lastWithdrawn.lt(nodeRegistered)) {
                 lastWithdrawn = await toBN(
-                    rewards.getNextEpochFromTimestamp.call(
-                        nodeRegistered.toFixed()
-                    )
+                    rewards.getNextEpochFromTimestamp(nodeRegistered.toFixed())
                 );
             }
             let claimableUntil = currentCycle;
             if (nodeDeregistered.isGreaterThan(0)) {
                 const deregisteredCycle = await toBN(
-                    rewards.getNextEpochFromTimestamp.call(
+                    rewards.getNextEpochFromTimestamp(
                         nodeDeregistered.toFixed()
                     )
                 );
@@ -347,13 +340,13 @@ const withdraw = async (
                 }
             }
             const shareBefore = await toBN(
-                rewards.cycleCumulativeTokenShares.call(
+                rewards.cycleCumulativeTokenShares(
                     lastWithdrawn.toFixed(),
                     token
                 )
             );
             const shareAfter = await toBN(
-                rewards.cycleCumulativeTokenShares.call(
+                rewards.cycleCumulativeTokenShares(
                     claimableUntil.toFixed(),
                     token
                 )
@@ -384,7 +377,7 @@ const withdraw = async (
             withdrawableSum = withdrawableSum.plus(withdrawable);
 
             const postWithdrawable = await toBN(
-                rewards.darknodeBalances.call(darknode, token)
+                rewards.darknodeBalances(darknode, token)
             );
             postWithdrawable.should.bignumber.equal(0);
 
@@ -430,7 +423,7 @@ const withdrawToCommunityFund = async (
 
     // Store the balance for each token, and the withdrawable amount for each
     // darknode and token.
-    const communityFund = await rewards.communityFund.call();
+    const communityFund = await rewards.communityFund();
     let withdrawableMap = OrderedMap<string, BigNumber>();
     let balanceBeforeMap = OrderedMap<string, BigNumber>();
     for (const token of tokens) {
@@ -438,7 +431,7 @@ const withdrawToCommunityFund = async (
         balanceBeforeMap = balanceBeforeMap.set(token, balanceBefore);
 
         const withdrawable = await toBN(
-            rewards.darknodeBalances.call(communityFund, token)
+            rewards.darknodeBalances(communityFund, token)
         );
         withdrawableMap = withdrawableMap.set(token, withdrawable);
     }
@@ -472,7 +465,7 @@ const withdrawToCommunityFund = async (
             balanceBefore.plus(withdrawableBefore).minus(gasFee)
         );
         (
-            await toBN(rewards.darknodeBalances.call(communityFund, token))
+            await toBN(rewards.darknodeBalances(communityFund, token))
         ).should.bignumber.equal(0);
     }
 

@@ -13,13 +13,11 @@ contract("String", accounts => {
     });
 
     it("can add strings", async () => {
-        (await StringInstance.add4.call("1", "2", "3", "4")).should.equal(
-            "1234"
-        );
+        (await StringInstance.add4("1", "2", "3", "4")).should.equal("1234");
     });
 
     it("can convert addresses to hex strings", async () => {
-        (await StringInstance.fromAddress.call(accounts[0])).should.equal(
+        (await StringInstance.fromAddress(accounts[0])).should.equal(
             accounts[0].toLowerCase()
         );
     });
@@ -27,7 +25,7 @@ contract("String", accounts => {
     it("can convert bytes32 to hex strings", async () => {
         const bytes32 = randomBytes(32);
 
-        (await StringInstance.fromBytes32.call(bytes32)).should.equal(
+        (await StringInstance.fromBytes32(bytes32)).should.equal(
             bytes32.toLowerCase()
         );
     });
@@ -48,7 +46,7 @@ contract("String", accounts => {
     });
 
     const testNumString = async (numString: string) => {
-        (await StringInstance.fromUint.call(new BN(numString))).should.equal(
+        (await StringInstance.fromUint(new BN(numString))).should.equal(
             numString
         );
     };

@@ -8,8 +8,8 @@ import {
     DarknodePaymentStoreInstance,
     DarknodeRegistryLogicV1Instance,
     DarknodeSlasherInstance,
-    ERC20Instance,
-    RenTokenInstance
+    PaymentTokenInstance,
+    RenTokenInstance,
 } from "../../types/truffle-contracts";
 import {
     DAYS,
@@ -23,7 +23,7 @@ import {
     PUBK,
     range,
     toBN,
-    waitForEpoch
+    waitForEpoch,
 } from "../helper/testUtils";
 import { STEPS } from "./steps";
 
@@ -39,8 +39,8 @@ const DarknodeSlasher = artifacts.require("DarknodeSlasher");
 
 contract("ClaimlessRewards", (accounts: string[]) => {
     let store: DarknodePaymentStoreInstance;
-    let dai: ERC20Instance;
-    let erc20Token: ERC20Instance;
+    let dai: PaymentTokenInstance;
+    let erc20Token: PaymentTokenInstance;
     let dnr: DarknodeRegistryLogicV1Instance;
     let rewards: ClaimlessRewardsInstance;
     let ren: RenTokenInstance;
@@ -68,7 +68,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
         await dnr.updateMinimumEpochInterval(60 * 60);
         await STEPS.waitForEpoch(rewards);
 
-        new BN(await dnr.numDarknodes.call()).should.bignumber.equal(new BN(0));
+        new BN(await dnr.numDarknodes()).should.bignumber.equal(new BN(0));
     });
 
     after(async () => {
@@ -79,7 +79,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
     afterEach(async () => {
         // Deregister tokens.
-        const tokens = await rewards.getRegisteredTokens.call();
+        const tokens = await rewards.getRegisteredTokens();
         for (const token of tokens) {
             await rewards.deregisterToken(token);
         }
@@ -87,11 +87,11 @@ contract("ClaimlessRewards", (accounts: string[]) => {
         await STEPS.waitForEpoch(rewards);
 
         // Deregister darknodes.
-        const darknodes = await dnr.getDarknodes.call(NULL, 0);
+        const darknodes = await dnr.getDarknodes(NULL, 0);
         if (darknodes.length) {
             for (const darknode of darknodes) {
                 await dnr.deregister(darknode, {
-                    from: await dnr.getDarknodeOperator.call(darknode)
+                    from: await dnr.getDarknodeOperator(darknode),
                 });
             }
 
@@ -101,7 +101,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
             for (const darknode of darknodes) {
                 await dnr.refund(darknode, {
-                    from: await dnr.getDarknodeOperator.call(darknode)
+                    from: await dnr.getDarknodeOperator(darknode),
                 });
             }
         }
@@ -116,13 +116,13 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
         it("can register token", async () => {
             // No tokens should be registered.
-            (await rewards.getRegisteredTokens.call()).length.should.equal(0);
+            (await rewards.getRegisteredTokens()).length.should.equal(0);
 
             await STEPS.registerToken(rewards, dai.address);
             await STEPS.registerToken(rewards, erc20Token.address);
             await STEPS.registerToken(rewards, ETHEREUM);
 
-            (await rewards.getRegisteredTokens.call()).length.should.equal(3);
+            (await rewards.getRegisteredTokens()).length.should.equal(3);
         });
 
         it("cannot register already registered tokens", async () => {
@@ -192,25 +192,23 @@ contract("ClaimlessRewards", (accounts: string[]) => {
     describe("Token deposits", async () => {
         it("can deposit ETH via direct payment to DarknodePaymentStore contract", async () => {
             // deposit using direct deposit to store
-            const oldETHBalance = new BN(
-                await store.totalBalance.call(ETHEREUM)
-            );
+            const oldETHBalance = new BN(await store.totalBalance(ETHEREUM));
             const oldFreeBalance = new BN(
-                await store.availableBalance.call(ETHEREUM)
+                await store.availableBalance(ETHEREUM)
             );
             const amount = new BN(1).mul(new BN(10).pow(new BN(18)));
             await web3.eth.sendTransaction({
                 to: store.address,
                 from: owner,
-                value: amount.toString()
+                value: amount.toString(),
             });
             // Total balance has increased.
-            new BN(
-                await store.totalBalance.call(ETHEREUM)
-            ).should.bignumber.equal(oldETHBalance.add(amount));
+            new BN(await store.totalBalance(ETHEREUM)).should.bignumber.equal(
+                oldETHBalance.add(amount)
+            );
             // Reward pool has increased.
             new BN(
-                await store.availableBalance.call(ETHEREUM)
+                await store.availableBalance(ETHEREUM)
             ).should.bignumber.equal(oldFreeBalance.add(amount));
         });
     });
@@ -231,7 +229,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
             // We should have zero claimed balance before ticking
             (
-                await rewards.darknodeBalances.call(ID(1), ETHEREUM)
+                await rewards.darknodeBalances(ID(1), ETHEREUM)
             ).should.bignumber.equal(0);
 
             // Change cycle after 1 month.
@@ -387,20 +385,20 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             // Check that deregistering doesn't affect withdrawable balance.
 
             const node1BalanceBefore = await toBN(
-                rewards.darknodeBalances.call(ID(1), ETHEREUM)
+                rewards.darknodeBalances(ID(1), ETHEREUM)
             );
             const node2BalanceBefore = await toBN(
-                rewards.darknodeBalances.call(ID(2), ETHEREUM)
+                rewards.darknodeBalances(ID(2), ETHEREUM)
             );
             node1BalanceBefore.should.bignumber.equal(node2BalanceBefore);
 
             await deregisterNode(1);
 
             const node1BalanceAfter = await toBN(
-                rewards.darknodeBalances.call(ID(1), ETHEREUM)
+                rewards.darknodeBalances(ID(1), ETHEREUM)
             );
             const node2BalanceAfter = await toBN(
-                rewards.darknodeBalances.call(ID(2), ETHEREUM)
+                rewards.darknodeBalances(ID(2), ETHEREUM)
             );
             node1BalanceAfter.should.bignumber.equal(node2BalanceAfter);
 
@@ -501,7 +499,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
         it("epoch can progress even if cycle is too recent", async () => {
             const timeout = new BN(
-                (await dnr.minimumEpochInterval.call()).toString()
+                (await dnr.minimumEpochInterval()).toString()
             ).toNumber();
 
             await increaseTime(Math.max(timeout, 1 * HOURS));
@@ -588,7 +586,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             await STEPS.waitForEpoch(rewards);
         });
 
-        it("nodes can withdraw after migrating from DarknodePayment contract", async function() {
+        it("nodes can withdraw after migrating from DarknodePayment contract", async function () {
             // Requires Darknode Registry implementation to be upgraded mid-test.
 
             this.timeout(100 * 300000);
@@ -606,7 +604,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             await dnp.registerToken(newToken.address);
 
             (
-                await store.darknodeBalances.call(NULL, newToken.address)
+                await store.darknodeBalances(NULL, newToken.address)
             ).should.bignumber.equal(0);
 
             const darknodeIndices = range(20);
@@ -746,7 +744,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             }
 
             (
-                await store.darknodeBalances.call(NULL, newToken.address)
+                await store.darknodeBalances(NULL, newToken.address)
             ).should.bignumber.equal(0);
 
             await STEPS.deregisterToken(rewards, ETHEREUM);
@@ -763,8 +761,8 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             await registerNode(1);
             await STEPS.registerToken(rewards, ETHEREUM);
 
-            await rewards.darknodeBalances
-                .call(ID(1), ETHEREUM)
+            await rewards
+                .darknodeBalances(ID(1), ETHEREUM)
                 .should.be.rejectedWith(
                     /ClaimlessRewards: registration pending/
                 );
@@ -773,7 +771,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
     describe("getNextEpochFromTimestamp", () => {
         it("should return the correct timestamp", async () => {
-            const timestamps = await rewards.getEpochTimestamps.call();
+            const timestamps = await rewards.getEpochTimestamps();
 
             for (let i = 0; i < timestamps.length; i++) {
                 const timestamp = new BigNumber(timestamps[i].toString());
@@ -794,7 +792,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
                 // Check that getNextEpochFromTimestamp(timestamp - 1) == timestamp
                 (
-                    await rewards.getNextEpochFromTimestamp.call(
+                    await rewards.getNextEpochFromTimestamp(
                         timestamp.minus(1).toFixed()
                     )
                 ).should.bignumber.equal(
@@ -806,14 +804,12 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
                 // Check that getNextEpochFromTimestamp(timestamp) == timestamp
                 (
-                    await rewards.getNextEpochFromTimestamp.call(
-                        timestamp.toFixed()
-                    )
+                    await rewards.getNextEpochFromTimestamp(timestamp.toFixed())
                 ).should.bignumber.equal(timestamp);
 
                 // Check that getNextEpochFromTimestamp(timestamp + 1) == next timestamp
                 (
-                    await rewards.getNextEpochFromTimestamp.call(
+                    await rewards.getNextEpochFromTimestamp(
                         timestamp.plus(1).toFixed()
                     )
                 ).should.bignumber.equal(nextTimestamp || new BigNumber(0));
@@ -821,7 +817,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
             if (timestamps.length) {
                 (
-                    await rewards.getNextEpochFromTimestamp.call(0)
+                    await rewards.getNextEpochFromTimestamp(0)
                 ).should.bignumber.equal(timestamps[0]);
             }
         });
@@ -849,17 +845,17 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
             // [ACTION] Initiate ownership transfer to wrong account
             await rewards.transferStoreOwnership(newDarknodePayment.address, {
-                from: accounts[0]
+                from: accounts[0],
             });
 
             // [CHECK] Owner should be the new rewards contract.
-            (await store.owner.call()).should.equal(newDarknodePayment.address);
+            (await store.owner()).should.equal(newDarknodePayment.address);
 
             // [RESET] Initiate ownership transfer back to rewards.
             await newDarknodePayment.transferStoreOwnership(rewards.address);
 
             // [CHECK] Owner should now be the rewards.
-            (await store.owner.call()).should.equal(rewards.address);
+            (await store.owner()).should.equal(rewards.address);
         });
     });
 
@@ -870,40 +866,40 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
         it("can forward funds to the store", async () => {
             // rewards should have zero balance
-            new BN(
-                await dai.balanceOf.call(rewards.address)
-            ).should.bignumber.equal(new BN(0));
+            new BN(await dai.balanceOf(rewards.address)).should.bignumber.equal(
+                new BN(0)
+            );
 
             const storeDaiBalance = new BN(
-                await store.availableBalance.call(dai.address)
+                await store.availableBalance(dai.address)
             );
             const amount = new BN("1000000");
-            new BN(await dai.balanceOf.call(owner)).gte(amount).should.be.true;
+            new BN(await dai.balanceOf(owner)).gte(amount).should.be.true;
             await dai.transfer(rewards.address, amount);
 
-            (
-                await store.availableBalance.call(dai.address)
-            ).should.bignumber.equal(storeDaiBalance);
+            (await store.availableBalance(dai.address)).should.bignumber.equal(
+                storeDaiBalance
+            );
             // rewards should have some balance
-            new BN(
-                await dai.balanceOf.call(rewards.address)
-            ).should.bignumber.equal(amount);
+            new BN(await dai.balanceOf(rewards.address)).should.bignumber.equal(
+                amount
+            );
 
             // Forward the funds on
             await rewards.forward(dai.address);
-            new BN(
-                await dai.balanceOf.call(rewards.address)
-            ).should.bignumber.equal(new BN(0));
-            (
-                await store.availableBalance.call(dai.address)
-            ).should.bignumber.equal(storeDaiBalance.add(amount));
+            new BN(await dai.balanceOf(rewards.address)).should.bignumber.equal(
+                new BN(0)
+            );
+            (await store.availableBalance(dai.address)).should.bignumber.equal(
+                storeDaiBalance.add(amount)
+            );
         });
     });
 
     describe("when changing payout proportion", async () => {
         it("cannot change payout proportion to an invalid percent", async () => {
             const denominator = await toBN(
-                rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR.call()
+                rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR()
             );
             await rewards
                 .updateHourlyPayoutWithheld(denominator.plus(1).toFixed())
@@ -927,10 +923,10 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             );
 
             const oldNumerator = await toBN(
-                rewards.hourlyPayoutWithheldNumerator.call()
+                rewards.hourlyPayoutWithheldNumerator()
             );
             const denominator = await toBN(
-                rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR.call()
+                rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR()
             );
             await rewards.updateHourlyPayoutWithheld(denominator.toFixed());
 
@@ -946,9 +942,9 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
             // No rewards should have been withheld, except rounded amounts too
             // small to be distributed to all darknodes.
-            const numberOfDarknodes = await toBN(dnr.numDarknodes.call());
+            const numberOfDarknodes = await toBN(dnr.numDarknodes());
             (
-                await store.availableBalance.call(dai.address)
+                await store.availableBalance(dai.address)
             ).should.bignumber.lessThan(numberOfDarknodes);
 
             await STEPS.withdraw(rewards, ID(1), dai.address, operator1);
@@ -982,7 +978,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             });
 
             it("can update DarknodeRegistry", async () => {
-                const darknodeRegistry = await rewards.darknodeRegistry.call();
+                const darknodeRegistry = await rewards.darknodeRegistry();
                 await rewards
                     .updateDarknodeRegistry(NULL)
                     .should.be.rejectedWith(
@@ -1036,7 +1032,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 (
                     await STEPS.withdrawToCommunityFund(rewards, [
                         ETHEREUM,
-                        dai.address
+                        dai.address,
                     ])
                 ).should.bignumber.greaterThan(0);
 
@@ -1044,7 +1040,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 (
                     await STEPS.withdrawToCommunityFund(rewards, [
                         ETHEREUM,
-                        dai.address
+                        dai.address,
                     ])
                 ).should.bignumber.equal(0);
 
@@ -1058,14 +1054,14 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             });
 
             it("can update community fund", async () => {
-                const communityFund = await rewards.communityFund.call();
+                const communityFund = await rewards.communityFund();
                 await rewards.updateCommunityFund(accounts[0]);
                 await rewards.updateCommunityFund(communityFund);
             });
 
             it("cannot change community fund percent to an invalid percent", async () => {
                 const denominator = await toBN(
-                    rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR.call()
+                    rewards.HOURLY_PAYOUT_WITHHELD_DENOMINATOR()
                 );
                 await rewards
                     .updateCommunityFundNumerator(denominator.plus(1).toFixed())
@@ -1084,7 +1080,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 (
                     await STEPS.withdrawToCommunityFund(rewards, [
                         ETHEREUM,
-                        dai.address
+                        dai.address,
                     ])
                 ).should.bignumber.greaterThan(0);
 
@@ -1104,7 +1100,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
 
                 // Update community fund numerator to 0.
                 const oldCommunityFundPercent = await toBN(
-                    rewards.communityFundNumerator.call()
+                    rewards.communityFundNumerator()
                 );
                 await rewards.updateCommunityFundNumerator(0);
 
@@ -1113,7 +1109,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 (
                     await STEPS.withdrawToCommunityFund(rewards, [
                         ETHEREUM,
-                        dai.address
+                        dai.address,
                     ])
                 ).should.bignumber.equal(0);
 
@@ -1121,7 +1117,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 (
                     await STEPS.withdrawToCommunityFund(rewards, [
                         ETHEREUM,
-                        dai.address
+                        dai.address,
                     ])
                 ).should.bignumber.equal(0);
 
@@ -1155,15 +1151,15 @@ contract("ClaimlessRewards", (accounts: string[]) => {
             });
 
             it("malicious operator can't withdraw community fund", async () => {
-                const communityFund = await rewards.communityFund.call();
+                const communityFund = await rewards.communityFund();
                 const malicious = accounts[4];
                 await ren.transfer(malicious, MINIMUM_BOND);
                 await ren.approve(dnr.address, MINIMUM_BOND, {
-                    from: malicious
+                    from: malicious,
                 });
                 // Register the darknodes under the account address
                 await dnr.register(communityFund, PUBK(-1), {
-                    from: malicious
+                    from: malicious,
                 });
                 await STEPS.waitForEpoch(rewards);
 
@@ -1192,11 +1188,11 @@ contract("ClaimlessRewards", (accounts: string[]) => {
                 MINIMUM_BOND
             );
             await ren.approve(dnr.address, MINIMUM_BOND, {
-                from: from || accounts[i % accounts.length]
+                from: from || accounts[i % accounts.length],
             });
             // Register the darknodes under the account address
             await dnr.register(ID(i), PUBK(i), {
-                from: from || accounts[i % accounts.length]
+                from: from || accounts[i % accounts.length],
             });
         }
     };
@@ -1205,7 +1201,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
         array = Array.isArray(array) ? array : [array];
         for (const i of array) {
             await dnr.deregister(ID(i), {
-                from: from || accounts[i % accounts.length]
+                from: from || accounts[i % accounts.length],
             });
         }
     };
@@ -1214,7 +1210,7 @@ contract("ClaimlessRewards", (accounts: string[]) => {
         array = Array.isArray(array) ? array : [array];
         for (const i of array) {
             await dnr.refund(ID(i), {
-                from: from || accounts[i % accounts.length]
+                from: from || accounts[i % accounts.length],
             });
         }
     };

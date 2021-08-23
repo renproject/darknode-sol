@@ -20,13 +20,13 @@ contract("Protocol", ([owner, otherAccount]: string[]) => {
     });
 
     it("Address getters", async () => {
-        (await protocol.getContract.call("DarknodeRegistry")).should.equal(
+        (await protocol.getContract("DarknodeRegistry")).should.equal(
             dnr.address
         );
     });
 
     it("Protocol owner", async () => {
-        (await protocol.owner.call()).should.equal(owner);
+        (await protocol.owner()).should.equal(owner);
 
         await protocol
             .transferOwnership(otherAccount, { from: otherAccount })
@@ -34,16 +34,16 @@ contract("Protocol", ([owner, otherAccount]: string[]) => {
 
         await protocol.transferOwnership(otherAccount);
 
-        (await protocol.owner.call()).should.equal(owner);
+        (await protocol.owner()).should.equal(owner);
 
         await protocol.claimOwnership({ from: otherAccount });
 
-        (await protocol.owner.call()).should.equal(otherAccount);
+        (await protocol.owner()).should.equal(otherAccount);
 
         await protocol.transferOwnership(owner, { from: otherAccount });
         await protocol.claimOwnership({ from: owner });
 
-        (await protocol.owner.call()).should.equal(owner);
+        (await protocol.owner()).should.equal(owner);
     });
 
     it("Update DarknodeRegistry address", async () => {
@@ -53,13 +53,11 @@ contract("Protocol", ([owner, otherAccount]: string[]) => {
 
         await protocol.updateContract("DarknodeRegistry", NULL);
 
-        (await protocol.getContract.call("DarknodeRegistry")).should.equal(
-            NULL
-        );
+        (await protocol.getContract("DarknodeRegistry")).should.equal(NULL);
 
         await protocol.updateContract("DarknodeRegistry", dnr.address);
 
-        (await protocol.getContract.call("DarknodeRegistry")).should.equal(
+        (await protocol.getContract("DarknodeRegistry")).should.equal(
             dnr.address
         );
     });
