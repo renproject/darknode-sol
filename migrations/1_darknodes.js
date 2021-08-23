@@ -87,7 +87,6 @@ module.exports = async function(deployer, network) {
     // const getOperatorDarknodes = await GetOperatorDarknodes.at(
     //     GetOperatorDarknodes.address
     // );
-    return;
 
     /** PROXY ADMIN ***********************************************************/
     if (!RenProxyAdmin.address) {
@@ -96,14 +95,6 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
     let renProxyAdmin = await RenProxyAdmin.at(RenProxyAdmin.address);
-
-    /** ClaimRewards **************************************************************/
-    if (!ClaimRewards.address) {
-        deployer.logger.log("Deploying ClaimRewards");
-        await deployer.deploy(ClaimRewards);
-        actionCount++;
-    }
-    const claimRewards = await ClaimRewards.at(ClaimRewards.address);
 
     // /** GetOperatorDarknodes **************************************************************/
     // if (!GetOperatorDarknodes.address) {
@@ -122,7 +113,7 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
     const protocol = await Protocol.at(Protocol.address);
-    await protocol.setContract("DarknodeRegistry", darknodeRegistry.address);
+    await protocol.__Protocol_init(contractOwner);
 
     /** Ren TOKEN *************************************************************/
     if (!RenToken.address) {
@@ -130,6 +121,14 @@ module.exports = async function(deployer, network) {
         await deployer.deploy(RenToken);
         actionCount++;
     }
+
+    /** ClaimRewards **************************************************************/
+    if (!ClaimRewards.address) {
+        deployer.logger.log("Deploying ClaimRewards");
+        await deployer.deploy(ClaimRewards);
+        actionCount++;
+    }
+    // const claimRewards = await ClaimRewards.at(ClaimRewards.address);
 
     /** DARKNODE REGISTRY *****************************************************/
     if (!DarknodeRegistryStore.address) {
@@ -270,12 +269,17 @@ module.exports = async function(deployer, network) {
         actionCount++;
     }
 
-    const protocolDarknodeRegistry = await protocol.darknodeRegistry.call();
+    const protocolDarknodeRegistry = await protocol.getContract.call(
+        "DarknodeRegistry"
+    );
     if (Ox(protocolDarknodeRegistry) !== Ox(darknodeRegistry.address)) {
         deployer.logger.log(
             `Updating DarknodeRegistry in Protocol contract. Was ${protocolDarknodeRegistry}, now is ${darknodeRegistry.address}`
         );
-        await protocol._updateDarknodeRegistry(darknodeRegistry.address);
+        await protocol.updateContract(
+            "DarknodeRegistry",
+            darknodeRegistry.address
+        );
         actionCount++;
     }
 

@@ -27,9 +27,9 @@ const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeRegistryLogicV1 = artifacts.require("DarknodeRegistryLogicV1");
 const SelfDestructingToken = artifacts.require("SelfDestructingToken");
 const DarknodeSlasher = artifacts.require("DarknodeSlasher");
-const DarknodeRegistryForwarder = artifacts.require(
-    "DarknodeRegistryForwarder"
-);
+// const DarknodeRegistryForwarder = artifacts.require(
+//     "DarknodeRegistryForwarder"
+// );
 const DarknodePaymentMigrator = artifacts.require("DarknodePaymentMigrator");
 
 const { config } = require("../migrations/networks");
@@ -42,7 +42,7 @@ contract("DarknodePayment", (accounts: string[]) => {
     let dnp: DarknodePaymentInstance;
     let ren: RenTokenInstance;
     let slasher: DarknodeSlasherInstance;
-    let forwarder: DarknodeRegistryForwarderInstance;
+    // let forwarder: DarknodeRegistryForwarderInstance;
 
     const owner = accounts[0];
     const darknode1 = accounts[1];
@@ -61,8 +61,8 @@ contract("DarknodePayment", (accounts: string[]) => {
         slasher = await DarknodeSlasher.deployed();
         await dnr.updateSlasher(slasher.address);
 
-        forwarder = await DarknodeRegistryForwarder.new(dnr.address);
-        await dnp.updateDarknodeRegistry(forwarder.address);
+        // forwarder = await DarknodeRegistryForwarder.new(dnr.address);
+        // await dnp.updateDarknodeRegistry(forwarder.address);
 
         await waitForEpoch(dnr);
 

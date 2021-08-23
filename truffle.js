@@ -71,11 +71,11 @@ module.exports = {
     },
     mocha: {
         // // Use with `npm run test`, not with `npm run coverage`
-        reporter: "eth-gas-reporter",
-        reporterOptions: {
-            currency: "USD",
-            gasPrice: 21
-        },
+        // reporter: "eth-gas-reporter",
+        // reporterOptions: {
+        //     currency: "USD",
+        //     gasPrice: 21
+        // },
         enableTimeouts: false,
         useColors: true,
         bail: false

@@ -34,7 +34,7 @@ const { config } = require("../migrations/networks");
 
 const numAccounts = 10;
 
-contract.only("DarknodeRegistry", (accounts: string[]) => {
+contract("DarknodeRegistry", (accounts: string[]) => {
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
     let dnr: DarknodeRegistryLogicV1Instance;
@@ -138,7 +138,7 @@ contract.only("DarknodeRegistry", (accounts: string[]) => {
             );
     });
 
-    it.only("can register, deregister and refund Darknodes", async function() {
+    it("can register, deregister and refund Darknodes", async function() {
         this.timeout(1000 * 1000);
         // [ACTION] Register
         for (let i = 0; i < numAccounts; i++) {
@@ -146,14 +146,13 @@ contract.only("DarknodeRegistry", (accounts: string[]) => {
             await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
         }
 
-        const nodeCount = 500;
+        const nodeCount = 10;
         await ren.transfer(accounts[2], MINIMUM_BOND.mul(new BN(nodeCount)));
         await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(nodeCount)), {
             from: accounts[2]
         });
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
-            console.log("i", i - numAccounts + 1);
             await dnr.register(ID(i), PUBK(i), { from: accounts[2] });
         }
 
@@ -163,25 +162,18 @@ contract.only("DarknodeRegistry", (accounts: string[]) => {
         const getOperatorDarknodes = await GetOperatorDarknodes.new(
             dnr.address
         );
-        console.log(
-            "getOperatorDarknodes",
-            await getOperatorDarknodes.getOperatorDarknodes.call(accounts[2])
-        );
 
-        // try {
-        //     console.log(
-        //         "getOperatorDarknodes",
-        //         await (getOperatorDarknodes.getOperatorDarknodes as any).write(
-        //             accounts[2]
-        //         )
-        //     );
-        // } catch (error) {
-        //     console.error(error);
-        // }
+        (
+            await getOperatorDarknodes.getOperatorDarknodes.call(accounts[2])
+        ).length.should.bignumber.equal(nodeCount + 1); // +1 from the first loop
 
         // [ACTION] Deregister
         for (let i = 0; i < numAccounts; i++) {
             await dnr.deregister(ID(i), { from: accounts[i] });
+        }
+
+        for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+            await dnr.deregister(ID(i), { from: accounts[2] });
         }
 
         // Wait for two epochs
@@ -192,6 +184,14 @@ contract.only("DarknodeRegistry", (accounts: string[]) => {
         for (let i = 0; i < numAccounts; i++) {
             await dnr.refund(ID(i), { from: accounts[i] });
         }
+
+        for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+            await dnr.refund(ID(i), { from: accounts[2] });
+        }
+
+        await ren.transfer(accounts[0], MINIMUM_BOND.mul(new BN(nodeCount)), {
+            from: accounts[2]
+        });
     });
 
     it("can check darknode statuses", async () => {

@@ -3,7 +3,11 @@
 pragma solidity 0.5.17;
 
 library ValidString {
-    function isAlphanumeric(string memory _string) public pure returns (bool) {
+    function isAlphanumeric(string memory _string)
+        internal
+        pure
+        returns (bool)
+    {
         for (uint256 i = 0; i < bytes(_string).length; i++) {
             uint8 char = uint8(bytes(_string)[i]);
             if (
@@ -17,7 +21,7 @@ library ValidString {
         return true;
     }
 
-    function isNotEmpty(string memory _string) public pure returns (bool) {
+    function isNotEmpty(string memory _string) internal pure returns (bool) {
         return bytes(_string).length > 0;
     }
 }

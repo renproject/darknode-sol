@@ -1,12 +1,25 @@
 # `⚖️ darknode-sol`
-## Solidity smart contracts used by Ren Darknodes
+
+## Ethereum smart contracts for managing darknodes
 
 [![CircleCI](https://circleci.com/gh/renproject/darknode-sol.svg?style=shield)](https://circleci.com/gh/renproject/darknode-sol)
 [![Coverage Status](https://coveralls.io/repos/github/renproject/darknode-sol/badge.svg?branch=master)](https://coveralls.io/github/renproject/darknode-sol?branch=master)
 
-**`darknode-sol`** contains a collection of Ethereum smart contracts utilized by the Ren Darknodes, written in Solidity. Ren bootstraps off Ethereum as a trusted third-party computer to handle Darknode registration and fee payouts.
+Ren has two repositories for its Solidity contract:
 
-Ren is powered by the RenVM — the Ren Virtual Machine — in a decentralized network of Darknodes that is distinct from Ethereum. This ensures the performance of the network, and the privacy of data, is not dependent on Ethereum.
+-   `darknode-sol` (this repository) - contracts on Ethereum for managing darknode registrations.
+-   [`gateway-sol`](https://github.com/renproject/gateway-sol) - contracts on multiple EVM chains for minting and burning of ren-assets.
+
+Ren bootstraps off Ethereum to handle the REN token and darknode registrations.
+
+## ~ [Documentation](https://renproject.github.io/ren-client-docs/contracts/) ~
+
+-   For the latest contract addresses, see the [contract addresses](https://renproject.github.io/ren-client-docs/contracts/deployments) page.
+-   For a summary of each contract, see the [summary of contracts](https://renproject.github.io/ren-client-docs/contracts/summary) page.
+
+<details>
+
+<summary>Development notes</summary>
 
 ## Tests
 
@@ -73,3 +86,5 @@ Run the following (replacing the network and contract name):
 ```sh
 NETWORK=mainnet yarn run verify Contract1 Contract2
 ```
+
+</details>
