@@ -1,11 +1,12 @@
 # Node / NPM / Yarn
-node_modules
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Build / test artifacts
-coverage
+coverage*
+artifacts*
 dist
 coverageEnv
 coverage.json
@@ -13,6 +14,10 @@ coverage.json
 .coverage_artifacts
 .coverage_contracts
 *output.log
+typechain/
+contractsInfo.json
+deployments/hardhat
+deployments/localhost
 
 # Configuration files
 *.env
@@ -30,3 +35,11 @@ build/development
 local_*
 bindings.go
 types
+
+.vscode/*
+!.vscode/settings.json.default
+!.vscode/launch.json.default
+!.vscode/extensions.json.default
+
+.yalc
+yalc.lock

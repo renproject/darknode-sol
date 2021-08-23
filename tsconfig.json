@@ -1,18 +1,18 @@
 {
-    "compilerOptions": {
-        "typeRoots": ["types"],
-        "lib": ["es2015"],
-        "types": ["node", "mocha", "truffle-typings", "chai"],
-        "module": "commonjs",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "sourceMap": true,
-        "esModuleInterop": true
-    },
-    "include": [
-        "test",
-        "types"
-    ]
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist"
+  },
+  "include": [
+    "hardhat.config.ts",
+    "./scripts",
+    "./deploy",
+    "./test",
+    "typechain/**/*"
+  ]
 }
