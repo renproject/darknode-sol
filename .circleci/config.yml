@@ -7,7 +7,7 @@ version: 2.1
 executors:
   default:
     docker:
-      - image: circleci/node:10.16
+      - image: circleci/node:12.22
     working_directory: ~/darknode-sol
 
 commands:
