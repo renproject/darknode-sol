@@ -278,6 +278,56 @@ contract DarknodeRegistryLogicV1 is
         emit LogDarknodeRegistered(msg.sender, _darknodeID, minimumBond);
     }
 
+    /// @notice Register multiple darknodes and transfer the bonds to this contract.
+    /// Before registering, the bonds transfer must be approved in the REN contract.
+    /// The darknodes will remain pending registration until the next epoch. Only
+    /// after this period can the darknodes be deregistered. The caller of this method
+    /// will be stored as the owner of each darknode. If one registration fails, all
+    /// registrations fail.
+    /// @param _darknodeIDs The darknode IDs that will be registered.
+    function registerMultiple(address[] calldata _darknodeIDs) external {
+        // Save variables in memory to prevent redundant reads from storage
+        Epoch memory _currentEpoch = currentEpoch;
+        uint256 _minimumBond = minimumBond;
+        uint256 _minimumEpochInterval = minimumEpochInterval;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            require(
+                isRefunded(darknodeID),
+                "DarknodeRegistry: must be refunded or never registered"
+            );
+
+            require(
+                darknodeID != address(0),
+                "DarknodeRegistry: darknode address cannot be zero"
+            );
+
+            store.appendDarknode(
+                darknodeID,
+                msg.sender,
+                _minimumBond,
+                "",
+                _currentEpoch.blocktime.add(_minimumEpochInterval),
+                0
+            );
+
+            emit LogDarknodeRegistered(msg.sender, darknodeID, _minimumBond);
+        }
+
+        require(
+            ren.transferFrom(
+                msg.sender,
+                address(store),
+                _minimumBond.mul(_darknodeIDs.length)
+            ),
+            "DarknodeRegistry: bond transfers failed"
+        );
+
+        numDarknodesNextEpoch = numDarknodesNextEpoch.add(_darknodeIDs.length);
+    }
+
     /// @notice Deregister a darknode. The darknode will not be deregistered
     /// until the end of the epoch. After another epoch, the bond can be
     /// refunded by calling the refund method.
@@ -289,6 +339,41 @@ contract DarknodeRegistryLogicV1 is
         onlyDarknodeOperator(_darknodeID)
     {
         deregisterDarknode(_darknodeID);
+    }
+
+    /// @notice Deregister multiple darknodes. The darknodes will not be
+    /// deregistered until the end of the epoch. After another epoch, their
+    /// bonds can be refunded by calling the refund or refundMultiple methods.
+    /// If one deregistration fails, all deregistrations fail.
+    /// @param _darknodeIDs The darknode IDs that will be deregistered. The
+    /// caller of this method must be the owner of each darknode.
+    function deregisterMultiple(address[] calldata _darknodeIDs) external {
+        // Save variables in memory to prevent redundant reads from storage
+        Epoch memory _currentEpoch = currentEpoch;
+        uint256 _minimumEpochInterval = minimumEpochInterval;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            require(
+                isDeregisterable(darknodeID),
+                "DarknodeRegistry: must be deregisterable"
+            );
+
+            require(
+                store.darknodeOperator(darknodeID) == msg.sender,
+                "DarknodeRegistry: must be darknode owner"
+            );
+
+            store.updateDarknodeDeregisteredAt(
+                darknodeID,
+                _currentEpoch.blocktime.add(_minimumEpochInterval)
+            );
+
+            emit LogDarknodeDeregistered(msg.sender, darknodeID);
+        }
+
+        numDarknodesNextEpoch = numDarknodesNextEpoch.sub(_darknodeIDs.length);
     }
 
     /// @notice Progress the epoch if it is possible to do so. This captures
@@ -507,6 +592,46 @@ contract DarknodeRegistryLogicV1 is
 
         // Emit an event.
         emit LogDarknodeRefunded(darknodeOperator, _darknodeID, amount);
+    }
+
+    /// @notice Refund the bonds of multiple deregistered darknodes. This will
+    /// make the darknodes available for registration again. If one refund fails,
+    /// all refunds fail.
+    /// @param _darknodeIDs The darknode IDs that will be refunded.
+    function refundMultiple(address[] calldata _darknodeIDs) external {
+        uint256 sum;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            require(
+                isRefundable(darknodeID),
+                "DarknodeRegistry: must be deregistered for at least one epoch"
+            );
+
+            require(
+                store.darknodeOperator(darknodeID) == msg.sender,
+                "DarknodeRegistry: must be darknode owner"
+            );
+
+            // Remember the bond amount
+            uint256 amount = store.darknodeBond(darknodeID);
+
+            // Erase the darknode from the registry
+            store.removeDarknode(darknodeID);
+
+            // Emit an event
+            emit LogDarknodeRefunded(msg.sender, darknodeID, amount);
+
+            // Increment the sum of bonds to be transferred
+            sum = sum.add(amount);
+        }
+
+        // Transfer all bonds together
+        require(
+            ren.transfer(msg.sender, sum),
+            "DarknodeRegistry: bond transfers failed"
+        );
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.
