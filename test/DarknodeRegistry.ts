@@ -604,6 +604,40 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.slasher()).should.equal(slasher.address);
     });
 
+    it("can slash deregistered darknodes", async () => {
+        // Update slasher address
+        const newSlasher = accounts[0];
+        await dnr.updateSlasher(newSlasher);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(newSlasher);
+
+        // Register and deregister darknode
+        await ren.approve(dnr.address, MINIMUM_BOND, {
+            from: accounts[2],
+        });
+        await dnr.register(ID("2"), PUBK("2"), {
+            from: accounts[2],
+        });
+        await waitForEpoch(dnr);
+        await dnr.deregister(ID("2"), { from: accounts[2] });
+        await waitForEpoch(dnr);
+
+        // Slash the deregistered darknode
+        await dnr.slash(ID("2"), ID("6"), 50);
+
+        // Reset slasher
+        await dnr.updateSlasher(slasher.address);
+        await waitForEpoch(dnr);
+        (await dnr.slasher()).should.equal(slasher.address);
+
+        // Refund darknode
+        await dnr.refund(ID("2"), { from: accounts[2] });
+        (await dnr.isRefunded(ID("2"))).should.be.true;
+
+        // Reset accounts[2]'s REN balance
+        await ren.transfer(accounts[2], MINIMUM_BOND.div(new BN(2)));
+    });
+
     it("cannot slash with an invalid percent", async () => {
         // Update slasher address
         const newSlasher = accounts[0];
@@ -708,9 +742,6 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await slasher.slash(ID("2"), ID("6"), slashPercent, {
             from: slasherOwner
         });
-        await slasher
-            .slash(ID("3"), ID("6"), slashPercent, { from: slasherOwner })
-            .should.be.rejectedWith(/DarknodeRegistry: invalid darknode/);
 
         // // NOTE: The darknode doesn't prevent slashing a darknode twice
         await slasher.slash(ID("2"), ID("6"), slashPercent, {
