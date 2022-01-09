@@ -693,41 +693,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [CHECK] Refund fails if transfer fails
         await ren.pause();
         await dnr.refund(ID("2")).should.be.rejectedWith(/Pausable: paused/);
-        await ren.unpause();
-
-        // [RESET]
-        await dnr.refund(ID("2"));
-    });
-
-    it("should throw if one of multiple refunds fail", async () => {
-        // [SETUP]
-        await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(2)), {
-            from: accounts[numAccounts - 1],
-        });
-        await dnr.registerMultiple([ID("2"), ID("3")], {
-            from: accounts[numAccounts - 1],
-        });
-        await waitForEpoch(dnr);
-        await dnr.deregisterMultiple([ID("2"), ID("3")], {
-            from: accounts[numAccounts - 1],
-        });
-        await waitForEpoch(dnr);
-        await waitForEpoch(dnr);
-        await waitForEpoch(dnr);
-
-        // [CHECK] Refund fails if transfer fails
-        await ren.pause();
         await dnr
-            .refundMultiple([ID("2"), ID("3")], {
-                from: accounts[numAccounts - 1],
-            })
+            .refundMultiple([ID("2")])
             .should.be.rejectedWith(/Pausable: paused/);
         await ren.unpause();
 
         // [RESET]
-        await dnr.refundMultiple([ID("2"), ID("3")], {
-            from: accounts[numAccounts - 1],
-        });
+        await dnr.refund(ID("2"));
     });
 
     it("should not refund for an address which is never registered", async () => {
