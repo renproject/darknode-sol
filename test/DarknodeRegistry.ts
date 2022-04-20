@@ -288,7 +288,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await dnr.isRegisteredInPreviousEpoch(id)).should.be.false;
 
         // [ACTION] Refund
-        await dnr.refund(id, { from: owner });
+        await dnr.refund(id, { from: accounts[0] });
 
         (await dnr.isRefunded(id)).should.be.true;
         (await dnr.isPendingRegistration(id)).should.be.false;
@@ -518,7 +518,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         (await ren.balanceOf(accounts[7])).should.bignumber.equal(MINIMUM_BOND);
     });
 
-    it("only operator can refund", async () => {
+    it("anyone can refund", async () => {
         const owner = accounts[2];
         const id = ID("2");
         const pubk = PUBK("2");
@@ -533,10 +533,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
 
         // [ACTION] Refund
-        await dnr
-            .refund(id, { from: accounts[0] })
-            .should.be.rejectedWith(/DarknodeRegistry: must be darknode owner/);
-        await dnr.refund(id, { from: owner });
+        await dnr.refund(id, { from: accounts[0] });
 
         // [CHECK] Refund was successful and bond was returned
         (await dnr.isRefunded(id)).should.be.true;
