@@ -184,11 +184,10 @@ contract DarknodeRegistryLogicV1 is
         _;
     }
 
-    /// @notice Restrict a function to registered nodes without a pending
-    /// deregistration.
+    /// @notice Restrict a function to registered and deregistered nodes.
     modifier onlyDarknode(address _darknodeID) {
         require(
-            isRegistered(_darknodeID),
+            isRegistered(_darknodeID) || isDeregistered(_darknodeID),
             "DarknodeRegistry: invalid darknode"
         );
         _;
