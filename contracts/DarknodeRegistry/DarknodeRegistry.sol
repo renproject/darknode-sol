@@ -486,13 +486,14 @@ contract DarknodeRegistryLogicV1 is
     }
 
     /// @notice Refund the bond of a deregistered darknode. This will make the
-    /// darknode available for registration again. Anyone can call this function
-    /// but the bond will always be refunded to the darknode operator.
+    /// darknode available for registration again.
     ///
     /// @param _darknodeID The darknode ID that will be refunded.
-    function refund(address _darknodeID) external onlyRefundable(_darknodeID) {
-        address darknodeOperator = store.darknodeOperator(_darknodeID);
-
+    function refund(address _darknodeID)
+        external
+        onlyRefundable(_darknodeID)
+        onlyDarknodeOperator(_darknodeID)
+    {
         // Remember the bond amount
         uint256 amount = store.darknodeBond(_darknodeID);
 
@@ -501,12 +502,12 @@ contract DarknodeRegistryLogicV1 is
 
         // Refund the operator by transferring REN
         require(
-            ren.transfer(darknodeOperator, amount),
+            ren.transfer(msg.sender, amount),
             "DarknodeRegistry: bond transfer failed"
         );
 
         // Emit an event.
-        emit LogDarknodeRefunded(darknodeOperator, _darknodeID, amount);
+        emit LogDarknodeRefunded(msg.sender, _darknodeID, amount);
     }
 
     /// @notice Retrieves the address of the account that registered a darknode.
