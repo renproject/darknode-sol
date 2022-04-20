@@ -277,6 +277,60 @@ contract DarknodeRegistryLogicV1 is
         emit LogDarknodeRegistered(msg.sender, _darknodeID, minimumBond);
     }
 
+    /// @notice Register multiple darknodes and transfer the bonds to this contract.
+    /// Before registering, the bonds transfer must be approved in the REN contract.
+    /// The darknodes will remain pending registration until the next epoch. Only
+    /// after this period can the darknodes be deregistered. The caller of this method
+    /// will be stored as the owner of each darknode. If one registration fails, all
+    /// registrations fail.
+    /// @param _darknodeIDs The darknode IDs that will be registered.
+    function registerMultiple(address[] calldata _darknodeIDs) external {
+        // Save variables in memory to prevent redundant reads from storage
+        DarknodeRegistryStore _store = store;
+        Epoch memory _currentEpoch = currentEpoch;
+        uint256 _minimumBond = minimumBond;
+        uint256 _minimumEpochInterval = minimumEpochInterval;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            uint256 registeredAt = _store.darknodeRegisteredAt(darknodeID);
+            uint256 deregisteredAt = _store.darknodeDeregisteredAt(darknodeID);
+
+            require(
+                _isRefunded(registeredAt, deregisteredAt),
+                "DarknodeRegistry: must be refunded or never registered"
+            );
+
+            require(
+                darknodeID != address(0),
+                "DarknodeRegistry: darknode address cannot be zero"
+            );
+
+            _store.appendDarknode(
+                darknodeID,
+                msg.sender,
+                _minimumBond,
+                "",
+                _currentEpoch.blocktime.add(_minimumEpochInterval),
+                0
+            );
+
+            emit LogDarknodeRegistered(msg.sender, darknodeID, _minimumBond);
+        }
+
+        require(
+            ren.transferFrom(
+                msg.sender,
+                address(_store),
+                _minimumBond.mul(_darknodeIDs.length)
+            ),
+            "DarknodeRegistry: bond transfers failed"
+        );
+
+        numDarknodesNextEpoch = numDarknodesNextEpoch.add(_darknodeIDs.length);
+    }
+
     /// @notice Deregister a darknode. The darknode will not be deregistered
     /// until the end of the epoch. After another epoch, the bond can be
     /// refunded by calling the refund method.
@@ -288,6 +342,49 @@ contract DarknodeRegistryLogicV1 is
         onlyDarknodeOperator(_darknodeID)
     {
         deregisterDarknode(_darknodeID);
+    }
+
+    /// @notice Deregister multiple darknodes. The darknodes will not be
+    /// deregistered until the end of the epoch. After another epoch, their
+    /// bonds can be refunded by calling the refund or refundMultiple methods.
+    /// If one deregistration fails, all deregistrations fail.
+    /// @param _darknodeIDs The darknode IDs that will be deregistered. The
+    /// caller of this method must be the owner of each darknode.
+    function deregisterMultiple(address[] calldata _darknodeIDs) external {
+        // Save variables in memory to prevent redundant reads from storage
+        DarknodeRegistryStore _store = store;
+        Epoch memory _currentEpoch = currentEpoch;
+        uint256 _minimumEpochInterval = minimumEpochInterval;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            uint256 deregisteredAt = _store.darknodeDeregisteredAt(darknodeID);
+            bool registered = isRegisteredInEpoch(
+                _store.darknodeRegisteredAt(darknodeID),
+                deregisteredAt,
+                _currentEpoch
+            );
+
+            require(
+                _isDeregisterable(registered, deregisteredAt),
+                "DarknodeRegistry: must be deregisterable"
+            );
+
+            require(
+                _store.darknodeOperator(darknodeID) == msg.sender,
+                "DarknodeRegistry: must be darknode owner"
+            );
+
+            _store.updateDarknodeDeregisteredAt(
+                darknodeID,
+                _currentEpoch.blocktime.add(_minimumEpochInterval)
+            );
+
+            emit LogDarknodeDeregistered(msg.sender, darknodeID);
+        }
+
+        numDarknodesNextEpoch = numDarknodesNextEpoch.sub(_darknodeIDs.length);
     }
 
     /// @notice Progress the epoch if it is possible to do so. This captures
@@ -509,6 +606,61 @@ contract DarknodeRegistryLogicV1 is
         emit LogDarknodeRefunded(msg.sender, _darknodeID, amount);
     }
 
+    /// @notice Refund the bonds of multiple deregistered darknodes. This will
+    /// make the darknodes available for registration again. If one refund fails,
+    /// all refunds fail.
+    /// @param _darknodeIDs The darknode IDs that will be refunded.
+    function refundMultiple(address[] calldata _darknodeIDs) external {
+        // Save variables in memory to prevent redundant reads from storage
+        DarknodeRegistryStore _store = store;
+        Epoch memory _currentEpoch = currentEpoch;
+        Epoch memory _previousEpoch = previousEpoch;
+        uint256 _deregistrationInterval = deregistrationInterval;
+
+        // The sum of bonds to refund
+        uint256 sum;
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            uint256 deregisteredAt = _store.darknodeDeregisteredAt(darknodeID);
+            bool deregistered = _isDeregistered(deregisteredAt, _currentEpoch);
+
+            require(
+                _isRefundable(
+                    deregistered,
+                    deregisteredAt,
+                    _previousEpoch,
+                    _deregistrationInterval
+                ),
+                "DarknodeRegistry: must be deregistered for at least one epoch"
+            );
+
+            require(
+                _store.darknodeOperator(darknodeID) == msg.sender,
+                "DarknodeRegistry: must be darknode owner"
+            );
+
+            // Remember the bond amount
+            uint256 amount = _store.darknodeBond(darknodeID);
+
+            // Erase the darknode from the registry
+            _store.removeDarknode(darknodeID);
+
+            // Emit an event
+            emit LogDarknodeRefunded(msg.sender, darknodeID, amount);
+
+            // Increment the sum of bonds to be transferred
+            sum = sum.add(amount);
+        }
+
+        // Transfer all bonds together
+        require(
+            ren.transfer(msg.sender, sum),
+            "DarknodeRegistry: bond transfers failed"
+        );
+    }
+
     /// @notice Retrieves the address of the account that registered a darknode.
     /// @param _darknodeID The ID of the darknode to retrieve the owner for.
     function getDarknodeOperator(address _darknodeID)
@@ -601,35 +753,46 @@ contract DarknodeRegistryLogicV1 is
     /// @notice Returns if a darknode is in the deregistered state.
     function isDeregistered(address _darknodeID) public view returns (bool) {
         uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        return deregisteredAt != 0 && deregisteredAt <= currentEpoch.blocktime;
+        return _isDeregistered(deregisteredAt, currentEpoch);
     }
 
     /// @notice Returns if a darknode can be deregistered. This is true if the
     /// darknodes is in the registered state and has not attempted to
     /// deregister yet.
     function isDeregisterable(address _darknodeID) public view returns (bool) {
-        uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        // The Darknode is currently in the registered state and has not been
-        // transitioned to the pending deregistration, or deregistered, state
-        return isRegistered(_darknodeID) && deregisteredAt == 0;
+        DarknodeRegistryStore _store = store;
+        uint256 deregisteredAt = _store.darknodeDeregisteredAt(_darknodeID);
+        bool registered = isRegisteredInEpoch(
+            _store.darknodeRegisteredAt(_darknodeID),
+            deregisteredAt,
+            currentEpoch
+        );
+        return _isDeregisterable(registered, deregisteredAt);
     }
 
     /// @notice Returns if a darknode is in the refunded state. This is true
     /// for darknodes that have never been registered, or darknodes that have
     /// been deregistered and refunded.
     function isRefunded(address _darknodeID) public view returns (bool) {
-        uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
-        uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        return registeredAt == 0 && deregisteredAt == 0;
+        DarknodeRegistryStore _store = store;
+        uint256 registeredAt = _store.darknodeRegisteredAt(_darknodeID);
+        uint256 deregisteredAt = _store.darknodeDeregisteredAt(_darknodeID);
+        return _isRefunded(registeredAt, deregisteredAt);
     }
 
     /// @notice Returns if a darknode is refundable. This is true for darknodes
     /// that have been in the deregistered state for one full epoch.
     function isRefundable(address _darknodeID) public view returns (bool) {
+        uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
+        bool deregistered = _isDeregistered(deregisteredAt, currentEpoch);
+
         return
-            isDeregistered(_darknodeID) &&
-            store.darknodeDeregisteredAt(_darknodeID) <=
-            (previousEpoch.blocktime - deregistrationInterval);
+            _isRefundable(
+                deregistered,
+                deregisteredAt,
+                previousEpoch,
+                deregistrationInterval
+            );
     }
 
     /// @notice Returns the registration time of a given darknode.
@@ -652,7 +815,10 @@ contract DarknodeRegistryLogicV1 is
 
     /// @notice Returns if a darknode is in the registered state.
     function isRegistered(address _darknodeID) public view returns (bool) {
-        return isRegisteredInEpoch(_darknodeID, currentEpoch);
+        DarknodeRegistryStore _store = store;
+        uint256 registeredAt = _store.darknodeRegisteredAt(_darknodeID);
+        uint256 deregisteredAt = _store.darknodeDeregisteredAt(_darknodeID);
+        return isRegisteredInEpoch(registeredAt, deregisteredAt, currentEpoch);
     }
 
     /// @notice Returns if a darknode was in the registered state last epoch.
@@ -661,26 +827,69 @@ contract DarknodeRegistryLogicV1 is
         view
         returns (bool)
     {
-        return isRegisteredInEpoch(_darknodeID, previousEpoch);
+        DarknodeRegistryStore _store = store;
+        uint256 registeredAt = _store.darknodeRegisteredAt(_darknodeID);
+        uint256 deregisteredAt = _store.darknodeDeregisteredAt(_darknodeID);
+        return isRegisteredInEpoch(registeredAt, deregisteredAt, previousEpoch);
     }
 
     /// @notice Returns if a darknode was in the registered state for a given
     /// epoch.
-    /// @param _darknodeID The ID of the darknode.
     /// @param _epoch One of currentEpoch, previousEpoch.
-    function isRegisteredInEpoch(address _darknodeID, Epoch memory _epoch)
-        private
-        view
-        returns (bool)
-    {
-        uint256 registeredAt = store.darknodeRegisteredAt(_darknodeID);
-        uint256 deregisteredAt = store.darknodeDeregisteredAt(_darknodeID);
-        bool registered = registeredAt != 0 && registeredAt <= _epoch.blocktime;
-        bool notDeregistered =
-            deregisteredAt == 0 || deregisteredAt > _epoch.blocktime;
+    function isRegisteredInEpoch(
+        uint256 _registeredAt,
+        uint256 _deregisteredAt,
+        Epoch memory _epoch
+    ) private pure returns (bool) {
+        bool registered = _registeredAt != 0 &&
+            _registeredAt <= _epoch.blocktime;
+        bool notDeregistered = _deregisteredAt == 0 ||
+            _deregisteredAt > _epoch.blocktime;
         // The Darknode has been registered and has not yet been deregistered,
         // although it might be pending deregistration
         return registered && notDeregistered;
+    }
+
+    /// Private function called by `isDeregistered`, `isRefundable`, and `refundMultiple`.
+    function _isDeregistered(
+        uint256 _deregisteredAt,
+        Epoch memory _currentEpoch
+    ) private pure returns (bool) {
+        return
+            _deregisteredAt != 0 && _deregisteredAt <= _currentEpoch.blocktime;
+    }
+
+    /// Private function called by `isDeregisterable` and `deregisterMultiple`.
+    function _isDeregisterable(bool _registered, uint256 _deregisteredAt)
+        private
+        pure
+        returns (bool)
+    {
+        // The Darknode is currently in the registered state and has not been
+        // transitioned to the pending deregistration, or deregistered, state
+        return _registered && _deregisteredAt == 0;
+    }
+
+    /// Private function called by `isRefunded` and `registerMultiple`.
+    function _isRefunded(uint256 registeredAt, uint256 deregisteredAt)
+        private
+        pure
+        returns (bool)
+    {
+        return registeredAt == 0 && deregisteredAt == 0;
+    }
+
+    /// Private function called by `isRefundable` and `refundMultiple`.
+    function _isRefundable(
+        bool _deregistered,
+        uint256 _deregisteredAt,
+        Epoch memory _previousEpoch,
+        uint256 _deregistrationInterval
+    ) private pure returns (bool) {
+        return
+            _deregistered &&
+            _deregisteredAt <=
+            (_previousEpoch.blocktime - _deregistrationInterval);
     }
 
     /// @notice Returns a list of darknodes registered for either the current
