@@ -310,7 +310,9 @@ contract DarknodeRegistryLogicV2 is
         // Save variables in memory to prevent redundant reads from storage
         DarknodeRegistryStore _store = store;
         Epoch memory _currentEpoch = currentEpoch;
-        uint256 _minimumEpochInterval = minimumEpochInterval;
+        uint256 nextDeregisteredAt = _currentEpoch.blocktime.add(
+            minimumEpochInterval
+        );
 
         for (uint256 i = 0; i < _darknodeIDs.length; i++) {
             address darknodeID = _darknodeIDs[i];
@@ -332,10 +334,7 @@ contract DarknodeRegistryLogicV2 is
                 "DarknodeRegistry: must be darknode owner"
             );
 
-            _store.updateDarknodeDeregisteredAt(
-                darknodeID,
-                _currentEpoch.blocktime.add(_minimumEpochInterval)
-            );
+            _store.updateDarknodeDeregisteredAt(darknodeID, nextDeregisteredAt);
 
             emit LogDarknodeDeregistered(msg.sender, darknodeID);
         }
