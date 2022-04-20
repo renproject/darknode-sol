@@ -250,3 +250,27 @@ export const toBN = <
 };
 
 export const range = (n: number) => Array.from(new Array(n)).map((_, i) => i);
+
+export const signRecoverMessage = async (
+    owner: string,
+    recipient: string,
+    darknodeID: string
+) => {
+    // Recover
+    const signature = Buffer.from(
+        (
+            await web3.eth.sign(
+                "0x" +
+                    Buffer.concat([
+                        Buffer.from("DarknodeRegistry.recover"),
+                        Buffer.from(ID(darknodeID).slice(2), "hex"),
+                        Buffer.from(recipient.slice(2), "hex"),
+                    ]).toString("hex"),
+                owner
+            )
+        ).slice(2),
+        "hex"
+    );
+    signature[64] = (signature[64] % 27) + 27;
+    return "0x" + signature.toString("hex");
+};
