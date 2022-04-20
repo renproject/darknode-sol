@@ -8,20 +8,72 @@ import "../RenToken/RenToken.sol";
 import "./DarknodeRegistryStore.sol";
 import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
-import "./DarknodeRegistryV1.sol";
 
-contract DarknodeRegistryStateV2 {}
+interface IDarknodePaymentStore {}
+
+interface IDarknodePayment {
+    function changeCycle() external returns (uint256);
+
+    function store() external view returns (IDarknodePaymentStore);
+}
+
+interface IDarknodeSlasher {}
+
+contract DarknodeRegistryStateV1 {
+    using SafeMath for uint256;
+
+    string public VERSION; // Passed in as a constructor parameter.
+
+    /// @notice Darknode pods are shuffled after a fixed number of blocks.
+    /// An Epoch stores an epoch hash used as an (insecure) RNG seed, and the
+    /// blocknumber which restricts when the next epoch can be called.
+    struct Epoch {
+        uint256 epochhash;
+        uint256 blocktime;
+    }
+
+    uint256 public numDarknodes;
+    uint256 public numDarknodesNextEpoch;
+    uint256 public numDarknodesPreviousEpoch;
+
+    /// Variables used to parameterize behavior.
+    uint256 public minimumBond;
+    uint256 public minimumPodSize;
+    uint256 public minimumEpochInterval;
+    uint256 public deregistrationInterval;
+
+    /// When one of the above variables is modified, it is only updated when the
+    /// next epoch is called. These variables store the values for the next
+    /// epoch.
+    uint256 public nextMinimumBond;
+    uint256 public nextMinimumPodSize;
+    uint256 public nextMinimumEpochInterval;
+
+    /// The current and previous epoch.
+    Epoch public currentEpoch;
+    Epoch public previousEpoch;
+
+    /// REN ERC20 contract used to transfer bonds.
+    RenToken public ren;
+
+    /// Darknode Registry Store is the storage contract for darknodes.
+    DarknodeRegistryStore public store;
+
+    /// The Darknode Payment contract for changing cycle.
+    IDarknodePayment public darknodePayment;
+
+    /// Darknode Slasher allows darknodes to vote on bond slashing.
+    IDarknodeSlasher public slasher;
+    IDarknodeSlasher public nextSlasher;
+}
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
-contract DarknodeRegistryLogicV2 is
+contract DarknodeRegistryLogicV1 is
     Claimable,
     CanReclaimTokens,
-    DarknodeRegistryStateV1,
-    DarknodeRegistryStateV2
+    DarknodeRegistryStateV1
 {
-    using SafeMath for uint256;
-
     /// @notice Emitted when a darknode is registered.
     /// @param _darknodeOperator The owner of the darknode.
     /// @param _darknodeID The ID of the darknode that was registered.
@@ -82,8 +134,8 @@ contract DarknodeRegistryLogicV2 is
         address indexed _nextSlasher
     );
     event LogDarknodePaymentUpdated(
-        address indexed _previousDarknodePayment,
-        address indexed _nextDarknodePayment
+        IDarknodePayment indexed _previousDarknodePayment,
+        IDarknodePayment indexed _nextDarknodePayment
     );
 
     /// @notice Restrict a function to the owner that registered the darknode.
@@ -289,6 +341,9 @@ contract DarknodeRegistryLogicV2 is
             slasher = nextSlasher;
             emit LogSlasherUpdated(address(slasher), address(nextSlasher));
         }
+        if (address(darknodePayment) != address(0x0)) {
+            darknodePayment.changeCycle();
+        }
 
         // Emit an event
         emit LogNewEpoch(epochhash);
@@ -297,7 +352,7 @@ contract DarknodeRegistryLogicV2 is
     /// @notice Allows the contract owner to initiate an ownership transfer of
     /// the DarknodeRegistryStore.
     /// @param _newOwner The address to transfer the ownership to.
-    function transferStoreOwnership(DarknodeRegistryLogicV2 _newOwner)
+    function transferStoreOwnership(DarknodeRegistryLogicV1 _newOwner)
         external
         onlyOwner
     {
@@ -318,6 +373,26 @@ contract DarknodeRegistryLogicV2 is
             numDarknodes,
             numDarknodesNextEpoch
         ) = getDarknodeCountFromEpochs();
+    }
+
+    /// @notice Allows the contract owner to update the address of the
+    /// darknode payment contract.
+    /// @param _darknodePayment The address of the Darknode Payment
+    /// contract.
+    function updateDarknodePayment(IDarknodePayment _darknodePayment)
+        external
+        onlyOwner
+    {
+        require(
+            address(_darknodePayment) != address(0x0),
+            "DarknodeRegistry: invalid Darknode Payment address"
+        );
+        IDarknodePayment previousDarknodePayment = darknodePayment;
+        darknodePayment = _darknodePayment;
+        emit LogDarknodePaymentUpdated(
+            previousDarknodePayment,
+            darknodePayment
+        );
     }
 
     /// @notice Allows the contract owner to update the minimum bond.
@@ -352,6 +427,10 @@ contract DarknodeRegistryLogicV2 is
     /// address.
     /// @param _slasher The new slasher address.
     function updateSlasher(IDarknodeSlasher _slasher) external onlyOwner {
+        require(
+            address(_slasher) != address(0),
+            "DarknodeRegistry: invalid slasher address"
+        );
         nextSlasher = _slasher;
     }
 
@@ -375,19 +454,26 @@ contract DarknodeRegistryLogicV2 is
         uint256 totalBond = store.darknodeBond(_guilty);
         uint256 penalty = totalBond.div(100).mul(_percentage);
         uint256 challengerReward = penalty.div(2);
-        uint256 slasherPortion = penalty.sub(challengerReward);
+        uint256 darknodePaymentReward = penalty.sub(challengerReward);
         if (challengerReward > 0) {
             // Slash the bond of the failed prover
             store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
 
-            // Forward the remaining amount to be handled by the slasher.
+            // Distribute the remaining bond into the darknode payment reward pool
             require(
-                ren.transfer(msg.sender, slasherPortion),
-                "DarknodeRegistry: reward transfer to slasher failed"
+                address(darknodePayment) != address(0x0),
+                "DarknodeRegistry: invalid payment address"
+            );
+            require(
+                ren.transfer(
+                    address(darknodePayment.store()),
+                    darknodePaymentReward
+                ),
+                "DarknodeRegistry: reward transfer failed"
             );
             require(
                 ren.transfer(_challenger, challengerReward),
-                "DarknodeRegistry: reward transfer to challenger failed"
+                "DarknodeRegistry: reward transfer failed"
             );
         }
 
@@ -578,35 +664,6 @@ contract DarknodeRegistryLogicV2 is
         return isRegisteredInEpoch(_darknodeID, previousEpoch);
     }
 
-    function getOperatorDarknodes(address _operator)
-        public
-        view
-        returns (address[] memory)
-    {
-        address[] memory nodesPadded = new address[](numDarknodes);
-
-        address[] memory allNodes = getDarknodesFromEpochs(
-            address(0),
-            numDarknodes,
-            false
-        );
-
-        uint256 j = 0;
-        for (uint256 i = 0; i < allNodes.length; i++) {
-            if (store.darknodeOperator(allNodes[i]) == _operator) {
-                nodesPadded[j] = (allNodes[i]);
-                j++;
-            }
-        }
-
-        address[] memory nodes = new address[](j);
-        for (uint256 i = 0; i < j; i++) {
-            nodes[i] = nodesPadded[i];
-        }
-
-        return nodes;
-    }
-
     /// @notice Returns if a darknode was in the registered state for a given
     /// epoch.
     /// @param _darknodeID The ID of the darknode.
@@ -730,9 +787,4 @@ contract DarknodeRegistryLogicV2 is
         }
         return (nPreviousEpoch, nCurrentEpoch, nNextEpoch);
     }
-}
-
-/* solium-disable-next-line no-empty-blocks */
-contract DarknodeRegistryProxy is InitializableAdminUpgradeabilityProxy {
-
 }
