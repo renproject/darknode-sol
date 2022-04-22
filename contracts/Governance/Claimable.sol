@@ -31,6 +31,12 @@ contract Claimable is Initializable, Ownable {
         pendingOwner = newOwner;
     }
 
+    // Allow skipping two-step transfer if the recipient is known to be a valid
+    // owner, for use in smart-contracts only.
+    function _directTransferOwnership(address newOwner) public onlyOwner {
+        _transferOwnership(newOwner);
+    }
+
     function claimOwnership() public onlyPendingOwner {
         _transferOwnership(pendingOwner);
         delete pendingOwner;

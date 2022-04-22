@@ -12,7 +12,10 @@ import { ECDSASignature } from "ethereumjs-util";
 import { TransactionReceipt } from "web3-core";
 import { keccak256, toChecksumAddress } from "web3-utils";
 
-import { DarknodeRegistryLogicV2Instance } from "../../types/truffle-contracts";
+import {
+    DarknodeRegistryLogicV1Instance,
+    DarknodeRegistryLogicV2Instance,
+} from "../../types/truffle-contracts";
 
 const ERC20 = artifacts.require("PaymentToken");
 
@@ -121,7 +124,9 @@ export const increaseTime = async (seconds: number) => {
     } while (currentTimestamp < target);
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryLogicV2Instance) {
+export async function waitForEpoch(
+    dnr: DarknodeRegistryLogicV1Instance | DarknodeRegistryLogicV2Instance
+) {
     // const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     const timeout = new BN(
         (await dnr.minimumEpochInterval()).toString()
@@ -263,7 +268,7 @@ export const signRecoverMessage = async (
                 "0x" +
                     Buffer.concat([
                         Buffer.from("DarknodeRegistry.recover"),
-                        Buffer.from(ID(darknodeID).slice(2), "hex"),
+                        Buffer.from(darknodeID.slice(2), "hex"),
                         Buffer.from(recipient.slice(2), "hex"),
                     ]).toString("hex"),
                 owner

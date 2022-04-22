@@ -43,11 +43,24 @@ contract DarknodeRegistryLogicV2 is
 
     /// @notice Emitted when a refund has been made.
     /// @param _darknodeOperator The owner of the darknode.
+    /// @param _darknodeID The ID of the darknode that was refunded.
     /// @param _amount The amount of REN that was refunded.
     event LogDarknodeRefunded(
         address indexed _darknodeOperator,
         address indexed _darknodeID,
         uint256 _amount
+    );
+
+    /// @notice Emitted when a recovery has been made.
+    /// @param _darknodeOperator The owner of the darknode.
+    /// @param _darknodeID The ID of the darknode that was recovered.
+    /// @param _bondRecipient The address that received the bond.
+    /// @param _submitter The address that called the recover method.
+    event LogDarknodeRecovered(
+        address indexed _darknodeOperator,
+        address indexed _darknodeID,
+        address _bondRecipient,
+        address indexed _submitter
     );
 
     /// @notice Emitted when a darknode's bond is slashed.
@@ -537,7 +550,8 @@ contract DarknodeRegistryLogicV2 is
     /// GatewayRegistry's governance. It is expected that this process would
     /// happen towards the end of the darknode's deregistered period, so that
     /// a malicious operator can't use this to quickly exit their stake after
-    /// attempting an attack on the network.
+    /// attempting an attack on the network. It's also expected that the
+    /// operator will not re-register the same darknode again.
     function recover(
         address _darknodeID,
         address _bondRecipient,
@@ -579,6 +593,12 @@ contract DarknodeRegistryLogicV2 is
 
         // Emit an event.
         emit LogDarknodeRefunded(darknodeOperator, _darknodeID, amount);
+        emit LogDarknodeRecovered(
+            darknodeOperator,
+            _darknodeID,
+            _bondRecipient,
+            msg.sender
+        );
     }
 
     /// @notice Refund the bonds of multiple deregistered darknodes. This will
