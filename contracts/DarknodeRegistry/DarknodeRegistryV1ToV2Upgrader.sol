@@ -1,22 +1,17 @@
 pragma solidity ^0.5.17;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
-import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
-import "../Governance/Claimable.sol";
 import "./DarknodeRegistry.sol";
 
 import "../Governance/RenProxyAdmin.sol";
 
 contract DarknodeRegistryV1ToV2Upgrader is Ownable {
-    RenProxyAdmin renProxyAdmin;
-    DarknodeRegistryLogicV1 darknodeRegistryProxy;
-    DarknodeRegistryLogicV2 darknodeRegistryLogicV2;
-    address previousAdminOwner;
-    address previousDarknodeRegistryOwner;
+    RenProxyAdmin public renProxyAdmin;
+    DarknodeRegistryLogicV1 public darknodeRegistryProxy;
+    DarknodeRegistryLogicV2 public darknodeRegistryLogicV2;
+    address public previousAdminOwner;
+    address public previousDarknodeRegistryOwner;
 
     constructor(
         RenProxyAdmin _renProxyAdmin,

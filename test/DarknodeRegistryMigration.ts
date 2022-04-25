@@ -31,7 +31,7 @@ const { config } = require("../migrations/networks");
 
 const numAccounts = 10;
 
-contract("DarknodeRegistryV1ToV2Upgrader", (accounts: string[]) => {
+contract.only("DarknodeRegistryV1ToV2Upgrader", (accounts: string[]) => {
     let ren: RenTokenInstance;
     let dnrV1: DarknodeRegistryLogicV1Instance;
     let dnrV2: DarknodeRegistryLogicV2Instance;
@@ -325,9 +325,6 @@ contract("DarknodeRegistryV1ToV2Upgrader", (accounts: string[]) => {
         });
 
         await upgrader.upgrade({ from: accounts[0] });
-
-        await upgrader.returnDNR();
-        await upgrader.returnProxyAdmin();
         /** **** **** */
 
         // Recover
@@ -340,10 +337,13 @@ contract("DarknodeRegistryV1ToV2Upgrader", (accounts: string[]) => {
             recipient,
             ID(darknodeToRefund)
         );
-        await dnrV2.recover(ID(darknodeToRefund), recipient, signature, {
+        await upgrader.recover(ID(darknodeToRefund), recipient, signature, {
             from: accounts[0],
         });
         recovered.push(darknodeToRefund);
+
+        await upgrader.returnDNR();
+        await upgrader.returnProxyAdmin();
 
         const recipientBalanceAfter = await ren.balanceOf(recipient);
         recipientBalanceAfter
