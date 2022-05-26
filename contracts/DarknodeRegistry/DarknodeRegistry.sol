@@ -10,7 +10,15 @@ import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 import "./DarknodeRegistryV1.sol";
 
-contract DarknodeRegistryStateV2 {}
+contract DarknodeRegistryStateV2 {
+    // RenVM can have a maximum of 256 subnets, and a darknodes inclusion or 
+    // exclusion is set using the ith bit of the below subnet
+    mapping (address=>uint256) public subnets;
+
+    // subnetLastUpdated tracks when the subnet was last updated, subnet can
+    // only be changed once per epoch
+    mapping (address=>uint256) public subnetLastUpdated;
+}
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
@@ -59,6 +67,14 @@ contract DarknodeRegistryLogicV2 is
         address indexed _darknodeID,
         address indexed _challenger,
         uint256 _percentage
+    );
+
+    /// @notice Emitted when a darknode joins a subnet.
+    /// @param _darknodeID The ID of the darknode that was registered.
+    /// @param _subnet The subnets the current darknode is part of.
+    event LogDarknodeSubnetUpdated(
+        address indexed _darknodeID,
+        uint256 indexed _subnet
     );
 
     /// @notice Emitted when a new epoch has begun.
@@ -137,6 +153,14 @@ contract DarknodeRegistryLogicV2 is
         require(
             isRegistered(_darknodeID) || isDeregistered(_darknodeID),
             "DarknodeRegistry: invalid darknode"
+        );
+        _;
+    }
+
+    modifier onSubnet(address _darknodeID, uint8 _subnetID) {
+        require(
+            subnets[_darknodeID] & 2**uint256(_subnetID) == 2**uint256(_subnetID),
+            "DarknodeRegistry: darknode not part of the subnet"
         );
         _;
     }
@@ -229,6 +253,82 @@ contract DarknodeRegistryLogicV2 is
     /// @param _publicKey Deprecated parameter - see `registerNode`.
     function register(address _darknodeID, bytes calldata _publicKey) external {
         return registerNode(_darknodeID);
+    }
+
+    /// @notice update the subnets the darknode is part of, can be used to join or leave subnets.
+    /// @param _darknodeID The darknode ID that will be registered.
+    /// @param _subnet The subnets the darknode want to be part of.
+    function updateSubnet(address _darknodeID, uint256 _subnet) external onlyDarknodeOperator(_darknodeID) {
+        require(subnetLastUpdated[_darknodeID] != currentEpoch.epochhash, "DarknodeRegistry: can only update subnet once per epoch");
+        subnetLastUpdated[_darknodeID] = currentEpoch.epochhash;
+        updateDarknodeSubnet(_darknodeID, _subnet);
+    }
+
+    /// @notice update the subnets the darknode is part of, can be used to join or leave subnets.
+    /// @param _darknodeIDs The list of darknode IDs that will be updated.
+    /// @param _subnet The subnets the darknode want to be part of.
+    function updateSubnetMultiple(address[] calldata _darknodeIDs, uint256 _subnet) external {
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            require(store.darknodeOperator(_darknodeIDs[i]) == msg.sender, "DarknodeRegistry: can only be called by the darknode operator");
+            require(subnetLastUpdated[_darknodeIDs[i]] != currentEpoch.epochhash, "DarknodeRegistry: can only update subnet once per epoch");
+            subnetLastUpdated[_darknodeIDs[i]] = currentEpoch.epochhash;
+            updateDarknodeSubnet(_darknodeIDs[i], _subnet);
+        }
+    }
+
+    function registerAndUpdateSubnet(address _darknodeID, uint256 _subnet) external {
+        registerNode(_darknodeID);
+        updateDarknodeSubnet(_darknodeID, _subnet);
+    }
+
+    function registerAndUpdateSubnetMultiple(address[] calldata _darknodeIDs, uint256 _subnet) external {
+        // Save variables in memory to prevent redundant reads from storage
+        DarknodeRegistryStore _store = store;
+        Epoch memory _currentEpoch = currentEpoch;
+        uint256 nextRegisteredAt = _currentEpoch.blocktime.add(
+            minimumEpochInterval
+        );
+        uint256 _minimumBond = minimumBond;
+
+        require(
+            ren.transferFrom(
+                msg.sender,
+                address(_store),
+                _minimumBond.mul(_darknodeIDs.length)
+            ),
+            "DarknodeRegistry: bond transfers failed"
+        );
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            address darknodeID = _darknodeIDs[i];
+
+            uint256 registeredAt = _store.darknodeRegisteredAt(darknodeID);
+            uint256 deregisteredAt = _store.darknodeDeregisteredAt(darknodeID);
+
+            require(
+                _isRefunded(registeredAt, deregisteredAt),
+                "DarknodeRegistry: must be refunded or never registered"
+            );
+
+            require(
+                darknodeID != address(0),
+                "DarknodeRegistry: darknode address cannot be zero"
+            );
+
+            _store.appendDarknode(
+                darknodeID,
+                msg.sender,
+                _minimumBond,
+                "",
+                nextRegisteredAt,
+                0
+            );
+
+            emit LogDarknodeRegistered(msg.sender, darknodeID, _minimumBond);
+            updateDarknodeSubnet(darknodeID, _subnet);
+        }
+
+        numDarknodesNextEpoch = numDarknodesNextEpoch.add(_darknodeIDs.length);
     }
 
     /// @notice Register multiple darknodes and transfer the bonds to this contract.
@@ -468,6 +568,51 @@ contract DarknodeRegistryLogicV2 is
         address _challenger,
         uint256 _percentage
     ) external onlySlasher onlyDarknode(_guilty) {
+        require(_percentage <= 100, "DarknodeRegistry: invalid percent");
+
+        // If the darknode has not been deregistered then deregister it
+        if (isDeregisterable(_guilty)) {
+            deregisterDarknode(_guilty);
+        }
+
+        uint256 totalBond = store.darknodeBond(_guilty);
+        uint256 penalty = totalBond.div(100).mul(_percentage);
+        uint256 challengerReward = penalty.div(2);
+        uint256 slasherPortion = penalty.sub(challengerReward);
+        if (challengerReward > 0) {
+            // Slash the bond of the failed prover
+            store.updateDarknodeBond(_guilty, totalBond.sub(penalty));
+
+            // Forward the remaining amount to be handled by the slasher.
+            require(
+                ren.transfer(msg.sender, slasherPortion),
+                "DarknodeRegistry: reward transfer to slasher failed"
+            );
+            require(
+                ren.transfer(_challenger, challengerReward),
+                "DarknodeRegistry: reward transfer to challenger failed"
+            );
+        }
+
+        emit LogDarknodeSlashed(
+            store.darknodeOperator(_guilty),
+            _guilty,
+            _challenger,
+            _percentage
+        );
+    }
+
+    /// @notice Allow the DarknodeSlasher contract to slash a portion of darknode's
+    ///         bond and deregister it.
+    /// @param _guilty The guilty prover whose bond is being slashed.
+    /// @param _challenger The challenger who should receive a portion of the bond as reward.
+    /// @param _percentage The total percentage  of bond to be slashed.
+    function slashSubnet(
+        uint8 _subnetID,
+        address _guilty,
+        address _challenger,
+        uint256 _percentage
+    ) external onlySlasher onSubnet(_guilty, _subnetID) onlyDarknode(_guilty) {
         require(_percentage <= 100, "DarknodeRegistry: invalid percent");
 
         // If the darknode has not been deregistered then deregister it
@@ -900,8 +1045,14 @@ contract DarknodeRegistryLogicV2 is
         );
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
+        updateDarknodeSubnet(_darknodeID, 0);
         // Emit an event
         emit LogDarknodeDeregistered(darknodeOperator, _darknodeID);
+    }
+
+    function updateDarknodeSubnet(address _darknodeID, uint256 _subnet) private {
+        subnets[_darknodeID] = _subnet;
+        emit LogDarknodeSubnetUpdated(_darknodeID, _subnet);
     }
 
     function getDarknodeCountFromEpochs()
