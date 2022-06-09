@@ -26,7 +26,7 @@ coverage.json
 scTopics
 allFiredEvents
 in_complete_tests
-build/development
+build
 local_*
 bindings.go
 types
