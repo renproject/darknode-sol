@@ -12,8 +12,9 @@ import "./DarknodeRegistryV1.sol";
 import "./DarknodeRegistryV2.sol";
 
 contract DarknodeRegistryStateV3 {
-    // RenVM can have a maximum of 256 subnets, and a darknodes inclusion or 
-    // exclusion is set using the ith bit of the below subnet
+    // RenVM can have a maximum of 255 subnets, and a darknodes inclusion or 
+    // exclusion is set using the ith bit of the below subnet, 0th bit is used 
+    // for RenVM and it should always be set to 1 when a darknode is registered
     mapping (address=>uint256) public subnets;
 
     // subnetLastUpdated tracks when the subnet was last updated, subnet can
@@ -163,7 +164,7 @@ contract DarknodeRegistryLogicV3 is
     /// @notice Restrict a function to nodes on the specific subnet.
     modifier onSubnet(address _darknodeID, uint8 _subnetID) {
         require(
-            subnets[_darknodeID] & 2**uint256(_subnetID) == 2**uint256(_subnetID),
+            _subnetID == 0 || subnets[_darknodeID] & 2**uint256(_subnetID) == 2**uint256(_subnetID),
             "DarknodeRegistry: darknode not part of the subnet"
         );
         _;
@@ -263,6 +264,7 @@ contract DarknodeRegistryLogicV3 is
     /// @param _darknodeID The darknode ID that will be registered.
     /// @param _subnet The subnets the darknode want to be part of.
     function updateSubnet(address _darknodeID, uint256 _subnet) external onlyDarknodeOperator(_darknodeID) {
+        require(_subnet % 2 == 1, "DarknodeRegistry: can not remove RenVM inclusion");
         require(subnetLastUpdated[_darknodeID] != currentEpoch.epochhash, "DarknodeRegistry: can only update subnet once per epoch");
         subnetLastUpdated[_darknodeID] = currentEpoch.epochhash;
         updateDarknodeSubnet(_darknodeID, _subnet);
