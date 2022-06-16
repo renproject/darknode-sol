@@ -17,8 +17,8 @@ contract Slasher {
     bytes4 constant CORRECT_SIGNATURE_RETURN_VALUE = 0x1626ba7e;
 
     DarknodeRegistryLogicV3 dnr;
-    uint256 challengeBond;
     IRenVMSignatureVerifier renVMSignatureVerifier;
+    uint256 challengeBond;
 
     mapping(bytes32 => mapping(uint8 => address)) challenged;
     mapping(bytes32 => mapping(address => address)) slashed;
