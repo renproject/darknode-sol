@@ -433,6 +433,8 @@ contract DarknodeRegistryLogicV3 is
 
             _store.updateDarknodeDeregisteredAt(darknodeID, nextDeregisteredAt);
 
+            updateDarknodeSubnet(darknodeID, 0);
+
             emit LogDarknodeDeregistered(msg.sender, darknodeID);
         }
 
