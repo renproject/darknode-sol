@@ -2,6 +2,7 @@ pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
+import "./IRenVMSignatureVerifier.sol";
 
 /// @notice Slasher is responsible for the slashing of darknode bonds if certain
 /// darknodes misbehave.
@@ -12,32 +13,42 @@ import "../DarknodeRegistry/DarknodeRegistry.sol";
 contract Slasher {
     using ECDSA for bytes32;
 
+    // See IERC1271
+    bytes4 constant CORRECT_SIGNATURE_RETURN_VALUE = 0x1626ba7e;
+
     DarknodeRegistryLogicV3 dnr;
     uint256 challengeBond;
-    address renVMSigner;
+    IRenVMSignatureVerifier renVMSignatureVerifier;
 
-    mapping (bytes32=>mapping (uint8=>address)) challenged;
-    mapping (bytes32=>mapping (address=>address)) slashed;
+    mapping(bytes32 => mapping(uint8 => address)) challenged;
+    mapping(bytes32 => mapping(address => address)) slashed;
 
     event Challenged(address _challenger, bytes32 _epochHash, uint32 _subnetID);
 
-    constructor(DarknodeRegistryLogicV3 _dnr, address _renVMSigner, uint256 _challengeBond) public {
+    constructor(
+        DarknodeRegistryLogicV3 _dnr,
+        IRenVMSignatureVerifier _renVMSignatureVerifier,
+        uint256 _challengeBond
+    ) public {
         dnr = _dnr;
-        renVMSigner = _renVMSigner;
+        renVMSignatureVerifier = _renVMSignatureVerifier;
         challengeBond = _challengeBond;
     }
-    
+
     /// @notice Allows any user to challenge the correctness of one of the RenVM subnets.
     /// @param _subnetID The subnet the user wants to challenge.
     /// @param _epochHash The epoch the user wants to challenge.
     function challenge(uint8 _subnetID, bytes32 _epochHash) public {
-        require(challenged[_epochHash][_subnetID] == address(0x0), "Slasher: this epoch has already been challenged");
+        require(
+            challenged[_epochHash][_subnetID] == address(0x0),
+            "Slasher: this epoch has already been challenged"
+        );
         dnr.ren().transferFrom(msg.sender, address(this), challengeBond);
         challenged[_epochHash][_subnetID] = msg.sender;
         emit Challenged(msg.sender, _epochHash, _subnetID);
     }
 
-    /// @notice Allows RenVM to slash misbehaving darknodes, by submitting a signature. 
+    /// @notice Allows RenVM to slash misbehaving darknodes, by submitting a signature.
     ///         It rewards the challenger with half of the amount being slashed
     /// @param _darknodes the list of darknodes that need to be slashed.
     /// @param _percentages the list of percentages of bonds that need to be slashed.
@@ -45,13 +56,38 @@ contract Slasher {
     /// @param _subnetID The subnet the user wants to challenge.
     /// @param _epochHash The epoch the user wants to challenge.
     /// @param _signature The signature produced by RenVM.
-    function slash(address[] calldata _darknodes, uint256[] calldata _percentages, address _challenger, uint8 _subnetID, bytes32 _epochHash, bytes calldata _signature) external {
-        address signer = keccak256(abi.encode(_darknodes, _percentages, _challenger, _epochHash)).toEthSignedMessageHash().recover(_signature);
-        require(renVMSigner == signer, "Slasher: invalid signer");
-        require(_darknodes.length == _percentages.length, "Slasher: invalid slash params");
+    function slash(
+        address[] calldata _darknodes,
+        uint256[] calldata _percentages,
+        address _challenger,
+        uint8 _subnetID,
+        bytes32 _epochHash,
+        bytes calldata _signature
+    ) external {
+        require(
+            renVMSignatureVerifier.isValidSignature(
+                keccak256(
+                    abi.encode(
+                        _darknodes,
+                        _percentages,
+                        _challenger,
+                        _epochHash
+                    )
+                ),
+                _signature
+            ) == CORRECT_SIGNATURE_RETURN_VALUE,
+            "Slasher: invalid signature"
+        );
+        require(
+            _darknodes.length == _percentages.length,
+            "Slasher: invalid slash params"
+        );
         for (uint256 i = 0; i < _darknodes.length; i++) {
             address darknode = _darknodes[i];
-            require(slashed[_epochHash][darknode] == address(0x0), "Slasher: this epoch has already been slashed");
+            require(
+                slashed[_epochHash][darknode] == address(0x0),
+                "Slasher: this epoch has already been slashed"
+            );
             dnr.slash(_subnetID, darknode, _challenger, _percentages[i]);
         }
         dnr.ren().transfer(msg.sender, challengeBond);
