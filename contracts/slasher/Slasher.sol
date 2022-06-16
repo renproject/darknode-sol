@@ -90,6 +90,6 @@ contract Slasher {
             );
             dnr.slash(_subnetID, darknode, _challenger, _percentages[i]);
         }
-        dnr.ren().transfer(msg.sender, challengeBond);
+        dnr.ren().transfer(_challenger, challengeBond);
     }
 }
