@@ -5,7 +5,7 @@ const { execSync } = require("child_process");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
-const DarknodeRegistryLogicV2 = artifacts.require("DarknodeRegistryLogicV2");
+const DarknodeRegistryLogicV3 = artifacts.require("DarknodeRegistryLogicV3");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
@@ -49,7 +49,7 @@ module.exports = async function (deployer, network) {
 
     RenToken.address = addresses.RenToken || "";
     DarknodeRegistryProxy.address = addresses.DarknodeRegistryProxy || "";
-    DarknodeRegistryLogicV2.address = addresses.DarknodeRegistryLogicV2 || "";
+    DarknodeRegistryLogicV3.address = addresses.DarknodeRegistryLogicV3 || "";
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     RenProxyAdmin.address = addresses.RenProxyAdmin || "";
 
@@ -86,12 +86,12 @@ module.exports = async function (deployer, network) {
         DarknodeRegistryStore.address
     );
 
-    if (!DarknodeRegistryLogicV2.address) {
-        deployer.logger.log("Deploying DarknodeRegistryLogicV2");
-        await deployer.deploy(DarknodeRegistryLogicV2);
+    if (!DarknodeRegistryLogicV3.address) {
+        deployer.logger.log("Deploying DarknodeRegistryLogicV3");
+        await deployer.deploy(DarknodeRegistryLogicV3);
     }
-    const darknodeRegistryLogic = await DarknodeRegistryLogicV2.at(
-        DarknodeRegistryLogicV2.address
+    const darknodeRegistryLogic = await DarknodeRegistryLogicV3.at(
+        DarknodeRegistryLogicV3.address
     );
     const darknodeRegistryParameters = {
         types: [
@@ -153,7 +153,7 @@ module.exports = async function (deployer, network) {
             DarknodeRegistryProxy.address
         );
     }
-    const darknodeRegistry = await DarknodeRegistryLogicV2.at(
+    const darknodeRegistry = await DarknodeRegistryLogicV3.at(
         DarknodeRegistryProxy.address
     );
 
@@ -198,7 +198,7 @@ module.exports = async function (deployer, network) {
             deployer.logger.log(
                 `Transferring DNRS ownership from ${storeOwner} to new DNR`
             );
-            const oldDNR = await DarknodeRegistryLogicV2.at(storeOwner);
+            const oldDNR = await DarknodeRegistryLogicV3.at(storeOwner);
             oldDNR.transferStoreOwnership(darknodeRegistry.address);
             // This will also call claim, but we try anyway because older
             // contracts didn't:
@@ -249,7 +249,7 @@ module.exports = async function (deployer, network) {
         RenProxyAdmin: "${RenProxyAdmin.address}",
         RenToken: "${RenToken.address}",
         DarknodeRegistryStore: "${DarknodeRegistryStore.address}",
-        DarknodeRegistryLogicV2: "${DarknodeRegistryLogicV2.address}",
+        DarknodeRegistryLogicV3: "${DarknodeRegistryLogicV3.address}",
         DarknodeRegistryProxy: "${DarknodeRegistryProxy.address}",
     `);
 };

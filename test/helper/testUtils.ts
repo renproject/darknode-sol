@@ -12,12 +12,12 @@ import { ECDSASignature } from "ethereumjs-util";
 import { TransactionReceipt } from "web3-core";
 import { keccak256, toChecksumAddress } from "web3-utils";
 
-import { DarknodeRegistryLogicV2Instance } from "../../types/truffle-contracts";
+import { DarknodeRegistryLogicV3Instance } from "../../types/truffle-contracts";
 
 const ERC20 = artifacts.require("PaymentToken");
 
 chai.use(chaiAsPromised);
-chai.use((chaiBigNumber as any)(BigNumber) as any);
+chai.use((chaiBigNumber as any)(BigNumber) );
 chai.should();
 
 export const { encodeCallData } = require("../../migrations/encode.js");
@@ -121,7 +121,7 @@ export const increaseTime = async (seconds: number) => {
     } while (currentTimestamp < target);
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryLogicV2Instance) {
+export async function waitForEpoch(dnr: DarknodeRegistryLogicV3Instance) {
     // const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     const timeout = new BN(
         (await dnr.minimumEpochInterval()).toString()

@@ -18,7 +18,7 @@ commands:
       - restore_cache:
           name: Restore node_modules
           keys:
-            - v2-dependencies-{{ checksum "yarn.lock" }}
+            - v3-dependencies-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
           command: yarn install
@@ -26,7 +26,7 @@ commands:
           name: Save node_modules
           paths:
             - node_modules
-          key: v2-dependencies-{{ checksum "yarn.lock" }}
+          key: v3-dependencies-{{ checksum "yarn.lock" }}
 
 jobs:
   build:
