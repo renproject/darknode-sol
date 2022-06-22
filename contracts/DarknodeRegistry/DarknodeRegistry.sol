@@ -9,9 +9,8 @@ import "./DarknodeRegistryStore.sol";
 import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 import "./DarknodeRegistryV1.sol";
-import "./DarknodeRegistryV2.sol";
 
-contract DarknodeRegistryStateV3 {
+contract DarknodeRegistryStateV2 {
     // RenVM can have a maximum of 255 subnets, and a darknodes inclusion or
     // exclusion is set using the ith bit of the below subnet, 0th bit is used
     // for RenVM and it should always be set to 1 when a darknode is registered
@@ -27,12 +26,11 @@ contract DarknodeRegistryStateV3 {
 /// @dev Emits a LogDarknodeSubnetUpdated event to set the subnet to 0 
 /// during deregistration, and subnets map is set to 0 on refund. This is 
 /// to allow slasher to slash a DN that is deregistered
-contract DarknodeRegistryLogicV3 is
+contract DarknodeRegistryLogicV2 is
     Claimable,
     CanReclaimTokens,
     DarknodeRegistryStateV1,
-    DarknodeRegistryStateV2,
-    DarknodeRegistryStateV3
+    DarknodeRegistryStateV2
 {
     using SafeMath for uint256;
 
@@ -1062,4 +1060,9 @@ contract DarknodeRegistryLogicV3 is
         }
         return (nPreviousEpoch, nCurrentEpoch, nNextEpoch);
     }
+}
+
+/* solium-disable-next-line no-empty-blocks */
+contract DarknodeRegistryProxy is InitializableAdminUpgradeabilityProxy {
+
 }
