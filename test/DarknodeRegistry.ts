@@ -168,11 +168,19 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
-            await dnr.registerMultiple([ID(i)],3, { from: accounts[2] });
+            await dnr.registerMultiple([ID(i)], 1, { from: accounts[2] });
+            await dnr.getDarknodePublicKey(ID(i));
+            await dnr.darknodeRegisteredAt(ID(i));
         }
 
         // Wait for epoch
         await waitForEpoch(dnr);
+
+        for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+            await dnr.updateSubnet(ID(i), 3, { from: accounts[2] });
+            await dnr.updateSubnet(ID(i), 3, { from: accounts[2] })
+                    .should.be.rejectedWith(/DarknodeRegistry: can only update subnet once per epoch/);
+        }
 
         (
             await dnr.getOperatorDarknodes(accounts[2])
@@ -181,10 +189,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [ACTION] Deregister
         for (let i = 0; i < numAccounts; i++) {
             await dnr.deregister(ID(i), { from: accounts[i] });
+            await dnr.darknodeRegisteredAt(ID(i));
         }
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
             await dnr.deregister(ID(i), { from: accounts[2] });
+            await dnr.darknodeDeregisteredAt(ID(i));
         }
 
         // Wait for two epochs
@@ -213,10 +223,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(2)), {
             from: owner,
         });
-        await dnr.registerMultiple([ID("0"), ID("1")], 3, { from: owner });
+        await dnr.registerMultiple([ID("0"), ID("1")], 1, { from: owner });
 
         // Wait for epoch
         await waitForEpoch(dnr);
+
+        await dnr.updateSubnetMultiple([ID("0"), ID("1")], 3, { from: owner });
 
         (await dnr.getOperatorDarknodes(owner)).length.should.bignumber.equal(
             2
