@@ -2,7 +2,7 @@ import { signer } from "@openzeppelin/upgrades/lib/test/helpers/signing";
 import BN from "bn.js";
 
 import {
-    DarknodeRegistryLogicV3Instance,
+    DarknodeRegistryLogicV2Instance,
     DarknodeRegistryStoreInstance,
     TrueSignerVerifierInstance,
     RenProxyAdminInstance,
@@ -25,7 +25,7 @@ const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
-const DarknodeRegistryLogicV3 = artifacts.require("DarknodeRegistryLogicV3");
+const DarknodeRegistryLogicV2 = artifacts.require("DarknodeRegistryLogicV2");
 const NormalToken = artifacts.require("NormalToken");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 const TrueSignerVerifier = artifacts.require("TrueSignerVerifier");
@@ -39,7 +39,7 @@ const numAccounts = 10;
 contract("Slasher", (accounts: string[]) => {
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryLogicV3Instance;
+    let dnr: DarknodeRegistryLogicV2Instance;
     let proxyAdmin: RenProxyAdminInstance;
     let trueSlasher: SlasherInstance;
     let falseSlasher: SlasherInstance;
@@ -50,7 +50,7 @@ contract("Slasher", (accounts: string[]) => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         const dnrProxy = await DarknodeRegistryProxy.deployed();
-        dnr = await DarknodeRegistryLogicV3.at(dnrProxy.address);
+        dnr = await DarknodeRegistryLogicV2.at(dnrProxy.address);
         proxyAdmin = await RenProxyAdmin.deployed();
         const trueSV = await TrueSignerVerifier.new();
         const falseSV = await FalseSignerVerifier.new();

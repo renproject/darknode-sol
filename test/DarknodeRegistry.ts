@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
 import {
-    DarknodeRegistryLogicV3Instance,
+    DarknodeRegistryLogicV2Instance,
     DarknodeRegistryStoreInstance,
     RenProxyAdminInstance,
     RenTokenInstance,
@@ -22,7 +22,7 @@ const ForceSend = artifacts.require("ForceSend");
 const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
-const DarknodeRegistryLogicV3 = artifacts.require("DarknodeRegistryLogicV3");
+const DarknodeRegistryLogicV2 = artifacts.require("DarknodeRegistryLogicV2");
 const NormalToken = artifacts.require("NormalToken");
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
@@ -33,14 +33,14 @@ const numAccounts = 10;
 contract("DarknodeRegistry", (accounts: string[]) => {
     let ren: RenTokenInstance;
     let dnrs: DarknodeRegistryStoreInstance;
-    let dnr: DarknodeRegistryLogicV3Instance;
+    let dnr: DarknodeRegistryLogicV2Instance;
     let proxyAdmin: RenProxyAdminInstance;
 
     before(async () => {
         ren = await RenToken.deployed();
         dnrs = await DarknodeRegistryStore.deployed();
         const dnrProxy = await DarknodeRegistryProxy.deployed();
-        dnr = await DarknodeRegistryLogicV3.at(dnrProxy.address);
+        dnr = await DarknodeRegistryLogicV2.at(dnrProxy.address);
         proxyAdmin = await RenProxyAdmin.deployed();
         await dnr
             .epoch({ from: accounts[1] })
@@ -861,10 +861,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     it("transfer ownership of the dark node store", async () => {
-        const newDnr = await deployProxy<DarknodeRegistryLogicV3Instance>(
+        const newDnr = await deployProxy<DarknodeRegistryLogicV2Instance>(
             web3,
             DarknodeRegistryProxy,
-            DarknodeRegistryLogicV3,
+            DarknodeRegistryLogicV2,
             proxyAdmin.address,
             [
                 { type: "string", value: "test" },
@@ -1040,7 +1040,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     describe("when darknode payment is not set", async () => {
         let newDNRstore: DarknodeRegistryStoreInstance;
-        let newDNR: DarknodeRegistryLogicV3Instance;
+        let newDNR: DarknodeRegistryLogicV2Instance;
 
         before(async () => {
             // Deploy a new DNR and DNR store
@@ -1048,10 +1048,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
                 "test",
                 RenToken.address
             );
-            newDNR = await deployProxy<DarknodeRegistryLogicV3Instance>(
+            newDNR = await deployProxy<DarknodeRegistryLogicV2Instance>(
                 web3,
                 DarknodeRegistryProxy,
-                DarknodeRegistryLogicV3,
+                DarknodeRegistryLogicV2,
                 proxyAdmin.address,
                 [
                     { type: "string", value: "test" },
@@ -1080,7 +1080,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     });
 
     describe("upgrade DarknodeRegistry while maintaining store", async () => {
-        let newDNR: DarknodeRegistryLogicV3Instance;
+        let newDNR: DarknodeRegistryLogicV2Instance;
 
         let preCountPreviousEpoch: BN;
         let preCount: BN;
@@ -1103,10 +1103,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             preDarknodes = await dnr.getDarknodes(NULL, 0);
 
             // Deploy a new DNR and DNR store
-            newDNR = await deployProxy<DarknodeRegistryLogicV3Instance>(
+            newDNR = await deployProxy<DarknodeRegistryLogicV2Instance>(
                 web3,
                 DarknodeRegistryProxy,
-                DarknodeRegistryLogicV3,
+                DarknodeRegistryLogicV2,
                 proxyAdmin.address,
                 [
                     { type: "string", value: "test" },

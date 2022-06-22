@@ -16,7 +16,7 @@ contract Slasher {
     // See IERC1271
     bytes4 constant CORRECT_SIGNATURE_RETURN_VALUE = 0x1626ba7e;
 
-    DarknodeRegistryLogicV3 dnr;
+    DarknodeRegistryLogicV2 dnr;
     IRenVMSignatureVerifier renVMSignatureVerifier;
     uint256 challengeBond;
 
@@ -26,7 +26,7 @@ contract Slasher {
     event Challenged(address _challenger, bytes32 _epochHash, uint32 _subnetID);
 
     constructor(
-        DarknodeRegistryLogicV3 _dnr,
+        DarknodeRegistryLogicV2 _dnr,
         IRenVMSignatureVerifier _renVMSignatureVerifier,
         uint256 _challengeBond
     ) public {
