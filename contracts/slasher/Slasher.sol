@@ -89,6 +89,7 @@ contract Slasher {
                 "Slasher: this epoch has already been slashed"
             );
             dnr.slash(_subnetID, darknode, _challenger, _percentages[i]);
+            slashed[_epochHash][darknode] = _challenger;
         }
         dnr.ren().transfer(_challenger, challengeBond);
     }

@@ -740,7 +740,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
 
         // Slash the deregistered darknode
-        await dnr.slash(0, ID("2"), ID("6"), 50);
+        await dnr.slash(1, ID("2"), ID("6"), 50);
 
         // Reset slasher
         await dnr.updateSlasher(currentSlasher);

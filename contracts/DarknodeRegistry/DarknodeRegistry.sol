@@ -24,6 +24,9 @@ contract DarknodeRegistryStateV3 {
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
+/// @dev Emits a LogDarknodeSubnetUpdated event to set the subnet to 0 
+/// during deregistration, and subnets map is set to 0 on refund. This is 
+/// to allow slasher to slash a DN that is deregistered
 contract DarknodeRegistryLogicV3 is
     Claimable,
     CanReclaimTokens,
@@ -257,8 +260,6 @@ contract DarknodeRegistryLogicV3 is
 
         // Emit an event.
         emit LogDarknodeRegistered(msg.sender, _darknodeID, minimumBond);
-
-        subnetLastUpdated[_darknodeID] = currentEpoch.epochhash;
         updateDarknodeSubnet(_darknodeID, _subnet);
     }
 
@@ -287,7 +288,6 @@ contract DarknodeRegistryLogicV3 is
             subnetLastUpdated[_darknodeID] != currentHash,
             "DarknodeRegistry: can only update subnet once per epoch"
         );
-        subnetLastUpdated[_darknodeID] = currentHash;
         updateDarknodeSubnet(_darknodeID, _subnet);
     }
 
@@ -312,7 +312,6 @@ contract DarknodeRegistryLogicV3 is
                 subnetLastUpdated[_darknodeIDs[i]] != currentEpoch.epochhash,
                 "DarknodeRegistry: can only update subnet once per epoch"
             );
-            subnetLastUpdated[_darknodeIDs[i]] = currentEpoch.epochhash;
             updateDarknodeSubnet(_darknodeIDs[i], _subnet);
         }
     }
@@ -377,7 +376,6 @@ contract DarknodeRegistryLogicV3 is
 
             emit LogDarknodeRegistered(msg.sender, darknodeID, _minimumBond);
 
-            subnetLastUpdated[darknodeID] = currentEpoch.epochhash;
             updateDarknodeSubnet(darknodeID, _subnet);
         }
 
@@ -433,7 +431,7 @@ contract DarknodeRegistryLogicV3 is
 
             _store.updateDarknodeDeregisteredAt(darknodeID, nextDeregisteredAt);
 
-            updateDarknodeSubnet(darknodeID, 0);
+            emit LogDarknodeSubnetUpdated(darknodeID, 0);
 
             emit LogDarknodeDeregistered(msg.sender, darknodeID);
         }
@@ -618,6 +616,10 @@ contract DarknodeRegistryLogicV3 is
         // Erase the darknode from the registry
         store.removeDarknode(_darknodeID);
 
+        // Remove from all subnets
+        subnets[_darknodeID] = 0;
+        delete(subnetLastUpdated[_darknodeID]);
+
         // Refund the operator by transferring REN
         require(
             ren.transfer(msg.sender, amount),
@@ -668,6 +670,10 @@ contract DarknodeRegistryLogicV3 is
 
             // Erase the darknode from the registry
             _store.removeDarknode(darknodeID);
+
+            // Remove from all subnets
+            subnets[darknodeID] = 0;
+            delete(subnetLastUpdated[darknodeID]);
 
             // Emit an event
             emit LogDarknodeRefunded(msg.sender, darknodeID, amount);
@@ -1001,7 +1007,7 @@ contract DarknodeRegistryLogicV3 is
         );
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
-        updateDarknodeSubnet(_darknodeID, 0);
+        emit LogDarknodeSubnetUpdated(_darknodeID, 0);
         // Emit an event
         emit LogDarknodeDeregistered(darknodeOperator, _darknodeID);
     }
@@ -1010,6 +1016,7 @@ contract DarknodeRegistryLogicV3 is
         private
     {
         subnets[_darknodeID] = _subnet;
+        subnetLastUpdated[_darknodeID] = currentEpoch.epochhash;
         emit LogDarknodeSubnetUpdated(_darknodeID, _subnet);
     }
 

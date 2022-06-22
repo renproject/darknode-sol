@@ -2,19 +2,26 @@ pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 
-contract MockRenVMSigner {
+contract TrueSignerVerifier {
     using ECDSA for bytes32;
 
-    address signer;
-
-    constructor(address _signer) public {
-        signer = _signer;
-    }
+    constructor() public {}
 
     /// @notice verifySignature checks the the provided signature matches the
     /// provided parameters. Returns a 4-byte value as defined by ERC1271.
     function isValidSignature(bytes32 sigHash, bytes calldata signature) external view returns (bytes4) {
-        require(signer != address(0x0), "SignatureVerifier: mintAuthority not initialized");
-        return signer == ECDSA.recover(sigHash, signature) ? bytes4(0x1626ba7e) : bytes4(0x00000000);
+        return bytes4(0x1626ba7e);
+    }
+}
+
+contract FalseSignerVerifier {
+    using ECDSA for bytes32;
+
+    constructor() public {}
+
+    /// @notice verifySignature checks the the provided signature matches the
+    /// provided parameters. Returns a 4-byte value as defined by ERC1271.
+    function isValidSignature(bytes32 sigHash, bytes calldata signature) external view returns (bytes4) {
+        return bytes4(0x00000000);
     }
 }
