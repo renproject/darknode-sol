@@ -13,8 +13,8 @@ contract MockRenVMSigner {
 
     /// @notice verifySignature checks the the provided signature matches the
     /// provided parameters. Returns a 4-byte value as defined by ERC1271.
-    function isValidSignature(bytes32 sigHash, bytes calldata signature) external view override returns (bytes4) {
+    function isValidSignature(bytes32 sigHash, bytes calldata signature) external view returns (bytes4) {
         require(signer != address(0x0), "SignatureVerifier: mintAuthority not initialized");
-        return signer == ECDSA.recover(sigHash, signature) ? 0x1626ba7e : 0x00000000;
+        return bytes4(signer == ECDSA.recover(sigHash, signature) ? 0x1626ba7e : 0x00000000);
     }
 }
