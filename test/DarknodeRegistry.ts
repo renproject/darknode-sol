@@ -112,7 +112,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         const lowBond = MINIMUM_BOND.sub(new BN(1));
         await ren.approve(dnr.address, lowBond, { from: accounts[0] });
         await dnr
-            .register(ID("A"), PUBK("A"))
+            .registerMultiple([ID("A")], 3)
             .should.be.rejectedWith(/ERC20: transfer amount exceeds allowance/); // failed transfer
     });
 
@@ -123,7 +123,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         await dnr
-            .registerMultiple([ID("A"), ID("B")])
+            .registerMultiple([ID("A"), ID("B")], 3)
             .should.be.rejectedWith(/ERC20: transfer amount exceeds allowance/); // failed transfer
     });
 
@@ -138,7 +138,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             ); // failed transfer
 
         await dnr
-            .registerMultiple([ID("A"), NULL], { from: accounts[0] })
+            .registerMultiple([ID("A"), NULL], 3, { from: accounts[0] })
             .should.be.rejectedWith(
                 /DarknodeRegistry: darknode address cannot be zero/
             );
@@ -158,7 +158,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [ACTION] Register
         for (let i = 0; i < numAccounts; i++) {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
-            await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
+            await dnr.registerMultiple([ID(i)], 3, { from: accounts[i] });
         }
 
         const nodeCount = 10;
@@ -168,11 +168,19 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
-            await dnr.register(ID(i), PUBK(i), { from: accounts[2] });
+            await dnr.registerMultiple([ID(i)], 1, { from: accounts[2] });
+            await dnr.getDarknodePublicKey(ID(i));
+            await dnr.darknodeRegisteredAt(ID(i));
         }
 
         // Wait for epoch
         await waitForEpoch(dnr);
+
+        for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+            await dnr.updateSubnet(ID(i), 3, { from: accounts[2] });
+            await dnr.updateSubnet(ID(i), 3, { from: accounts[2] })
+                    .should.be.rejectedWith(/DarknodeRegistry: can only update subnet once per epoch/);
+        }
 
         (
             await dnr.getOperatorDarknodes(accounts[2])
@@ -181,10 +189,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         // [ACTION] Deregister
         for (let i = 0; i < numAccounts; i++) {
             await dnr.deregister(ID(i), { from: accounts[i] });
+            await dnr.darknodeRegisteredAt(ID(i));
         }
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
             await dnr.deregister(ID(i), { from: accounts[2] });
+            await dnr.darknodeDeregisteredAt(ID(i));
         }
 
         // Wait for two epochs
@@ -213,10 +223,12 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(2)), {
             from: owner,
         });
-        await dnr.registerMultiple([ID("0"), ID("1")], { from: owner });
+        await dnr.registerMultiple([ID("0"), ID("1")], 1, { from: owner });
 
         // Wait for epoch
         await waitForEpoch(dnr);
+
+        await dnr.updateSubnetMultiple([ID("0"), ID("1")], 3, { from: owner });
 
         (await dnr.getOperatorDarknodes(owner)).length.should.bignumber.equal(
             2
@@ -255,7 +267,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [ACTION] Register
         await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
-        await dnr.register(id, pubk, { from: owner });
+        await dnr.registerMultiple([id], 3, { from: owner });
 
         // [CHECK]
         (await dnr.isRefunded(id)).should.be.false;
@@ -354,7 +366,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         // Register
-        await dnr.register(id, pubk, { from: owner });
+        await dnr.registerMultiple([id], 3, { from: owner });
 
         // Only minimum bond should have been transferred
         (await ren.balanceOf(owner)).should.bignumber.equal(
@@ -380,7 +392,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         });
 
         // Register
-        await dnr.registerMultiple([ID("0"), ID("1")], { from: owner });
+        await dnr.registerMultiple([ID("0"), ID("1")], 3, { from: owner });
 
         // Only 2 minimum bonds should have been transferred
         (await ren.balanceOf(owner)).should.bignumber.equal(
@@ -397,16 +409,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
     it("[SETUP] Register darknodes for next tests", async () => {
         // All but the last account register 1 darknode
-        for (let i = 0; i < numAccounts - 1; i++) {
+        const owner = accounts[numAccounts - 1];
+        for (var i = 0; i < numAccounts - 1; i++) {
             await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[i] });
-            await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
+            await dnr.registerMultiple([ID(i)], 3, { from: accounts[i] });
         }
 
         // Last account registers two darknodes
         await ren.approve(dnr.address, MINIMUM_BOND.mul(new BN(2)), {
             from: accounts[numAccounts - 1],
         });
-        await dnr.registerMultiple([ID(numAccounts - 1), ID(numAccounts)], {
+        await dnr.registerMultiple([ID(numAccounts - 1), ID(numAccounts)], 3, {
             from: accounts[numAccounts - 1],
         });
 
@@ -418,13 +431,13 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             from: accounts[0],
         });
         await dnr
-            .register(ID("0"), PUBK("0"), { from: accounts[0] })
+            .registerMultiple([ID("0")], 3, { from: accounts[0] })
             .should.be.rejectedWith(
                 /DarknodeRegistry: must be refunded or never registered/
             );
 
         await dnr
-            .registerMultiple([ID("0"), ID("-1")])
+            .registerMultiple([ID("0"), ID("-1")], 3)
             .should.be.rejectedWith(
                 /DarknodeRegistry: must be refunded or never registered/
             );
@@ -645,7 +658,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [SETUP] Register and then deregister nodes
         await ren.approve(dnr.address, MINIMUM_BOND, { from: owner });
-        await dnr.register(id, pubk, { from: owner });
+        await dnr.registerMultiple([id], 3, { from: owner });
         await waitForEpoch(dnr);
         await dnr.deregister(id, { from: owner });
         (await dnr.isPendingDeregistration(id)).should.be.true;
@@ -674,7 +687,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
     it("should throw if refund fails", async () => {
         // [SETUP]
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[0] });
-        await dnr.register(ID("2"), PUBK("2"));
+        await dnr.registerMultiple([ID("2")], 3);
         await waitForEpoch(dnr);
         await dnr.deregister(ID("2"));
         await waitForEpoch(dnr);
@@ -710,7 +723,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         (await dnr.slasher()).should.equal(newSlasher);
         await dnr
-            .slash(ID("2"), newSlasher, new BN(70))
+            .slash(0, ID("11"), newSlasher, new BN(70))
             .should.be.rejectedWith(/DarknodeRegistry: invalid darknode/);
 
         // Reset slasher address
@@ -731,7 +744,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await ren.approve(dnr.address, MINIMUM_BOND, {
             from: accounts[2],
         });
-        await dnr.register(ID("2"), PUBK("2"), {
+        await dnr.registerMultiple([ID("2")], 3, {
             from: accounts[2],
         });
         await waitForEpoch(dnr);
@@ -739,7 +752,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
 
         // Slash the deregistered darknode
-        await dnr.slash(ID("2"), ID("6"), 50);
+        await dnr.slash(1, ID("2"), ID("6"), 50);
 
         // Reset slasher
         await dnr.updateSlasher(currentSlasher);
@@ -764,17 +777,17 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // Register darknode 3
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[2] });
-        await dnr.register(ID("2"), PUBK("2"), { from: accounts[2] });
+        await dnr.registerMultiple([ID("2")], 3, { from: accounts[2] });
         await waitForEpoch(dnr);
 
         await dnr
-            .slash(ID("2"), newSlasher, new BN(101))
+            .slash(0, ID("2"), newSlasher, new BN(101))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
         await dnr
-            .slash(ID("2"), newSlasher, new BN(328293))
+            .slash(0, ID("2"), newSlasher, new BN(328293))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
         await dnr
-            .slash(ID("2"), newSlasher, new BN(923))
+            .slash(0, ID("2"), newSlasher, new BN(923))
             .should.be.rejectedWith(/DarknodeRegistry: invalid percent/);
 
         // Reset slasher
@@ -782,7 +795,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await waitForEpoch(dnr);
         (await dnr.slasher()).should.equal(currentSlasher);
 
-        // De-register darknode 3
+        // De-register darknode 2
         await dnr.deregister(ID("2"), { from: accounts[2] });
         (await dnr.isPendingDeregistration(ID("2"))).should.be.true;
 
@@ -828,10 +841,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[3] });
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[6] });
         await ren.approve(dnr.address, MINIMUM_BOND, { from: accounts[7] });
-        await dnr.register(ID("2"), PUBK("2"), { from: accounts[2] });
-        await dnr.register(ID("3"), PUBK("3"), { from: accounts[3] });
-        await dnr.register(ID("6"), PUBK("6"), { from: accounts[6] });
-        await dnr.register(ID("7"), PUBK("7"), { from: accounts[7] });
+        await dnr.registerMultiple([ID("2")], 3, { from: accounts[2] });
+        await dnr.registerMultiple([ID("3")], 3, { from: accounts[3] });
+        await dnr.registerMultiple([ID("6")], 3, { from: accounts[6] });
+        await dnr.registerMultiple([ID("7")], 3, { from: accounts[7] });
         await waitForEpoch(dnr);
         await dnr.deregister(ID("3"), { from: accounts[3] });
         await waitForEpoch(dnr);
@@ -841,18 +854,18 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         // [CHECK] Only the slasher can call `slash`
         await dnr
-            .slash(ID("2"), ID("6"), slashPercent, { from: notSlasher })
+            .slash(0, ID("2"), ID("6"), slashPercent, { from: notSlasher })
             .should.be.rejectedWith(/DarknodeRegistry: must be slasher/);
 
         await dnr.updateSlasher(accounts[0]);
         await waitForEpoch(dnr);
 
-        await dnr.slash(ID("2"), ID("6"), slashPercent, {
+        await dnr.slash(0, ID("2"), ID("6"), slashPercent, {
             from: accounts[0],
         });
 
         // // NOTE: The darknode doesn't prevent slashing a darknode twice
-        await dnr.slash(ID("2"), ID("6"), slashPercent, {
+        await dnr.slash(0, ID("2"), ID("6"), slashPercent, {
             from: accounts[0],
         });
 
@@ -1157,10 +1170,10 @@ contract("DarknodeRegistry", (accounts: string[]) => {
             await ren.approve(newDNR.address, MINIMUM_BOND.mul(new BN(2)), {
                 from: accounts[numAccounts - 1],
             });
-            await newDNR.register(ID("10"), PUBK("10"), {
+            await newDNR.registerMultiple([ID("10")], 3, {
                 from: accounts[numAccounts - 1],
             });
-            await newDNR.registerMultiple([ID("11")], {
+            await newDNR.registerMultiple([ID("11")], 3, {
                 from: accounts[numAccounts - 1],
             });
 
@@ -1196,7 +1209,7 @@ contract("DarknodeRegistry", (accounts: string[]) => {
         for (let i = 0; i < MAX_DARKNODES; i++) {
             process.stdout.write(`\rRegistering Darknode #${i}`);
 
-            await dnr.register(ID(i), PUBK(i));
+            await dnr.registerMultiple([ID(i)], 3);
         }
 
         console.debug("");
@@ -1230,4 +1243,19 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         console.debug("");
     });
+    it("cannot update subnet with even ID", async () => {
+        await dnr.updateSubnet(ID("2"), 2 ,{
+            from: accounts[2],
+        }).should.be.rejectedWith(
+            /DarknodeRegistry: can not remove RenVM inclusion/
+        );
+    });
+    it("can update subnet with odd ID", async () => {
+        await dnr.updateSubnet(ID("2"), 7,{
+            from: accounts[2],
+        }).should.be.fulfilled;
+        await waitForEpoch(dnr);
+        //await dnr.subnets[ID("2").toString()].should.be.bignumber.equal(7);
+    });
+
 });

@@ -17,7 +17,7 @@ import { DarknodeRegistryLogicV2Instance } from "../../types/truffle-contracts";
 const ERC20 = artifacts.require("PaymentToken");
 
 chai.use(chaiAsPromised);
-chai.use((chaiBigNumber as any)(BigNumber) as any);
+chai.use((chaiBigNumber as any)(BigNumber) );
 chai.should();
 
 export const { encodeCallData } = require("../../migrations/encode.js");

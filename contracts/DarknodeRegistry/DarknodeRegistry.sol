@@ -10,10 +10,22 @@ import "../Governance/Claimable.sol";
 import "../libraries/CanReclaimTokens.sol";
 import "./DarknodeRegistryV1.sol";
 
-contract DarknodeRegistryStateV2 {}
+contract DarknodeRegistryStateV2 {
+    // RenVM can have a maximum of 255 subnets, and a darknodes inclusion or
+    // exclusion is set using the ith bit of the below subnet, 0th bit is used
+    // for RenVM and it should always be set to 1 when a darknode is registered
+    mapping(address => uint256) public subnets;
+
+    // subnetLastUpdated tracks when the subnet was last updated, subnet can
+    // only be changed once per epoch
+    mapping(address => uint256) public subnetLastUpdated;
+}
 
 /// @notice DarknodeRegistry is responsible for the registration and
 /// deregistration of Darknodes.
+/// @dev Emits a LogDarknodeSubnetUpdated event to set the subnet to 0 
+/// during deregistration, and subnets map is set to 0 on refund. This is 
+/// to allow slasher to slash a DN that is deregistered
 contract DarknodeRegistryLogicV2 is
     Claimable,
     CanReclaimTokens,
@@ -58,7 +70,16 @@ contract DarknodeRegistryLogicV2 is
         address indexed _darknodeOperator,
         address indexed _darknodeID,
         address indexed _challenger,
+        uint8 _subnetID,
         uint256 _percentage
+    );
+
+    /// @notice Emitted when a darknode joins a subnet.
+    /// @param _darknodeID The ID of the darknode that was registered.
+    /// @param _subnet The subnets the current darknode is part of.
+    event LogDarknodeSubnetUpdated(
+        address indexed _darknodeID,
+        uint256 indexed _subnet
     );
 
     /// @notice Emitted when a new epoch has begun.
@@ -141,6 +162,17 @@ contract DarknodeRegistryLogicV2 is
         _;
     }
 
+    /// @notice Restrict a function to nodes on the specific subnet.
+    modifier onSubnet(address _darknodeID, uint8 _subnetID) {
+        require(
+            _subnetID == 0 ||
+                subnets[_darknodeID] & (2**uint256(_subnetID)) ==
+                2**uint256(_subnetID),
+            "DarknodeRegistry: darknode not part of the subnet"
+        );
+        _;
+    }
+
     /// @notice The contract constructor.
     ///
     /// @param _VERSION A string defining the contract version.
@@ -192,7 +224,7 @@ contract DarknodeRegistryLogicV2 is
     /// caller of this method will be stored as the owner of the darknode.
     ///
     /// @param _darknodeID The darknode ID that will be registered.
-    function registerNode(address _darknodeID)
+    function registerNode(address _darknodeID, uint256 _subnet)
         public
         onlyRefunded(_darknodeID)
     {
@@ -205,6 +237,11 @@ contract DarknodeRegistryLogicV2 is
         require(
             ren.transferFrom(msg.sender, address(store), minimumBond),
             "DarknodeRegistry: bond transfer failed"
+        );
+
+        require(
+            _subnet % 2 == 1,
+            "DarknodeRegistry: can not remove RenVM inclusion"
         );
 
         // Flag this darknode for registration
@@ -221,6 +258,7 @@ contract DarknodeRegistryLogicV2 is
 
         // Emit an event.
         emit LogDarknodeRegistered(msg.sender, _darknodeID, minimumBond);
+        updateDarknodeSubnet(_darknodeID, _subnet);
     }
 
     /// @notice An alias for `registerNode` that includes the legacy public key
@@ -228,7 +266,52 @@ contract DarknodeRegistryLogicV2 is
     /// @param _darknodeID The darknode ID that will be registered.
     /// @param _publicKey Deprecated parameter - see `registerNode`.
     function register(address _darknodeID, bytes calldata _publicKey) external {
-        return registerNode(_darknodeID);
+        // Default subnets to only the core RenVM subnet.
+        return registerNode(_darknodeID, 1);
+    }
+
+    /// @notice update the subnets the darknode is part of, can be used to join or leave subnets.
+    /// @param _darknodeID The darknode ID that will be registered.
+    /// @param _subnet The subnets the darknode want to be part of.
+    function updateSubnet(address _darknodeID, uint256 _subnet)
+        public
+        onlyDarknodeOperator(_darknodeID)
+    {
+        require(
+            _subnet % 2 == 1,
+            "DarknodeRegistry: can not remove RenVM inclusion"
+        );
+        uint256 currentHash = currentEpoch.epochhash;
+        require(
+            subnetLastUpdated[_darknodeID] != currentHash,
+            "DarknodeRegistry: can only update subnet once per epoch"
+        );
+        updateDarknodeSubnet(_darknodeID, _subnet);
+    }
+
+    /// @notice update the subnets the darknode is part of, can be used to join or leave subnets.
+    /// @param _darknodeIDs The list of darknode IDs that will be updated.
+    /// @param _subnet The subnets the darknode want to be part of.
+    function updateSubnetMultiple(
+        address[] calldata _darknodeIDs,
+        uint256 _subnet
+    ) external {
+        require(
+            _subnet % 2 == 1,
+            "DarknodeRegistry: can not remove RenVM inclusion"
+        );
+
+        for (uint256 i = 0; i < _darknodeIDs.length; i++) {
+            require(
+                store.darknodeOperator(_darknodeIDs[i]) == msg.sender,
+                "DarknodeRegistry: can only be called by the darknode operator"
+            );
+            require(
+                subnetLastUpdated[_darknodeIDs[i]] != currentEpoch.epochhash,
+                "DarknodeRegistry: can only update subnet once per epoch"
+            );
+            updateDarknodeSubnet(_darknodeIDs[i], _subnet);
+        }
     }
 
     /// @notice Register multiple darknodes and transfer the bonds to this contract.
@@ -238,7 +321,10 @@ contract DarknodeRegistryLogicV2 is
     /// will be stored as the owner of each darknode. If one registration fails, all
     /// registrations fail.
     /// @param _darknodeIDs The darknode IDs that will be registered.
-    function registerMultiple(address[] calldata _darknodeIDs) external {
+    /// @param _subnet The subnets the darknodes want to be part of.
+    function registerMultiple(address[] calldata _darknodeIDs, uint256 _subnet)
+        external
+    {
         // Save variables in memory to prevent redundant reads from storage
         DarknodeRegistryStore _store = store;
         Epoch memory _currentEpoch = currentEpoch;
@@ -246,6 +332,11 @@ contract DarknodeRegistryLogicV2 is
             minimumEpochInterval
         );
         uint256 _minimumBond = minimumBond;
+
+        require(
+            _subnet % 2 == 1,
+            "DarknodeRegistry: can not remove RenVM inclusion"
+        );
 
         require(
             ren.transferFrom(
@@ -282,6 +373,8 @@ contract DarknodeRegistryLogicV2 is
             );
 
             emit LogDarknodeRegistered(msg.sender, darknodeID, _minimumBond);
+
+            updateDarknodeSubnet(darknodeID, _subnet);
         }
 
         numDarknodesNextEpoch = numDarknodesNextEpoch.add(_darknodeIDs.length);
@@ -335,6 +428,8 @@ contract DarknodeRegistryLogicV2 is
             );
 
             _store.updateDarknodeDeregisteredAt(darknodeID, nextDeregisteredAt);
+
+            emit LogDarknodeSubnetUpdated(darknodeID, 0);
 
             emit LogDarknodeDeregistered(msg.sender, darknodeID);
         }
@@ -464,10 +559,11 @@ contract DarknodeRegistryLogicV2 is
     /// @param _challenger The challenger who should receive a portion of the bond as reward.
     /// @param _percentage The total percentage  of bond to be slashed.
     function slash(
+        uint8 _subnetID,
         address _guilty,
         address _challenger,
         uint256 _percentage
-    ) external onlySlasher onlyDarknode(_guilty) {
+    ) external onlySlasher onSubnet(_guilty, _subnetID) onlyDarknode(_guilty) {
         require(_percentage <= 100, "DarknodeRegistry: invalid percent");
 
         // If the darknode has not been deregistered then deregister it
@@ -498,6 +594,7 @@ contract DarknodeRegistryLogicV2 is
             store.darknodeOperator(_guilty),
             _guilty,
             _challenger,
+            _subnetID,
             _percentage
         );
     }
@@ -516,6 +613,10 @@ contract DarknodeRegistryLogicV2 is
 
         // Erase the darknode from the registry
         store.removeDarknode(_darknodeID);
+
+        // Remove from all subnets
+        subnets[_darknodeID] = 0;
+        delete(subnetLastUpdated[_darknodeID]);
 
         // Refund the operator by transferring REN
         require(
@@ -567,6 +668,10 @@ contract DarknodeRegistryLogicV2 is
 
             // Erase the darknode from the registry
             _store.removeDarknode(darknodeID);
+
+            // Remove from all subnets
+            subnets[darknodeID] = 0;
+            delete(subnetLastUpdated[darknodeID]);
 
             // Emit an event
             emit LogDarknodeRefunded(msg.sender, darknodeID, amount);
@@ -900,8 +1005,17 @@ contract DarknodeRegistryLogicV2 is
         );
         numDarknodesNextEpoch = numDarknodesNextEpoch.sub(1);
 
+        emit LogDarknodeSubnetUpdated(_darknodeID, 0);
         // Emit an event
         emit LogDarknodeDeregistered(darknodeOperator, _darknodeID);
+    }
+
+    function updateDarknodeSubnet(address _darknodeID, uint256 _subnet)
+        private
+    {
+        subnets[_darknodeID] = _subnet;
+        subnetLastUpdated[_darknodeID] = currentEpoch.epochhash;
+        emit LogDarknodeSubnetUpdated(_darknodeID, _subnet);
     }
 
     function getDarknodeCountFromEpochs()
