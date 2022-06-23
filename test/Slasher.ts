@@ -120,6 +120,6 @@ contract("Slasher", (accounts: string[]) => {
             .should.be.rejectedWith(/Slasher: this epoch has already been challenged/);
         await trueSlasher
             .slash([ID(1)], [10], accounts[0], 1, `0x${epochHash[0].toString(16)}`, "0x")
-            .should.be.rejectedWith(/Slasher: this epoch has already been slashed/);
+            .should.be.rejectedWith(/Slasher: this darknode has already been slashed this epoch/);
     });
 });

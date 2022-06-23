@@ -16,14 +16,14 @@ contract Slasher {
     // See IERC1271
     bytes4 constant CORRECT_SIGNATURE_RETURN_VALUE = 0x1626ba7e;
 
-    DarknodeRegistryLogicV2 dnr;
-    IRenVMSignatureVerifier renVMSignatureVerifier;
-    uint256 challengeBond;
+    DarknodeRegistryLogicV2 public dnr;
+    IRenVMSignatureVerifier public renVMSignatureVerifier;
+    uint256 public challengeBond;
 
     mapping(bytes32 => mapping(uint8 => address)) challenged;
     mapping(bytes32 => mapping(address => address)) slashed;
 
-    event Challenged(address _challenger, bytes32 _epochHash, uint32 _subnetID);
+    event Challenged(address indexed _challenger, bytes32 indexed _epochHash, uint32 _subnetID);
 
     constructor(
         DarknodeRegistryLogicV2 _dnr,
@@ -86,7 +86,7 @@ contract Slasher {
             address darknode = _darknodes[i];
             require(
                 slashed[_epochHash][darknode] == address(0x0),
-                "Slasher: this epoch has already been slashed"
+                "Slasher: this darknode has already been slashed this epoch"
             );
             dnr.slash(_subnetID, darknode, _challenger, _percentages[i]);
             slashed[_epochHash][darknode] = _challenger;
