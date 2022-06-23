@@ -23,7 +23,7 @@ contract Slasher {
     mapping(bytes32 => mapping(uint8 => address)) challenged;
     mapping(bytes32 => mapping(address => address)) slashed;
 
-    event Challenged(address indexed _challenger, bytes32 indexed _epochHash, uint32 _subnetID);
+    event Challenged(address indexed _challenger, bytes32 indexed _epochHash, uint32 indexed _subnetID);
 
     constructor(
         DarknodeRegistryLogicV2 _dnr,
