@@ -58,7 +58,7 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            ETH: "0x3E62E50C4FAFCb5589e1682683ce38e8645541e8"
         },
 
         config: {
@@ -85,8 +85,8 @@ module.exports = {
         DarknodePayment: "0xC7F24fEDfbbAA5248E1F5a160cC30Dcbff9F1176",
 
         tokens: {
-            DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            DAI: "0x3E62E50C4FAFCb5589e1682683ce38e8645541e8",
+            ETH: "0x3E62E50C4FAFCb5589e1682683ce38e8645541e8"
         },
 
         config: {
