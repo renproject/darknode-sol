@@ -1,6 +1,7 @@
 pragma solidity 0.5.17;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol";
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
@@ -42,11 +43,24 @@ contract DarknodeRegistryLogicV2 is
 
     /// @notice Emitted when a refund has been made.
     /// @param _darknodeOperator The owner of the darknode.
+    /// @param _darknodeID The ID of the darknode that was refunded.
     /// @param _amount The amount of REN that was refunded.
     event LogDarknodeRefunded(
         address indexed _darknodeOperator,
         address indexed _darknodeID,
         uint256 _amount
+    );
+
+    /// @notice Emitted when a recovery has been made.
+    /// @param _darknodeOperator The owner of the darknode.
+    /// @param _darknodeID The ID of the darknode that was recovered.
+    /// @param _bondRecipient The address that received the bond.
+    /// @param _submitter The address that called the recover method.
+    event LogDarknodeRecovered(
+        address indexed _darknodeOperator,
+        address indexed _darknodeID,
+        address _bondRecipient,
+        address indexed _submitter
     );
 
     /// @notice Emitted when a darknode's bond is slashed.
@@ -525,6 +539,65 @@ contract DarknodeRegistryLogicV2 is
 
         // Emit an event.
         emit LogDarknodeRefunded(msg.sender, _darknodeID, amount);
+    }
+
+    /// @notice A permissioned method for refunding a darknode without the usual
+    /// delay. The operator must provide a signature of the darknode ID and the
+    /// bond recipient, but the call must come from the contract's owner. The
+    /// main use case is for when an operator's keys have been compromised,
+    /// allowing for the bonds to be recovered by the operator through the
+    /// GatewayRegistry's governance. It is expected that this process would
+    /// happen towards the end of the darknode's deregistered period, so that
+    /// a malicious operator can't use this to quickly exit their stake after
+    /// attempting an attack on the network. It's also expected that the
+    /// operator will not re-register the same darknode again.
+    function recover(
+        address _darknodeID,
+        address _bondRecipient,
+        bytes calldata _signature
+    ) external onlyOwner {
+        require(
+            isRefundable(_darknodeID) || isDeregistered(_darknodeID),
+            "DarknodeRegistry: must be deregistered"
+        );
+
+        address darknodeOperator = store.darknodeOperator(_darknodeID);
+
+        require(
+            ECDSA.recover(
+                keccak256(
+                    abi.encodePacked(
+                        "\x19Ethereum Signed Message:\n64",
+                        "DarknodeRegistry.recover",
+                        _darknodeID,
+                        _bondRecipient
+                    )
+                ),
+                _signature
+            ) == darknodeOperator,
+            "DarknodeRegistry: invalid signature"
+        );
+
+        // Remember the bond amount
+        uint256 amount = store.darknodeBond(_darknodeID);
+
+        // Erase the darknode from the registry
+        store.removeDarknode(_darknodeID);
+
+        // Refund the operator by transferring REN
+        require(
+            ren.transfer(_bondRecipient, amount),
+            "DarknodeRegistry: bond transfer failed"
+        );
+
+        // Emit an event.
+        emit LogDarknodeRefunded(darknodeOperator, _darknodeID, amount);
+        emit LogDarknodeRecovered(
+            darknodeOperator,
+            _darknodeID,
+            _bondRecipient,
+            msg.sender
+        );
     }
 
     /// @notice Refund the bonds of multiple deregistered darknodes. This will

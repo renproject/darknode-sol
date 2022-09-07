@@ -7,7 +7,7 @@ const config = {
     DARKNODE_PAYOUT_PERCENT: 50, // Only payout 50% of the reward pool
     BLACKLIST_SLASH_PERCENT: 0, // Don't slash bond for blacklisting
     MALICIOUS_SLASH_PERCENT: 50, // Slash 50% of the bond
-    SECRET_REVEAL_SLASH_PERCENT: 100 // Slash 100% of the bond
+    SECRET_REVEAL_SLASH_PERCENT: 100, // Slash 100% of the bond
 };
 
 module.exports = {
@@ -24,6 +24,8 @@ module.exports = {
         DarknodeRegistryStore: "0x60Ab11FE605D2A2C3cf351824816772a131f8782",
         DarknodeRegistryLogicV1: "0x33b53A700de61b6be01d65A758b3635584bCF140",
         DarknodeRegistryProxy: "0x2D7b6C95aFeFFa50C068D50f89C5C0014e054f0A",
+        DarknodeRegistryLogicV2: "",
+        DarknodeRegistryV1ToV2Upgrader: "",
 
         // DNP
         DarknodePaymentStore: "0xE33417797d6b8Aec9171d0d6516E88002fbe23E7",
@@ -31,12 +33,12 @@ module.exports = {
 
         tokens: {
             DAI: "0x6b175474e89094c44da98b954eedeac495271d0f",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
         config: {
-            ...config
-        }
+            ...config,
+        },
     },
     testnet: {
         RenProxyAdmin: "0x4C695C4Aa6238f0A7092733180328c2E64C912C7",
@@ -50,7 +52,10 @@ module.exports = {
         // DNR
         DarknodeRegistryStore: "0x9daa16aA19e37f3de06197a8B5E638EC5e487392",
         DarknodeRegistryLogicV1: "0x046EDe9916e13De79d5530b67FF5dEbB7B72742C",
+        DarknodeRegistryLogicV2: "0x61ffD5059Af59D480C57d43DCC09eea653e95eC8",
         DarknodeRegistryProxy: "0x9954C9F839b31E82bc9CA98F234313112D269712",
+        DarknodeRegistryV1ToV2Upgrader:
+            "0x6587720afB2b306b1888408B907E2A4DD8B18651",
 
         // DNP
         DarknodePaymentStore: "0x0EC73cCDCd8e643d909D0c4b663Eb1B2Fb0b1e1C",
@@ -58,12 +63,12 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
         config: {
-            ...config
-        }
+            ...config,
+        },
     },
 
     devnet: {
@@ -79,6 +84,8 @@ module.exports = {
         DarknodeRegistryStore: "0x3ccF0cd02ff15b59Ce2B152CdDE78551eFd34a62",
         DarknodeRegistryLogicV1: "0x26D6fEC1C904EB5b86ACed6BB804b4ed35208704",
         DarknodeRegistryProxy: "0x7B69e5e15D4c24c353Fea56f72E4C0c5B93dCb71",
+        DarknodeRegistryLogicV2: "",
+        DarknodeRegistryV1ToV2Upgrader: "",
 
         // DNP
         DarknodePaymentStore: "0xfb98D6900330844CeAce6Ae4ae966D272bE1aeC3",
@@ -86,13 +93,13 @@ module.exports = {
 
         tokens: {
             DAI: "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
-            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         },
 
         config: {
-            ...config
-        }
+            ...config,
+        },
     },
 
-    config
+    config,
 };
