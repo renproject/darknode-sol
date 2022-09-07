@@ -1,17 +1,21 @@
-import * as chai from "chai";
+// Import chai log helper
+import "./logs";
+
 import * as crypto from "crypto";
 
 import BigNumber from "bignumber.js";
 import BN from "bn.js";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import chaiBigNumber from "chai-bignumber";
 import { ECDSASignature } from "ethereumjs-util";
 import { TransactionReceipt } from "web3-core";
 import { keccak256, toChecksumAddress } from "web3-utils";
 
-import { DarknodeRegistryLogicV1Instance } from "../../types/truffle-contracts";
-// Import chai log helper
-import "./logs";
+import {
+    DarknodeRegistryLogicV1Instance,
+    DarknodeRegistryLogicV2Instance,
+} from "../../types/truffle-contracts";
 
 const ERC20 = artifacts.require("PaymentToken");
 
@@ -120,7 +124,9 @@ export const increaseTime = async (seconds: number) => {
     } while (currentTimestamp < target);
 };
 
-export async function waitForEpoch(dnr: DarknodeRegistryLogicV1Instance) {
+export async function waitForEpoch(
+    dnr: DarknodeRegistryLogicV1Instance | DarknodeRegistryLogicV2Instance
+) {
     // const timeout = MINIMUM_EPOCH_INTERVAL_SECONDS;
     const timeout = new BN(
         (await dnr.minimumEpochInterval()).toString()
@@ -249,3 +255,27 @@ export const toBN = <
 };
 
 export const range = (n: number) => Array.from(new Array(n)).map((_, i) => i);
+
+export const signRecoverMessage = async (
+    owner: string,
+    recipient: string,
+    darknodeID: string
+) => {
+    // Recover
+    const signature = Buffer.from(
+        (
+            await web3.eth.sign(
+                "0x" +
+                    Buffer.concat([
+                        Buffer.from("DarknodeRegistry.recover"),
+                        Buffer.from(darknodeID.slice(2), "hex"),
+                        Buffer.from(recipient.slice(2), "hex"),
+                    ]).toString("hex"),
+                owner
+            )
+        ).slice(2),
+        "hex"
+    );
+    signature[64] = (signature[64] % 27) + 27;
+    return "0x" + signature.toString("hex");
+};
