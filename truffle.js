@@ -29,6 +29,17 @@ const kovanNetwork = {
     networkCheckTimeout: 20000
 };
 
+const goerliNetwork = {
+    // @ts-ignore
+    provider: () =>
+        new HDWalletProvider(
+            process.env.MNEMONIC_TESTNET,
+            `https://goerli.infura.io/v3/${process.env.INFURA_KEY}`
+        ),
+    network_id: 5,
+    networkCheckTimeout: 20000
+};
+
 const mainNetwork = {
     // @ts-ignore
     provider: () =>
@@ -60,7 +71,7 @@ module.exports = {
         localnet: kovanNetwork,
         devnet: kovanNetwork,
         rinkebyDevnet: ethRinkebyNetwork,
-        testnet: kovanNetwork,
+        testnet: goerliNetwork,
         mainnet: mainNetwork,
         chaosnet: mainNetwork,
         development: {
