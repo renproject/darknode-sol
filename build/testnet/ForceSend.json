@@ -1,0 +1,378 @@
+{
+  "contractName": "ForceSend",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "send",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"send\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"project:/contracts/test/ForceSend.sol\":\"ForceSend\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/test/ForceSend.sol\":{\"keccak256\":\"0xa9e54e0b7cf575e0e76f3bf788dea98f8e63009b2c9bd4e910a61b591f38047b\",\"urls\":[\"bzz-raw://5b0cabace8f20d9e17623859008427a217e4a78eed178ac42296374890ad137a\",\"dweb:/ipfs/QmXpRwhT9XQPPM6eBnawXwHwSm6GKrf4igd4CPHMGxwCv9\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b5060878061001e6000396000f3fe608060405260043610601c5760003560e01c80633e58c58c146021575b600080fd5b604460048036036020811015603557600080fd5b50356001600160a01b03166046565b005b806001600160a01b0316fffea265627a7a723158202133286d53b3ca9064f07a071930e488e4c10c0bc8f3c64a1895c18e55d0634b64736f6c63430005110032",
+  "deployedBytecode": "0x608060405260043610601c5760003560e01c80633e58c58c146021575b600080fd5b604460048036036020811015603557600080fd5b50356001600160a01b03166046565b005b806001600160a01b0316fffea265627a7a723158202133286d53b3ca9064f07a071930e488e4c10c0bc8f3c64a1895c18e55d0634b64736f6c63430005110032",
+  "sourceMap": "25:123:37:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:123:37;;;;;;;",
+  "deployedSourceMap": "25:123:37:-;;;;;;;;;;;;;;;;;;;;;50:96;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;50:96:37;-1:-1:-1;;;;;50:96:37;;:::i;:::-;;;129:9;-1:-1:-1;;;;;116:23:37;",
+  "source": "pragma solidity 0.5.17;\n\ncontract ForceSend {\n    function send(address payable recipient) public payable {\n        selfdestruct(recipient);\n    }\n}\n",
+  "sourcePath": "/Users/jaz/Desktop/ren/dev/darknode-sol/contracts/test/ForceSend.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/test/ForceSend.sol",
+    "exportedSymbols": {
+      "ForceSend": [
+        7490
+      ]
+    },
+    "id": 7491,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 7479,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:37"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 7490,
+        "linearizedBaseContracts": [
+          7490
+        ],
+        "name": "ForceSend",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 7488,
+              "nodeType": "Block",
+              "src": "106:40:37",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 7485,
+                        "name": "recipient",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 7481,
+                        "src": "129:9:37",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      ],
+                      "id": 7484,
+                      "name": "selfdestruct",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 8702,
+                      "src": "116:12:37",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_selfdestruct_nonpayable$_t_address_payable_$returns$__$",
+                        "typeString": "function (address payable)"
+                      }
+                    },
+                    "id": 7486,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "116:23:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 7487,
+                  "nodeType": "ExpressionStatement",
+                  "src": "116:23:37"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 7489,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "send",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 7482,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 7481,
+                  "name": "recipient",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7489,
+                  "src": "64:25:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 7480,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "64:15:37",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "63:27:37"
+            },
+            "returnParameters": {
+              "id": 7483,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "106:0:37"
+            },
+            "scope": 7490,
+            "src": "50:96:37",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 7491,
+        "src": "25:123:37"
+      }
+    ],
+    "src": "0:149:37"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "project:/contracts/test/ForceSend.sol",
+      "exportedSymbols": {
+        "ForceSend": [
+          7490
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "0.5",
+            ".17"
+          ]
+        },
+        "id": 7479,
+        "name": "PragmaDirective",
+        "src": "0:23:37"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            7490
+          ],
+          "name": "ForceSend",
+          "scope": 7491
+        },
+        "children": [
+          {
+            "attributes": {
+              "documentation": null,
+              "implemented": true,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
+              ],
+              "name": "send",
+              "scope": 7490,
+              "stateMutability": "payable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "recipient",
+                      "scope": 7489,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "address payable",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "stateMutability": "payable",
+                          "type": "address payable"
+                        },
+                        "id": 7480,
+                        "name": "ElementaryTypeName",
+                        "src": "64:15:37"
+                      }
+                    ],
+                    "id": 7481,
+                    "name": "VariableDeclaration",
+                    "src": "64:25:37"
+                  }
+                ],
+                "id": 7482,
+                "name": "ParameterList",
+                "src": "63:27:37"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 7483,
+                "name": "ParameterList",
+                "src": "106:0:37"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "isStructConstructorCall": false,
+                          "lValueRequested": false,
+                          "names": [
+                            null
+                          ],
+                          "type": "tuple()",
+                          "type_conversion": false
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address_payable",
+                                  "typeString": "address payable"
+                                }
+                              ],
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 8702,
+                              "type": "function (address payable)",
+                              "value": "selfdestruct"
+                            },
+                            "id": 7484,
+                            "name": "Identifier",
+                            "src": "116:12:37"
+                          },
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 7481,
+                              "type": "address payable",
+                              "value": "recipient"
+                            },
+                            "id": 7485,
+                            "name": "Identifier",
+                            "src": "129:9:37"
+                          }
+                        ],
+                        "id": 7486,
+                        "name": "FunctionCall",
+                        "src": "116:23:37"
+                      }
+                    ],
+                    "id": 7487,
+                    "name": "ExpressionStatement",
+                    "src": "116:23:37"
+                  }
+                ],
+                "id": 7488,
+                "name": "Block",
+                "src": "106:40:37"
+              }
+            ],
+            "id": 7489,
+            "name": "FunctionDefinition",
+            "src": "50:96:37"
+          }
+        ],
+        "id": 7490,
+        "name": "ContractDefinition",
+        "src": "25:123:37"
+      }
+    ],
+    "id": 7491,
+    "name": "SourceUnit",
+    "src": "0:149:37"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2022-09-07T05:19:15.867Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "contractName": "Bindings",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Bindings imports all of the contracts for generating bindings.\"}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Bindings.sol\":\"Bindings\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol\":{\"keccak256\":\"0x3491510fa4862af1a43f6c860d9cf7392240196540cd3c0eea79d374d419c5a1\",\"urls\":[\"bzz-raw://3e51386d74eb723d3acaaddafce1dd0b4082ad4c10ddba6b9fc154aad2930d02\",\"dweb:/ipfs/QmcA8Huap1c7YjdVjx5TGasxKNMLgsa3XyLvQUaMa1nMt8\"]},\"@openzeppelin/contracts-ethereum-package/contracts/access/Roles.sol\":{\"keccak256\":\"0xb002c378d7b82a101bd659c341518953ca0919d342c0a400196982c0e7e7bcdb\",\"urls\":[\"bzz-raw://00a788c4631466c220b385bdd100c571d24b2deccd657615cfbcef6cadf669a4\",\"dweb:/ipfs/QmTEwDbjJNxmMNCDMqtuou3dyM8Wtp8Q9NFvn7SAVM7Jf3\"]},\"@openzeppelin/contracts-ethereum-package/contracts/access/roles/PauserRole.sol\":{\"keccak256\":\"0x50f630d59842559f6b0df1c727e1ea1495ea1a26aac1c2283a09a881162eb2e8\",\"urls\":[\"bzz-raw://75bce03ca2a280f4111b229a00ff133dc2e4a15c064b2e0e497550c9c9dcf5da\",\"dweb:/ipfs/QmbenCfPjLoKSr1uHzrvVgNfcqonRj62ivyQkG9TSMuTUD\"]},\"@openzeppelin/contracts-ethereum-package/contracts/cryptography/ECDSA.sol\":{\"keccak256\":\"0x96b7a000144f61405cfc9cd7ca920056458cc7b8e4c2ca87152954ea9e40b14a\",\"urls\":[\"bzz-raw://eb7de2c5923b414ef7d6aac3d7ca7f4295e39074542a4057fc25d8199ed412cb\",\"dweb:/ipfs/QmanLWy6gtkSon9N6HsEFViGEuH1JTxgovM6xjWS2GYnGk\"]},\"@openzeppelin/contracts-ethereum-package/contracts/lifecycle/Pausable.sol\":{\"keccak256\":\"0x54955bd9a96f48385adbdfcd27da9b9efc9531a81555015f92c3137ec301f8f0\",\"urls\":[\"bzz-raw://72605a1bfa13b314957172f913ffac1903657938b1b72029bef2209a24dc7b30\",\"dweb:/ipfs/QmSqo87vmf4MYrBg2S3bRof17DTrCM8vkYHv8gpNgS4WSv\"]},\"@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol\":{\"keccak256\":\"0x640b6dee7a4b830bdfd52b5031a07fc2b12209f5b2e29e5d364a7d37f69d8076\",\"urls\":[\"bzz-raw://31113152e1ddb78fe7a4197f247591ca894e93f916867beb708d8e747b6cc74f\",\"dweb:/ipfs/QmbZaJyXdpsYGykVhHH9qpVGQg9DGCxE2QufbCUy3daTgq\"]},\"@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol\":{\"keccak256\":\"0xd7e8ab76fa35c4d8d35a06a6ed538cadab8b75a1aa00594ced1568b2c0cadde3\",\"urls\":[\"bzz-raw://a3f816aa3e6161b4cf882ad34755673848d835f7fb964db49bcef9df14570cef\",\"dweb:/ipfs/QmQACSH1W7pKQnqTAqpuEP8ychp3PvosfnyondLaLE1nVq\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol\":{\"keccak256\":\"0x2a474399663812668bb8e9c9e7d011d54fd09de386bd6e9fcb2407a677ebd1aa\",\"urls\":[\"bzz-raw://93754fbe81bcf1f111288152c40987a9fd7cdb43dc72b9f8d7eabb96a4fa9976\",\"dweb:/ipfs/QmNZadpwGrNYB6jndNcAk6dT7f6HHMZBPXdNTa5fKu3HVp\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol\":{\"keccak256\":\"0xf2e46c19ea19035e793a4f455032784886c5b4dc43943b615cf5c09c16137e03\",\"urls\":[\"bzz-raw://b1db63829b0eee269d924a6930845ef6cb5aa869c754d9db78d53af27d6653ea\",\"dweb:/ipfs/QmXqs1mVugjBkMDsdRLwBygpbnv2ZpZsV2aQUJYonW158h\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol\":{\"keccak256\":\"0x704e0cb521f0b571096a72266a34d9a2a59a89853b5b271bc97fa307a4cc4dcc\",\"urls\":[\"bzz-raw://96317e95d4c301e54ff42f2b6dede996ac4d714e50a6b5552c68fbb378330dcf\",\"dweb:/ipfs/QmawKJQVK7yXeBhGcvkmujYpo8n7CWQJizDV2dWzsxupnh\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Pausable.sol\":{\"keccak256\":\"0xc93fedd1c85159116620669f81e2f117c18645b552444b4cb8db7dd06c33b2d8\",\"urls\":[\"bzz-raw://0021bb5e1db9b3dae909153df31e339c42b6938cf66efbf775982aaa4c56be37\",\"dweb:/ipfs/QmdCFGsbYS5gjGrxru6pbMfWJ3n1qvMbYXJy7SmXQtdbKc\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xe5bb0f57cff3e299f360052ba50f1ea0fff046df2be070b6943e0e3c3fdad8a9\",\"urls\":[\"bzz-raw://59fd025151435da35faa8093a5c7a17de02de9d08ad27275c5cdf05050820d91\",\"dweb:/ipfs/QmQMvwEcPhoRXzbXyrdoeRtvLoifUW9Qh7Luho7bmUPRkc\"]},\"@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol\":{\"keccak256\":\"0x6f2c9955d65c522b80f4b8792f076512d2df947d2112cbc4d98a4781ed42ede2\",\"urls\":[\"bzz-raw://7d8ec81683520c06baeef3f7e06cd82bd6fd5fa611f26857f475f6c829540aff\",\"dweb:/ipfs/QmTDkFzKnrpiV1UKnSoiZAHPuguWzokrr4pFbSPvyaSo56\"]},\"@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol\":{\"keccak256\":\"0x1a8e5072509c5ea7365eb1d48030b9be865140c8fb779968da0a459a0e174a11\",\"urls\":[\"bzz-raw://03335b7b07c7c8c8d613cfdd8ec39a0b5ec133ee510bf2fe6cc5a496767bef4b\",\"dweb:/ipfs/Qmebp4nzPja645c9yXSdJkGq96oU3am3LUnG2K3R7XxyKf\"]},\"@openzeppelin/upgrades/contracts/Initializable.sol\":{\"keccak256\":\"0x9bfec92e36234ecc99b5d37230acb6cd1f99560233753162204104a4897e8721\",\"urls\":[\"bzz-raw://5cf7c208583d4d046d75bd99f5507412ab01cce9dd9f802ce9768a416d93ea2f\",\"dweb:/ipfs/QmcQS1BBMPpVEkXP3qzwSjxHNrqDek8YeR7xbVWDC9ApC7\"]},\"@openzeppelin/upgrades/contracts/upgradeability/BaseAdminUpgradeabilityProxy.sol\":{\"keccak256\":\"0xbf8ee1cf63a430a3eb8b39a9145d0d133400b8db06fa9fd33056597f7d8ceb25\",\"urls\":[\"bzz-raw://58dc9f7b607b235e9efae48b003bf43aacb1b034853b8ead82830834405904a6\",\"dweb:/ipfs/QmXqDDwV8vpufd6Xka5zYrxrSgbnfzrQTSMoN7dPTAHJ21\"]},\"@openzeppelin/upgrades/contracts/upgradeability/BaseUpgradeabilityProxy.sol\":{\"keccak256\":\"0x1b37f808dc0a45976ad23aa53908c485a74a4d9fbd03066a5ab399c46436e570\",\"urls\":[\"bzz-raw://de04959e1261bbc2ee53a88b98469a888a2f2fa49c07ea87a5d646a8fe438558\",\"dweb:/ipfs/QmUmYQaNnAMfvbfKLniFLHyBzsH77bCMf9NpNSfndfuqWh\"]},\"@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol\":{\"keccak256\":\"0x91f2b663c89b940dce6dbd00f5e7bf326cdf02d1da4ddbcb7e64b313e60d9afc\",\"urls\":[\"bzz-raw://bb1c5b7a18d4ff807bff6ded8e8f61586a09157a87f87d6271078bf57762d7c9\",\"dweb:/ipfs/Qmdd9gNEAzHTEqJKgMzLNG1ib3L6a2S6pAhAT7RwZZWVSp\"]},\"@openzeppelin/upgrades/contracts/upgradeability/InitializableUpgradeabilityProxy.sol\":{\"keccak256\":\"0x6b84a0236a899ba5aa673ea34d5efa1f93dba461e13d8799f51a9f7b64b59f4f\",\"urls\":[\"bzz-raw://905fe46ff8aa3c8698677552833331543ac9ef9bcc2c444772af9c0d1441f994\",\"dweb:/ipfs/QmQda6SVGFNZQN5SrTQM2mf8oEgbFEaUhQpXetj9NmkfqV\"]},\"@openzeppelin/upgrades/contracts/upgradeability/Proxy.sol\":{\"keccak256\":\"0xd8074ae5fa7ee6384ca8196a896612fb044bbf4ff4b7336d03cd97845000ac21\",\"urls\":[\"bzz-raw://3a111e1dc777d80e6c2ad41c6ff2bfb3ae8f61658fd6580ddf9ba9ab0d25a354\",\"dweb:/ipfs/QmSfwvUqqiownzHeMmUiYkejWs6FXR2KLtHQnSzP6FivTj\"]},\"@openzeppelin/upgrades/contracts/upgradeability/UpgradeabilityProxy.sol\":{\"keccak256\":\"0xb02c6349ba01df9902857b6058f92b37f13187775cce9da74f6f28410205445b\",\"urls\":[\"bzz-raw://f05434b5110c9de912e001a5dc2b252947f474346cb8ea5ec26ea2efe7143aa7\",\"dweb:/ipfs/QmbaksVa6vQz926TCHgJniKFuod44QhuGzVFYMtdUgdxba\"]},\"@openzeppelin/upgrades/contracts/utils/Address.sol\":{\"keccak256\":\"0x7be7f8e4c08bc70ff9815e3f11c569f42aa3c447b5bc61fd75fb5cec97f63a9f\",\"urls\":[\"bzz-raw://f301a9226d637e1593916ba2de7b0b28c35f2adc3ca8526289fe1eedafa83bc2\",\"dweb:/ipfs/QmPb991LE8nyvhB4BkX46P1Pan2ijH9tfqWwLAz65VUUKs\"]},\"project:/contracts/Bindings.sol\":{\"keccak256\":\"0x7a8c61fc064912c9243b53077edd01a6550ac5f3bb82705482af766ba188ef1d\",\"urls\":[\"bzz-raw://fab4634c9c8eff292c28c3fe83e1869ca67976cb089d3b9b128ef3b337229ce3\",\"dweb:/ipfs/QmUK3mAnhUaciAc8iGA8FkTmXgNSsvohgv9uEqnGbEJ95Z\"]},\"project:/contracts/DarknodeRegistry/DarknodeRegistry.sol\":{\"keccak256\":\"0x7a1de2e47095c99da4a233786e86d668776781f6069d4190ec543f663e7b1718\",\"urls\":[\"bzz-raw://5b7627c0c85f3667af16a425b5608499daa55f7123ae20f314967f16b0ef425c\",\"dweb:/ipfs/QmTXtfbzdT5MAJ2t7p8d7hbHnhQ8S635Svdf6xY3591LoJ\"]},\"project:/contracts/DarknodeRegistry/DarknodeRegistryStore.sol\":{\"keccak256\":\"0x245cad7c906d393f9a1cd251de16add7b600419ded77a7cfb6a0b937286fc787\",\"urls\":[\"bzz-raw://5b7ff17ed53304534d5124bca3ece985f926d3ec8f97dc9ebac46a5bb111e2f8\",\"dweb:/ipfs/Qmew1THcXCtzSnc5k5hcJ3WpxJUz8UR6bb8ezYS3TfxPKm\"]},\"project:/contracts/DarknodeRegistry/DarknodeRegistryV1.sol\":{\"keccak256\":\"0xb4b553c265ebc7b1f1bd8ebc88dc35241bfb56a92fa8fcaa427647ef677ebc26\",\"urls\":[\"bzz-raw://3c8b9dfd5f69f300fc1430040e930b6121c6372d977739a61c6b8567636417a1\",\"dweb:/ipfs/QmY6EmPKQZDw4Gs1BLsXosBZruPKpN2ZmVuGYeuwr5FHtK\"]},\"project:/contracts/Governance/Claimable.sol\":{\"keccak256\":\"0xff0cb94cd3b8cf67bb1d7948d9406076e9b9654d13fccd2d07b78b84492feaab\",\"urls\":[\"bzz-raw://48cd84f39eb789a8737c185ec7538edecd86acea56cb77a9f6cf248803cd505b\",\"dweb:/ipfs/QmRBx5D2fz59TR3fe1GvKXtxXt6TY7rdakDzim2jU1dtS1\"]},\"project:/contracts/RenToken/RenToken.sol\":{\"keccak256\":\"0x23e96367860fb5f02c80012fa38a4f38d94959cc9a3e7d0532b4b10c20a98b79\",\"urls\":[\"bzz-raw://37712579208bf00a3cfd9bddd8a073246d6082b7c566686c70703f0684734b75\",\"dweb:/ipfs/QmaHXCndCoB7b3HCzQC6BxFCiHg3xvjuFGruhQjUPEGqHJ\"]},\"project:/contracts/libraries/CanReclaimTokens.sol\":{\"keccak256\":\"0xe3d5ced38b280d0b1ea31c181b2c9e69bb370a09e0428b166b2eef31ad4472e4\",\"urls\":[\"bzz-raw://73db4580c135c9a0f3935bb7beca17c7f5a455df06aaf07c6c5713f59d2bcdf7\",\"dweb:/ipfs/QmcZrs61n6y9uUoksjkeYqRxfLuynECbLTAX6vdfhw7e6N\"]},\"project:/contracts/libraries/LinkedList.sol\":{\"keccak256\":\"0x96d456daeb03e4da05693c055bd6c946b388b7a414be691a4bb1b5da5111d8e0\",\"urls\":[\"bzz-raw://b49b7a0c961d0d33ea835a36a5dadd990d5836f5fca91dcb1fa0abc29384b8f5\",\"dweb:/ipfs/QmZc5phrSZMrcRVeHm7Y8rh1UfTKgkiguNjzqm3kjhaVSj\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820d2cafceee38f79bacecd9db9e32e820c90cd718b2c30fac0676c60e7fecf0c3a64736f6c63430005110032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820d2cafceee38f79bacecd9db9e32e820c90cd718b2c30fac0676c60e7fecf0c3a64736f6c63430005110032",
+  "sourceMap": "287:22:25:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;287:22:25;;;;;;;",
+  "deployedSourceMap": "287:22:25:-;;;;;",
+  "source": "pragma solidity 0.5.17;\n\nimport \"./DarknodeRegistry/DarknodeRegistry.sol\";\nimport \"./DarknodeRegistry/DarknodeRegistryStore.sol\";\nimport \"./RenToken/RenToken.sol\";\n\n/// @notice Bindings imports all of the contracts for generating bindings.\n/* solium-disable-next-line no-empty-blocks */\ncontract Bindings {\n\n}\n",
+  "sourcePath": "/Users/jaz/Desktop/ren/dev/darknode-sol/contracts/Bindings.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/Bindings.sol",
+    "exportedSymbols": {
+      "Bindings": [
+        2514
+      ]
+    },
+    "id": 2515,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2510,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:25"
+      },
+      {
+        "absolutePath": "project:/contracts/DarknodeRegistry/DarknodeRegistry.sol",
+        "file": "./DarknodeRegistry/DarknodeRegistry.sol",
+        "id": 2511,
+        "nodeType": "ImportDirective",
+        "scope": 2515,
+        "sourceUnit": 4488,
+        "src": "25:49:25",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
+        "file": "./DarknodeRegistry/DarknodeRegistryStore.sol",
+        "id": 2512,
+        "nodeType": "ImportDirective",
+        "scope": 2515,
+        "sourceUnit": 4803,
+        "src": "75:54:25",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/RenToken/RenToken.sol",
+        "file": "./RenToken/RenToken.sol",
+        "id": 2513,
+        "nodeType": "ImportDirective",
+        "scope": 2515,
+        "sourceUnit": 6712,
+        "src": "130:33:25",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@notice Bindings imports all of the contracts for generating bindings.",
+        "fullyImplemented": true,
+        "id": 2514,
+        "linearizedBaseContracts": [
+          2514
+        ],
+        "name": "Bindings",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 2515,
+        "src": "287:22:25"
+      }
+    ],
+    "src": "0:310:25"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "project:/contracts/Bindings.sol",
+      "exportedSymbols": {
+        "Bindings": [
+          2514
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "0.5",
+            ".17"
+          ]
+        },
+        "id": 2510,
+        "name": "PragmaDirective",
+        "src": "0:23:25"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 4488,
+          "absolutePath": "project:/contracts/DarknodeRegistry/DarknodeRegistry.sol",
+          "file": "./DarknodeRegistry/DarknodeRegistry.sol",
+          "scope": 2515,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 2511,
+        "name": "ImportDirective",
+        "src": "25:49:25"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 4803,
+          "absolutePath": "project:/contracts/DarknodeRegistry/DarknodeRegistryStore.sol",
+          "file": "./DarknodeRegistry/DarknodeRegistryStore.sol",
+          "scope": 2515,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 2512,
+        "name": "ImportDirective",
+        "src": "75:54:25"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 6712,
+          "absolutePath": "project:/contracts/RenToken/RenToken.sol",
+          "file": "./RenToken/RenToken.sol",
+          "scope": 2515,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 2513,
+        "name": "ImportDirective",
+        "src": "130:33:25"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": "@notice Bindings imports all of the contracts for generating bindings.",
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            2514
+          ],
+          "name": "Bindings",
+          "nodes": [
+            null
+          ],
+          "scope": 2515
+        },
+        "id": 2514,
+        "name": "ContractDefinition",
+        "src": "287:22:25"
+      }
+    ],
+    "id": 2515,
+    "name": "SourceUnit",
+    "src": "0:310:25"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2022-09-07T05:19:15.688Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {},
+    "notice": "Bindings imports all of the contracts for generating bindings."
+  }
+}

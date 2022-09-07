@@ -10,7 +10,7 @@ const commitHash = execSync("git describe --always --long")
     .trim();
 
 if (
-    (process.env.NETWORK || "").match(/localnet|devnet|testnet|main/) &&
+    (process.env.NETWORK || "").match(/testnet|main/) &&
     process.env.INFURA_KEY === undefined
 ) {
     throw new Error("Must set INFURA_KEY");
@@ -68,12 +68,8 @@ const ethRinkebyNetwork = {
 
 module.exports = {
     networks: {
-        localnet: kovanNetwork,
-        devnet: kovanNetwork,
-        rinkebyDevnet: ethRinkebyNetwork,
         testnet: goerliNetwork,
         mainnet: mainNetwork,
-        chaosnet: mainNetwork,
         development: {
             host: "localhost",
             port: 8545,
