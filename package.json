@@ -8,7 +8,7 @@
         "coverage": "yarn run generate && truffle run coverage",
         "build": "yarn run generate && truffle build",
         "test": "yarn run generate && truffle test",
-        "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/chaosnet/*.json\"",
+        "bindings:ts": "truffle compile && typechain --target web3-v1 \"./build/mainnet/*.json\"",
         "bindings:go": "solc --optimize darknode-sol=`pwd`/node_modules/darknode-sol @openzeppelin/upgrades=`pwd`/node_modules/@openzeppelin/upgrades @openzeppelin/contracts=`pwd`/node_modules/@openzeppelin/contracts --combined-json bin,abi,userdoc,devdoc,metadata $(find contracts -type f -name '*.sol') > go-abi.json && abigen -pkg bindings --out bindings.go --combined-json go-abi.json; rm go-abi.json",
         "coveralls": "cat ./coverage/lcov.info | coveralls",
         "prepare": "patch-package",
