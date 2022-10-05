@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build / test artifacts
+build
 coverage
 dist
 coverageEnv
