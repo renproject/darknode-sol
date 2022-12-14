@@ -1,6 +1,5 @@
 pragma solidity 0.5.17;
 
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "../DarknodeRegistry/DarknodeRegistry.sol";
 import "./IRenVMSignatureVerifier.sol";
 
