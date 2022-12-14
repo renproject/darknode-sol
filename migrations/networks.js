@@ -47,7 +47,7 @@ module.exports = {
         // DNR
         DarknodeRegistryStore: "0xC2c126e1EB32E6Ad50c611fB92D009B4b4518B00",
         DarknodeRegistryLogicV1: "",
-        DarknodeRegistryLogicV2: "0xA1Fe5358cF8c04Edf38D6ea235cEEe05AfF9d66e",
+        DarknodeRegistryLogicV2: "0xaf75aa160bD5e578303c57c3896Eb15E400Fbc1F",
         DarknodeRegistryProxy: "0xC791dB283bc6FFbcC00e474B9F7eb130e48E8bC4",
         DarknodeRegistryV1ToV2Upgrader: "0x2bB01259DF399b19036329BFd45587878146BB80",
 
