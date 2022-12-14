@@ -10,7 +10,7 @@ const commitHash = execSync("git describe --always --long")
     .trim();
 
 if (
-    (process.env.NETWORK || "").match(/localnet|devnet|testnet|main/) &&
+    (process.env.NETWORK || "").match(/testnet|main/) &&
     process.env.INFURA_KEY === undefined
 ) {
     throw new Error("Must set INFURA_KEY");
@@ -26,6 +26,17 @@ const kovanNetwork = {
     network_id: 42,
     gas: 6721975,
     gasPrice: 6.5 * GWEI,
+    networkCheckTimeout: 20000
+};
+
+const goerliNetwork = {
+    // @ts-ignore
+    provider: () =>
+        new HDWalletProvider(
+            process.env.MNEMONIC_TESTNET,
+            `https://goerli.infura.io/v3/${process.env.INFURA_KEY}`
+        ),
+    network_id: 5,
     networkCheckTimeout: 20000
 };
 
@@ -57,12 +68,8 @@ const ethRinkebyNetwork = {
 
 module.exports = {
     networks: {
-        localnet: kovanNetwork,
-        devnet: kovanNetwork,
-        rinkebyDevnet: ethRinkebyNetwork,
-        testnet: kovanNetwork,
+        testnet: goerliNetwork,
         mainnet: mainNetwork,
-        chaosnet: mainNetwork,
         development: {
             host: "localhost",
             port: 8545,

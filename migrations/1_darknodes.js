@@ -6,6 +6,9 @@ const RenToken = artifacts.require("RenToken");
 const DarknodeRegistryStore = artifacts.require("DarknodeRegistryStore");
 const DarknodeRegistryProxy = artifacts.require("DarknodeRegistryProxy");
 const DarknodeRegistryLogicV2 = artifacts.require("DarknodeRegistryLogicV2");
+const DarknodeRegistryV1ToV2Upgrader = artifacts.require(
+    "DarknodeRegistryV1ToV2Upgrader"
+);
 const RenProxyAdmin = artifacts.require("RenProxyAdmin");
 
 const networks = require("./networks.js");
@@ -52,6 +55,8 @@ module.exports = async function (deployer, network) {
     DarknodeRegistryLogicV2.address = addresses.DarknodeRegistryLogicV2 || "";
     DarknodeRegistryStore.address = addresses.DarknodeRegistryStore || "";
     RenProxyAdmin.address = addresses.RenProxyAdmin || "";
+    DarknodeRegistryV1ToV2Upgrader.address =
+        addresses.DarknodeRegistryV1ToV2Upgrader || "";
 
     const slasher = NULL;
 
@@ -234,12 +239,22 @@ module.exports = async function (deployer, network) {
         );
     }
 
-    const currentSlasher = await darknodeRegistry.slasher();
-    const nextSlasher = await darknodeRegistry.nextSlasher();
-    if (Ox(currentSlasher) != Ox(slasher) && Ox(nextSlasher) != Ox(slasher)) {
-        deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry");
-        // Update slasher address
-        await darknodeRegistry.updateSlasher(slasher);
+    // const currentSlasher = await darknodeRegistry.slasher();
+    // const nextSlasher = await darknodeRegistry.nextSlasher();
+    // if (Ox(currentSlasher) != Ox(slasher) && Ox(nextSlasher) != Ox(slasher)) {
+    //     deployer.logger.log("Linking DarknodeSlasher and DarknodeRegistry");
+    //     // Update slasher address
+    //     await darknodeRegistry.updateSlasher(slasher);
+    //     actionCount++;
+    // }
+
+    if (!DarknodeRegistryV1ToV2Upgrader.address) {
+        await deployer.deploy(
+            DarknodeRegistryV1ToV2Upgrader,
+            renProxyAdmin.address,
+            darknodeRegistry.address,
+            darknodeRegistryLogic.address
+        );
         actionCount++;
     }
 
@@ -251,5 +266,6 @@ module.exports = async function (deployer, network) {
         DarknodeRegistryStore: "${DarknodeRegistryStore.address}",
         DarknodeRegistryLogicV2: "${DarknodeRegistryLogicV2.address}",
         DarknodeRegistryProxy: "${DarknodeRegistryProxy.address}",
+        DarknodeRegistryV1ToV2Upgrader: "${DarknodeRegistryV1ToV2Upgrader.address}",
     `);
 };

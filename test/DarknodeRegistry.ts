@@ -14,6 +14,7 @@ import {
     MINIMUM_POD_SIZE,
     NULL,
     PUBK,
+    signRecoverMessage,
     waitForEpoch,
 } from "./helper/testUtils";
 
@@ -178,8 +179,11 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
             await dnr.updateSubnet(ID(i), 3, { from: accounts[2] });
-            await dnr.updateSubnet(ID(i), 3, { from: accounts[2] })
-                    .should.be.rejectedWith(/DarknodeRegistry: can only update subnet once per epoch/);
+            await dnr
+                .updateSubnet(ID(i), 3, { from: accounts[2] })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: can only update subnet once per epoch/
+                );
         }
 
         (
@@ -1243,19 +1247,279 @@ contract("DarknodeRegistry", (accounts: string[]) => {
 
         console.debug("");
     });
+
     it("cannot update subnet with even ID", async () => {
-        await dnr.updateSubnet(ID("2"), 2 ,{
-            from: accounts[2],
-        }).should.be.rejectedWith(
-            /DarknodeRegistry: can not remove RenVM inclusion/
-        );
+        await dnr
+            .updateSubnet(ID("2"), 2, {
+                from: accounts[2],
+            })
+            .should.be.rejectedWith(
+                /DarknodeRegistry: can not remove RenVM inclusion/
+            );
     });
+
     it("can update subnet with odd ID", async () => {
-        await dnr.updateSubnet(ID("2"), 7,{
+        await dnr.updateSubnet(ID("2"), 7, {
             from: accounts[2],
         }).should.be.fulfilled;
         await waitForEpoch(dnr);
         //await dnr.subnets[ID("2").toString()].should.be.bignumber.equal(7);
     });
 
+    describe("recover", () => {
+        it("should be able to recover a darknode's bond", async function () {
+            this.timeout(1000 * 1000);
+
+            // [ACTION] Register
+            for (let i = 0; i < numAccounts; i++) {
+                await ren.approve(dnr.address, MINIMUM_BOND, {
+                    from: accounts[i],
+                });
+                await dnr.register(ID(i), PUBK(i), { from: accounts[i] });
+            }
+
+            const nodeCount = 10;
+            await ren.transfer(
+                accounts[2],
+                MINIMUM_BOND.mul(new BN(nodeCount))
+            );
+            await ren.approve(
+                dnr.address,
+                MINIMUM_BOND.mul(new BN(nodeCount)),
+                {
+                    from: accounts[2],
+                }
+            );
+
+            for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+                await dnr.register(ID(i), PUBK(i), { from: accounts[2] });
+            }
+
+            // Wait for epoch
+            await waitForEpoch(dnr);
+
+            (
+                await dnr.getOperatorDarknodes(accounts[2])
+            ).length.should.bignumber.equal(nodeCount + 1); // +1 from the first loop
+
+            const recovered: number[] = [];
+
+            // [ACTION] Deregister
+            for (let i = 0; i < numAccounts; i++) {
+                await dnr.deregister(ID(i), { from: accounts[i] });
+            }
+
+            for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+                if (recovered.indexOf(i) >= 0) {
+                    continue;
+                }
+                await dnr.deregister(ID(i), { from: accounts[2] });
+            }
+
+            // Wait for two epochs
+            await waitForEpoch(dnr);
+
+            // Recover
+            const darknodeOperator = accounts[2];
+            const recipient = accounts[3];
+            const recipientBalanceBefore = await ren.balanceOf(recipient);
+            const darknodeToRefund = numAccounts;
+            (await dnr.isDeregistered(ID(darknodeToRefund))).should.be.true;
+            (await dnr.isRefundable(ID(darknodeToRefund))).should.be.false;
+            (await dnr.getDarknodeOperator(ID(darknodeToRefund))).should.equal(
+                darknodeOperator
+            );
+
+            const signature = await signRecoverMessage(
+                darknodeOperator,
+                recipient,
+                ID(darknodeToRefund)
+            );
+            await dnr.recover(ID(darknodeToRefund), recipient, signature, {
+                from: accounts[0],
+            });
+            recovered.push(darknodeToRefund);
+
+            (await dnr.isDeregistered(ID(darknodeToRefund))).should.be.false;
+            (await dnr.isRefundable(ID(darknodeToRefund))).should.be.false;
+
+            // Can't re-use signature
+            await dnr
+                .recover(ID(darknodeToRefund), recipient, signature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            const recipientBalanceAfter = await ren.balanceOf(recipient);
+            recipientBalanceAfter
+                .sub(recipientBalanceBefore)
+                .should.bignumber.equal(await dnr.minimumBond());
+            await ren.transfer(darknodeOperator, await dnr.minimumBond(), {
+                from: recipient,
+            });
+
+            await waitForEpoch(dnr);
+
+            // Recover;
+            (await dnr.isDeregistered(ID(darknodeToRefund + 1))).should.be.true;
+            (await dnr.isRefundable(ID(darknodeToRefund + 1))).should.be.true;
+            (
+                await dnr.getDarknodeOperator(ID(darknodeToRefund + 1))
+            ).should.equal(darknodeOperator);
+
+            const signatureThree = await signRecoverMessage(
+                darknodeOperator,
+                recipient,
+                ID(darknodeToRefund + 1)
+            );
+            await dnr.recover(
+                ID(darknodeToRefund + 1),
+                recipient,
+                signatureThree,
+                {
+                    from: accounts[0],
+                }
+            );
+            recovered.push(darknodeToRefund + 1);
+
+            (await dnr.isDeregistered(ID(darknodeToRefund + 1))).should.be
+                .false;
+            (await dnr.isRefundable(ID(darknodeToRefund + 1))).should.be.false;
+
+            // [ACTION] Refund
+            for (let i = 0; i < numAccounts; i++) {
+                await dnr.refund(ID(i), { from: accounts[i] });
+            }
+
+            for (let i = numAccounts; i < numAccounts + nodeCount; i++) {
+                if (recovered.indexOf(i) >= 0) {
+                    continue;
+                }
+                await dnr.refund(ID(i), { from: accounts[2] });
+            }
+
+            const signatureFour = await signRecoverMessage(
+                darknodeOperator,
+                recipient,
+                ID(darknodeToRefund + 2)
+            );
+            await dnr
+                .recover(ID(darknodeToRefund + 2), recipient, signatureFour, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await ren.transfer(
+                accounts[0],
+                MINIMUM_BOND.mul(new BN(nodeCount)),
+                {
+                    from: accounts[2],
+                }
+            );
+        });
+
+        it("can't recover with invalid signature or caller", async function () {
+            this.timeout(1000 * 1000);
+
+            // Approve more than minimum bond
+            await ren.approve(dnr.address, MINIMUM_BOND, {
+                from: accounts[1],
+            });
+
+            const darknodeToRefund = numAccounts;
+            const goodSignature = await signRecoverMessage(
+                accounts[2],
+                accounts[2],
+                ID(darknodeToRefund)
+            );
+
+            const badSignature1 = await signRecoverMessage(
+                accounts[3],
+                accounts[2],
+                ID(darknodeToRefund)
+            );
+            const badSignature2 = await signRecoverMessage(
+                accounts[2],
+                accounts[2],
+                ID(darknodeToRefund + 1)
+            );
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            // Register
+            await dnr.register(ID("1"), PUBK("1"), { from: accounts[1] });
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[2],
+                })
+                .should.be.rejectedWith(/Ownable: caller is not the owner/);
+
+            await waitForEpoch(dnr);
+            await dnr.deregister(ID("1"), { from: accounts[1] });
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await waitForEpoch(dnr);
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], badSignature1, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], badSignature2, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+
+            await waitForEpoch(dnr);
+            await dnr.refund(ID("1"), { from: accounts[1] });
+
+            await dnr
+                .recover(ID(darknodeToRefund), accounts[2], goodSignature, {
+                    from: accounts[0],
+                })
+                .should.be.rejectedWith(
+                    /DarknodeRegistry: must be deregistered/
+                );
+        });
+    });
 });
