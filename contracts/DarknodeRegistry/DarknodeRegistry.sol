@@ -255,8 +255,7 @@ contract DarknodeRegistryLogicV2 is
     function registerMultiple(address[] calldata _darknodeIDs) external {
         // Save variables in memory to prevent redundant reads from storage
         DarknodeRegistryStore _store = store;
-        Epoch memory _currentEpoch = currentEpoch;
-        uint256 nextRegisteredAt = _currentEpoch.blocktime.add(
+        uint256 nextRegisteredAt = currentEpoch.blocktime.add(
             minimumEpochInterval
         );
         uint256 _minimumBond = minimumBond;
